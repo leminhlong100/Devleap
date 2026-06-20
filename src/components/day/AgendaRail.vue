@@ -97,4 +97,12 @@ function dotStyle(item, i, len) {
   font-weight: 600;
   margin-top: 3px;
 }
+/* Mobile: bố cục gập về 1 cột nên rail không cần dính trên — nếu để sticky,
+   các thẻ phía dưới (VocabCard có .illo position:relative) sẽ vẽ đè lên rail. */
+@media (max-width: 900px) {
+  .rail {
+    position: static;
+    top: auto;
+  }
+}
 </style>
