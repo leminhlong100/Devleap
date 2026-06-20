@@ -279,12 +279,28 @@ function onNode(w, clickable) {
 @media (max-width: 640px) {
   .row {
     grid-template-columns: 56px 1fr;
+    column-gap: 12px;
+  }
+  /* Node luôn ở cột trái, thẻ tuần ở cột phải. Slot rỗng (mặt còn lại của
+     bố cục so le trên desktop) bị ẩn để thẻ không bị nhồi vào cột node hẹp. */
+  .slot:empty {
+    display: none;
   }
   .node-slot {
     order: -1;
   }
-  .slot.left {
+  .slot.left,
+  .slot.right {
     justify-content: flex-start;
+  }
+  .node {
+    width: 50px;
+    height: 50px;
+    font-size: 21px;
+    border-width: 3px;
+  }
+  .wcard {
+    max-width: none;
   }
   .wcard.right-text {
     text-align: left;

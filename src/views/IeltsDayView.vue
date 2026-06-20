@@ -359,10 +359,15 @@ function goTool(tool) {
   margin-top: 24px;
   align-items: start;
 }
+/* Cho phép cột co lại để nội dung dài (bảng/script) cuộn bên trong thay vì tràn. */
+.two-col > * {
+  min-width: 0;
+}
 .main {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 .step-card {
   background: #fff;

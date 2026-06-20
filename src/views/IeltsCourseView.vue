@@ -473,6 +473,11 @@ function start() {
   .strip {
     grid-template-columns: 1fr 1fr;
   }
+  .strip-main-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
   .title {
     font-size: 30px;
   }
