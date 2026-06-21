@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { previewInterval, intervalLabel, daysUntil } from '@/lib/srs'
 import { speak, canSpeak } from '@/lib/speak'
+import { vocabImageUrl } from '@/lib/vocabImage'
 
 const speakable = canSpeak()
 function sayTerm() {
@@ -38,6 +39,17 @@ const cards = computed(() => ordered.value)
 const hasCards = computed(() => cards.value.length > 0)
 const card = computed(() => cards.value[index.value])
 const total = computed(() => cards.value.length)
+
+// Ảnh minh họa mặt trước thẻ (nhớ lâu hơn). Trong lúc tải hiện spinner; ảnh chỉ
+// hiện khi đã tải xong nên không bao giờ thấy "ảnh thẻ cũ + chữ thẻ mới".
+const imgUrl = computed(() => (card.value ? vocabImageUrl(card.value.term) : ''))
+const imgOk = ref(true)
+const imgLoaded = ref(false)
+// Đổi thẻ -> ẩn ảnh cũ, hiện lại spinner, thử tải ảnh của thẻ mới.
+watch(() => card.value?.srsId, () => {
+  imgOk.value = true
+  imgLoaded.value = false
+})
 const dueTotal = computed(() => user.dueCount(cards.value.map((c) => c.srsId)))
 
 const cardSrs = computed(() => (card.value ? user.srsOf(card.value.srsId) : null))
@@ -113,6 +125,20 @@ function dotColor(i) {
           <div class="face front">
             <span class="cat">{{ card.cat }}</span>
             <span class="card-no">Thẻ {{ index + 1 }}/{{ total }}</span>
+            <div class="fc-illo">
+              <img
+                v-if="imgUrl && imgOk"
+                :src="imgUrl"
+                :alt="card.term"
+                class="fc-img"
+                :class="{ shown: imgLoaded }"
+                decoding="async"
+                @load="imgLoaded = true"
+                @error="imgOk = false"
+              />
+              <span v-if="imgOk && !imgLoaded" class="fc-spin"></span>
+              <span v-else-if="!imgOk" class="fc-illo-fallback">🗂️</span>
+            </div>
             <div class="term">{{ card.term }}</div>
             <div class="ipa">{{ card.ipa }}</div>
             <button v-if="speakable" class="speak-fc" title="Nghe phát âm" @click.stop="sayTerm">🔊 Nghe</button>
@@ -246,7 +272,7 @@ function dotColor(i) {
 .card-3d {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 450px;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
 }
@@ -284,6 +310,48 @@ function dotColor(i) {
   color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
   font-weight: 700;
+}
+.fc-illo {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+.fc-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.fc-img.shown {
+  opacity: 1;
+}
+.fc-spin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: fc-rot 0.7s linear infinite;
+}
+@keyframes fc-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.fc-illo-fallback {
+  font-size: 56px;
 }
 .term {
   font-size: 42px;

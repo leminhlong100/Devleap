@@ -140,7 +140,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.
               </div>
             </div>
             <div class="vocab-grid">
-              <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" @play="goTool('flashcard')" />
+              <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" />
             </div>
             <button class="ghost-btn" @click="goTool('flashcard')">🃏 Luyện lại bằng Flashcard →</button>
           </section>

@@ -1,15 +1,21 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
+import { vocabImageUrl } from '@/lib/vocabImage'
 
 const props = defineProps({
-  vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exVi, vidLen}
+  vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exVi, img}
 })
-const emit = defineEmits(['play'])
 
 const illoBg = computed(() => `linear-gradient(135deg,${props.vocab.g1},${props.vocab.g2})`)
 const parts = computed(() => (props.vocab.ex || '').split('{w}'))
 const speakable = canSpeak()
+
+// Ảnh minh họa cho từ (nhớ lâu hơn). Trong lúc tải hiện emoji + gradient làm nền,
+// ảnh tải xong mới hiện đè lên (fade-in). Lỗi tải -> giữ nguyên emoji.
+const imgUrl = computed(() => props.vocab.img || vocabImageUrl(props.vocab.term))
+const imgOk = ref(true)
+const loaded = ref(false)
 
 function sayTerm() {
   speak(props.vocab.term)
@@ -25,8 +31,18 @@ function sayExample() {
   <div class="vcard">
     <div class="vtop">
       <div class="illo" :style="{ background: illoBg }">
-        {{ vocab.illo }}
-        <span class="play" title="Video ví dụ" @click="emit('play', vocab)">▶</span>
+        <span class="illo-emoji">{{ vocab.illo }}</span>
+        <img
+          v-if="imgUrl && imgOk"
+          :src="imgUrl"
+          :alt="vocab.term"
+          class="illo-img"
+          :class="{ shown: loaded }"
+          loading="lazy"
+          decoding="async"
+          @load="loaded = true"
+          @error="imgOk = false"
+        />
       </div>
       <div class="vmeta">
         <div class="vterm-row">
@@ -44,7 +60,6 @@ function sayExample() {
       </div>
       <div class="vex-en">{{ parts[0] }}<b>{{ vocab.term }}</b>{{ parts[1] || '' }}</div>
       <div v-if="vocab.exVi" class="vex-vi">{{ vocab.exVi }}</div>
-      <div v-if="vocab.vidLen" class="vex-vid" @click="emit('play', vocab)">🎬 Video dùng từ · {{ vocab.vidLen }}</div>
     </div>
   </div>
 </template>
@@ -64,33 +79,33 @@ function sayExample() {
 }
 .illo {
   position: relative;
-  width: 78px;
-  height: 78px;
+  width: 112px;
+  height: 112px;
   border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
   flex: none;
+  overflow: hidden;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
-.play {
+.illo-emoji {
   position: absolute;
-  bottom: -7px;
-  right: -7px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  padding-left: 2px;
-  cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  font-size: 48px;
+  line-height: 1;
+}
+.illo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.illo-img.shown {
+  opacity: 1;
 }
 .vmeta {
   flex: 1;
@@ -186,15 +201,5 @@ function sayExample() {
   color: var(--muted-2);
   font-weight: 600;
   margin-top: 2px;
-}
-.vex-vid {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 9px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--purple);
-  cursor: pointer;
 }
 </style>
