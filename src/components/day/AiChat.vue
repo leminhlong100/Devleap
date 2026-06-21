@@ -88,46 +88,36 @@ function flashToast(msg) {
   toastTimer = setTimeout(() => (savedToast.value = ''), 1800)
 }
 
-// Tìm từ tiếng Anh tại vị trí vừa chạm/bấm (không cần bọc HTML thủ công).
-function wordAtPoint(x, y) {
-  let range = null
-  if (document.caretRangeFromPoint) {
-    range = document.caretRangeFromPoint(x, y)
-  } else if (document.caretPositionFromPoint) {
-    const p = document.caretPositionFromPoint(x, y)
-    if (p) {
-      range = document.createRange()
-      range.setStart(p.offsetNode, p.offset)
-    }
-  }
-  const node = range?.startContainer
-  if (!node || node.nodeType !== Node.TEXT_NODE) return ''
-  const text = node.textContent || ''
-  const isWord = (ch) => /[A-Za-z'’-]/.test(ch)
-  let start = Math.min(range.startOffset, text.length)
-  let end = start
-  while (start > 0 && isWord(text[start - 1])) start--
-  while (end < text.length && isWord(text[end])) end++
-  return text
-    .slice(start, end)
-    .replace(/^[-'’]+|[-'’]+$/g, '')
-    .toLowerCase()
+// Tách câu trả lời thành các "mảnh" để chọn từ: mỗi từ tiếng Anh là một token
+// bấm được (word=true); dấu câu/khoảng trắng giữ nguyên để câu vẫn đọc được.
+// Gỡ ký hiệu markdown (** _ ` #) để hiển thị sạch trong chế độ chọn từ.
+function pickTokens(text) {
+  const plain = (text || '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .replace(/^[#>]+\s*/gm, '')
+  // split giữ lại nhóm bắt được -> chỉ số lẻ là "từ", chẵn là phần ngăn cách.
+  return plain
+    .split(/([A-Za-z][A-Za-z'’-]*)/)
+    .map((t, i) => ({ t, word: i % 2 === 1 && t.length >= 2 }))
 }
 
-// Bấm vào bubble của AI khi đang ở chế độ lưu -> lưu từ tại điểm chạm.
-function onPick(e, fullText) {
-  if (!saveMode.value) return
-  const word = wordAtPoint(e.clientX, e.clientY)
-  if (!word || word.length < 2) return
-  if (user.isWordSaved(word)) {
-    flashToast(`“${word}” đã có trong danh sách`)
+// Chọn/bỏ chọn một từ: chưa lưu -> lưu (kèm câu ngữ cảnh); đã lưu -> bỏ.
+function toggleWord(word, fullText) {
+  const w = String(word).trim().toLowerCase()
+  if (!w || w.length < 2) return
+  if (user.isWordSaved(w)) {
+    user.removeSavedWord(w)
+    flashToast(`Đã bỏ “${w}”`)
     return
   }
-  // Câu chứa từ (làm ngữ cảnh khi học lại). Lấy câu gần nhất trong câu trả lời.
-  const card = cardsFromTerms([word], 'saved')[0]
-  const context = sentenceFor(word, fullText)
+  const card = cardsFromTerms([w], 'saved')[0]
+  const context = sentenceFor(w, fullText)
   user.saveWord(context ? { ...card, context } : card)
-  flashToast(`✓ Đã lưu “${word}”`)
+  flashToast(`✓ Đã lưu “${w}”`)
 }
 
 // Trích câu chứa từ trong đoạn văn bản (để hiện ngữ cảnh trên flashcard).
@@ -215,7 +205,7 @@ watch(
     </div>
 
     <p v-if="saveMode" class="hint hint-save">
-      📌 Đang bật <b>chế độ lưu từ</b> — chạm vào bất kỳ từ nào trong câu trả lời của AI để lưu vào danh sách của bạn.
+      📌 Đang bật <b>chế độ chọn từ</b> — bấm vào từ tiếng Anh trong câu trả lời của AI để lưu (từ đã lưu sáng xanh; bấm lần nữa để bỏ).
     </p>
     <p v-else class="hint">Nhắn tin hoặc bấm 🎤 để nói tiếng Anh — AI sẽ trả lời, sửa lỗi nhẹ và hỏi lại để bạn luyện nói.</p>
 
@@ -233,13 +223,19 @@ watch(
       <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.role === 'user' ? 'me' : 'ai'">
         <div class="avatar">{{ m.role === 'user' ? '🧑' : '🤖' }}</div>
         <div class="bubble">
-          <div
-            v-if="m.role === 'assistant'"
-            class="prose-mini"
-            :class="{ pickable: saveMode }"
-            v-html="render(m.text)"
-            @click="onPick($event, m.text)"
-          ></div>
+          <!-- Chế độ chọn từ: mỗi từ tiếng Anh là một chip bấm để lưu -->
+          <div v-if="m.role === 'assistant' && saveMode" class="prose-pick">
+            <template v-for="(tok, ti) in pickTokens(m.text)" :key="ti">
+              <button
+                v-if="tok.word"
+                class="wordchip"
+                :class="{ saved: user.isWordSaved(tok.t) }"
+                :title="user.isWordSaved(tok.t) ? 'Bấm để bỏ lưu' : 'Bấm để lưu từ này'"
+                @click="toggleWord(tok.t, m.text)"
+              >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
+            </template>
+          </div>
+          <div v-else-if="m.role === 'assistant'" class="prose-mini" v-html="render(m.text)"></div>
           <template v-else>{{ m.text }}</template>
           <button
             v-if="m.role === 'assistant' && speakable"
@@ -353,13 +349,31 @@ watch(
   box-shadow: 0 8px 18px rgba(108, 92, 231, 0.22);
 }
 
-/* Khi bật chế độ lưu: gợi ý từ có thể chạm để lưu */
-.prose-mini.pickable {
-  cursor: pointer;
+/* Chế độ chọn từ: văn bản giữ xuống dòng, mỗi từ là một chip bấm được */
+.prose-pick {
+  white-space: pre-wrap;
+  line-height: 2;
+  word-break: break-word;
 }
-.prose-mini.pickable :deep(p):hover {
-  background: rgba(0, 214, 143, 0.08);
+.wordchip {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 1px 3px;
   border-radius: 6px;
+  border-bottom: 1.5px dashed rgba(0, 168, 111, 0.55);
+  transition: background 0.12s, color 0.12s;
+}
+.wordchip:hover {
+  background: rgba(0, 214, 143, 0.16);
+}
+.wordchip.saved {
+  background: #00a86f;
+  color: #fff;
+  font-weight: 700;
+  border-bottom-color: transparent;
 }
 
 /* Toast xác nhận lưu từ */
