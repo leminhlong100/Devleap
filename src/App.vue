@@ -1,6 +1,7 @@
 <script setup>
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
+import LoginGate from '@/components/layout/LoginGate.vue'
 </script>
 
 <template>
@@ -14,6 +15,7 @@ import AppFooter from '@/components/layout/AppFooter.vue'
       </RouterView>
     </main>
     <AppFooter />
+    <LoginGate />
   </div>
 </template>
 
