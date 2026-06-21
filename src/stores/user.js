@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { supabase, isCloudEnabled } from '@/lib/supabase'
+import { schedule, isDue, GRADES } from '@/lib/srs'
 
 /**
  * Trạng thái người học (gamification) — nguồn sự thật duy nhất cho tiến độ thật.
@@ -20,6 +21,8 @@ import { supabase, isCloudEnabled } from '@/lib/supabase'
 const LEVEL_SPAN = 500 // mỗi level rộng 500 XP
 const XP_PER_DAY = 50 // hoàn thành 1 ngày học
 const XP_PER_WEEK = 150 // thưởng thêm khi xong trọn 1 tuần
+const XP_QUIZ_PASS = 100 // thưởng khi LẦN ĐẦU đạt một bài kiểm tra
+const PASS_PCT = 0.7 // ngưỡng đạt mặc định (70%)
 const STORAGE_KEY = 'devleap:user:v2'
 const PUSH_DEBOUNCE_MS = 1200
 
@@ -28,6 +31,39 @@ const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 
 // Hợp nhất 2 mảng thành tập hợp không trùng (giữ tiến độ từ cả 2 thiết bị).
 const union = (a = [], b = []) => Array.from(new Set([...a, ...b]))
+// XP thưởng khi ôn một thẻ đang đến hạn (chấm "Khó" được ít hơn "Tốt/Dễ").
+const XP_REVIEW = { hard: 5, good: 10, easy: 10 }
+// Hợp nhất lịch SRS: với mỗi thẻ, giữ bản ôn gần nhất (so theo `last`, dạng ISO).
+const mergeSrs = (a = {}, b = {}) => {
+  const out = { ...a }
+  for (const [k, v] of Object.entries(b)) {
+    const cur = out[k]
+    if (!cur || (v.last || '') > (cur.last || '')) out[k] = v
+  }
+  return out
+}
+// Hợp nhất điểm kiểm tra: mỗi bài giữ điểm % cao nhất, OR trạng thái đạt,
+// lấy số lần làm & ngày làm lớn hơn (đủ tốt cho đồng bộ đa thiết bị cá nhân).
+const mergeQuiz = (a = {}, b = {}) => {
+  const out = { ...a }
+  for (const [k, v] of Object.entries(b)) {
+    const cur = out[k]
+    if (!cur) {
+      out[k] = v
+      continue
+    }
+    const keepNew = (v.pct || 0) > (cur.pct || 0)
+    out[k] = {
+      best: keepNew ? v.best : cur.best,
+      total: keepNew ? v.total : cur.total,
+      pct: Math.max(cur.pct || 0, v.pct || 0),
+      attempts: Math.max(cur.attempts || 0, v.attempts || 0),
+      passed: !!(cur.passed || v.passed),
+      lastAt: laterDate(cur.lastAt, v.lastAt),
+    }
+  }
+  return out
+}
 // Chọn ngày muộn hơn giữa 2 chuỗi 'YYYY-M-D' (null-safe).
 const laterDate = (a, b) => {
   if (!a) return b || null
@@ -43,8 +79,12 @@ export const useUserStore = defineStore('user', {
     streak: 0,
     badges: 0,
     lastStudyDate: null, // 'YYYY-M-D' của lần học gần nhất (tính streak)
-    knownCards: [], // index các flashcard đã thuộc
+    knownCards: [], // (cũ) index các flashcard đã thuộc — giữ để tương thích bản trước
+    srs: {}, // lịch ôn tập theo từng thẻ: { [srsId]: { ease, interval, reps, lapses, due, last } }
     completed: { java: [], ielts: [] }, // mảng khóa "week:day" đã hoàn thành
+    // điểm kiểm tra cuối tuần/cuối khóa, khóa theo "course:scope"
+    // (vd "java:week:3", "ielts:final"): { best, total, pct, attempts, passed, lastAt }
+    quizScores: {},
 
     // —— đồng bộ cloud ——
     cloudUserId: null, // id user khi đã đăng nhập; null = chế độ khách
@@ -59,6 +99,21 @@ export const useUserStore = defineStore('user', {
       return Math.max(0, Math.min(100, Math.round(((s.xp - start) / LEVEL_SPAN) * 100)))
     },
     knownCount: (s) => s.knownCards.length,
+    /** Lịch ôn của một thẻ (null nếu chưa từng ôn). Dùng: user.srsOf(id). */
+    srsOf: (s) => (id) => s.srs[id] || null,
+    /** Thẻ có đang đến hạn ôn không? Thẻ mới (chưa có lịch) coi như đến hạn. */
+    isCardDue: (s) => (id) => isDue(s.srs[id]),
+    /** Số thẻ đến hạn trong một danh sách srsId (để hiện huy hiệu "đến hạn"). */
+    dueCount: (s) => (ids = []) => ids.filter((id) => isDue(s.srs[id])).length,
+    /** Số thẻ đã có lịch ôn (đã học ít nhất 1 lần). */
+    srsLearned: (s) => Object.keys(s.srs).length,
+    /** Kết quả một bài kiểm tra (null nếu chưa làm). Dùng: user.quizOf('java','week:3'). */
+    quizOf: (s) => (course, scope) => s.quizScores[`${course}:${scope}`] || null,
+    /** Đã đạt một bài kiểm tra chưa? */
+    quizPassed: (s) => (course, scope) => !!s.quizScores[`${course}:${scope}`]?.passed,
+    /** Số bài kiểm tra đã đạt của một khóa (để hiện huy hiệu/tiến độ). */
+    quizPassedCount: (s) => (course) =>
+      Object.entries(s.quizScores).filter(([k, v]) => k.startsWith(`${course}:`) && v.passed).length,
     /** Đếm số ngày đã hoàn thành của một khóa. */
     doneCount: (s) => (course) => (s.completed[course] || []).length,
     /** Một ngày đã hoàn thành chưa? Dùng như hàm: user.isDone('java', w, d). */
@@ -121,6 +176,62 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    /**
+     * Ôn một flashcard và cập nhật lịch giãn cách (SM-2).
+     * @param {string} id  srsId của thẻ (vd "java:inheritance").
+     * @param {'again'|'hard'|'good'|'easy'} grade  Mức độ nhớ vừa chấm.
+     *
+     * Chỉ thưởng XP + tính streak khi thẻ *đang đến hạn* và không phải "Quên" —
+     * tránh cày XP bằng cách ôn đi ôn lại một thẻ đã thuộc trước hạn.
+     */
+    reviewCard(id, grade) {
+      if (!id || !GRADES.includes(grade)) return
+      const prev = this.srs[id] || null
+      const wasDue = isDue(prev)
+      this.srs[id] = schedule(prev, grade)
+      if (wasDue && grade !== 'again') {
+        this.xp += XP_REVIEW[grade] || 0
+        this.bumpStreak()
+      }
+      this.persist()
+    },
+
+    /**
+     * Ghi nhận kết quả một bài kiểm tra cuối tuần/cuối khóa.
+     * @param {'java'|'ielts'} course
+     * @param {string} scope   định danh bài: "week:N" hoặc "final".
+     * @param {number} correct số câu đúng.
+     * @param {number} total   tổng số câu.
+     * @param {number} threshold tỉ lệ đạt (0..1), mặc định 0.7.
+     *
+     * Lưu điểm % CAO NHẤT giữa các lần làm; chỉ thưởng XP + huy hiệu vào LẦN ĐẦU
+     * đạt ngưỡng (không cày bằng cách làm lại). Làm bài cũng tính là có học (streak).
+     */
+    recordQuiz(course, scope, correct, total, threshold = PASS_PCT) {
+      if (!course || !scope || !total) return
+      const key = `${course}:${scope}`
+      const pct = Math.round((correct / total) * 100)
+      const prev = this.quizScores[key] || null
+      const wasPassed = prev?.passed || false
+      const keepNew = !prev || pct > prev.pct
+      const entry = {
+        best: keepNew ? correct : prev.best,
+        total: keepNew ? total : prev.total,
+        pct: keepNew ? pct : prev.pct,
+        attempts: (prev?.attempts || 0) + 1,
+        passed: wasPassed || pct >= threshold * 100,
+        lastAt: ymd(new Date()),
+      }
+      this.quizScores[key] = entry
+      if (!wasPassed && entry.passed) {
+        this.xp += XP_QUIZ_PASS
+        this.badges += 1
+      }
+      this.bumpStreak()
+      this.persist()
+      return entry
+    },
+
     // ——————————————————————— lưu trữ ———————————————————————
 
     /** Ảnh chụp phần dữ liệu cần bền hoá (không gồm trạng thái sync). */
@@ -131,7 +242,9 @@ export const useUserStore = defineStore('user', {
         badges: this.badges,
         lastStudyDate: this.lastStudyDate,
         knownCards: this.knownCards,
+        srs: this.srs,
         completed: this.completed,
+        quizScores: this.quizScores,
       }
     },
 
@@ -142,7 +255,9 @@ export const useUserStore = defineStore('user', {
       this.badges = s.badges ?? 0
       this.lastStudyDate = s.lastStudyDate ?? null
       this.knownCards = Array.isArray(s.knownCards) ? s.knownCards : []
+      this.srs = s.srs && typeof s.srs === 'object' ? s.srs : {}
       this.completed = { java: [], ielts: [], ...(s.completed || {}) }
+      this.quizScores = s.quizScores && typeof s.quizScores === 'object' ? s.quizScores : {}
     },
 
     persist() {
@@ -178,7 +293,7 @@ export const useUserStore = defineStore('user', {
       try {
         const { data, error } = await supabase
           .from('progress')
-          .select('xp, streak, badges, last_study_date, known_cards, completed')
+          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores')
           .eq('user_id', userId)
           .maybeSingle()
         if (error) throw error
@@ -191,7 +306,9 @@ export const useUserStore = defineStore('user', {
             badges: data.badges,
             lastStudyDate: data.last_study_date,
             knownCards: data.known_cards || [],
+            srs: data.srs || {},
             completed: data.completed || {},
+            quizScores: data.quiz_scores || {},
           }
           this.applySnapshot(mergeSnapshots(local, remote))
         }
@@ -241,7 +358,9 @@ export const useUserStore = defineStore('user', {
             badges: s.badges,
             last_study_date: s.lastStudyDate,
             known_cards: s.knownCards,
+            srs: s.srs,
             completed: s.completed,
+            quiz_scores: s.quizScores,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id' },
@@ -267,9 +386,11 @@ function mergeSnapshots(local, remote) {
     badges: Math.max(local.badges || 0, remote.badges || 0),
     lastStudyDate: laterDate(local.lastStudyDate, remote.lastStudyDate),
     knownCards: union(local.knownCards, remote.knownCards),
+    srs: mergeSrs(local.srs, remote.srs),
     completed: {
       java: union(local.completed?.java, remote.completed?.java),
       ielts: union(local.completed?.ielts, remote.completed?.ielts),
     },
+    quizScores: mergeQuiz(local.quizScores, remote.quizScores),
   }
 }

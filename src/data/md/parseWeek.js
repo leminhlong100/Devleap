@@ -11,12 +11,8 @@
  * mốc nhận diện được (dòng meta, blockquote tiếng Anh, code fence, câu hỏi
  * phỏng vấn, khối LeetCode/AI/Resource) rồi phần còn lại render thành HTML.
  */
-import { marked } from 'marked'
 import { parseQuiz } from './quiz'
-
-marked.setOptions({ breaks: false, gfm: true })
-
-const md = (src) => (src && src.trim() ? marked.parse(src.trim()) : '')
+import { md } from './render'
 
 // Nhận diện dòng bắt đầu một câu hỏi phỏng vấn: **Dễ · …**, **Trung 3 · …**,
 // **Khó 5 · …**, **Mock EN · …**, **Cực khó · …**

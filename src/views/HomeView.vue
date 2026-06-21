@@ -1,9 +1,29 @@
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MascotLogo from '@/components/common/MascotLogo.vue'
+import { useUserStore } from '@/stores/user'
 import { features, steps } from '@/data/home'
+import { computeJavaProgress, javaTotals } from '@/data/course'
+import { javaStages } from '@/data/courses'
 
 const router = useRouter()
+const user = useUserStore()
+
+// Tiến độ thật của khóa Java, suy từ danh sách ngày đã hoàn thành (store).
+const prog = computed(() => computeJavaProgress(user.completed.java))
+const stageCount = Object.keys(javaStages).length
+const continueLabel = computed(() =>
+  prog.value.allDone
+    ? '🎉 Đã hoàn thành lộ trình'
+    : prog.value.doneDays === 0
+      ? 'Bắt đầu Tuần 1 →'
+      : `Tiếp tục Tuần ${prog.value.currentWeek} →`,
+)
+
+function openFeatured() {
+  router.push({ name: 'java-day', params: prog.value.continue })
+}
 </script>
 
 <template>
@@ -90,7 +110,7 @@ const router = useRouter()
         <h2 class="section-title sm">Khóa học nổi bật</h2>
         <span class="see-all" @click="router.push({ name: 'courses' })">Xem tất cả →</span>
       </div>
-      <div class="feat-card" @click="router.push({ name: 'java' })">
+      <div class="feat-card" @click="openFeatured">
         <div class="feat-left">
           <div class="feat-emoji">☕</div>
           <div class="feat-left-top">
@@ -98,8 +118,8 @@ const router = useRouter()
             <h3 class="feat-title">Java + Tiếng Anh<br />12 Tuần Bứt Phá</h3>
           </div>
           <div class="feat-progress">
-            <div class="feat-progress-top"><span>Tiến độ của bạn</span><span>28%</span></div>
-            <div class="feat-track"><div class="feat-fill" style="width: 28%"></div></div>
+            <div class="feat-progress-top"><span>Tiến độ của bạn</span><span>{{ prog.pct }}%</span></div>
+            <div class="feat-track"><div class="feat-fill" :style="{ width: prog.pct + '%' }"></div></div>
           </div>
         </div>
         <div class="feat-right">
@@ -108,12 +128,12 @@ const router = useRouter()
             <b>10 từ vựng IT</b> để vừa code giỏi vừa giao tiếp tốt — sẵn sàng đi làm Backend.
           </p>
           <div class="feat-stats">
-            <div><div class="stat-n sm">12</div><div class="stat-l">tuần</div></div>
-            <div><div class="stat-n sm">84</div><div class="stat-l">bài học</div></div>
-            <div><div class="stat-n sm">4</div><div class="stat-l">giai đoạn</div></div>
+            <div><div class="stat-n sm">{{ javaTotals.weeks }}</div><div class="stat-l">tuần</div></div>
+            <div><div class="stat-n sm">{{ javaTotals.lessons }}</div><div class="stat-l">bài học</div></div>
+            <div><div class="stat-n sm">{{ stageCount }}</div><div class="stat-l">giai đoạn</div></div>
             <div><div class="stat-n sm" style="color: var(--amber)">Trung cấp</div><div class="stat-l">độ khó</div></div>
           </div>
-          <div class="feat-continue">Tiếp tục Tuần 4 →</div>
+          <div class="feat-continue">{{ continueLabel }}</div>
         </div>
       </div>
     </section>

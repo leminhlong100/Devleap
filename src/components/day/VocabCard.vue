@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { speak, canSpeak } from '@/lib/speak'
 
 const props = defineProps({
   vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exVi, vidLen}
@@ -8,6 +9,16 @@ const emit = defineEmits(['play'])
 
 const illoBg = computed(() => `linear-gradient(135deg,${props.vocab.g1},${props.vocab.g2})`)
 const parts = computed(() => (props.vocab.ex || '').split('{w}'))
+const speakable = canSpeak()
+
+function sayTerm() {
+  speak(props.vocab.term)
+}
+function sayExample() {
+  // Ghép câu ví dụ hoàn chỉnh (thay {w} bằng từ) rồi đọc to.
+  const ex = (props.vocab.ex || '').replace('{w}', props.vocab.term)
+  speak(ex || props.vocab.term)
+}
 </script>
 
 <template>
@@ -20,14 +31,17 @@ const parts = computed(() => (props.vocab.ex || '').split('{w}'))
       <div class="vmeta">
         <div class="vterm-row">
           <span class="vterm">{{ vocab.term }}</span>
-          <span class="speak" title="Nghe phát âm">🔊</span>
+          <button v-if="speakable" class="speak" title="Nghe phát âm" @click="sayTerm">🔊</button>
         </div>
         <div v-if="vocab.ipa" class="vipa">{{ vocab.ipa }}</div>
         <div v-if="vocab.vi" class="vvi">{{ vocab.vi }}</div>
       </div>
     </div>
     <div v-if="vocab.ex" class="vex">
-      <div class="vex-label">VÍ DỤ</div>
+      <div class="vex-label">
+        VÍ DỤ
+        <button v-if="speakable" class="speak-ex" title="Nghe câu ví dụ" @click="sayExample">🔊</button>
+      </div>
       <div class="vex-en">{{ parts[0] }}<b>{{ vocab.term }}</b>{{ parts[1] || '' }}</div>
       <div v-if="vocab.exVi" class="vex-vi">{{ vocab.exVi }}</div>
       <div v-if="vocab.vidLen" class="vex-vid" @click="emit('play', vocab)">🎬 Video dùng từ · {{ vocab.vidLen }}</div>
@@ -99,12 +113,35 @@ const parts = computed(() => (props.vocab.ex || '').split('{w}'))
   border-radius: 50%;
   background: var(--purple-soft);
   color: var(--purple);
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   cursor: pointer;
   flex: none;
+  padding: 0;
+  transition: transform 0.12s;
+}
+.speak:hover {
+  transform: scale(1.12);
+}
+.speak:active {
+  transform: scale(0.95);
+}
+.speak-ex {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0;
+  margin-left: 6px;
+  line-height: 1;
+  vertical-align: middle;
+  opacity: 0.75;
+}
+.speak-ex:hover {
+  opacity: 1;
 }
 .vipa {
   font-size: 11.5px;

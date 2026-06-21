@@ -2,11 +2,44 @@
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 
-// Quiz chỉ chạy theo từng bài học: view truyền bộ câu hỏi của ngày vào.
-const props = defineProps({ questions: { type: Array, default: null } })
+// Hai chế độ:
+//  - practice (mặc định): quiz nhanh theo từng ngày, +10 XP mỗi câu đúng.
+//  - assessment: bài kiểm tra cuối tuần/cuối khóa — xáo câu, giới hạn số câu,
+//    LƯU ĐIỂM qua store (thưởng & huy hiệu xử lý ở recordQuiz, không cộng/câu).
+const props = defineProps({
+  questions: { type: Array, default: null },
+  mode: { type: String, default: 'practice' },
+  course: { type: String, default: '' },
+  scope: { type: String, default: '' }, // "week:N" | "final"
+  passThreshold: { type: Number, default: 0.7 },
+  limit: { type: Number, default: 0 }, // 0 = lấy hết
+})
 
 const user = useUserStore()
-const qs = computed(() => props.questions || [])
+const isAssessment = computed(() => props.mode === 'assessment')
+
+// Xáo trộn (Fisher–Yates) — chỉ dùng cho bài kiểm tra để mỗi lần làm khác nhau.
+function shuffle(arr) {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// Bộ câu cho lượt chơi hiện tại (cố định tới khi làm lại / đổi đề).
+const playQs = ref([])
+function buildQs() {
+  let arr = props.questions || []
+  if (isAssessment.value) {
+    arr = shuffle(arr)
+    if (props.limit > 0) arr = arr.slice(0, props.limit)
+  }
+  playQs.value = arr
+}
+
+const qs = computed(() => playQs.value)
 const total = computed(() => qs.value.length)
 const hasQuiz = computed(() => total.value > 0)
 
@@ -14,21 +47,27 @@ const index = ref(0)
 const selected = ref(null)
 const score = ref(0)
 const done = ref(false)
+// Lần này có phải lần ĐẦU đạt không (để hiện thưởng XP). Khai báo trước watch
+// vì watch immediate gọi restart() ngay trong setup.
+const justPassed = ref(false)
 
 const current = computed(() => qs.value[index.value])
 
-// Đổi bài học -> làm lại từ đầu.
-watch(qs, () => restart())
 const answered = computed(() => selected.value !== null)
 const isLast = computed(() => index.value + 1 >= total.value)
 const progress = computed(() => Math.round(((index.value + (answered.value ? 1 : 0)) / total.value) * 100))
+
+const pct = computed(() => (total.value ? Math.round((score.value / total.value) * 100) : 0))
+const passed = computed(() => pct.value >= props.passThreshold * 100)
+// Kết quả tốt nhất đã lưu (để khoe điểm cao nhất, đếm lần làm).
+const best = computed(() => (isAssessment.value ? user.quizOf(props.course, props.scope) : null))
 
 function select(i) {
   if (selected.value !== null) return
   selected.value = i
   if (i === current.value.correct) {
     score.value++
-    user.addXp(10)
+    if (!isAssessment.value) user.addXp(10) // bài kiểm tra thưởng theo kết quả cuối
   }
 }
 function optStyle(i) {
@@ -40,17 +79,28 @@ function optStyle(i) {
 function next() {
   if (isLast.value) {
     done.value = true
+    if (isAssessment.value && total.value) {
+      const wasPassed = best.value?.passed || false
+      user.recordQuiz(props.course, props.scope, score.value, total.value, props.passThreshold)
+      justPassed.value = !wasPassed && passed.value
+    }
   } else {
     index.value++
     selected.value = null
   }
 }
 function restart() {
+  buildQs()
   index.value = 0
   selected.value = null
   score.value = 0
   done.value = false
+  justPassed.value = false
 }
+
+// Đổi bài học/đề -> dựng lại bộ câu & làm lại từ đầu. Đặt CUỐI script (sau khi
+// mọi ref & restart đã khai báo) để watch immediate không chạm biến chưa khởi tạo.
+watch(() => props.questions, restart, { immediate: true })
 </script>
 
 <template>
@@ -63,7 +113,20 @@ function restart() {
       <p class="hint-sub">Bài học này chưa có quiz, hoặc bạn đang mở Quiz ngoài ngữ cảnh bài học.</p>
     </div>
 
-    <!-- DONE -->
+    <!-- DONE · bài kiểm tra (lưu điểm + đạt/chưa đạt) -->
+    <div v-else-if="done && isAssessment" class="result">
+      <div class="trophy">{{ passed ? '🎓' : '📊' }}</div>
+      <h2>{{ passed ? 'Đạt bài kiểm tra!' : 'Chưa đạt — thử lại nhé' }}</h2>
+      <p>Đúng <b>{{ score }}/{{ total }}</b> câu · <b>{{ pct }}%</b></p>
+      <div class="verdict" :class="{ ok: passed }">
+        {{ passed ? `✅ Vượt ngưỡng ${Math.round(passThreshold * 100)}%` : `Cần ${Math.round(passThreshold * 100)}% để đạt` }}
+      </div>
+      <div v-if="justPassed" class="xp-badge">+{{ 100 }} XP · +1 huy hiệu 🎉</div>
+      <p v-if="best" class="best-line">Điểm cao nhất: <b>{{ best.pct }}%</b> · đã làm {{ best.attempts }} lần</p>
+      <div><button class="restart" @click="restart">↺ Làm lại</button></div>
+    </div>
+
+    <!-- DONE · quiz luyện tập theo ngày -->
     <div v-else-if="done" class="result">
       <div class="trophy">🏆</div>
       <h2>Hoàn thành quiz!</h2>
@@ -135,6 +198,27 @@ function restart() {
   font-size: 13.5px;
   color: var(--muted-2);
   margin-top: 6px;
+}
+.verdict {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 18px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 800;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #e04848;
+}
+.verdict.ok {
+  background: rgba(0, 214, 143, 0.12);
+  border-color: rgba(0, 214, 143, 0.4);
+  color: #00a86f;
+}
+.best-line {
+  font-size: 13.5px;
+  color: var(--muted-2);
+  margin-top: 14px;
 }
 .xp-badge {
   display: inline-block;

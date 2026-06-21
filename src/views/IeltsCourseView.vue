@@ -32,6 +32,10 @@ function openDay(w) {
 function start() {
   router.push({ name: 'ielts-day', params: prog.value.continue })
 }
+function goFinal() {
+  router.push({ name: 'assessment', params: { course: 'ielts', scope: 'final' } })
+}
+const finalResult = computed(() => user.quizOf('ielts', 'final'))
 </script>
 
 <template>
@@ -123,6 +127,10 @@ function start() {
             <div class="goal-icon">🏆</div>
             <div class="goal-title">{{ ieltsMeta.goalTitle }}</div>
             <div class="goal-sub">{{ ieltsMeta.goalSub }}</div>
+            <button class="final-btn" @click="goFinal">
+              🎯 Thi cuối khóa
+              <span v-if="finalResult" class="final-pct">· {{ finalResult.passed ? '✅' : '' }} {{ finalResult.pct }}%</span>
+            </button>
           </div>
         </div>
       </template>
@@ -460,6 +468,25 @@ function start() {
   font-size: 13.5px;
   color: #3a8a66;
   font-weight: 600;
+}
+.final-btn {
+  margin-top: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00d68f, #00a86f);
+  transition: transform 0.18s;
+}
+.final-btn:hover {
+  transform: translateY(-2px);
+}
+.final-pct {
+  font-weight: 700;
+  opacity: 0.95;
 }
 @media (max-width: 900px) {
   .explain-grid {

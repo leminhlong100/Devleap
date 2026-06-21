@@ -1,6 +1,8 @@
 /**
  * Dữ liệu cho Khu công cụ học (mẫu từ design).
  */
+import { normalize } from './searchIndex'
+import { lookupVocab } from './vocabGlossary'
 
 export const toolDefs = [
   { id: 'flashcard', icon: '🃏', title: 'Flashcard từ vựng', desc: 'Lật thẻ học thuật ngữ IT.', iconBg: 'rgba(108,92,231,.14)' },
@@ -54,15 +56,27 @@ const VOCAB_LOOKUP = (() => {
  * Dựng danh sách flashcard từ các thuật ngữ của một ngày học.
  * Thuật ngữ trùng với kho có sẵn sẽ được bổ sung nghĩa/ví dụ; còn lại để trống
  * (FlashcardTool sẽ hiển thị gợi ý tra từ điển).
+ *
+ * Mỗi thẻ kèm `srsId` ổn định = `${course}:${từ-đã-chuẩn-hóa}` để lịch ôn tập
+ * (Spaced Repetition) bám theo *từ vựng*, không bám theo vị trí trong deck — nhờ
+ * vậy cùng một từ xuất hiện ở nhiều ngày vẫn dùng chung một lịch ôn.
  */
-export function cardsFromTerms(terms) {
+export function cardsFromTerms(terms, course = 'java') {
   const seen = new Set()
   const out = []
   for (const t of terms || []) {
     const key = String(t).trim().toLowerCase()
     if (!key || seen.has(key)) continue
     seen.add(key)
-    out.push(VOCAB_LOOKUP.get(key) || { term: t, ipa: '', cat: 'Từ vựng', vi: '', ex: '' })
+    // Ưu tiên kho IT (flashcards/dictionary); nếu không có, tra glossary IELTS.
+    let base = VOCAB_LOOKUP.get(key)
+    if (!base) {
+      const g = lookupVocab(t)
+      base = g
+        ? { term: t, ipa: g.ipa, cat: 'Từ vựng', vi: g.vi, ex: g.ex.replace('{w}', t) }
+        : { term: t, ipa: '', cat: 'Từ vựng', vi: '', ex: '' }
+    }
+    out.push({ ...base, srsId: `${course}:${normalize(t)}` })
   }
   return out
 }

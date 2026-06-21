@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 import { useAuthStore } from '@/stores/auth'
 import MascotLogo from '@/components/common/MascotLogo.vue'
+import GlobalSearch from '@/components/search/GlobalSearch.vue'
 
 const route = useRoute()
 const user = useUserStore()
@@ -57,6 +58,8 @@ async function signOut() {
       </nav>
 
       <div class="header-right">
+        <GlobalSearch />
+
         <!-- Tiến độ/gamification chỉ hiện khi đã đăng nhập thành công -->
         <template v-if="authUser">
           <div class="streak" title="Chuỗi ngày học">

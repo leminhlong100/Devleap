@@ -30,6 +30,10 @@ function openDay(w) {
 function startContinue() {
   router.push({ name: 'java-day', params: prog.value.continue })
 }
+function goFinal() {
+  router.push({ name: 'assessment', params: { course: 'java', scope: 'final' } })
+}
+const finalResult = computed(() => user.quizOf('java', 'final'))
 </script>
 
 <template>
@@ -73,6 +77,10 @@ function startContinue() {
             <div class="goal-icon">🎓</div>
             <div class="goal-title">{{ javaMeta.goalTitle }}</div>
             <div class="goal-sub">{{ javaMeta.goalSub }}</div>
+            <button class="final-btn" @click="goFinal">
+              🎯 Thi cuối khóa
+              <span v-if="finalResult" class="final-pct">· {{ finalResult.passed ? '✅' : '' }} {{ finalResult.pct }}%</span>
+            </button>
           </div>
         </div>
       </template>
@@ -228,6 +236,25 @@ function startContinue() {
   font-size: 13.5px;
   color: #9a7a3a;
   font-weight: 600;
+}
+.final-btn {
+  margin-top: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 12px;
+  background: var(--grad-purple, linear-gradient(135deg, #6c5ce7, #4b3bc4));
+  transition: transform 0.18s;
+}
+.final-btn:hover {
+  transform: translateY(-2px);
+}
+.final-pct {
+  font-weight: 700;
+  opacity: 0.9;
 }
 @media (max-width: 760px) {
   .strip {

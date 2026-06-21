@@ -11,9 +11,19 @@ create table if not exists public.progress (
   badges         integer     not null default 0,
   last_study_date text,
   known_cards    jsonb       not null default '[]'::jsonb,
+  srs            jsonb       not null default '{}'::jsonb,
   completed      jsonb       not null default '{"java":[],"ielts":[]}'::jsonb,
+  quiz_scores    jsonb       not null default '{}'::jsonb,
   updated_at     timestamptz not null default now()
 );
+
+-- Nâng cấp DB đã tạo trước khi có Spaced Repetition: thêm cột lịch ôn tập.
+alter table public.progress
+  add column if not exists srs jsonb not null default '{}'::jsonb;
+
+-- Nâng cấp DB đã tạo trước khi có bài kiểm tra: thêm cột điểm kiểm tra.
+alter table public.progress
+  add column if not exists quiz_scores jsonb not null default '{}'::jsonb;
 
 -- Bật RLS: mặc định chặn hết, chỉ mở đúng các policy bên dưới.
 alter table public.progress enable row level security;

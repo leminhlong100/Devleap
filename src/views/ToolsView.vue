@@ -60,7 +60,9 @@ watchEffect(async () => {
 })
 
 // Props truyền vào tool theo ngữ cảnh (null -> tool dùng dữ liệu mẫu chung).
-const flashCards = computed(() => (ctx.value?.terms?.length ? cardsFromTerms(ctx.value.terms) : null))
+const flashCards = computed(() =>
+  ctx.value?.terms?.length ? cardsFromTerms(ctx.value.terms, ctx.value.course) : null,
+)
 const codeInit = computed(() => ctx.value?.code || null)
 const quizQs = computed(() => ctx.value?.quiz || null)
 

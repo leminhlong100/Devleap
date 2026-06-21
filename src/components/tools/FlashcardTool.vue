@@ -1,27 +1,62 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
+import { previewInterval, intervalLabel, daysUntil } from '@/lib/srs'
+import { speak, canSpeak } from '@/lib/speak'
+
+const speakable = canSpeak()
+function sayTerm() {
+  if (card.value) speak(card.value.term)
+}
 
 // Flashcard chỉ chạy theo từng bài học: view truyền bộ thẻ của ngày vào.
 const props = defineProps({ cards: { type: Array, default: null } })
 
 const user = useUserStore()
-const { knownCards } = storeToRefs(user)
 
 const index = ref(0)
 const flipped = ref(false)
-const cards = computed(() => props.cards || [])
-const hasCards = computed(() => cards.value.length > 0)
 
-const card = computed(() => cards.value[index.value])
-const total = computed(() => cards.value.length)
-
-// Đổi bộ thẻ (đổi ngày học) -> quay về thẻ đầu.
-watch(cards, () => {
+// Hàng đợi ôn: thẻ đến hạn / thẻ mới xếp lên trước (quá hạn lâu nhất đứng đầu),
+// các thẻ chưa tới hạn xếp sau. Cố định thứ tự trong suốt phiên để khỏi nhảy thẻ.
+const ordered = ref([])
+function dueRank(c) {
+  const s = user.srsOf(c.srsId)
+  if (!s) return 0 // thẻ mới
+  const d = daysUntil(s.due)
+  return d <= 0 ? d - 1 : 1000 + d // quá hạn lên đầu; chưa tới hạn đẩy xuống cuối
+}
+function buildQueue() {
+  ordered.value = [...(props.cards || [])].sort((a, b) => dueRank(a) - dueRank(b))
   index.value = 0
   flipped.value = false
+}
+// Đổi bộ thẻ (đổi ngày học) -> dựng lại hàng đợi.
+watch(() => props.cards, buildQueue, { immediate: true })
+
+const cards = computed(() => ordered.value)
+const hasCards = computed(() => cards.value.length > 0)
+const card = computed(() => cards.value[index.value])
+const total = computed(() => cards.value.length)
+const dueTotal = computed(() => user.dueCount(cards.value.map((c) => c.srsId)))
+
+const cardSrs = computed(() => (card.value ? user.srsOf(card.value.srsId) : null))
+const status = computed(() => {
+  const s = cardSrs.value
+  if (!s) return { label: '✦ Thẻ mới', kind: 'new' }
+  const d = daysUntil(s.due)
+  if (d <= 0) return { label: '⏰ Đến hạn ôn', kind: 'due' }
+  return { label: `✓ Đã thuộc · còn ${intervalLabel(d)}`, kind: 'later' }
 })
+
+// 4 mức kiểu Anki — mỗi nút hiện trước khoảng ôn kế nếu chọn.
+const GRADE_BTNS = [
+  { grade: 'again', label: 'Quên', cls: 'g-again' },
+  { grade: 'hard', label: 'Khó', cls: 'g-hard' },
+  { grade: 'good', label: 'Tốt', cls: 'g-good' },
+  { grade: 'easy', label: 'Dễ', cls: 'g-easy' },
+]
+const previewLabel = (grade) => intervalLabel(previewInterval(cardSrs.value, grade))
 
 function flip() {
   flipped.value = !flipped.value
@@ -34,16 +69,15 @@ function prev() {
   index.value = (index.value - 1 + total.value) % total.value
   flipped.value = false
 }
-function markKnown() {
-  user.markCardKnown(index.value)
+function grade(g) {
+  user.reviewCard(card.value.srsId, g)
   setTimeout(advance, 280)
 }
-function markUnknown() {
-  advance()
-}
 function dotColor(i) {
-  if (knownCards.value.includes(i)) return '#00D68F'
-  return i === index.value ? '#6C5CE7' : '#D9D6EC'
+  if (i === index.value) return '#6C5CE7'
+  const s = user.srsOf(cards.value[i]?.srsId)
+  if (!s) return '#D9D6EC' // mới
+  return daysUntil(s.due) <= 0 ? '#FFB020' : '#00D68F' // đến hạn (vàng) / đã thuộc (xanh)
 }
 </script>
 
@@ -60,12 +94,16 @@ function dotColor(i) {
     <div class="tool-head">
       <div>
         <h2 class="tool-title">🃏 Flashcard từ vựng IT</h2>
-        <p class="tool-sub">Bấm vào thẻ để lật xem nghĩa. Đánh dấu "Đã thuộc" để nhận XP.</p>
+        <p class="tool-sub">Lật thẻ, rồi tự chấm mức nhớ. Lịch ôn giãn cách tự xếp ngày ôn lại.</p>
       </div>
       <div class="known">
-        <div class="known-label">Đã thuộc</div>
-        <div class="known-count">{{ knownCards.length }} / {{ total }}</div>
+        <div class="known-label">Đến hạn ôn</div>
+        <div class="known-count" :class="{ alldone: dueTotal === 0 }">{{ dueTotal }} / {{ total }}</div>
       </div>
+    </div>
+
+    <div v-if="dueTotal === 0" class="all-done">
+      🎉 Bạn đã ôn hết các thẻ đến hạn hôm nay! Có thể ôn thêm tùy thích.
     </div>
 
     <div class="stage">
@@ -77,6 +115,8 @@ function dotColor(i) {
             <span class="card-no">Thẻ {{ index + 1 }}/{{ total }}</span>
             <div class="term">{{ card.term }}</div>
             <div class="ipa">{{ card.ipa }}</div>
+            <button v-if="speakable" class="speak-fc" title="Nghe phát âm" @click.stop="sayTerm">🔊 Nghe</button>
+            <span class="srs-status" :class="status.kind">{{ status.label }}</span>
             <div class="hint">👆 Bấm để xem nghĩa</div>
           </div>
           <!-- BACK -->
@@ -91,9 +131,18 @@ function dotColor(i) {
             <div v-else class="ex ex-hint">
               <div class="ex-text">Chưa có nghĩa sẵn cho từ này — tra ở 📖 Từ điển hoặc tự ghi chú nhé.</div>
             </div>
-            <div class="back-cta">
-              <button class="unknown" @click.stop="markUnknown">Chưa thuộc</button>
-              <button class="known-btn" @click.stop="markKnown">Đã thuộc · +20 XP</button>
+            <div class="grade-label">Bạn nhớ từ này tới đâu?</div>
+            <div class="grade-cta">
+              <button
+                v-for="b in GRADE_BTNS"
+                :key="b.grade"
+                class="grade-btn"
+                :class="b.cls"
+                @click.stop="grade(b.grade)"
+              >
+                <span class="g-name">{{ b.label }}</span>
+                <span class="g-when">{{ previewLabel(b.grade) }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -167,7 +216,21 @@ function dotColor(i) {
 .known-count {
   font-size: 22px;
   font-weight: 800;
+  color: #ffb020;
+}
+.known-count.alldone {
   color: #00c281;
+}
+.all-done {
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.3);
+  color: #00936a;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 11px 16px;
+  border-radius: 14px;
+  margin-bottom: 18px;
 }
 .stage {
   display: flex;
@@ -233,8 +296,46 @@ function dotColor(i) {
   color: #d9d4f5;
   margin-top: 10px;
 }
+.speak-fc {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+}
+.speak-fc:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.speak-fc:active {
+  transform: scale(0.96);
+}
+.srs-status {
+  margin-top: 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 13px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.srs-status.due {
+  background: rgba(255, 176, 32, 0.95);
+  color: #4a3000;
+}
+.srs-status.later {
+  background: rgba(0, 214, 143, 0.95);
+  color: #003d29;
+}
 .hint {
-  margin-top: 26px;
+  margin-top: 16px;
   color: rgba(255, 255, 255, 0.75);
   font-size: 13.5px;
   font-weight: 600;
@@ -291,32 +392,62 @@ function dotColor(i) {
   color: #3a3a52;
   font-style: italic;
 }
-.back-cta {
-  display: flex;
-  gap: 12px;
+.grade-label {
   margin-top: 20px;
-}
-.unknown,
-.known-btn {
-  flex: 1;
-  cursor: pointer;
-  font-size: 14.5px;
+  font-size: 12.5px;
   font-weight: 700;
-  padding: 12px;
+  color: var(--muted-2);
+  text-align: center;
+}
+.grade-cta {
+  display: flex;
+  gap: 9px;
+  margin-top: 10px;
+}
+.grade-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 10px 6px;
   border-radius: 13px;
-}
-.unknown {
-  border: 1px solid rgba(108, 92, 231, 0.2);
-  color: #6a6a82;
+  border: 1.5px solid transparent;
   background: #fff;
+  transition: all 0.15s;
 }
-.unknown:hover {
+.grade-btn:hover {
+  transform: translateY(-2px);
+}
+.g-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+.g-when {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.g-again {
+  border-color: rgba(255, 71, 87, 0.4);
+  color: #e0354a;
+  background: rgba(255, 71, 87, 0.07);
+}
+.g-hard {
+  border-color: rgba(255, 159, 10, 0.45);
+  color: #c9750a;
+  background: rgba(255, 159, 10, 0.08);
+}
+.g-good {
+  border-color: rgba(0, 214, 143, 0.45);
+  color: #00936a;
+  background: rgba(0, 214, 143, 0.08);
+}
+.g-easy {
+  border-color: rgba(108, 92, 231, 0.4);
+  color: var(--purple);
   background: var(--purple-soft);
-}
-.known-btn {
-  border: none;
-  color: #fff;
-  background: var(--grad-green);
 }
 .controls {
   display: flex;

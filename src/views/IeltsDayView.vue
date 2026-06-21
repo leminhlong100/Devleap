@@ -45,6 +45,11 @@ function goTool(tool) {
   const query = d.value ? { c: 'ielts', w: d.value.week, d: d.value.n } : undefined
   router.push({ name: 'tools-tab', params: { tool }, query })
 }
+function goWeekTest() {
+  if (d.value) router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${d.value.week}` } })
+}
+// Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
+const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.week}`) : null))
 </script>
 
 <template>
@@ -161,6 +166,21 @@ function goTool(tool) {
             </div>
             <p class="quiz-intro">Làm quiz cuối tuần để tự soi lại phần đã học.</p>
             <button class="ghost-btn" @click="goTool('quiz')">❓ Mở quiz →</button>
+          </section>
+
+          <!-- BÀI KIỂM TRA TUẦN (lưu điểm) -->
+          <section class="step-card week-test">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">KIỂM TRA CUỐI TUẦN</div>
+                <h2 class="step-title">🎯 Bài kiểm tra Tuần {{ d.week }}</h2>
+              </div>
+              <span v-if="weekTest" class="wt-badge" :class="{ ok: weekTest.passed }">
+                {{ weekTest.passed ? '✅ Đã đạt' : 'Cao nhất' }} {{ weekTest.pct }}%
+              </span>
+            </div>
+            <p class="quiz-intro">Đạt từ 70% để nhận <b>+100 XP</b> và huy hiệu. Điểm được lưu lại.</p>
+            <button class="green-btn" @click="goWeekTest">🎯 {{ weekTest ? 'Làm lại bài kiểm tra' : 'Làm bài kiểm tra tuần' }} →</button>
           </section>
 
           <!-- CHECKPOINT NAV -->
@@ -489,7 +509,11 @@ function goTool(tool) {
   font-weight: 700;
 }
 .prose :deep(table) {
-  width: 100%;
+  /* Bảng rộng tự cuộn ngang thay vì tràn trang trên mobile. */
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin-top: 14px;
   font-size: 13.5px;
@@ -538,6 +562,22 @@ function goTool(tool) {
   line-height: 1.6;
   color: var(--muted);
   margin-top: 12px;
+}
+.week-test {
+  border: 1.5px solid rgba(0, 214, 143, 0.25);
+}
+.wt-badge {
+  background: rgba(0, 150, 106, 0.1);
+  color: #00966a;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.wt-badge.ok {
+  background: rgba(0, 214, 143, 0.16);
+  color: #00a86f;
 }
 
 /* checkpoint */

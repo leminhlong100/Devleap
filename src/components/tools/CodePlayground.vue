@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { defaultCode } from '@/data/tools'
+import CodeEditor from '@/components/tools/CodeEditor.vue'
 
 // Khi mở từ một ngày học, view truyền code mẫu của ngày đó vào.
 const props = defineProps({ initial: { type: Object, default: null } })
@@ -64,7 +65,7 @@ function reset() {
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
           <span class="file">{{ fileName }}</span>
         </div>
-        <textarea v-model="code" spellcheck="false" class="code-area"></textarea>
+        <CodeEditor v-model="code" class="code-area" />
       </div>
 
       <div class="console">
@@ -162,19 +163,8 @@ function reset() {
   font-weight: 600;
 }
 .code-area {
-  width: 100%;
-  height: 300px;
-  resize: none;
-  border: none;
-  outline: none;
-  background: #1e1e2e;
-  color: #e6e6f0;
-  font-family: var(--mono);
-  font-size: 13.5px;
-  line-height: 1.6;
-  padding: 16px 18px;
-  tab-size: 4;
   display: block;
+  background: #1e1e2e;
 }
 .console {
   border-radius: 16px;

@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
 import VocabCard from '@/components/day/VocabCard.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
+import CodeEditor from '@/components/tools/CodeEditor.vue'
 import { getJavaDay } from '@/data/course'
 
 const props = defineProps({ week: [String, Number], day: [String, Number] })
@@ -48,6 +49,11 @@ function goTool(tool) {
   const query = d.value ? { c: 'java', w: d.value.week, d: d.value.n } : undefined
   router.push({ name: 'tools-tab', params: { tool }, query })
 }
+function goWeekTest() {
+  if (d.value) router.push({ name: 'assessment', params: { course: 'java', scope: `week-${d.value.week}` } })
+}
+// Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
+const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.week}`) : null))
 </script>
 
 <template>
@@ -149,7 +155,7 @@ function goTool(tool) {
                 <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                 <span class="code-file">{{ d.code.file }}</span>
               </div>
-              <pre class="code">{{ d.code.code }}</pre>
+              <CodeEditor :model-value="d.code.code" readonly class="code" />
             </div>
             <button class="ghost-btn" @click="goTool('playground')">💻 Mở trong Code Playground →</button>
           </section>
@@ -196,6 +202,21 @@ function goTool(tool) {
             </div>
             <p class="quiz-cta-text">Trả lời nhanh để tự chốt kiến thức của ngày trước khi đánh dấu hoàn thành.</p>
             <button class="ghost-btn" @click="goTool('quiz')">❓ Làm quiz bài này →</button>
+          </section>
+
+          <!-- BÀI KIỂM TRA TUẦN (lưu điểm) -->
+          <section class="step-card week-test">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">KIỂM TRA CUỐI TUẦN</div>
+                <h2 class="step-title">🎯 Bài kiểm tra Tuần {{ d.week }}</h2>
+              </div>
+              <span v-if="weekTest" class="wt-badge" :class="{ ok: weekTest.passed }">
+                {{ weekTest.passed ? '✅ Đã đạt' : 'Cao nhất' }} {{ weekTest.pct }}%
+              </span>
+            </div>
+            <p class="quiz-cta-text">Tổng hợp câu hỏi cả tuần. Đạt từ 70% để nhận <b>+100 XP</b> và huy hiệu. Điểm được lưu lại.</p>
+            <button class="green-btn" @click="goWeekTest">🎯 {{ weekTest ? 'Làm lại bài kiểm tra' : 'Làm bài kiểm tra tuần' }} →</button>
           </section>
 
           <!-- RESOURCES STRIP -->
@@ -535,7 +556,12 @@ function goTool(tool) {
   font-size: 13px;
 }
 .prose :deep(table) {
-  width: 100%;
+  /* Bảng rộng (vd. cột chứa token dài) sẽ tự cuộn ngang thay vì tràn trang
+     trên mobile — công thức max-content + max-width:100% + overflow-x. */
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin-top: 14px;
   font-size: 13.5px;
@@ -595,13 +621,8 @@ function goTool(tool) {
   font-weight: 600;
 }
 .code {
-  margin: 0;
-  padding: 18px 20px;
-  font-family: var(--mono);
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: #e6e6f0;
-  overflow: auto;
+  padding: 6px 8px;
+  background: #1e1e2e;
 }
 
 .quiz-cta-text {
@@ -609,6 +630,22 @@ function goTool(tool) {
   line-height: 1.6;
   color: var(--muted);
   margin-top: 12px;
+}
+.week-test {
+  border: 1.5px solid rgba(108, 92, 231, 0.22);
+}
+.wt-badge {
+  background: rgba(108, 92, 231, 0.1);
+  color: var(--purple);
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.wt-badge.ok {
+  background: rgba(0, 214, 143, 0.12);
+  color: #00a86f;
 }
 
 /* exercises */

@@ -23,6 +23,14 @@ const routes = [
     props: true,
   },
 
+  // Bài kiểm tra cuối tuần / cuối khóa (lưu điểm) — scope: "week-N" | "final"
+  {
+    path: '/courses/:course(java|ielts)/test/:scope',
+    name: 'assessment',
+    component: () => import('@/views/AssessmentView.vue'),
+    props: true,
+  },
+
   // Khu công cụ học chung
   { path: '/tools', name: 'tools', component: () => import('@/views/ToolsView.vue') },
   { path: '/tools/:tool', name: 'tools-tab', component: () => import('@/views/ToolsView.vue'), props: true },

@@ -15,11 +15,8 @@
  * "Ngày" IELTS chỉ là checklist; nội dung học nằm ở cấp tuần (grammar/vocab),
  * nên getIeltsDay (ở courseIelts.js) ghép checklist của ngày + ngữ cảnh tuần.
  */
-import { marked } from 'marked'
 import { parseQuiz } from './quiz'
-
-marked.setOptions({ breaks: false, gfm: true })
-const md = (src) => (src && src.trim() ? marked.parse(src.trim()) : '')
+import { md } from './render'
 
 /** Tách theo heading cấp `level` (## hoặc ###), bỏ qua code fence. */
 function splitByLevel(lines, level) {
