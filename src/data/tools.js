@@ -9,6 +9,7 @@ export const toolDefs = [
   { id: 'quiz', icon: '❓', title: 'Quiz trắc nghiệm', desc: 'Câu hỏi theo từng bài học.', iconBg: 'rgba(255,176,32,.16)' },
   { id: 'playground', icon: '💻', title: 'Code Playground', desc: 'Gõ & chạy thử code Java.', iconBg: 'rgba(0,214,143,.14)' },
   { id: 'dictionary', icon: '📖', title: 'Từ điển thuật ngữ', desc: 'Tra cứu khái niệm IT.', iconBg: 'rgba(108,92,231,.14)' },
+  { id: 'chat', icon: '💬', title: 'Trò chuyện với AI', desc: 'Luyện giao tiếp tiếng Anh.', iconBg: 'rgba(0,214,143,.14)' },
 ]
 
 export const flashcards = [

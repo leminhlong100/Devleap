@@ -6,6 +6,7 @@ import FlashcardTool from '@/components/tools/FlashcardTool.vue'
 import CodePlayground from '@/components/tools/CodePlayground.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import DictionaryTool from '@/components/tools/DictionaryTool.vue'
+import AiChat from '@/components/day/AiChat.vue'
 import LessonPicker from '@/components/tools/LessonPicker.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -19,6 +20,7 @@ const componentMap = {
   playground: CodePlayground,
   quiz: QuizTool,
   dictionary: DictionaryTool,
+  chat: AiChat,
 }
 
 const active = computed(() => {
@@ -102,6 +104,12 @@ const flashCards = computed(() =>
 )
 const codeInit = computed(() => ctx.value?.code || null)
 const quizQs = computed(() => ctx.value?.quiz || null)
+// Ngữ cảnh cho AI: bám theo bài/tuần đang mở (nếu có), ngược lại trò chuyện chung.
+const chatContext = computed(() =>
+  ctx.value
+    ? { title: ctx.value.title, week: ctx.value.week, weekTitle: ctx.value.title, vocab: ctx.value.terms || [], grammar: [] }
+    : {},
+)
 
 // Props của tool đang mở — computed để cập nhật ngay khi ngữ cảnh nạp xong.
 // Mỗi tool tự watch prop của mình để reset, nên KHÔNG remount theo ngữ cảnh
@@ -110,6 +118,7 @@ const activeProps = computed(() => {
   if (active.value === 'flashcard') return { cards: flashCards.value }
   if (active.value === 'playground') return { initial: codeInit.value }
   if (active.value === 'quiz') return { questions: quizQs.value }
+  if (active.value === 'chat') return { context: chatContext.value }
   return {}
 })
 
@@ -324,9 +333,35 @@ function backToDay() {
     font-size: 32px;
   }
 }
+/* Mobile: lưới gọn 2 cột — thu nhỏ card & ẩn mô tả để không che nội dung bên dưới */
 @media (max-width: 460px) {
   .tool-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .tool-card {
+    padding: 14px 12px;
+    border-radius: 16px;
+  }
+  .tool-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 19px;
+    border-radius: 11px;
+  }
+  .tool-card h3 {
+    font-size: 13.5px;
+    margin: 9px 0 0;
+  }
+  .tool-card p {
+    display: none;
+  }
+  .open-tag {
+    top: 8px;
+    right: 8px;
+    font-size: 9.5px;
+    padding: 2px 7px;
   }
 }
 </style>
