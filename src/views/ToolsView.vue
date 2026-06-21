@@ -5,7 +5,7 @@ import { toolDefs, cardsFromTerms } from '@/data/tools'
 import FlashcardTool from '@/components/tools/FlashcardTool.vue'
 import CodePlayground from '@/components/tools/CodePlayground.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
-import DictionaryTool from '@/components/tools/DictionaryTool.vue'
+import SavedTool from '@/components/tools/SavedTool.vue'
 import AiChat from '@/components/day/AiChat.vue'
 import LessonPicker from '@/components/tools/LessonPicker.vue'
 import { useUserStore } from '@/stores/user'
@@ -19,7 +19,7 @@ const componentMap = {
   flashcard: FlashcardTool,
   playground: CodePlayground,
   quiz: QuizTool,
-  dictionary: DictionaryTool,
+  saved: SavedTool,
   chat: AiChat,
 }
 
@@ -203,9 +203,9 @@ function backToDay() {
       </div>
     </div>
 
-    <!-- Từ điển dùng chung -->
-    <p v-if="ctx && active === 'dictionary'" class="ctx-note">
-      Từ điển tra cứu chung cho cả khóa — không gắn riêng theo ngày học.
+    <!-- Từ vựng & câu đã lưu: bộ cá nhân, dùng chung mọi khóa -->
+    <p v-if="ctx && active === 'saved'" class="ctx-note">
+      Đây là từ &amp; câu bạn đã lưu — bộ cá nhân, không gắn riêng theo ngày học.
     </p>
 
     <!-- Flashcard/Quiz chưa có ngữ cảnh -> bộ chọn bài đã hoàn thành -->

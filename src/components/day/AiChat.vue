@@ -121,7 +121,9 @@ function pickSentences(text) {
 }
 
 // Chọn/bỏ chọn một từ: chưa lưu -> lưu (kèm câu ngữ cảnh); đã lưu -> bỏ.
-function toggleWord(word, fullText) {
+// Từ có trong kho (glossary) dùng nghĩa sẵn (kèm IPA/ví dụ); từ chưa có nghĩa
+// thì nhờ AI dịch sang tiếng Việt để mặt sau flashcard luôn có nghĩa.
+async function toggleWord(word, fullText) {
   const w = String(word).trim().toLowerCase()
   if (!w || w.length < 2) return
   if (user.isWordSaved(w)) {
@@ -131,7 +133,19 @@ function toggleWord(word, fullText) {
   }
   const card = cardsFromTerms([w], 'saved')[0]
   const context = sentenceFor(w, fullText)
-  user.saveWord(context ? { ...card, context } : card)
+  let vi = card.vi
+  if (!vi) {
+    if (translatingKey.value) return // đang dịch mục khác -> bỏ qua
+    translatingKey.value = w
+    try {
+      vi = await translateToVi(w)
+    } catch {
+      vi = '' // dịch lỗi vẫn lưu, mặt sau để trống
+    } finally {
+      translatingKey.value = ''
+    }
+  }
+  user.saveWord(context ? { ...card, vi, context } : { ...card, vi })
   flashToast(`✓ Đã lưu “${w}”`)
 }
 
@@ -268,7 +282,7 @@ watch(
                 <button
                   v-if="tok.word"
                   class="wordchip"
-                  :class="{ saved: user.isWordSaved(tok.t) }"
+                  :class="{ saved: user.isWordSaved(tok.t), busy: translatingKey === tok.t.toLowerCase() }"
                   :title="user.isWordSaved(tok.t) ? 'Bấm để bỏ lưu' : 'Bấm để lưu từ này'"
                   @click="toggleWord(tok.t, sen.text)"
                 >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
@@ -454,6 +468,10 @@ watch(
   color: #fff;
   font-weight: 700;
   border-bottom-color: transparent;
+}
+.wordchip.busy {
+  opacity: 0.55;
+  cursor: progress;
 }
 
 /* Toast xác nhận lưu từ */
