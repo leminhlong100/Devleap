@@ -19,6 +19,9 @@ const props = defineProps({
 
 const user = useUserStore()
 const isSaved = computed(() => props.deck === 'saved')
+// Thẻ "câu" (lưu cả câu khi chat AI): mặt trước là câu tiếng Anh, mặt sau là
+// bản dịch — không có ảnh minh họa/IPA như thẻ từ đơn.
+const isSentence = computed(() => card.value?.kind === 'sentence')
 
 function removeWord() {
   if (!card.value) return
@@ -52,7 +55,7 @@ const total = computed(() => cards.value.length)
 
 // Ảnh minh họa mặt trước thẻ (nhớ lâu hơn). Trong lúc tải hiện spinner; ảnh chỉ
 // hiện khi đã tải xong nên không bao giờ thấy "ảnh thẻ cũ + chữ thẻ mới".
-const imgUrl = computed(() => (card.value ? vocabImageUrl(card.value.term) : ''))
+const imgUrl = computed(() => (card.value && !isSentence.value ? vocabImageUrl(card.value.term) : ''))
 const imgOk = ref(true)
 const imgLoaded = ref(false)
 // Đổi thẻ -> ẩn ảnh cũ, hiện lại spinner, thử tải ảnh của thẻ mới.
@@ -141,21 +144,24 @@ function dotColor(i) {
             <span class="cat">{{ card.cat }}</span>
             <span class="card-no">Thẻ {{ index + 1 }}/{{ total }}</span>
             <div class="fc-illo">
-              <img
-                v-if="imgUrl && imgOk"
-                :src="imgUrl"
-                :alt="card.term"
-                class="fc-img"
-                :class="{ shown: imgLoaded }"
-                decoding="async"
-                @load="imgLoaded = true"
-                @error="imgOk = false"
-              />
-              <span v-if="imgOk && !imgLoaded" class="fc-spin"></span>
-              <span v-else-if="!imgOk" class="fc-illo-fallback">🗂️</span>
+              <span v-if="isSentence" class="fc-illo-fallback">💬</span>
+              <template v-else>
+                <img
+                  v-if="imgUrl && imgOk"
+                  :src="imgUrl"
+                  :alt="card.term"
+                  class="fc-img"
+                  :class="{ shown: imgLoaded }"
+                  decoding="async"
+                  @load="imgLoaded = true"
+                  @error="imgOk = false"
+                />
+                <span v-if="imgOk && !imgLoaded" class="fc-spin"></span>
+                <span v-else-if="!imgOk" class="fc-illo-fallback">🗂️</span>
+              </template>
             </div>
-            <div class="term">{{ card.term }}</div>
-            <div class="ipa">{{ card.ipa }}</div>
+            <div class="term" :class="{ 'term-sentence': isSentence }">{{ card.term }}</div>
+            <div v-if="card.ipa" class="ipa">{{ card.ipa }}</div>
             <button v-if="speakable" class="speak-fc" title="Nghe phát âm" @click.stop="sayTerm">🔊 Nghe</button>
             <span class="srs-status" :class="status.kind">{{ status.label }}</span>
             <div class="hint">👆 Bấm để xem nghĩa</div>
@@ -169,7 +175,7 @@ function dotColor(i) {
               <div class="ex-label">VÍ DỤ</div>
               <div class="ex-text">{{ card.ex }}</div>
             </div>
-            <div v-else class="ex ex-hint">
+            <div v-else-if="!isSentence" class="ex ex-hint">
               <div class="ex-text">Chưa có nghĩa sẵn cho từ này — tra ở 📖 Từ điển hoặc tự ghi chú nhé.</div>
             </div>
             <div v-if="isSaved && card.context" class="ex ctx-ex">
@@ -380,6 +386,14 @@ function dotColor(i) {
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.5px;
+}
+/* Thẻ câu: câu dài nên chữ nhỏ hơn & xuống dòng tự nhiên */
+.term-sentence {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  max-width: 92%;
+  word-break: break-word;
 }
 .ipa {
   font-size: 17px;

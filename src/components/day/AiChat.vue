@@ -2,7 +2,7 @@
 import { ref, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { marked } from 'marked'
-import { sendChat } from '@/lib/aiChat'
+import { sendChat, translateToVi } from '@/lib/aiChat'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
@@ -33,6 +33,7 @@ const scroller = ref(null)
 // danh sách cá nhân (học lại bằng Flashcard). Tắt mặc định để khỏi vướng khi đọc.
 const saveMode = ref(false)
 const savedToast = ref('') // thông báo thoáng qua sau khi lưu
+const translatingKey = ref('') // câu đang được dịch (hiện trạng thái ⏳)
 let toastTimer = null
 
 const speakable = canSpeak()
@@ -88,21 +89,35 @@ function flashToast(msg) {
   toastTimer = setTimeout(() => (savedToast.value = ''), 1800)
 }
 
-// Tách câu trả lời thành các "mảnh" để chọn từ: mỗi từ tiếng Anh là một token
-// bấm được (word=true); dấu câu/khoảng trắng giữ nguyên để câu vẫn đọc được.
 // Gỡ ký hiệu markdown (** _ ` #) để hiển thị sạch trong chế độ chọn từ.
-function pickTokens(text) {
-  const plain = (text || '')
+function stripMd(text) {
+  return (text || '')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
     .replace(/_([^_]+)_/g, '$1')
     .replace(/^[#>]+\s*/gm, '')
+}
+
+// Tách một đoạn thành token: mỗi từ tiếng Anh là token bấm được (word=true);
+// dấu câu/khoảng trắng giữ nguyên để câu vẫn đọc được.
+function tokenize(text) {
   // split giữ lại nhóm bắt được -> chỉ số lẻ là "từ", chẵn là phần ngăn cách.
-  return plain
+  return (text || '')
     .split(/([A-Za-z][A-Za-z'’-]*)/)
     .map((t, i) => ({ t, word: i % 2 === 1 && t.length >= 2 }))
+}
+
+// Tách câu trả lời của AI thành từng CÂU (kèm token từng từ) để vừa chọn từ,
+// vừa lưu cả câu. Mỗi câu có nút "💾 Lưu câu" riêng.
+function pickSentences(text) {
+  const plain = stripMd(text)
+  return plain
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s, i) => ({ text: s, key: i + ':' + s.slice(0, 24), tokens: tokenize(s) }))
 }
 
 // Chọn/bỏ chọn một từ: chưa lưu -> lưu (kèm câu ngữ cảnh); đã lưu -> bỏ.
@@ -118,6 +133,29 @@ function toggleWord(word, fullText) {
   const context = sentenceFor(w, fullText)
   user.saveWord(context ? { ...card, context } : card)
   flashToast(`✓ Đã lưu “${w}”`)
+}
+
+// Lưu/bỏ cả câu: khi lưu sẽ nhờ AI dịch sang tiếng Việt làm mặt sau flashcard.
+async function toggleSentence(sentence) {
+  const s = String(sentence).trim()
+  if (!s) return
+  if (user.isWordSaved(s)) {
+    user.removeSavedWord(s)
+    flashToast('Đã bỏ câu')
+    return
+  }
+  if (translatingKey.value) return // đang dịch câu khác -> bỏ qua
+  translatingKey.value = s
+  try {
+    const vi = await translateToVi(s)
+    const base = cardsFromTerms([s], 'saved')[0]
+    user.saveWord({ ...base, vi, cat: 'Câu', kind: 'sentence' })
+    flashToast('✓ Đã lưu câu')
+  } catch {
+    flashToast('⚠️ Không dịch được, thử lại nhé')
+  } finally {
+    translatingKey.value = ''
+  }
 }
 
 // Trích câu chứa từ trong đoạn văn bản (để hiện ngữ cảnh trên flashcard).
@@ -205,7 +243,7 @@ watch(
     </div>
 
     <p v-if="saveMode" class="hint hint-save">
-      📌 Đang bật <b>chế độ chọn từ</b> — bấm vào từ tiếng Anh trong câu trả lời của AI để lưu (từ đã lưu sáng xanh; bấm lần nữa để bỏ).
+      📌 Đang bật <b>chế độ chọn</b> — bấm <b>từ</b> để lưu từ, hoặc bấm <b>💾 Lưu câu</b> để lưu cả câu (tự dịch sang tiếng Việt). Bấm lần nữa để bỏ.
     </p>
     <p v-else class="hint">Nhắn tin hoặc bấm 🎤 để nói tiếng Anh — AI sẽ trả lời, sửa lỗi nhẹ và hỏi lại để bạn luyện nói.</p>
 
@@ -223,17 +261,26 @@ watch(
       <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.role === 'user' ? 'me' : 'ai'">
         <div class="avatar">{{ m.role === 'user' ? '🧑' : '🤖' }}</div>
         <div class="bubble">
-          <!-- Chế độ chọn từ: mỗi từ tiếng Anh là một chip bấm để lưu -->
+          <!-- Chế độ chọn: mỗi từ là một chip bấm để lưu; mỗi câu có nút lưu cả câu -->
           <div v-if="m.role === 'assistant' && saveMode" class="prose-pick">
-            <template v-for="(tok, ti) in pickTokens(m.text)" :key="ti">
+            <div v-for="sen in pickSentences(m.text)" :key="sen.key" class="pick-sentence">
+              <template v-for="(tok, ti) in sen.tokens" :key="ti">
+                <button
+                  v-if="tok.word"
+                  class="wordchip"
+                  :class="{ saved: user.isWordSaved(tok.t) }"
+                  :title="user.isWordSaved(tok.t) ? 'Bấm để bỏ lưu' : 'Bấm để lưu từ này'"
+                  @click="toggleWord(tok.t, sen.text)"
+                >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
+              </template>
               <button
-                v-if="tok.word"
-                class="wordchip"
-                :class="{ saved: user.isWordSaved(tok.t) }"
-                :title="user.isWordSaved(tok.t) ? 'Bấm để bỏ lưu' : 'Bấm để lưu từ này'"
-                @click="toggleWord(tok.t, m.text)"
-              >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
-            </template>
+                class="sentchip"
+                :class="{ saved: user.isWordSaved(sen.text), busy: translatingKey === sen.text }"
+                :disabled="translatingKey === sen.text"
+                :title="user.isWordSaved(sen.text) ? 'Bấm để bỏ lưu câu' : 'Lưu cả câu (kèm bản dịch)'"
+                @click="toggleSentence(sen.text)"
+              >{{ translatingKey === sen.text ? '⏳ Đang dịch…' : user.isWordSaved(sen.text) ? '✓ Đã lưu câu' : '💾 Lưu câu' }}</button>
+            </div>
           </div>
           <div v-else-if="m.role === 'assistant'" class="prose-mini" v-html="render(m.text)"></div>
           <template v-else>{{ m.text }}</template>
@@ -349,11 +396,44 @@ watch(
   box-shadow: 0 8px 18px rgba(108, 92, 231, 0.22);
 }
 
-/* Chế độ chọn từ: văn bản giữ xuống dòng, mỗi từ là một chip bấm được */
+/* Chế độ chọn: mỗi câu một dòng, mỗi từ là chip bấm được */
 .prose-pick {
-  white-space: pre-wrap;
-  line-height: 2;
   word-break: break-word;
+}
+.pick-sentence {
+  line-height: 2.1;
+  margin-bottom: 6px;
+}
+.pick-sentence:last-child {
+  margin-bottom: 0;
+}
+/* Nút lưu cả câu (đứng cuối mỗi câu) */
+.sentchip {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #6c5ce7;
+  background: rgba(108, 92, 231, 0.1);
+  border: 1px solid rgba(108, 92, 231, 0.28);
+  border-radius: 999px;
+  padding: 3px 10px;
+  transition: all 0.12s;
+}
+.sentchip:hover {
+  background: rgba(108, 92, 231, 0.18);
+}
+.sentchip.saved {
+  background: #6c5ce7;
+  border-color: transparent;
+  color: #fff;
+}
+.sentchip.busy {
+  opacity: 0.7;
+  cursor: progress;
 }
 .wordchip {
   font: inherit;

@@ -24,3 +24,18 @@ export async function sendChat({ messages, context }) {
   if (!res.ok) throw new Error(data.error || `Lỗi máy chủ (${res.status})`)
   return data.reply
 }
+
+/**
+ * Dịch một đoạn tiếng Anh sang tiếng Việt (dùng chung endpoint chat, chế độ
+ * 'translate' để AI chỉ trả về bản dịch). Dùng khi lưu cả câu để học flashcard.
+ * @param {string} text
+ * @returns {Promise<string>} bản dịch tiếng Việt
+ */
+export async function translateToVi(text) {
+  const reply = await sendChat({
+    messages: [{ role: 'user', text: String(text || '').trim() }],
+    context: { mode: 'translate' },
+  })
+  // Bỏ ngoặc kép bao quanh nếu model lỡ thêm vào.
+  return String(reply || '').trim().replace(/^["“”']+|["“”']+$/g, '')
+}

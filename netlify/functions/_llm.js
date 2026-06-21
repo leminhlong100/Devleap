@@ -14,6 +14,15 @@ const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 
 /** Dựng system prompt từ ngữ cảnh bài học để AI bám đúng chủ đề & từ vựng. */
 export function buildSystemPrompt(context = {}) {
+  // Chế độ dịch: trả về bản dịch tiếng Việt thuần, không kèm lời thoại/hỏi lại.
+  if (context.mode === 'translate') {
+    return [
+      'You are a precise English-to-Vietnamese translator.',
+      'Translate the user message into natural, fluent Vietnamese.',
+      'Reply with ONLY the Vietnamese translation — no quotes, no notes, no English, no extra sentences.',
+    ].join('\n')
+  }
+
   const { title, week, weekTitle, vocab = [], grammar = [] } = context
   const vocabLine = vocab.length ? vocab.join(', ') : '(none specified)'
   const grammarLine = grammar.length ? grammar.join('; ') : '(general English)'
