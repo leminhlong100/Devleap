@@ -364,3 +364,86 @@ describe('user store — recordQuiz (bài kiểm tra cuối tuần/khóa)', () =
     expect(saved.quizScores['java:week:1'].pct).toBe(70)
   })
 })
+
+describe('user store — savedWords (từ vựng lưu khi chat AI)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('lưu từ mới: vào danh sách, đếm tăng, isWordSaved = true', () => {
+    const s = useUserStore()
+    const ok = s.saveWord({ term: 'inheritance', srsId: 'saved:inheritance', vi: 'kế thừa' })
+    expect(ok).toBe(true)
+    expect(s.savedCount).toBe(1)
+    expect(s.isWordSaved('Inheritance')).toBe(true) // không phân biệt hoa/thường
+    expect(s.savedWordList[0]).toMatchObject({ term: 'inheritance', vi: 'kế thừa' })
+    expect(s.savedWordList[0].savedAt).toBeTruthy()
+  })
+
+  it('lưu trùng (không phân biệt hoa/thường): bỏ qua, trả về false', () => {
+    const s = useUserStore()
+    s.saveWord({ term: 'deploy', srsId: 'saved:deploy' })
+    const again = s.saveWord({ term: 'Deploy', srsId: 'saved:deploy' })
+    expect(again).toBe(false)
+    expect(s.savedCount).toBe(1)
+  })
+
+  it('từ rỗng/không hợp lệ: không lưu', () => {
+    const s = useUserStore()
+    expect(s.saveWord({ term: '  ' })).toBe(false)
+    expect(s.saveWord(null)).toBe(false)
+    expect(s.savedCount).toBe(0)
+  })
+
+  it('bỏ lưu: rời danh sách', () => {
+    const s = useUserStore()
+    s.saveWord({ term: 'exception', srsId: 'saved:exception' })
+    s.removeSavedWord('Exception')
+    expect(s.savedCount).toBe(0)
+    expect(s.isWordSaved('exception')).toBe(false)
+  })
+
+  it('ghi danh sách xuống localStorage', () => {
+    const s = useUserStore()
+    s.saveWord({ term: 'stream', srsId: 'saved:stream' })
+    const saved = JSON.parse(localStorage.getItem('devleap:user:v2'))
+    expect(saved.savedWords.stream).toMatchObject({ term: 'stream', srsId: 'saved:stream' })
+  })
+})
+
+describe('user store — pullAndMerge savedWords', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    mockMaybeSingle.mockReset()
+    mockUpsert.mockClear()
+    mockUpsert.mockResolvedValue({ error: null })
+  })
+
+  it('hợp nhất từ đã lưu: gộp 2 thiết bị, giữ bản lưu sớm hơn', async () => {
+    const s = useUserStore()
+    s.applySnapshot({
+      savedWords: {
+        deploy: { term: 'deploy', srsId: 'saved:deploy', savedAt: '2026-06-10T00:00:00.000Z' },
+        stream: { term: 'stream', srsId: 'saved:stream', savedAt: '2026-06-12T00:00:00.000Z' },
+      },
+    })
+    mockMaybeSingle.mockResolvedValue({
+      data: {
+        saved_words: {
+          deploy: { term: 'deploy', srsId: 'saved:deploy', savedAt: '2026-06-09T00:00:00.000Z' },
+          exception: { term: 'exception', srsId: 'saved:exception', savedAt: '2026-06-15T00:00:00.000Z' },
+        },
+      },
+      error: null,
+    })
+
+    await s.pullAndMerge('user-sw')
+
+    expect(s.savedCount).toBe(3) // union 3 từ
+    expect(s.savedWords.deploy.savedAt).toBe('2026-06-09T00:00:00.000Z') // remote sớm hơn -> giữ
+    expect(s.isWordSaved('stream')).toBe(true) // chỉ ở local -> giữ
+    expect(s.isWordSaved('exception')).toBe(true) // chỉ ở remote -> nhận
+  })
+})

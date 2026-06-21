@@ -32,6 +32,10 @@ const active = computed(() => {
 // bài đã hoàn thành để làm lại.
 const lessonOnly = (id) => id === 'flashcard' || id === 'quiz'
 
+// Chế độ ôn bộ "từ đã lưu" (lưu khi chat AI) — mở qua ?deck=saved ở tab flashcard.
+const savedMode = computed(() => active.value === 'flashcard' && route.query.deck === 'saved')
+const savedCards = computed(() => (user.savedWordList.length ? user.savedWordList : null))
+
 // -------- Ngữ cảnh bài học (mở tool từ một ngày học qua query ?c&w&d) --------
 // Dữ liệu khóa học là chunk nặng nên chỉ nạp động khi thực sự có ngữ cảnh,
 // giữ trang /tools nhẹ khi dùng độc lập.
@@ -115,7 +119,10 @@ const chatContext = computed(() =>
 // Mỗi tool tự watch prop của mình để reset, nên KHÔNG remount theo ngữ cảnh
 // (tránh kẹt instance cũ khi ctx nạp bất đồng bộ).
 const activeProps = computed(() => {
-  if (active.value === 'flashcard') return { cards: flashCards.value }
+  if (active.value === 'flashcard')
+    return savedMode.value
+      ? { cards: savedCards.value, deck: 'saved' }
+      : { cards: flashCards.value }
   if (active.value === 'playground') return { initial: codeInit.value }
   if (active.value === 'quiz') return { questions: quizQs.value }
   if (active.value === 'chat') return { context: chatContext.value }
@@ -123,7 +130,15 @@ const activeProps = computed(() => {
 })
 
 function select(id) {
-  router.push({ name: 'tools-tab', params: { tool: id }, query: route.query })
+  // Đổi tool thì bỏ cờ deck=saved (chỉ áp dụng cho flashcard).
+  const q = { ...route.query }
+  delete q.deck
+  router.push({ name: 'tools-tab', params: { tool: id }, query: q })
+}
+function exitSaved() {
+  const q = { ...route.query }
+  delete q.deck
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: q })
 }
 function exitContext() {
   router.push({ name: 'tools-tab', params: { tool: active.value } })
@@ -159,6 +174,20 @@ function backToDay() {
       </div>
     </div>
 
+    <!-- Banner ngữ cảnh: đang ôn bộ từ đã lưu khi chat với AI -->
+    <div v-if="savedMode" class="ctx-banner saved-banner">
+      <div class="ctx-info">
+        <span class="ctx-emoji">📚</span>
+        <div>
+          <div class="ctx-eyebrow">ĐANG ÔN TỪ VỰNG ĐÃ LƯU</div>
+          <div class="ctx-title">{{ user.savedCount }} từ bạn đã lưu khi trò chuyện với AI</div>
+        </div>
+      </div>
+      <div class="ctx-cta">
+        <button class="ctx-exit" @click="exitSaved">↺ Chọn bài khác</button>
+      </div>
+    </div>
+
     <div class="tool-grid">
       <div
         v-for="t in toolDefs"
@@ -180,7 +209,7 @@ function backToDay() {
     </p>
 
     <!-- Flashcard/Quiz chưa có ngữ cảnh -> bộ chọn bài đã hoàn thành -->
-    <LessonPicker v-if="lessonOnly(active) && !ctx" :key="'picker-' + active" :tool="active" />
+    <LessonPicker v-if="lessonOnly(active) && !ctx && !savedMode" :key="'picker-' + active" :tool="active" />
     <Transition v-else name="fade" mode="out-in">
       <component :is="componentMap[active]" :key="active" v-bind="activeProps" />
     </Transition>
@@ -218,6 +247,13 @@ function backToDay() {
   border-radius: 18px;
   padding: 16px 20px;
   margin-bottom: 24px;
+}
+.saved-banner {
+  background: linear-gradient(135deg, #eafff6, #eef6ff);
+  border-color: rgba(0, 214, 143, 0.25);
+}
+.saved-banner .ctx-eyebrow {
+  color: #00966a;
 }
 .ctx-info {
   display: flex;

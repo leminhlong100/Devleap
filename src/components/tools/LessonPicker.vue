@@ -77,6 +77,9 @@ function pickDay(g, d) {
 function pickWeek(g) {
   router.push({ name: 'tools-tab', params: { tool: props.tool }, query: { c: g.course, w: g.week, d: 'all' } })
 }
+function pickSaved() {
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'saved' } })
+}
 </script>
 
 <template>
@@ -85,6 +88,16 @@ function pickWeek(g) {
       <h2 class="ptitle">{{ tool === 'quiz' ? '❓ Chọn bài để làm quiz lại' : '🃏 Chọn bài để ôn flashcard' }}</h2>
       <p class="psub">Làm lại từ các bài bạn đã hoàn thành — củng cố lại bất cứ lúc nào.</p>
     </div>
+
+    <!-- Bộ từ cá nhân: lưu khi trò chuyện với AI (chỉ cho flashcard) -->
+    <button v-if="tool === 'flashcard' && user.savedCount" class="saved-entry" @click="pickSaved">
+      <span class="se-emoji">📚</span>
+      <span class="se-body">
+        <span class="se-title">Từ vựng đã lưu</span>
+        <span class="se-sub">{{ user.savedCount }} từ bạn lưu khi chat với AI</span>
+      </span>
+      <span class="se-go">→</span>
+    </button>
 
     <div v-if="loading" class="pstate">Đang tải danh sách bài học…</div>
 
@@ -147,6 +160,51 @@ function pickWeek(g) {
   font-size: 14.5px;
   color: #7a7a92;
   margin-top: 6px;
+}
+.saved-entry {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(135deg, #eafff6, #eef6ff);
+  border: 1px solid rgba(0, 214, 143, 0.28);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  transition: all 0.15s;
+}
+.saved-entry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 214, 143, 0.18);
+}
+.se-emoji {
+  font-size: 26px;
+  flex: none;
+}
+.se-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.se-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.se-sub {
+  font-size: 12.5px;
+  color: #00966a;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.se-go {
+  font-size: 20px;
+  color: #00966a;
+  font-weight: 800;
+  flex: none;
 }
 .pstate {
   text-align: center;

@@ -64,6 +64,15 @@ const mergeQuiz = (a = {}, b = {}) => {
   }
   return out
 }
+// Hợp nhất danh sách từ đã lưu: gộp theo khóa từ, giữ bản lưu *sớm nhất*
+// (để không mất câu ngữ cảnh/ngày lưu gốc khi học trên nhiều thiết bị).
+const mergeSaved = (a = {}, b = {}) => {
+  const out = { ...a }
+  for (const [k, v] of Object.entries(b)) {
+    if (!out[k] || (v.savedAt || '') < (out[k].savedAt || '')) out[k] = v
+  }
+  return out
+}
 // Chọn ngày muộn hơn giữa 2 chuỗi 'YYYY-M-D' (null-safe).
 const laterDate = (a, b) => {
   if (!a) return b || null
@@ -85,6 +94,10 @@ export const useUserStore = defineStore('user', {
     // điểm kiểm tra cuối tuần/cuối khóa, khóa theo "course:scope"
     // (vd "java:week:3", "ielts:final"): { best, total, pct, attempts, passed, lastAt }
     quizScores: {},
+    // từ vựng người học tự lưu khi trò chuyện với AI, khóa theo từ (thường hóa):
+    // { [key]: { term, ipa, vi, ex, cat, srsId, context, savedAt } }. Dùng làm
+    // một bộ flashcard riêng (srsId dạng "saved:từ" để có lịch ôn độc lập).
+    savedWords: {},
 
     // —— đồng bộ cloud ——
     cloudUserId: null, // id user khi đã đăng nhập; null = chế độ khách
@@ -114,6 +127,13 @@ export const useUserStore = defineStore('user', {
     /** Số bài kiểm tra đã đạt của một khóa (để hiện huy hiệu/tiến độ). */
     quizPassedCount: (s) => (course) =>
       Object.entries(s.quizScores).filter(([k, v]) => k.startsWith(`${course}:`) && v.passed).length,
+    /** Danh sách từ đã lưu (mảng thẻ), xếp theo thứ tự lưu (cũ trước). */
+    savedWordList: (s) =>
+      Object.values(s.savedWords).sort((a, b) => ((a.savedAt || '') < (b.savedAt || '') ? -1 : 1)),
+    /** Số từ đã lưu. */
+    savedCount: (s) => Object.keys(s.savedWords).length,
+    /** Một từ đã được lưu chưa? Dùng: user.isWordSaved('inheritance'). */
+    isWordSaved: (s) => (term) => !!s.savedWords[String(term).trim().toLowerCase()],
     /** Đếm số ngày đã hoàn thành của một khóa. */
     doneCount: (s) => (course) => (s.completed[course] || []).length,
     /** Một ngày đã hoàn thành chưa? Dùng như hàm: user.isDone('java', w, d). */
@@ -232,6 +252,29 @@ export const useUserStore = defineStore('user', {
       return entry
     },
 
+    /**
+     * Lưu một từ vào danh sách cá nhân (vd khi đang chat với AI).
+     * @param {object} card  thẻ từ vựng (term + ipa/vi/ex/cat/srsId) — thường
+     *   dựng sẵn bằng `cardsFromTerms([term], 'saved')[0]`; có thể kèm `context`.
+     * @returns {boolean} true nếu là từ mới được thêm (false nếu đã có/không hợp lệ).
+     */
+    saveWord(card) {
+      const term = card?.term
+      const key = String(term || '').trim().toLowerCase()
+      if (!key || this.savedWords[key]) return false
+      this.savedWords[key] = { ...card, savedAt: new Date().toISOString() }
+      this.persist()
+      return true
+    },
+
+    /** Bỏ một từ khỏi danh sách đã lưu (giữ lịch ôn SRS cũ — vô hại). */
+    removeSavedWord(term) {
+      const key = String(term || '').trim().toLowerCase()
+      if (!this.savedWords[key]) return
+      delete this.savedWords[key]
+      this.persist()
+    },
+
     // ——————————————————————— lưu trữ ———————————————————————
 
     /** Ảnh chụp phần dữ liệu cần bền hoá (không gồm trạng thái sync). */
@@ -245,6 +288,7 @@ export const useUserStore = defineStore('user', {
         srs: this.srs,
         completed: this.completed,
         quizScores: this.quizScores,
+        savedWords: this.savedWords,
       }
     },
 
@@ -258,6 +302,7 @@ export const useUserStore = defineStore('user', {
       this.srs = s.srs && typeof s.srs === 'object' ? s.srs : {}
       this.completed = { java: [], ielts: [], ...(s.completed || {}) }
       this.quizScores = s.quizScores && typeof s.quizScores === 'object' ? s.quizScores : {}
+      this.savedWords = s.savedWords && typeof s.savedWords === 'object' ? s.savedWords : {}
     },
 
     persist() {
@@ -293,7 +338,7 @@ export const useUserStore = defineStore('user', {
       try {
         const { data, error } = await supabase
           .from('progress')
-          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores')
+          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words')
           .eq('user_id', userId)
           .maybeSingle()
         if (error) throw error
@@ -309,6 +354,7 @@ export const useUserStore = defineStore('user', {
             srs: data.srs || {},
             completed: data.completed || {},
             quizScores: data.quiz_scores || {},
+            savedWords: data.saved_words || {},
           }
           this.applySnapshot(mergeSnapshots(local, remote))
         }
@@ -361,6 +407,7 @@ export const useUserStore = defineStore('user', {
             srs: s.srs,
             completed: s.completed,
             quiz_scores: s.quizScores,
+            saved_words: s.savedWords,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id' },
@@ -392,5 +439,6 @@ function mergeSnapshots(local, remote) {
       ielts: union(local.completed?.ielts, remote.completed?.ielts),
     },
     quizScores: mergeQuiz(local.quizScores, remote.quizScores),
+    savedWords: mergeSaved(local.savedWords, remote.savedWords),
   }
 }

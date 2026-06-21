@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed, nextTick, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { marked } from 'marked'
 import { sendChat } from '@/lib/aiChat'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
+import { cardsFromTerms } from '@/data/tools'
+import { useUserStore } from '@/stores/user'
 
 /**
  * Khung trò chuyện với AI để luyện giao tiếp tiếng Anh theo bài học.
@@ -15,6 +18,9 @@ const props = defineProps({
   context: { type: Object, default: () => ({}) },
 })
 
+const router = useRouter()
+const user = useUserStore()
+
 const messages = ref([]) // { role:'user'|'assistant', text }
 const input = ref('')
 const loading = ref(false)
@@ -22,6 +28,12 @@ const error = ref('')
 const autoSpeak = ref(true)
 const listening = ref(false)
 const scroller = ref(null)
+
+// Chế độ "lưu từ": bật rồi chạm vào từ trong câu trả lời của AI để lưu vào
+// danh sách cá nhân (học lại bằng Flashcard). Tắt mặc định để khỏi vướng khi đọc.
+const saveMode = ref(false)
+const savedToast = ref('') // thông báo thoáng qua sau khi lưu
+let toastTimer = null
 
 const speakable = canSpeak()
 const listenable = canListen()
@@ -67,6 +79,68 @@ async function send() {
 
 function replay(text) {
   speak(text)
+}
+
+// —— Lưu từ vựng từ câu trả lời của AI ——
+function flashToast(msg) {
+  savedToast.value = msg
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => (savedToast.value = ''), 1800)
+}
+
+// Tìm từ tiếng Anh tại vị trí vừa chạm/bấm (không cần bọc HTML thủ công).
+function wordAtPoint(x, y) {
+  let range = null
+  if (document.caretRangeFromPoint) {
+    range = document.caretRangeFromPoint(x, y)
+  } else if (document.caretPositionFromPoint) {
+    const p = document.caretPositionFromPoint(x, y)
+    if (p) {
+      range = document.createRange()
+      range.setStart(p.offsetNode, p.offset)
+    }
+  }
+  const node = range?.startContainer
+  if (!node || node.nodeType !== Node.TEXT_NODE) return ''
+  const text = node.textContent || ''
+  const isWord = (ch) => /[A-Za-z'’-]/.test(ch)
+  let start = Math.min(range.startOffset, text.length)
+  let end = start
+  while (start > 0 && isWord(text[start - 1])) start--
+  while (end < text.length && isWord(text[end])) end++
+  return text
+    .slice(start, end)
+    .replace(/^[-'’]+|[-'’]+$/g, '')
+    .toLowerCase()
+}
+
+// Bấm vào bubble của AI khi đang ở chế độ lưu -> lưu từ tại điểm chạm.
+function onPick(e, fullText) {
+  if (!saveMode.value) return
+  const word = wordAtPoint(e.clientX, e.clientY)
+  if (!word || word.length < 2) return
+  if (user.isWordSaved(word)) {
+    flashToast(`“${word}” đã có trong danh sách`)
+    return
+  }
+  // Câu chứa từ (làm ngữ cảnh khi học lại). Lấy câu gần nhất trong câu trả lời.
+  const card = cardsFromTerms([word], 'saved')[0]
+  const context = sentenceFor(word, fullText)
+  user.saveWord(context ? { ...card, context } : card)
+  flashToast(`✓ Đã lưu “${word}”`)
+}
+
+// Trích câu chứa từ trong đoạn văn bản (để hiện ngữ cảnh trên flashcard).
+function sentenceFor(word, text) {
+  const plain = (text || '').replace(/[*_`#>]/g, ' ').replace(/\s+/g, ' ').trim()
+  if (!plain) return ''
+  const sentences = plain.split(/(?<=[.!?])\s+/)
+  const hit = sentences.find((s) => new RegExp(`\\b${word}\\b`, 'i').test(s))
+  return (hit || '').slice(0, 160)
+}
+
+function openSavedDeck() {
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'saved' } })
 }
 
 function toggleMic() {
@@ -128,11 +202,26 @@ watch(
         >
           {{ autoSpeak ? '🔊 Đọc' : '🔇 Đọc' }}
         </button>
+        <button
+          class="tool-toggle"
+          :class="{ on: saveMode }"
+          :title="saveMode ? 'Đang bật: chạm vào từ để lưu' : 'Bật chế độ lưu từ vựng'"
+          @click="saveMode = !saveMode"
+        >
+          📌 Lưu từ
+        </button>
         <button v-if="messages.length" class="tool-toggle" title="Xóa hội thoại" @click="reset">↺ Mới</button>
       </div>
     </div>
 
-    <p class="hint">Nhắn tin hoặc bấm 🎤 để nói tiếng Anh — AI sẽ trả lời, sửa lỗi nhẹ và hỏi lại để bạn luyện nói.</p>
+    <p v-if="saveMode" class="hint hint-save">
+      📌 Đang bật <b>chế độ lưu từ</b> — chạm vào bất kỳ từ nào trong câu trả lời của AI để lưu vào danh sách của bạn.
+    </p>
+    <p v-else class="hint">Nhắn tin hoặc bấm 🎤 để nói tiếng Anh — AI sẽ trả lời, sửa lỗi nhẹ và hỏi lại để bạn luyện nói.</p>
+
+    <button v-if="user.savedCount" class="saved-pill" @click="openSavedDeck">
+      📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
+    </button>
 
     <div ref="scroller" class="chat-log">
       <!-- lời mở đầu -->
@@ -144,7 +233,13 @@ watch(
       <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.role === 'user' ? 'me' : 'ai'">
         <div class="avatar">{{ m.role === 'user' ? '🧑' : '🤖' }}</div>
         <div class="bubble">
-          <div v-if="m.role === 'assistant'" class="prose-mini" v-html="render(m.text)"></div>
+          <div
+            v-if="m.role === 'assistant'"
+            class="prose-mini"
+            :class="{ pickable: saveMode }"
+            v-html="render(m.text)"
+            @click="onPick($event, m.text)"
+          ></div>
           <template v-else>{{ m.text }}</template>
           <button
             v-if="m.role === 'assistant' && speakable"
@@ -164,6 +259,10 @@ watch(
     </div>
 
     <p v-if="error" class="chat-error">⚠️ {{ error }}</p>
+
+    <Transition name="toast">
+      <div v-if="savedToast" class="save-toast">{{ savedToast }}</div>
+    </Transition>
 
     <form class="composer" @submit.prevent="send">
       <button
@@ -192,6 +291,7 @@ watch(
 .ai-chat {
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 .head-tools {
   display: flex;
@@ -222,6 +322,70 @@ watch(
   line-height: 1.6;
   color: var(--muted);
   margin-top: 12px;
+}
+.hint-save {
+  color: #00805a;
+  background: #e6fbf2;
+  border: 1px solid rgba(0, 214, 143, 0.25);
+  padding: 9px 13px;
+  border-radius: 12px;
+}
+.hint-save b {
+  color: #00805a;
+}
+
+/* Lối tắt sang Flashcard cho các từ đã lưu */
+.saved-pill {
+  align-self: flex-start;
+  margin-top: 12px;
+  cursor: pointer;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  background: linear-gradient(135deg, #f5f3ff, #eef6ff);
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px 14px;
+  border-radius: 11px;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.saved-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.22);
+}
+
+/* Khi bật chế độ lưu: gợi ý từ có thể chạm để lưu */
+.prose-mini.pickable {
+  cursor: pointer;
+}
+.prose-mini.pickable :deep(p):hover {
+  background: rgba(0, 214, 143, 0.08);
+  border-radius: 6px;
+}
+
+/* Toast xác nhận lưu từ */
+.save-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 78px;
+  transform: translateX(-50%);
+  background: #2d2d44;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  z-index: 5;
+  white-space: nowrap;
+}
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 8px);
 }
 
 .chat-log {

@@ -11,9 +11,19 @@ function sayTerm() {
 }
 
 // Flashcard chỉ chạy theo từng bài học: view truyền bộ thẻ của ngày vào.
-const props = defineProps({ cards: { type: Array, default: null } })
+// `deck='saved'` -> bộ từ người học tự lưu (cho phép bỏ lưu ngay trên thẻ).
+const props = defineProps({
+  cards: { type: Array, default: null },
+  deck: { type: String, default: '' },
+})
 
 const user = useUserStore()
+const isSaved = computed(() => props.deck === 'saved')
+
+function removeWord() {
+  if (!card.value) return
+  user.removeSavedWord(card.value.term)
+}
 
 const index = ref(0)
 const flipped = ref(false)
@@ -96,7 +106,12 @@ function dotColor(i) {
 <template>
   <div class="card-tool">
     <!-- CHƯA CÓ THẺ THEO BÀI -->
-    <div v-if="!hasCards" class="empty-tool">
+    <div v-if="!hasCards && isSaved" class="empty-tool">
+      <div class="empty-emoji">📚</div>
+      <h2>Chưa có từ nào được lưu</h2>
+      <p>Vào <b>💬 Trò chuyện với AI</b>, bật <b>📌 Lưu từ</b> rồi chạm vào từ trong câu trả lời để thêm vào đây.</p>
+    </div>
+    <div v-else-if="!hasCards" class="empty-tool">
       <div class="empty-emoji">🃏</div>
       <h2>Flashcard đi theo từng bài học</h2>
       <p>Mở một ngày học rồi bấm <b>🃏 Luyện lại bằng Flashcard</b> để học bộ từ vựng của bài đó.</p>
@@ -105,7 +120,7 @@ function dotColor(i) {
     <template v-else>
     <div class="tool-head">
       <div>
-        <h2 class="tool-title">🃏 Flashcard từ vựng IT</h2>
+        <h2 class="tool-title">{{ isSaved ? '📚 Từ vựng đã lưu' : '🃏 Flashcard từ vựng IT' }}</h2>
         <p class="tool-sub">Lật thẻ, rồi tự chấm mức nhớ. Lịch ôn giãn cách tự xếp ngày ôn lại.</p>
       </div>
       <div class="known">
@@ -157,6 +172,13 @@ function dotColor(i) {
             <div v-else class="ex ex-hint">
               <div class="ex-text">Chưa có nghĩa sẵn cho từ này — tra ở 📖 Từ điển hoặc tự ghi chú nhé.</div>
             </div>
+            <div v-if="isSaved && card.context" class="ex ctx-ex">
+              <div class="ex-label">💬 KHI CHAT VỚI AI</div>
+              <div class="ex-text">{{ card.context }}</div>
+            </div>
+            <button v-if="isSaved" class="remove-saved" title="Bỏ từ này khỏi danh sách" @click.stop="removeWord">
+              🗑 Bỏ lưu từ này
+            </button>
             <div class="grade-label">Bạn nhớ từ này tới đâu?</div>
             <div class="grade-cta">
               <button
@@ -459,6 +481,29 @@ function dotColor(i) {
   line-height: 1.55;
   color: #3a3a52;
   font-style: italic;
+}
+.ctx-ex {
+  border-left-color: var(--green);
+  background: #eafff6;
+}
+.ctx-ex .ex-label {
+  color: #00966a;
+}
+.remove-saved {
+  display: block;
+  margin: 14px auto 0;
+  cursor: pointer;
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  background: #fff;
+  color: #d63b3b;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.remove-saved:hover {
+  background: #fff1f1;
 }
 .grade-label {
   margin-top: 20px;
