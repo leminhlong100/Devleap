@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # SPA fallback: mọi route đều trả về index.html để vue-router (history mode) xử lý
 [[redirects]]
   from = "/*"

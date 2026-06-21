@@ -1,0 +1,27 @@
+/**
+ * Netlify Function (v2): proxy hội thoại AI luyện tiếng Anh.
+ * Endpoint khi deploy: POST /.netlify/functions/chat
+ *
+ * Nhận { messages, context } từ client, gắn nội dung bài học vào system prompt,
+ * gọi Gemini bằng GEMINI_API_KEY (env var trên Netlify — không lộ ra client),
+ * trả về { reply }.
+ */
+import { askLLM, buildSystemPrompt } from './_llm.js'
+
+const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+
+export default async (req) => {
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+
+  try {
+    const { messages, context } = await req.json()
+    const key = process.env.GROQ_API_KEY
+    if (!key) return json({ error: 'Server chưa cấu hình GROQ_API_KEY.' }, 500)
+
+    const reply = await askLLM({ key, system: buildSystemPrompt(context), messages })
+    return json({ reply })
+  } catch (e) {
+    return json({ error: e?.message || 'Lỗi không xác định' }, 500)
+  }
+}

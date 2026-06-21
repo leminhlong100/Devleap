@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
 import VocabCard from '@/components/day/VocabCard.vue'
+import AiChat from '@/components/day/AiChat.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
 import { getIeltsDay } from '@/data/courseIelts'
 
@@ -33,6 +34,7 @@ const agenda = computed(() => {
   if (d.value.grammar.length) a.push({ title: 'Ngữ pháp tuần này', meta: `${d.value.grammar.length} điểm` })
   if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length} từ` })
   if (d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
+  a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
   if (d.value.quizHtml) a.push({ title: 'Quiz tuần', meta: 'checkpoint' })
   return a
 })
@@ -50,6 +52,19 @@ function goWeekTest() {
 }
 // Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
 const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.week}`) : null))
+
+// Ngữ cảnh đưa cho AI để bám sát chủ đề + từ vựng + ngữ pháp của buổi học.
+const aiContext = computed(() =>
+  d.value
+    ? {
+        title: d.value.title,
+        week: d.value.week,
+        weekTitle: d.value.weekTitle,
+        vocab: d.value.vocab.map((v) => v.term),
+        grammar: d.value.grammar.map((g) => g.title),
+      }
+    : {},
+)
 </script>
 
 <template>
@@ -155,6 +170,9 @@ const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.
             </div>
             <div class="prose" v-html="d.lessonScript.html"></div>
           </section>
+
+          <!-- AI CHAT — luyện giao tiếp -->
+          <AiChat :context="aiContext" />
 
           <!-- QUIZ -->
           <section v-if="d.quizHtml" class="step-card">
