@@ -31,9 +31,11 @@ function startContinue() {
   router.push({ name: 'java-day', params: prog.value.continue })
 }
 function goFinal() {
+  if (!prog.value.allDone) return // chưa học xong thì chưa cho thi cuối khóa
   router.push({ name: 'assessment', params: { course: 'java', scope: 'final' } })
 }
 const finalResult = computed(() => user.quizOf('java', 'final'))
+const finalLocked = computed(() => !prog.value.allDone)
 </script>
 
 <template>
@@ -77,10 +79,13 @@ const finalResult = computed(() => user.quizOf('java', 'final'))
             <div class="goal-icon">🎓</div>
             <div class="goal-title">{{ javaMeta.goalTitle }}</div>
             <div class="goal-sub">{{ javaMeta.goalSub }}</div>
-            <button class="final-btn" @click="goFinal">
-              🎯 Thi cuối khóa
+            <button class="final-btn" :class="{ locked: finalLocked }" :disabled="finalLocked" @click="goFinal">
+              {{ finalLocked ? '🔒 Thi cuối khóa' : '🎯 Thi cuối khóa' }}
               <span v-if="finalResult" class="final-pct">· {{ finalResult.passed ? '✅' : '' }} {{ finalResult.pct }}%</span>
             </button>
+            <div v-if="finalLocked" class="final-hint">
+              Hoàn thành cả {{ prog.totalWeeks }} tuần để mở khóa ({{ prog.doneWeeks }}/{{ prog.totalWeeks }} tuần)
+            </div>
           </div>
         </div>
       </template>
@@ -251,6 +256,18 @@ const finalResult = computed(() => user.quizOf('java', 'final'))
 }
 .final-btn:hover {
   transform: translateY(-2px);
+}
+.final-btn.locked {
+  background: #c9c4e0;
+  cursor: not-allowed;
+}
+.final-btn.locked:hover {
+  transform: none;
+}
+.final-hint {
+  font-size: 12.5px;
+  color: #9a7a3a;
+  font-weight: 700;
 }
 .final-pct {
   font-weight: 700;

@@ -7,10 +7,12 @@ import CodePlayground from '@/components/tools/CodePlayground.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import DictionaryTool from '@/components/tools/DictionaryTool.vue'
 import LessonPicker from '@/components/tools/LessonPicker.vue'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({ tool: { type: String, default: '' } })
 const route = useRoute()
 const router = useRouter()
+const user = useUserStore()
 
 const componentMap = {
   flashcard: FlashcardTool,
@@ -32,27 +34,62 @@ const lessonOnly = (id) => id === 'flashcard' || id === 'quiz'
 // Dữ liệu khóa học là chunk nặng nên chỉ nạp động khi thực sự có ngữ cảnh,
 // giữ trang /tools nhẹ khi dùng độc lập.
 const ctx = ref(null)
+
+// Cấu hình theo khóa, dùng chung cho cả chế độ ngày & cả tuần.
+const COURSE_CFG = {
+  java: { name: 'Java', route: 'java-day', label: 'Ngày', loader: () => import('@/data/course'), dayGetter: 'getJavaDay', weekGetter: 'getJavaWeek' },
+  ielts: { name: 'IELTS', route: 'ielts-day', label: 'Buổi', loader: () => import('@/data/courseIelts'), dayGetter: 'getIeltsDay', weekGetter: 'getIeltsWeek' },
+}
+
+// Gom cả tuần: nối từ vựng (cardsFromTerms tự khử trùng) & câu quiz — CHỈ các ngày
+// đã hoàn thành (đồng bộ với bộ chọn bài; không lôi nội dung ngày chưa học vào ôn).
+function buildWeekCtx(c, cfg, week) {
+  const completed = user.completed[c] || []
+  const days = (week.days || []).filter((d) => completed.includes(`${week.num}:${d.n}`))
+  const terms = []
+  const quiz = []
+  for (const day of days) {
+    // Raw vocab của tuần là mảng chuỗi; bản theo ngày (decorate) là object {term}.
+    for (const v of day.vocab || []) terms.push(typeof v === 'string' ? v : v.term)
+    if (day.quiz) quiz.push(...day.quiz)
+  }
+  return {
+    course: c,
+    courseName: cfg.name,
+    scope: 'week',
+    route: c === 'ielts' ? 'ielts' : 'java',
+    label: cfg.label,
+    week: week.num,
+    day: null,
+    title: week.title,
+    dayCount: days.length,
+    terms,
+    code: null,
+    quiz,
+  }
+}
+
 watchEffect(async () => {
   const { c, w, d } = route.query
   if (!c || !w || !d) {
     ctx.value = null
     return
   }
+  const cfg = COURSE_CFG[c]
+  if (!cfg) {
+    ctx.value = null
+    return
+  }
   try {
-    if (c === 'java') {
-      const { getJavaDay } = await import('@/data/course')
-      const day = getJavaDay(w, d)
-      ctx.value = day
-        ? { course: 'java', courseName: 'Java', route: 'java-day', label: 'Ngày', week: day.week, day: day.n, title: day.title, terms: day.vocab.map((v) => v.term), code: day.code, quiz: day.quiz }
-        : null
-    } else if (c === 'ielts') {
-      const { getIeltsDay } = await import('@/data/courseIelts')
-      const day = getIeltsDay(w, d)
-      ctx.value = day
-        ? { course: 'ielts', courseName: 'IELTS', route: 'ielts-day', label: 'Buổi', week: day.week, day: day.n, title: day.title, terms: day.vocab.map((v) => v.term), code: null, quiz: day.quiz }
-        : null
+    const mod = await cfg.loader()
+    if (d === 'all') {
+      const week = mod[cfg.weekGetter](w)
+      ctx.value = week ? buildWeekCtx(c, cfg, week) : null
     } else {
-      ctx.value = null
+      const day = mod[cfg.dayGetter](w, d)
+      ctx.value = day
+        ? { course: c, courseName: cfg.name, scope: 'day', route: cfg.route, label: cfg.label, week: day.week, day: day.n, title: day.title, terms: day.vocab.map((v) => v.term), code: c === 'java' ? day.code : null, quiz: day.quiz }
+        : null
     }
   } catch {
     ctx.value = null
@@ -83,7 +120,9 @@ function exitContext() {
   router.push({ name: 'tools-tab', params: { tool: active.value } })
 }
 function backToDay() {
-  if (ctx.value) router.push({ name: ctx.value.route, params: { week: ctx.value.week, day: ctx.value.day } })
+  if (!ctx.value) return
+  if (ctx.value.scope === 'week') router.push({ name: ctx.value.route })
+  else router.push({ name: ctx.value.route, params: { week: ctx.value.week, day: ctx.value.day } })
 }
 </script>
 
@@ -99,12 +138,13 @@ function backToDay() {
       <div class="ctx-info">
         <span class="ctx-emoji">{{ ctx.course === 'java' ? '☕' : '🎯' }}</span>
         <div>
-          <div class="ctx-eyebrow">ĐANG LUYỆN THEO BÀI HỌC</div>
-          <div class="ctx-title">{{ ctx.courseName }} · Tuần {{ ctx.week }} · {{ ctx.label }} {{ ctx.day }} — {{ ctx.title }}</div>
+          <div class="ctx-eyebrow">{{ ctx.scope === 'week' ? 'ĐANG ÔN CẢ TUẦN' : 'ĐANG LUYỆN THEO BÀI HỌC' }}</div>
+          <div v-if="ctx.scope === 'week'" class="ctx-title">{{ ctx.courseName }} · Cả Tuần {{ ctx.week }} ({{ ctx.dayCount }} {{ ctx.label.toLowerCase() }}) — {{ ctx.title }}</div>
+          <div v-else class="ctx-title">{{ ctx.courseName }} · Tuần {{ ctx.week }} · {{ ctx.label }} {{ ctx.day }} — {{ ctx.title }}</div>
         </div>
       </div>
       <div class="ctx-cta">
-        <button class="ctx-back" @click="backToDay">← Về bài học</button>
+        <button class="ctx-back" @click="backToDay">{{ ctx.scope === 'week' ? '← Về khóa học' : '← Về bài học' }}</button>
         <button v-if="lessonOnly(active)" class="ctx-exit" @click="exitContext">↺ Chọn bài khác</button>
         <button v-else class="ctx-exit" @click="exitContext">Dùng bộ chung ✕</button>
       </div>

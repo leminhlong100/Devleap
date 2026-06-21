@@ -1,9 +1,11 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getQuizSet } from '@/data/quizSets'
+import { computeJavaProgress } from '@/data/course'
+import { computeIeltsProgress } from '@/data/courseIelts'
 
 // Bài kiểm tra cuối tuần/cuối khóa. Route: /courses/:course/test/:scope
 //   scope = "week-3" hoặc "final".
@@ -12,6 +14,19 @@ const router = useRouter()
 const user = useUserStore()
 
 const set = computed(() => getQuizSet(props.course, props.scope))
+
+// Thi cuối khóa chỉ mở khi đã hoàn thành toàn bộ lộ trình. Chặn cả khi gõ thẳng URL.
+const courseDone = computed(() =>
+  props.course === 'ielts'
+    ? computeIeltsProgress(user.completed.ielts).allDone
+    : computeJavaProgress(user.completed.java).allDone,
+)
+const finalLocked = computed(() => props.scope === 'final' && !courseDone.value)
+watchEffect(() => {
+  if (finalLocked.value) {
+    router.replace({ name: props.course === 'ielts' ? 'ielts' : 'java' })
+  }
+})
 // Cuối khóa lấy nhiều câu hơn; tuần gọn lại để không quá dài.
 const limit = computed(() => (props.scope === 'final' ? 20 : 12))
 const courseRoute = computed(() => (props.course === 'ielts' ? 'ielts' : 'java'))
@@ -24,7 +39,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
   <div class="container assess">
     <span class="back" @click="router.push({ name: courseRoute })">← Lộ trình {{ courseLabel }}</span>
 
-    <template v-if="set">
+    <template v-if="set && !finalLocked">
       <!-- HEADER -->
       <div class="head-card">
         <div class="head-glow"></div>

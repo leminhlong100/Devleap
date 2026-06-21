@@ -14,17 +14,20 @@ const router = useRouter()
 const user = useUserStore()
 
 const loading = ref(true)
-const lessons = ref([])
+const groups = ref([]) // [{ course, courseName, emoji, week, label, days:[...], weekCount, unit }]
 
 const COURSES = [
   { id: 'java', name: 'Java', emoji: '☕', label: 'Ngày', loader: () => import('@/data/course'), getter: 'getJavaDay' },
   { id: 'ielts', name: 'IELTS', emoji: '🎯', label: 'Buổi', loader: () => import('@/data/courseIelts'), getter: 'getIeltsDay' },
 ]
 
-// Lessons được rebuild khi tiến độ hoặc tool thay đổi.
+const unit = () => (props.tool === 'quiz' ? 'câu' : 'từ')
+
+// Gom theo tuần khi rebuild (tiến độ / tool thay đổi). Mỗi tuần có tổng số liệu
+// (flashcard khử trùng từ giống lúc ôn thật; quiz cộng dồn số câu).
 watchEffect(async () => {
   loading.value = true
-  const out = []
+  const byWeek = new Map() // key: course+':'+week
   for (const c of COURSES) {
     const keys = user.completed[c.id] || []
     if (!keys.length) continue
@@ -34,28 +37,45 @@ watchEffect(async () => {
       const [w, d] = key.split(':')
       const day = getDay(w, d)
       if (!day) continue
+      // getDay fallback về ngày đầu khi không tìm thấy -> bỏ key cũ/không hợp lệ.
+      if (String(day.n) !== String(d)) continue
       const hasData = props.tool === 'quiz' ? day.quiz?.length : day.vocab?.length
       if (!hasData) continue
-      out.push({
-        course: c.id,
-        courseName: c.name,
-        emoji: c.emoji,
-        week: day.week,
+      const gKey = `${c.id}:${day.week}`
+      if (!byWeek.has(gKey)) {
+        byWeek.set(gKey, {
+          course: c.id, courseName: c.name, emoji: c.emoji, week: day.week,
+          weekLabel: `Tuần ${day.week}`, days: [], terms: new Set(), quizCount: 0,
+        })
+      }
+      const g = byWeek.get(gKey)
+      g.days.push({
         day: day.n,
-        label: `Tuần ${day.week} · ${c.label} ${day.n}`,
+        label: `${c.label} ${day.n}`,
         title: day.title,
         count: props.tool === 'quiz' ? day.quiz.length : day.vocab.length,
-        unit: props.tool === 'quiz' ? 'câu' : 'từ',
       })
+      if (props.tool === 'quiz') g.quizCount += day.quiz.length
+      else for (const v of day.vocab) g.terms.add(String(v.term).trim().toLowerCase())
     }
   }
-  out.sort((a, b) => (a.course < b.course ? -1 : a.course > b.course ? 1 : a.week - b.week || a.day - b.day))
-  lessons.value = out
+  const out = [...byWeek.values()]
+  for (const g of out) {
+    g.days.sort((a, b) => a.day - b.day)
+    g.weekCount = props.tool === 'quiz' ? g.quizCount : g.terms.size
+  }
+  out.sort((a, b) => (a.course < b.course ? -1 : a.course > b.course ? 1 : a.week - b.week))
+  groups.value = out
   loading.value = false
 })
 
-function pick(l) {
-  router.push({ name: 'tools-tab', params: { tool: props.tool }, query: { c: l.course, w: l.week, d: l.day } })
+const hasAny = () => groups.value.some((g) => g.days.length)
+
+function pickDay(g, d) {
+  router.push({ name: 'tools-tab', params: { tool: props.tool }, query: { c: g.course, w: g.week, d: d.day } })
+}
+function pickWeek(g) {
+  router.push({ name: 'tools-tab', params: { tool: props.tool }, query: { c: g.course, w: g.week, d: 'all' } })
 }
 </script>
 
@@ -68,26 +88,41 @@ function pick(l) {
 
     <div v-if="loading" class="pstate">Đang tải danh sách bài học…</div>
 
-    <div v-else-if="!lessons.length" class="pstate empty">
+    <div v-else-if="!hasAny()" class="pstate empty">
       <div class="pemoji">🌱</div>
       <h3>Chưa có bài hoàn thành</h3>
       <p>Hoàn thành một ngày học (đánh dấu ✓ ở cuối bài) để mở lại {{ tool === 'quiz' ? 'quiz' : 'flashcard' }} ở đây.</p>
       <button class="go-courses" @click="router.push({ name: 'courses' })">Tới khóa học →</button>
     </div>
 
-    <div v-else class="lesson-grid">
-      <button v-for="l in lessons" :key="l.course + l.week + ':' + l.day" class="lesson-card" @click="pick(l)">
-        <span class="lc-emoji">{{ l.emoji }}</span>
-        <div class="lc-body">
-          <div class="lc-top">
-            <span class="lc-course">{{ l.courseName }}</span>
-            <span class="lc-meta">{{ l.label }}</span>
+    <div v-else class="week-list">
+      <section v-for="g in groups" :key="g.course + ':' + g.week" class="week-group">
+        <div class="wg-head">
+          <div class="wg-title">
+            <span class="wg-emoji">{{ g.emoji }}</span>
+            <span class="wg-course">{{ g.courseName }}</span>
+            <span class="wg-week">{{ g.weekLabel }}</span>
           </div>
-          <div class="lc-title">{{ l.title }}</div>
-          <div class="lc-count">{{ l.count }} {{ l.unit }}</div>
+          <!-- Ôn cả tuần: chỉ hữu ích khi có từ 2 ngày trở lên -->
+          <button v-if="g.days.length > 1" class="wg-all" @click="pickWeek(g)">
+            🗂 Ôn cả tuần · {{ g.weekCount }} {{ unit() }} <span class="wg-arrow">→</span>
+          </button>
         </div>
-        <span class="lc-go">→</span>
-      </button>
+
+        <div class="lesson-grid">
+          <button v-for="d in g.days" :key="d.day" class="lesson-card" @click="pickDay(g, d)">
+            <span class="lc-emoji">{{ g.emoji }}</span>
+            <div class="lc-body">
+              <div class="lc-top">
+                <span class="lc-meta">{{ d.label }}</span>
+              </div>
+              <div class="lc-title">{{ d.title }}</div>
+              <div class="lc-count">{{ d.count }} {{ unit() }}</div>
+            </div>
+            <span class="lc-go">→</span>
+          </button>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -145,6 +180,58 @@ function pick(l) {
   padding: 12px 24px;
   border-radius: 13px;
   background: var(--grad-purple);
+}
+.week-list {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.wg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.wg-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wg-emoji {
+  font-size: 18px;
+}
+.wg-course {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--purple);
+}
+.wg-week {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.wg-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border: none;
+  color: #fff;
+  background: var(--grad-purple);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px 15px;
+  border-radius: 11px;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.wg-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+}
+.wg-arrow {
+  font-weight: 800;
 }
 .lesson-grid {
   display: grid;
