@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watchEffect } from 'vue'
+import { computed, nextTick, ref, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toolDefs, cardsFromTerms } from '@/data/tools'
 import FlashcardTool from '@/components/tools/FlashcardTool.vue'
@@ -134,11 +134,24 @@ const activeProps = computed(() => {
   return {}
 })
 
+// Vùng làm bài/học (bộ chọn bài hoặc tool đang mở) — cuộn xuống đây khi chọn
+// chức năng, thay vì nhảy lên đầu trang.
+const workspaceEl = ref(null)
+async function scrollToWorkspace() {
+  await nextTick()
+  workspaceEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function select(id) {
   // Đổi tool thì bỏ cờ deck=saved (chỉ áp dụng cho flashcard).
   const q = { ...route.query }
   delete q.deck
-  router.push({ name: 'tools-tab', params: { tool: id }, query: q })
+  if (id === active.value) {
+    // Bấm lại chức năng đang mở: không điều hướng, chỉ cuộn xuống vùng làm bài.
+    scrollToWorkspace()
+    return
+  }
+  router.push({ name: 'tools-tab', params: { tool: id }, query: q }).then(scrollToWorkspace)
 }
 function exitSaved() {
   const q = { ...route.query }
@@ -213,11 +226,14 @@ function backToDay() {
       Đây là từ &amp; câu bạn đã lưu — bộ cá nhân, không gắn riêng theo ngày học.
     </p>
 
-    <!-- Flashcard/Quiz chưa có ngữ cảnh -> bộ chọn bài đã hoàn thành -->
-    <LessonPicker v-if="lessonOnly(active) && !ctx && !savedMode" :key="'picker-' + active" :tool="active" />
-    <Transition v-else name="fade" mode="out-in">
-      <component :is="componentMap[active]" :key="active" v-bind="activeProps" />
-    </Transition>
+    <!-- Vùng làm bài/học — mốc neo để cuộn xuống khi chọn chức năng -->
+    <div ref="workspaceEl" class="tool-workspace">
+      <!-- Flashcard/Quiz chưa có ngữ cảnh -> bộ chọn bài đã hoàn thành -->
+      <LessonPicker v-if="lessonOnly(active) && !ctx && !savedMode" :key="'picker-' + active" :tool="active" />
+      <Transition v-else name="fade" mode="out-in">
+        <component :is="componentMap[active]" :key="active" v-bind="activeProps" />
+      </Transition>
+    </div>
   </div>
 </template>
 
@@ -314,6 +330,10 @@ function backToDay() {
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 40px;
+}
+/* Cuộn tới vùng làm bài chừa khoảng cho header dính (sticky) phía trên. */
+.tool-workspace {
+  scroll-margin-top: 84px;
 }
 .tool-card {
   background: #fff;

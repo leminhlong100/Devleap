@@ -2,6 +2,7 @@
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import LoginGate from '@/components/layout/LoginGate.vue'
+import BackToTop from '@/components/common/BackToTop.vue'
 </script>
 
 <template>
@@ -16,6 +17,7 @@ import LoginGate from '@/components/layout/LoginGate.vue'
     </main>
     <AppFooter />
     <LoginGate />
+    <BackToTop />
   </div>
 </template>
 

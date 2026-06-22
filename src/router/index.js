@@ -46,7 +46,13 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    // Đổi chức năng trong Khu công cụ: không nhảy lên đầu trang — để ToolsView
+    // tự cuộn xuống vùng làm bài/học (xem hàm select).
+    if (to.name === 'tools-tab' && (from.name === 'tools-tab' || from.name === 'tools')) {
+      return false
+    }
     return { top: 0 }
   },
 })
