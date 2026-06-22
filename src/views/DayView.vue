@@ -46,8 +46,10 @@ function goTool(tool) {
   const query = d.value ? { c: 'java', w: d.value.week, d: d.value.n } : undefined
   router.push({ name: 'tools-tab', params: { tool }, query })
 }
+// Chỉ mở bài kiểm tra tuần khi đã hoàn thành tất cả các ngày trong tuần.
+const weekComplete = computed(() => !!d.value && weekDoneCount.value >= d.value.totalDays)
 function goWeekTest() {
-  if (d.value) router.push({ name: 'assessment', params: { course: 'java', scope: `week-${d.value.week}` } })
+  if (d.value && weekComplete.value) router.push({ name: 'assessment', params: { course: 'java', scope: `week-${d.value.week}` } })
 }
 // Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
 const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.week}`) : null))
@@ -187,7 +189,12 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
               </span>
             </div>
             <p class="quiz-cta-text">Tổng hợp câu hỏi cả tuần. Đạt từ 70% để nhận <b>+100 XP</b> và huy hiệu. Điểm được lưu lại.</p>
-            <button class="green-btn" @click="goWeekTest">🎯 {{ weekTest ? 'Làm lại bài kiểm tra' : 'Làm bài kiểm tra tuần' }} →</button>
+            <button class="green-btn" :class="{ locked: !weekComplete }" :disabled="!weekComplete" @click="goWeekTest">
+              {{ weekComplete ? `🎯 ${weekTest ? 'Làm lại bài kiểm tra' : 'Làm bài kiểm tra tuần'} →` : '🔒 Làm bài kiểm tra tuần' }}
+            </button>
+            <p v-if="!weekComplete" class="wt-lock-hint">
+              Hoàn thành cả {{ d.totalDays }} ngày trong tuần để mở khóa ({{ weekDoneCount }}/{{ d.totalDays }} ngày)
+            </p>
           </section>
 
           <!-- RESOURCES STRIP -->
@@ -779,6 +786,20 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 }
 .green-btn:hover {
   transform: translateY(-2px);
+}
+.green-btn.locked {
+  background: #c4d8cf;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.green-btn.locked:hover {
+  transform: none;
+}
+.wt-lock-hint {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #8a8aa0;
+  margin-top: 10px;
 }
 
 .empty {
