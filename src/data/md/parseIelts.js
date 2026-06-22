@@ -86,6 +86,30 @@ function parseThemeWords(lines) {
     .filter((w) => w && w.length <= 40 && w.split(/\s+/).length <= 4)
 }
 
+/**
+ * Bóc tách các mục bullet dưới "**Cụm dùng được:**" và "**Câu nối với IELTS:**"
+ * của một nhóm từ vựng — phần này mới là chất liệu để nói, không chỉ từ đơn.
+ */
+function parseThemeExtras(lines) {
+  const phrases = []
+  const sentences = []
+  let cur = null
+  for (const raw of lines) {
+    const l = raw.trim()
+    const lbl = /^\*\*(.+?):?\*\*\s*$/.exec(l)
+    if (lbl) {
+      const name = lbl[1].toLowerCase()
+      if (/cụm/.test(name)) cur = phrases
+      else if (/câu nối|câu ghép|ví dụ/.test(name)) cur = sentences
+      else cur = null
+      continue
+    }
+    const bm = /^[-*]\s+(.+)$/.exec(l)
+    if (bm && cur) cur.push(bm[1].trim())
+  }
+  return { phrases, sentences }
+}
+
 /** Checklist của một ngày: các dòng "- [ ] …". */
 function parseChecklist(lines) {
   const items = []
@@ -136,7 +160,8 @@ export function parseIeltsWeek(raw) {
       }
     } else if (/từ vựng|Phòng từ vựng/i.test(h)) {
       for (const s of splitByLevel(sec.lines, 3)) {
-        vocabThemes.push({ title: s.heading, words: parseThemeWords(s.lines), html: md(s.lines.join('\n')) })
+        const extras = parseThemeExtras(s.lines)
+        vocabThemes.push({ title: s.heading, words: parseThemeWords(s.lines), phrases: extras.phrases, sentences: extras.sentences, html: md(s.lines.join('\n')) })
       }
     } else if (/Kỹ năng|Khung mẫu|luyện tập/i.test(h)) {
       skills.push({ title: h.replace(/^[\p{Extended_Pictographic}️‍\s]+/u, '').trim(), html: md(sec.lines.join('\n')) })

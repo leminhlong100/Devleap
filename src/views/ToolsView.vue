@@ -49,14 +49,19 @@ const COURSE_CFG = {
 
 // Gom cả tuần: nối từ vựng (cardsFromTerms tự khử trùng) & câu quiz — CHỈ các ngày
 // đã hoàn thành (đồng bộ với bộ chọn bài; không lôi nội dung ngày chưa học vào ôn).
-function buildWeekCtx(c, cfg, week) {
+function buildWeekCtx(c, cfg, week, getDay) {
   const completed = user.completed[c] || []
-  const days = (week.days || []).filter((d) => completed.includes(`${week.num}:${d.n}`))
+  const dayNums = (week.days || []).map((d) => d.n).filter((n) => completed.includes(`${week.num}:${n}`))
   const terms = []
   const quiz = []
-  for (const day of days) {
-    // Raw vocab của tuần là mảng chuỗi; bản theo ngày (decorate) là object {term}.
-    for (const v of day.vocab || []) terms.push(typeof v === 'string' ? v : v.term)
+  let dayCount = 0
+  for (const n of dayNums) {
+    // Lấy chi tiết ngày qua getter: vocab của IELTS chỉ tồn tại ở bản decorate,
+    // không nằm trong ngày thô của tuần. Gồm cả từ ôn lại để khớp với lúc học.
+    const day = getDay(week.num, n)
+    if (!day) continue
+    dayCount++
+    for (const v of [...(day.vocab || []), ...(day.reviewVocab || [])]) terms.push(typeof v === 'string' ? v : v.term)
     if (day.quiz) quiz.push(...day.quiz)
   }
   return {
@@ -68,7 +73,7 @@ function buildWeekCtx(c, cfg, week) {
     week: week.num,
     day: null,
     title: week.title,
-    dayCount: days.length,
+    dayCount,
     terms,
     code: null,
     quiz,
@@ -90,11 +95,11 @@ watchEffect(async () => {
     const mod = await cfg.loader()
     if (d === 'all') {
       const week = mod[cfg.weekGetter](w)
-      ctx.value = week ? buildWeekCtx(c, cfg, week) : null
+      ctx.value = week ? buildWeekCtx(c, cfg, week, mod[cfg.dayGetter]) : null
     } else {
       const day = mod[cfg.dayGetter](w, d)
       ctx.value = day
-        ? { course: c, courseName: cfg.name, scope: 'day', route: cfg.route, label: cfg.label, week: day.week, day: day.n, title: day.title, terms: day.vocab.map((v) => v.term), code: c === 'java' ? day.code : null, quiz: day.quiz }
+        ? { course: c, courseName: cfg.name, scope: 'day', route: cfg.route, label: cfg.label, week: day.week, day: day.n, title: day.title, terms: [...day.vocab, ...(day.reviewVocab || [])].map((v) => v.term), code: c === 'java' ? day.code : null, quiz: day.quiz }
         : null
     }
   } catch {

@@ -53,10 +53,10 @@ watchEffect(async () => {
         day: day.n,
         label: `${c.label} ${day.n}`,
         title: day.title,
-        count: props.tool === 'quiz' ? day.quiz.length : day.vocab.length,
+        count: props.tool === 'quiz' ? day.quiz.length : day.vocab.length + (day.reviewVocab?.length || 0),
       })
       if (props.tool === 'quiz') g.quizCount += day.quiz.length
-      else for (const v of day.vocab) g.terms.add(String(v.term).trim().toLowerCase())
+      else for (const v of [...day.vocab, ...(day.reviewVocab || [])]) g.terms.add(String(v.term).trim().toLowerCase())
     }
   }
   const out = [...byWeek.values()]
@@ -70,6 +70,16 @@ watchEffect(async () => {
 })
 
 const hasAny = () => groups.value.some((g) => g.days.length)
+
+// Mỗi tuần thu gọn mặc định; nhấn vào tiêu đề tuần mới xổ danh sách bài.
+const openWeeks = ref(new Set())
+const gkey = (g) => `${g.course}:${g.week}`
+const isOpen = (g) => openWeeks.value.has(gkey(g))
+function toggleWeek(g) {
+  const s = new Set(openWeeks.value)
+  s.has(gkey(g)) ? s.delete(gkey(g)) : s.add(gkey(g))
+  openWeeks.value = s
+}
 
 function pickDay(g, d) {
   router.push({ name: 'tools-tab', params: { tool: props.tool }, query: { c: g.course, w: g.week, d: d.day } })
@@ -109,20 +119,22 @@ function pickSaved() {
     </div>
 
     <div v-else class="week-list">
-      <section v-for="g in groups" :key="g.course + ':' + g.week" class="week-group">
+      <section v-for="g in groups" :key="g.course + ':' + g.week" class="week-group" :class="{ open: isOpen(g) }">
         <div class="wg-head">
-          <div class="wg-title">
+          <button class="wg-toggle" @click="toggleWeek(g)">
+            <span class="wg-chevron">▸</span>
             <span class="wg-emoji">{{ g.emoji }}</span>
             <span class="wg-course">{{ g.courseName }}</span>
             <span class="wg-week">{{ g.weekLabel }}</span>
-          </div>
+            <span class="wg-badge">{{ g.days.length }} bài · {{ g.weekCount }} {{ unit() }}</span>
+          </button>
           <!-- Ôn cả tuần: chỉ hữu ích khi có từ 2 ngày trở lên -->
-          <button v-if="g.days.length > 1" class="wg-all" @click="pickWeek(g)">
-            🗂 Ôn cả tuần · {{ g.weekCount }} {{ unit() }} <span class="wg-arrow">→</span>
+          <button v-if="g.days.length > 1" class="wg-all" @click.stop="pickWeek(g)">
+            🗂 Ôn cả tuần <span class="wg-arrow">→</span>
           </button>
         </div>
 
-        <div class="lesson-grid">
+        <div v-if="isOpen(g)" class="lesson-grid">
           <button v-for="d in g.days" :key="d.day" class="lesson-card" @click="pickDay(g, d)">
             <span class="lc-emoji">{{ g.emoji }}</span>
             <div class="lc-body">
@@ -242,7 +254,17 @@ function pickSaved() {
 .week-list {
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 12px;
+}
+.week-group {
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 16px;
+  padding: 8px 10px;
+  transition: border-color 0.15s;
+}
+.week-group.open {
+  border-color: rgba(108, 92, 231, 0.28);
+  background: rgba(108, 92, 231, 0.02);
 }
 .wg-head {
   display: flex;
@@ -250,12 +272,36 @@ function pickSaved() {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 12px;
 }
-.wg-title {
+.wg-toggle {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 8px 6px;
+  text-align: left;
+}
+.wg-chevron {
+  font-size: 13px;
+  color: var(--purple);
+  transition: transform 0.18s;
+  flex: none;
+}
+.week-group.open .wg-chevron {
+  transform: rotate(90deg);
+}
+.wg-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(108, 92, 231, 0.08);
+  padding: 3px 10px;
+  border-radius: 99px;
+  margin-left: 4px;
 }
 .wg-emoji {
   font-size: 18px;
@@ -295,6 +341,8 @@ function pickSaved() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  margin-top: 12px;
+  padding: 0 4px 8px;
 }
 .lesson-card {
   display: flex;

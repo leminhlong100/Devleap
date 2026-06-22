@@ -5,6 +5,7 @@
  */
 import { parseIeltsWeek } from './md/parseIelts'
 import { decorateVocab } from './md/vocab'
+import { lookupVocab } from './vocabGlossary'
 
 const rawFiles = import.meta.glob('../../Base_English/*.md', { query: '?raw', import: 'default', eager: true })
 
@@ -76,6 +77,83 @@ export function computeIeltsProgress(completed = []) {
   }
 }
 
+/**
+ * Khoảng [start, end) của buổi thứ `dayIdx` khi chia đều `total` mục cho `totalDays`
+ * buổi — `extra` buổi đầu nhận thêm 1 mục khi chia không hết.
+ */
+function chunkRange(total, totalDays, dayIdx) {
+  if (!totalDays) return [0, total]
+  const base = Math.floor(total / totalDays)
+  const extra = total % totalDays
+  const start = dayIdx * base + Math.min(dayIdx, extra)
+  const take = base + (dayIdx < extra ? 1 : 0)
+  return [start, start + take]
+}
+
+/** Chọn `n` mồi nhử tất định từ `pool`, bỏ qua `correct`. */
+function pickDistractors(pool, correct, n, seed) {
+  const others = pool.filter((m) => m !== correct)
+  const picked = []
+  for (let k = 0; k < others.length && picked.length < n; k++) {
+    const cand = others[(seed * n + k) % others.length]
+    if (!picked.includes(cand)) picked.push(cand)
+  }
+  return picked
+}
+
+/**
+ * Sinh quiz trắc nghiệm cho một buổi từ chính từ vựng buổi đó — vì mỗi buổi học
+ * từ khác nhau nên quiz cũng khác nhau (không lặp lại theo ngày). Trộn xoay vòng
+ * 3 dạng để luyện sâu: (0) từ → nghĩa, (1) nghĩa → từ, (2) điền từ vào câu.
+ * `dayWords` = từ của buổi (mới + ôn); `weekWords` = cả tuần (kho mồi nhử).
+ * Mọi lựa chọn đều tất định (xoay vòng theo chỉ số câu) để quiz ổn định.
+ */
+function buildDayVocabQuiz(dayWords, weekWords) {
+  const entries = weekWords.map((w) => ({ w, g: lookupVocab(w) })).filter((x) => x.g && x.g.vi)
+  const meaningPool = [...new Set(entries.map((x) => x.g.vi))]
+  const wordPool = [...new Set(entries.map((x) => x.w))]
+  const out = []
+  dayWords.forEach((term, qi) => {
+    const g = lookupVocab(term)
+    if (!g || !g.vi) return
+    const hasBlank = (g.ex || '').includes('{w}')
+    // Giải thích: câu ví dụ đã điền từ + nghĩa câu (nếu có).
+    const example = g.ex ? g.ex.replace('{w}', term) + (g.exVi ? ` — ${g.exVi}` : '') : `“${term}” = ${g.vi}`
+    const pos = qi % 4 // vị trí đáp án đúng xoay vòng cho đỡ đoán mò
+    let type = qi % 3
+    if (type === 2 && !hasBlank) type = qi % 2 // không có câu ví dụ -> đổi dạng khác
+
+    let q, options, correct
+    if (type === 0) {
+      // Từ → nghĩa (mồi nhử là nghĩa các từ khác)
+      const distract = pickDistractors(meaningPool, g.vi, 3, qi)
+      if (distract.length < 3) return
+      options = [...distract]
+      options.splice(pos, 0, g.vi)
+      q = `Từ “${term}” nghĩa là gì?`
+      correct = g.vi
+    } else if (type === 1) {
+      // Nghĩa → từ (mồi nhử là từ tiếng Anh khác)
+      const distract = pickDistractors(wordPool, term, 3, qi)
+      if (distract.length < 3) return
+      options = [...distract]
+      options.splice(pos, 0, term)
+      q = `“${g.vi}” là từ tiếng Anh nào?`
+      correct = term
+    } else {
+      // Điền từ vào câu (mồi nhử là từ tiếng Anh khác)
+      const distract = pickDistractors(wordPool, term, 3, qi)
+      if (distract.length < 3) return
+      options = [...distract]
+      options.splice(pos, 0, term)
+      q = `Điền từ thích hợp: “${g.ex.replace('{w}', '_____')}”`
+      correct = term
+    }
+    out.push({ q, opts: options, correct: options.indexOf(correct), ex: example })
+  })
+  return out
+}
+
 // Bản đồ mặc định (chưa có tiến độ) — dùng cho re-export.
 export const ieltsWeeks = computeIeltsWeeks([])
 
@@ -93,7 +171,24 @@ export function getIeltsDay(weekNum, dayNum) {
 
   const rhythm = week.rhythm[idx] || null
   const title = rhythm?.task?.replace(/\s*\.?\s*$/, '') || `Buổi học ${day.n}`
-  const words = week.vocabThemes.flatMap((t) => t.words).slice(0, 12)
+
+  // Từ vựng theo cửa sổ trượt: mỗi buổi học phần MỚI của tuần + ôn lại phần buổi
+  // trước, để các ngày khác nhau nhưng vẫn nhắc lại cho nhớ. Câu mẫu & cụm từ lấy
+  // theo chính chủ đề chứa từ mới hôm nay (chất liệu để nói thật, không chỉ từ đơn).
+  const totalDays = week.days.length
+  const flatWords = week.vocabThemes.flatMap((t, ti) => t.words.map((w) => ({ w, ti })))
+  const [s, e] = chunkRange(flatWords.length, totalDays, idx)
+  const newSlice = flatWords.slice(s, e)
+  const [ps, pe] = idx > 0 ? chunkRange(flatWords.length, totalDays, idx - 1) : [0, 0]
+  const reviewSlice = flatWords.slice(ps, pe)
+  const themeIdxs = [...new Set(newSlice.map((x) => x.ti))]
+  const phrases = themeIdxs.flatMap((ti) => week.vocabThemes[ti].phrases || [])
+  const sentences = themeIdxs.flatMap((ti) => week.vocabThemes[ti].sentences || [])
+  // Quiz buổi: trắc nghiệm nghĩa của chính từ vựng buổi này (mới + ôn) -> khác nhau mỗi ngày.
+  const dayQuiz = buildDayVocabQuiz(
+    [...newSlice, ...reviewSlice].map((x) => x.w),
+    flatWords.map((x) => x.w),
+  )
 
   return {
     n: day.n,
@@ -102,10 +197,13 @@ export function getIeltsDay(weekNum, dayNum) {
     rhythm,
     checklist: day.checklist,
     grammar: week.grammar,
-    vocab: decorateVocab(words),
+    vocab: decorateVocab(newSlice.map((x) => x.w)),
+    reviewVocab: decorateVocab(reviewSlice.map((x) => x.w)),
+    phrases,
+    sentences,
     lessonScript: week.lessonScripts[idx] || null,
     quizHtml: week.quizHtml,
-    quiz: week.weekQuiz || [], // quiz trắc nghiệm cấp tuần (dùng chung cho mọi buổi)
+    quiz: dayQuiz, // quiz trắc nghiệm từ vựng riêng từng buổi (khác nhau mỗi ngày)
     // ngữ cảnh tuần để điều hướng
     week: week.num,
     weekTitle: week.title,

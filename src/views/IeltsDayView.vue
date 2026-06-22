@@ -7,6 +7,11 @@ import VocabCard from '@/components/day/VocabCard.vue'
 import AiChat from '@/components/day/AiChat.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
 import { getIeltsDay } from '@/data/courseIelts'
+import { speak } from '@/lib/speak'
+
+function say(text) {
+  speak(text)
+}
 
 const props = defineProps({ week: [String, Number], day: [String, Number] })
 const router = useRouter()
@@ -32,10 +37,10 @@ const agenda = computed(() => {
   const a = []
   if (d.value.checklist.length) a.push({ title: 'Việc cần làm hôm nay', meta: `${d.value.checklist.length} mục` })
   if (d.value.grammar.length) a.push({ title: 'Ngữ pháp tuần này', meta: `${d.value.grammar.length} điểm` })
-  if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length} từ` })
+  if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
   if (d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
   a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
-  if (d.value.quizHtml) a.push({ title: 'Quiz tuần', meta: 'checkpoint' })
+  if (d.value.quiz.length) a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu` })
   return a
 })
 
@@ -61,6 +66,7 @@ const aiContext = computed(() =>
         week: d.value.week,
         weekTitle: d.value.weekTitle,
         vocab: d.value.vocab.map((v) => v.term),
+        phrases: d.value.phrases,
         grammar: d.value.grammar.map((g) => g.title),
       }
     : {},
@@ -84,7 +90,7 @@ const aiContext = computed(() =>
           <p class="head-intro">Tuần {{ d.week }} · {{ d.weekTitle }}</p>
           <div class="head-meta">
             <span v-if="d.checklist.length" class="meta-chip">✅ {{ d.checklist.length }} việc</span>
-            <span v-if="d.vocab.length" class="meta-chip">🗣️ {{ d.vocab.length }} từ</span>
+            <span v-if="d.vocab.length" class="meta-chip">🗣️ {{ d.vocab.length + d.reviewVocab.length }} từ</span>
             <span class="meta-chip">🎯 Mục tiêu Band 6.5</span>
           </div>
         </div>
@@ -147,16 +153,41 @@ const aiContext = computed(() =>
           </section>
 
           <!-- VOCAB (week) -->
-          <section v-if="d.vocab.length" class="step-card">
+          <section v-if="d.vocab.length || d.reviewVocab.length" class="step-card">
             <div class="step-head">
               <div>
                 <div class="eyebrow">PHÒNG TỪ VỰNG</div>
-                <h2 class="step-title">🗣️ {{ d.vocab.length }} từ thông dụng</h2>
+                <h2 class="step-title">🗣️ Từ mới hôm nay</h2>
               </div>
             </div>
             <div class="vocab-grid">
               <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" />
             </div>
+
+            <!-- ÔN LẠI buổi trước -->
+            <template v-if="d.reviewVocab.length">
+              <div class="sub-head">🔁 Ôn lại từ buổi trước</div>
+              <div class="vocab-grid">
+                <VocabCard v-for="v in d.reviewVocab" :key="'r-' + v.term" :vocab="v" />
+              </div>
+            </template>
+
+            <!-- CỤM DÙNG ĐƯỢC -->
+            <template v-if="d.phrases.length">
+              <div class="sub-head">💬 Cụm dùng được</div>
+              <div class="phrase-wrap">
+                <span v-for="(p, i) in d.phrases" :key="i" class="phrase-chip" @click="say(p)">{{ p }} 🔊</span>
+              </div>
+            </template>
+
+            <!-- CÂU MẪU IELTS -->
+            <template v-if="d.sentences.length">
+              <div class="sub-head">📝 Câu mẫu IELTS</div>
+              <ul class="sentence-list">
+                <li v-for="(s, i) in d.sentences" :key="i" @click="say(s)">{{ s }} <span class="say-ico">🔊</span></li>
+              </ul>
+            </template>
+
             <button class="ghost-btn" @click="goTool('flashcard')">🃏 Luyện lại bằng Flashcard →</button>
           </section>
 
@@ -175,14 +206,14 @@ const aiContext = computed(() =>
           <AiChat :context="aiContext" />
 
           <!-- QUIZ -->
-          <section v-if="d.quizHtml" class="step-card">
+          <section v-if="d.quiz.length" class="step-card">
             <div class="step-head">
               <div>
-                <div class="eyebrow">CHECKPOINT</div>
-                <h2 class="step-title">✅ Quiz tuần {{ d.week }}</h2>
+                <div class="eyebrow">ÔN NHANH</div>
+                <h2 class="step-title">❓ Quiz từ vựng buổi {{ d.n }}</h2>
               </div>
             </div>
-            <p class="quiz-intro">Làm quiz cuối tuần để tự soi lại phần đã học.</p>
+            <p class="quiz-intro">{{ d.quiz.length }} câu trắc nghiệm về nghĩa các từ học buổi này — mỗi buổi một bộ khác nhau.</p>
             <button class="ghost-btn" @click="goTool('quiz')">❓ Mở quiz →</button>
           </section>
 
@@ -559,6 +590,61 @@ const aiContext = computed(() =>
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   margin-top: 20px;
+}
+.sub-head {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 24px;
+}
+.phrase-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+}
+.phrase-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.22);
+  color: #00966a;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 7px 13px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.phrase-chip:hover {
+  background: rgba(0, 214, 143, 0.18);
+}
+.sentence-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.sentence-list li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #4a4a62;
+  background: var(--bg);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+  border-radius: 12px;
+  padding: 11px 15px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.sentence-list li:hover {
+  border-color: rgba(0, 214, 143, 0.4);
+}
+.say-ico {
+  opacity: 0.6;
+  font-size: 12px;
 }
 .ghost-btn {
   margin-top: 18px;
