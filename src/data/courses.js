@@ -16,6 +16,7 @@ export { javaWeeks, ieltsWeeks }
 export const courses = [
   {
     id: 'java',
+    category: '💻 Lập trình',
     routeName: 'java',
     emoji: '☕',
     name: 'Java + Tiếng Anh 12 Tuần Bứt Phá',
@@ -33,6 +34,7 @@ export const courses = [
   },
   {
     id: 'ielts',
+    category: '🗣️ Tiếng Anh',
     routeName: 'ielts',
     emoji: '🎯',
     name: 'IELTS Cơ Bản',
@@ -50,6 +52,7 @@ export const courses = [
   },
   {
     id: 'comm',
+    category: '🗣️ Tiếng Anh',
     routeName: null,
     emoji: '💬',
     name: 'Tiếng Anh Giao Tiếp',

@@ -11,7 +11,9 @@ const user = useUserStore()
 const filters = ['Tất cả', '💻 Lập trình', '🗣️ Tiếng Anh']
 const active = ref('Tất cả')
 
-const shown = computed(() => courses) // lọc thực sự sẽ làm khi gắn dữ liệu MD
+const shown = computed(() =>
+  active.value === 'Tất cả' ? courses : courses.filter((c) => c.category === active.value),
+)
 
 // % tiến độ thật theo từng khóa (các khóa khác giữ giá trị biên tập sẵn).
 function progressOf(c) {
