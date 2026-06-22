@@ -16,10 +16,6 @@
 
 **15/06 — Thứ 2** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Vocalmax + Parroto Shadowing · 15 phút*
->
-> **Giai đoạn Nâng cao** — Parroto Shadowing + Vocalmax với từ vựng Spring AI / Reactive / Docker. **Vocalmax 10 từ:** reactive, publisher, subscriber, stream, emit, backpressure, non-blocking, asynchronous, sequence, subscribe. **Parroto shadow:** "A Flux emits zero to many items, while a Mono emits zero or one."
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Reactive Programming là gì**
@@ -122,10 +118,6 @@ Cơ chế subscriber kiểm soát tốc độ nhận data từ publisher để k
 ## 💪 Ngày 2 · Spring AI Streaming: ChatClient.stream(), SSE
 
 **16/06 — Thứ 3** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "The chatbot streams its response token by token", "Server-Sent Events push data from server to client over HTTP", "Streaming improves perceived latency for the user". **Vocalmax:** streaming, token, server-sent events, chunk, real-time, push, latency, perceived, incremental, render.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -250,10 +242,6 @@ Khi đã stream 1 phần response rồi LLM/network fail → client đã nhận 
 ## 💪 Ngày 3 · Chatbot với Chat Memory
 
 **17/06 — Thứ 4** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "The chatbot remembers the context of the conversation", "Each message is appended to the conversation history", "Memory must be bounded to avoid exceeding the context window". **Vocalmax:** conversation, context, history, memory, advisor, session, window, truncate, append, stateful.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -385,10 +373,6 @@ Tách biệt memory theo session/user. Mỗi conversation có ID riêng → user
 ## 💪 Ngày 4 · @Async deep + ThreadPoolTaskExecutor
 
 **18/06 — Thứ 5** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "The async method runs on a separate thread pool", "We configure the core pool size and queue capacity", "The method returns a CompletableFuture immediately". **Vocalmax:** asynchronous, thread pool, core size, max size, queue capacity, executor, rejection policy, future, await, non-blocking.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -522,10 +506,6 @@ Khi pool + queue đầy, thay vì throw exception (AbortPolicy) hoặc bỏ task
 
 **19/06 — Thứ 6** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Vocalmax + Parroto · 15 phút*
->
-> **Vocalmax 10 từ:** prompt, few-shot, zero-shot, role, instruction, constraint, delimiter, chain of thought, grounding, hallucination. **Parroto shadow:** "Few-shot prompting provides examples to guide the model's output."
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Prompt Engineering cơ bản**
@@ -640,10 +620,6 @@ User input độc hại chứa instructions ghi đè system prompt ("Ignore prev
 ## 🔥 Ngày 6 · Docker basics cho Spring Boot
 
 **20/06 — Thứ 7** · **WEEKEND** · ⏱ 4h (sáng + chiều)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 30 phút*
->
-> Nghe + shadow "Docker for Java Developers" 30 phút, practice câu phỏng vấn EN về containerization. **Vocalmax review** 20 từ Docker/reactive khó nhất tuần.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -778,10 +754,6 @@ Container root = host root nếu escape container (privilege escalation risk). B
 ## 🎯 Ngày 7 · Spaced Review T1-T6 + Mini Project
 
 **21/06 — CN** · **REVIEW** · ⏱ 4h (ôn tập + project)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 30 phút*
->
-> Mock interview EN — trả lời 10 câu tuần 6 to ra tiếng Anh, record 2 câu hay nhất. Luyện **STAR method** kể chuyện về xây streaming feature.
 
 ### 📖 Lý Thuyết Cốt Lõi (Review)
 

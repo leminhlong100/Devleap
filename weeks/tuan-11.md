@@ -16,10 +16,6 @@
 
 **20/07 — Thứ 2** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN + Vocalmax · 15 phút*
->
-> **Vocalmax — 10 từ vựng kỹ thuật (đọc to, ghi âm, nghe lại):** two pointers, sliding window, complexity, brute force, optimal, in-place, hash table, subarray, palindrome, traverse. **🎤 Mock Interview EN:** Trả lời câu hỏi *"Walk me through your approach to Two Sum."* bằng tiếng Anh. Nói rõ từng bước: *"First, the brute force solution uses two nested loops to check every pair, which is O(n squared) time. To optimize, I use a hash table to store each number and its index as I traverse. For each element, I check if its complement (target minus current) already exists in the map — that gives O(n) time with O(n) extra space."* Nói to, ghi âm, nghe lại.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Two Pointers**
@@ -140,10 +136,6 @@ Thường có thể đổi không gian lấy thời gian và ngược lại. Ví
 ## 💪 Ngày 2 · HashMap/Set + Stack/Queue problems + Big-O analysis
 
 **21/07 — Thứ 3** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **🎤 Mock Interview EN — STAR method:** Luyện kể một câu chuyện kỹ thuật theo cấu trúc STAR (Situation, Task, Action, Result) bằng tiếng Anh. Ví dụ về một bug bạn đã fix: *"Situation: our API response time spiked under load. Task: I had to find and fix the bottleneck. Action: I profiled the code, found an O(n squared) loop, and replaced it with a HashMap lookup. Result: latency dropped from 800ms to 120ms."* Nói to, ghi âm 2-3 lần.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -282,10 +274,6 @@ Các kỹ thuật chính: (1) Hashing — thay vì quét lại tìm phần tử,
 ## 💪 Ngày 3 · Trees & Graphs: BFS, DFS, traversals, common patterns
 
 **22/07 — Thứ 4** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **🎤 Mock Interview EN:** Giải thích bằng tiếng Anh khi nào dùng BFS vs DFS: *"I use BFS when I need the shortest path in an unweighted graph or level-by-level processing, because it explores nodes closest to the source first. I use DFS when I need to explore all paths, detect cycles, or do topological sorting — it goes as deep as possible before backtracking. DFS is often simpler to write recursively, while BFS naturally uses a queue."*
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -434,10 +422,6 @@ Mỗi lần gọi đệ quy tạo một stack frame chiếm bộ nhớ. Với DF
 
 **23/07 — Thứ 5** · **FULL** · ⏱ 30 phút sáng + 2h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **🎤 Mock Interview EN:** Giải thích Dynamic Programming bằng tiếng Anh: *"Dynamic programming solves problems by breaking them into overlapping subproblems and storing the results so we don't recompute them. There are two styles: top-down memoization, which is recursion plus a cache, and bottom-up tabulation, which fills a table iteratively. A problem fits DP when it has optimal substructure and overlapping subproblems — like Climbing Stairs or Coin Change."*
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Dynamic Programming**
@@ -574,10 +558,6 @@ Arrays.sort cho mảng primitive (int[], long[]...) dùng dual-pivot quicksort v
 
 **24/07 — Thứ 6** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN + Vocalmax · 15 phút*
->
-> **Vocalmax — từ vựng System Design (đọc to, ghi âm):** scalability, throughput, latency, sharding, replication. **🎤 Mock Interview EN:** Tập giải thích bằng tiếng Anh: *"To scale a read-heavy system, I'd add read replicas to distribute the read load, put a cache like Redis in front of the database to reduce latency, and use a load balancer to spread requests across multiple stateless app servers. This improves throughput while keeping latency low."*
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Scalability**
@@ -687,10 +667,6 @@ Theo khung 5 bước: (1) Làm rõ yêu cầu — hỏi chức năng cốt lõi 
 ## 🔥 Ngày 6 · System Design case study: URL shortener / rate limiter / news feed
 
 **25/07 — Thứ 7** · **WEEKEND** · ⏱ 4h (sáng + chiều)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 30 phút*
->
-> **🎤 Mock Interview EN — Full system design discussion:** Trình bày trọn vẹn một thiết kế bằng tiếng Anh, ví dụ URL shortener: *"Let me clarify the requirements first — we need to shorten long URLs and redirect on access, it's read-heavy. For the encoding, I'll generate a unique ID and convert it to base62 to keep the short code compact. I'll store the mapping in a database, add a Redis cache in front since reads dominate, and use a load balancer for the stateless app servers. The main trade-offs are around ID generation and cache invalidation."* Ghi âm toàn bộ 5-7 phút, nghe lại.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -862,10 +838,6 @@ Với modulo hashing thông thường (hash(key) % N), khi thêm/bớt một nod
 ## 🎯 Ngày 7 · Spaced Review T1-T11 + Demo Project hoàn thiện + chuẩn bị portfolio
 
 **26/07 — CN** · **REVIEW** · ⏱ 4h (ôn tập + project)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Full Mock Interview EN · 45 phút*
->
-> **🎤 Full Mock Interview EN — comprehensive:** Mô phỏng một vòng phỏng vấn trọn vẹn bằng tiếng Anh gồm ba phần: (1) Coding — giải một bài LeetCode vừa, nói to approach từ brute force tới optimal; (2) System Design — thiết kế một dịch vụ (URL shortener / rate limiter) trong 10 phút; (3) Behavioral — kể 2 câu chuyện STAR (một về thử thách kỹ thuật, một về làm việc nhóm). Ghi âm toàn bộ, nghe lại và ghi chú điểm cần cải thiện về độ trôi chảy và thuật ngữ.
 
 ### 📖 Lý Thuyết Cốt Lõi (Review T1-T11)
 

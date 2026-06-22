@@ -16,10 +16,6 @@
 
 **18/05/2025 — Thứ 2** · **LIGHT** · 1.5h
 
-> 🇬🇧 **English — Vocalmax + Listening** · *20 phút*
->
-> **Vocalmax 10 từ kỹ thuật hôm nay:**  **exception** — ngoại lệ (lỗi xảy ra khi chạy chương trình) **throw** — ném ra (tung ngoại lệ) **catch** — bắt (xử lý ngoại lệ) **handle** — xử lý **propagate** — lan truyền (exception leo lên call stack) **stack trace** — dấu vết ngăn xếp (chuỗi method calls khi lỗi) **runtime error** — lỗi thời gian chạy **checked** — kiểm tra tại compile-time **unchecked** — không kiểm tra tại compile-time **finally** — khối luôn được thực thi dù có exception hay không  📺 **Nghe:** Tìm YouTube "Java Exception Handling Tutorial" — xem 5 phút đầu, chú ý cách phát âm *exception*, *hierarchy*, *propagate*. Luyện nói: "When an exception is **thrown**, it **propagates** up the call stack until it is **caught** by a catch block."
-
 ### 📚 Lý thuyết — Exception Hierarchy & try-catch-finally
 
 **Exception Hierarchy**
@@ -197,10 +193,6 @@ public class BasicExceptionDemo {
 ## 💪 Ngày 2 · Custom Exception, try-with-resources, Multi-catch, Chained Exception
 
 **19/05/2025 — Thứ 3** · **FULL** · 2.5h
-
-> 🇬🇧 **English — Parroto Shadowing** · *25 phút*
->
-> **Topic:** "Clean Exception Handling in Java" — shadowing sentences kỹ thuật. **Luyện phát âm các câu sau (nói to, lặp lại 3 lần mỗi câu):**  "throw new **Illegal**ArgumentException(*message*)" "catch the exception and **rethrow** it as a domain exception" "wrap the original cause using the **cause** constructor" "resources are automatically **closed** by try-with-resources" "implement **AutoCloseable** to support try-with-resources" "multi-catch allows catching **multiple** exception types in one clause"  Mock câu hỏi EN: "How would you design an exception hierarchy for a banking application?" — thực hành trả lời bằng EN 2–3 câu.
 
 ### 📚 Lý thuyết — Custom Exception, try-with-resources, Multi-catch, Chained
 
@@ -446,10 +438,6 @@ public class ResourceManager implements AutoCloseable {
 
 **20/05/2025 — Thứ 4** · **FULL** · 2.5h
 
-> 🇬🇧 **English — Vocalmax + Reading** · *25 phút*
->
-> **Vocalmax 10 từ hôm nay:**  **array** — mảng (vùng nhớ liên tiếp) **linked list** — danh sách liên kết (các node nối nhau) **node** — nút (phần tử trong linked list chứa data + pointer) **iterator** — bộ duyệt (object để traverse collection) **traverse** — duyệt qua (đi qua từng phần tử) **index** — chỉ số vị trí (0-based trong Java) **capacity** — sức chứa (kích thước nội bộ của ArrayList) **resize** — thay đổi kích thước (ArrayList tự resize khi đầy) **pointer** — con trỏ (tham chiếu đến node kế tiếp/trước) **complexity** — độ phức tạp (Big-O notation)  **Đọc đoạn văn EN:** *"ArrayList stores elements in a contiguous block of memory, providing O(1) random access by index. LinkedList uses a doubly-linked structure where each node holds references to the previous and next node, enabling O(1) insertion at head or tail but O(n) traversal to an arbitrary index."* Đọc to, dịch sang tiếng Việt, sau đó giải thích lại bằng tiếng Việt không nhìn bản gốc.
-
 ### 📚 Lý thuyết — ArrayList vs LinkedList, Iterator, Big-O
 
 **ArrayList — Dynamic Array**
@@ -646,10 +634,6 @@ public class ListOperations {
 ## 💪 Ngày 4 · HashMap internals, HashSet, TreeMap, TreeSet
 
 **21/05/2025 — Thứ 5** · **FULL** · 2.5h
-
-> 🇬🇧 **English — Parroto Shadowing** · *25 phút*
->
-> **Topic:** "Java HashMap internals" — shadowing technical vocabulary. **Luyện phát âm và dùng đúng ngữ cảnh:**  **hash collision**: "Two keys may produce the same hash, causing a *hash collision*." **load factor**: "The default *load factor* is 0.75, meaning resize at 75% full." **rehashing**: "When capacity is exceeded, the map undergoes *rehashing*." **bucket array**: "HashMap uses a *bucket array* where each slot holds a chain." **hash code**: "The *hash code* determines which bucket a key maps to."  Thực hành: Giải thích HashMap put() operation bằng tiếng Anh trong 60 giây không nhìn notes.
 
 ### 📚 Lý thuyết — HashMap, HashSet, TreeMap, TreeSet
 
@@ -884,10 +868,6 @@ public class MapOperations {
 
 **22/05/2025 — Thứ 6** · **LIGHT** · 1.5h
 
-> 🇬🇧 **English — Vocalmax + Video** · *20 phút*
->
-> **Vocalmax 10 từ hôm nay:**  **stream** — luồng dữ liệu (Stream API — không phải I/O stream) **pipeline** — chuỗi xử lý (source → intermediate → terminal) **filter** — lọc (giữ lại elements thỏa điều kiện) **map** — ánh xạ (transform mỗi element sang type/value khác) **collect** — thu thập (gom kết quả vào Collection) **reduce** — rút gọn (combine elements thành 1 giá trị) **lambda** — hàm vô danh (x -> x * 2) **functional** — hàm thuần túy (không side effect) **terminal** — kết thúc pipeline (collect, count, forEach) **intermediate** — trung gian, lazy (filter, map, sorted)  📺 **Xem:** "Java 8 Streams Tutorial" trên YouTube — 5 phút đầu. Chú ý phát âm: *stream pipeline*, *lazy evaluation*, *terminal operation*.
-
 ### 📚 Lý thuyết — Stream API Basics
 
 **Stream Pipeline**
@@ -1084,10 +1064,6 @@ public class StreamBasics {
 ## 🔥 Ngày 6 · Stream Advanced: Collectors, flatMap, groupingBy + Thread-safe Collections
 
 **23/05/2025 — Thứ 7** · **WEEKEND** · 4h
-
-> 🇬🇧 **English — Parroto Shadowing 30 phút + Vocalmax Review** · *30 phút*
->
-> **Parroto:** Shadow video "Advanced Java Streams" — tập trung vào interview sentences:  "I would use **groupingBy** to partition the list by a classification key." "**flatMap** is used to flatten a stream of collections into a single stream." "**Collectors.joining** concatenates stream elements with a delimiter." "For thread safety, I prefer **ConcurrentHashMap** over synchronizedMap." "Parallel streams use the **ForkJoinPool** common pool under the hood."  **Vocalmax review session:** Ôn lại 20 từ từ ngày 5 + 10 từ mới: grouping, partition, collector, delimiter, concurrent, thread-safe, synchronized, atomic, fork, join.
 
 ### 📚 Lý thuyết — Advanced Streams + Thread-safe Collections
 
@@ -1380,10 +1356,6 @@ public class ThreadSafeDemo {
 ## 🎯 Ngày 7 · Spaced Review + Mini Project: Student Grade Manager
 
 **24/05/2025 — CN** · **REVIEW** · 4h
-
-> 🇬🇧 **English — Mock Interview Session** · *40 phút*
->
-> **Bài tập:** Trả lời to 8 câu hỏi phỏng vấn bằng tiếng Anh — mỗi câu 60–90 giây. Ghi âm bản thân để review sau.  Exception: "What is the difference between checked and unchecked exceptions?" Exception: "How does try-with-resources work and why is it better than finally?" Exception: "What are common anti-patterns in Java exception handling?" Collections: "Explain how HashMap works internally." Collections: "When would you use TreeMap over HashMap?" Collections: "What is ConcurrentHashMap and how is it different from synchronizedMap?" Stream: "What is the difference between map() and flatMap()?" Stream: "How does groupingBy() work? Give an example."  Tiêu chí đánh giá: Không ấp úng quá 3 giây, dùng đúng thuật ngữ kỹ thuật, câu trả lời có cấu trúc rõ ràng.
 
 ### 📚 Review — Compact Summary: Exception / Collections / Streams
 

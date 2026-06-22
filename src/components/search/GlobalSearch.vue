@@ -184,7 +184,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
             <div v-else class="hint">
               <p class="hint-title">Tìm xuyên suốt ~115 ngày học</p>
               <ul class="hint-list">
-                <li><span>🔤</span> Từ vựng tiếng Anh (Java + IELTS)</li>
+                <li><span>🔤</span> Từ vựng tiếng Anh (IELTS)</li>
                 <li><span>📄</span> Bài học theo tuần / ngày</li>
                 <li><span>💬</span> Câu hỏi phỏng vấn & chủ đề ngữ pháp</li>
               </ul>

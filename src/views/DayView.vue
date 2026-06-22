@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
-import VocabCard from '@/components/day/VocabCard.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
 import CodeEditor from '@/components/tools/CodeEditor.vue'
 import { getJavaDay } from '@/data/course'
@@ -32,8 +31,6 @@ function unmark() {
 const agenda = computed(() => {
   if (!d.value) return []
   const a = []
-  if (d.value.englishHtml) a.push({ title: 'Khởi động tiếng Anh', meta: 'Vocalmax + nghe' })
-  if (d.value.vocab.length) a.push({ title: 'Từ vựng IT', meta: `${d.value.vocab.length} từ` })
   if (d.value.contentHtml) a.push({ title: 'Lý thuyết cốt lõi', meta: 'Đọc & gõ tay' })
   if (d.value.code) a.push({ title: 'Code mẫu', meta: d.value.code.file })
   if (d.value.exercises.length) a.push({ title: 'Bài tập thực hành', meta: `${d.value.exercises.length} bài` })
@@ -74,7 +71,6 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
           <p class="head-intro">Tuần {{ d.week }} · {{ d.weekTitle }}</p>
           <div class="head-meta">
             <span v-if="d.time" class="meta-chip">⏱ {{ d.time }}</span>
-            <span v-if="d.vocab.length" class="meta-chip">🗣️ {{ d.vocab.length }} từ vựng</span>
             <span v-if="d.questions.length" class="meta-chip">🎤 {{ d.questions.length }} câu phỏng vấn</span>
           </div>
         </div>
@@ -106,31 +102,6 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
         <AgendaRail :items="agenda" />
 
         <div class="main">
-          <!-- ENGLISH WARM-UP -->
-          <section v-if="d.englishHtml" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">KHỞI ĐỘNG TIẾNG ANH</div>
-                <h2 class="step-title">🌏 Học tiếng Anh trước</h2>
-              </div>
-            </div>
-            <div class="prose" v-html="d.englishHtml"></div>
-          </section>
-
-          <!-- VOCAB -->
-          <section v-if="d.vocab.length" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">TỪ VỰNG IT</div>
-                <h2 class="step-title">🗣️ {{ d.vocab.length }} từ vựng hôm nay</h2>
-              </div>
-            </div>
-            <div class="vocab-grid">
-              <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" />
-            </div>
-            <button class="ghost-btn" @click="goTool('flashcard')">🃏 Luyện lại bằng Flashcard →</button>
-          </section>
-
           <!-- THEORY -->
           <section v-if="d.contentHtml" class="step-card current">
             <div class="step-head">
@@ -476,12 +447,6 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   font-weight: 800;
   letter-spacing: -0.4px;
   margin-top: 5px;
-}
-.vocab-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 20px;
 }
 .ghost-btn {
   margin-top: 18px;
@@ -831,9 +796,6 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 
 @media (max-width: 900px) {
   .two-col {
-    grid-template-columns: 1fr;
-  }
-  .vocab-grid {
     grid-template-columns: 1fr;
   }
 }

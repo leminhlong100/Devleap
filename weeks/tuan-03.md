@@ -18,11 +18,6 @@
 
 **25/05 · Thứ 2** · **LIGHT** · 1.5h
 
-> 🇬🇧 **English** · *15 phút*
->
-> **Vocalmax 10 từ:** *optional, present, absent, isPresent, orElse, orElseGet, flatMap, ifPresent, empty, nullable*.
->  Nghe clip ngắn "Java Optional Best Practices" 5 phút.
-
 **Optional là gì?**
 
 Container có thể chứa hoặc không chứa giá trị. Tránh NullPointerException. `Optional.of(val)` / `Optional.empty()` / `Optional.ofNullable(val)`.
@@ -130,10 +125,6 @@ baeldung.com/java-optional
 ## 💪 Ngày 3 · CompletableFuture: supplyAsync, thenApply, thenAccept, exceptionally
 
 **26/05 · Thứ 3** · **FULL** · 2.5h
-
-> 🇬🇧 **English** · *20 phút sáng*
->
-> **Parroto shadowing** — câu luyện: *"The task runs asynchronously on a separate thread"*, *"CompletableFuture chains multiple async operations"*, *"Handle exceptions with exceptionally callback"*.
 
 **CompletableFuture là gì?**
 
@@ -257,11 +248,6 @@ baeldung.com/java-completablefuture
 
 **27/05 · Thứ 4** · **FULL** · 2.5h
 
-> 🇬🇧 **English** · *15 phút*
->
-> **Vocalmax 10 từ:** *functional, predicate, supplier, consumer, compose, andThen, negate, identity, bifunction, unary*.
->  Đọc một đoạn ngắn EN về "Why Functional Programming Matters".
-
 **`Function<T,R>`**
 
 Nhận T, trả về R. `apply(t)`. `compose(before)` chạy before rồi function này. `andThen(after)` chạy function rồi after. `Function.identity()` trả về input.
@@ -379,10 +365,6 @@ baeldung.com/java-8-functional-interfaces
 ## 💪 Ngày 5 · Thread, Runnable, Callable, ExecutorService, synchronized, volatile
 
 **28/05 · Thứ 5** · **FULL** · 2.5h
-
-> 🇬🇧 **English** · *20 phút*
->
-> **Parroto shadowing 20 phút** — câu: *"A thread is the smallest unit of execution"*, *"synchronized keyword prevents race conditions"*, *"The ExecutorService manages a pool of worker threads"*.
 
 **Thread lifecycle**
 
@@ -521,11 +503,6 @@ baeldung.com/java-concurrency
 
 **29/05 · Thứ 6** · **LIGHT** · 1.5h
 
-> 🇬🇧 **English** · *15 phút*
->
-> **Vocalmax 10 từ:** *single responsibility, open closed, liskov, interface segregation, dependency inversion, coupling, cohesion, abstraction, principle, violation*.
->  Đọc 5 phút "SOLID in 5 Minutes" EN.
-
 **S — Single Responsibility**
 
 Mỗi class chỉ có 1 lý do thay đổi. `UserService` làm auth → sai. Tách: `UserService`, `AuthService`, `EmailService`. Dấu hiệu vi phạm: class có "and" trong tên mục đích.
@@ -638,10 +615,6 @@ baeldung.com/solid-principles
 ## 🔥 Ngày 7 · CompletableFuture advanced: chaining, allOf, anyOf + Atomic + ThreadLocal
 
 **30/05 · Thứ 7** · **WEEKEND** · 4h
-
-> 🇬🇧 **English** · *30 phút*
->
-> **Parroto shadowing 30 phút** — bài nghe "Advanced Concurrency in Java" + practice câu phỏng vấn EN về threading. Vocalmax review 20 từ khó nhất tuần.
 
 **CompletableFuture combining**
 
@@ -766,10 +739,6 @@ baeldung.com/java-concurrent-locks
 ## 🎯 Ngày 8 · Spaced Review T1-T3 + Mini Project: Async Task Processor
 
 **31/05 · Chủ Nhật** · **REVIEW** · 4h
-
-> 🇬🇧 **English** · *30 phút*
->
-> **Mock interview EN** — answer 10 câu từ tuần 3 to ra tiếng Anh. Record 2 câu hay nhất. Practice STAR method for one coding story.
 
 **Stream + Optional recap**
 
