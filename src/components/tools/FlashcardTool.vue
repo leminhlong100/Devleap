@@ -317,13 +317,14 @@ function dotColor(i) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 56px 30px 30px;
   box-shadow: 0 16px 40px rgba(108, 92, 231, 0.3);
 }
 .cat {
   position: absolute;
   top: 18px;
   left: 20px;
+  z-index: 2;
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
   font-size: 12px;
@@ -335,6 +336,7 @@ function dotColor(i) {
   position: absolute;
   top: 18px;
   right: 20px;
+  z-index: 2;
   color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
   font-weight: 700;

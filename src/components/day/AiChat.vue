@@ -349,6 +349,13 @@ watch(
   display: flex;
   flex-direction: column;
   position: relative;
+  /* Nền card tự chứa: ở DayView lớp .step-card (scoped) đã tạo nền, nhưng khi
+     dùng trong tab Công cụ không có .step-card nên tự khai báo ở đây cho đồng nhất. */
+  background: #fff;
+  border-radius: 22px;
+  padding: 26px 28px;
+  border: 1px solid rgba(108, 92, 231, 0.1);
+  box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
 }
 .head-tools {
   display: flex;
