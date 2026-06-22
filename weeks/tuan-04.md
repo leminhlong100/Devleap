@@ -18,11 +18,6 @@
 
 **01/06 · Thứ 2** · **LIGHT** · 1.5h
 
-> 🇬🇧 **** · *Tiếng Anh · 20 phút*
->
-> **Vocalmax 10 từ:** *controller, endpoint, request, response, annotation, bean, component, inject, autowire, stereotype*.
->  Nghe clip "Spring Boot in 10 Minutes" EN 5 phút.
-
 **Spring Boot là gì?**
 
 Framework xây dựng Java apps nhanh với convention-over-configuration. Auto-configuration giảm boilerplate. Embedded Tomcat — không cần deploy WAR. `spring.io/initializr` chọn dependencies.
@@ -120,10 +115,6 @@ spring.io/guides/gs/spring-boot
 ## 💪 Ngày 3 · @RestController, HTTP Mappings, ResponseEntity
 
 **02/06 · Thứ 3** · **FULL** · 2.5h
-
-> 🇬🇧 **** · *Tiếng Anh · 20 phút*
->
-> **Parroto shadowing:** *"The controller handles incoming HTTP requests"*, *"This endpoint returns a list of all students"*, *"We use ResponseEntity to control the HTTP status code"*. 20 phút.
 
 **@RestController**
 
@@ -260,11 +251,6 @@ restfulapi.net REST principles
 
 **03/06 · Thứ 4** · **FULL** · 2.5h
 
-> 🇬🇧 **** · *Tiếng Anh · 20 phút*
->
-> **Vocalmax 10 từ:** *inversion of control, dependency injection, bean, scope, singleton, prototype, autowire, component, stereotype, container*.
->  Đọc EN paragraph về "IoC and DI explained simply".
-
 **IoC Container**
 
 Spring container quản lý object lifecycle. Bạn khai báo dependencies, Spring tạo và inject. `ApplicationContext` là IoC container. `BeanFactory` là interface cơ bản.
@@ -395,10 +381,6 @@ Baeldung Spring DI
 ## 💪 Ngày 5 · Spring Data JPA: @Entity, @Id, JpaRepository, CRUD, @Query, Pagination
 
 **04/06 · Thứ 5** · **FULL** · 2.5h
-
-> 🇬🇧 **** · *Tiếng Anh · 20 phút*
->
-> **Parroto shadowing:** *"We use JPA to map Java objects to database tables"*, *"The repository interface provides CRUD operations out of the box"*, *"Pagination helps handle large datasets efficiently"*. 20 phút.
 
 **JPA + Hibernate**
 
@@ -531,11 +513,6 @@ Baeldung Spring Data JPA
 
 **05/06 · Thứ 6** · **LIGHT** · 1.5h
 
-> 🇬🇧 **** · *Tiếng Anh · 20 phút*
->
-> **Vocalmax 10 từ:** *validation, constraint, binding, transfer object, mapper, advice, handler, exception, payload, schema*.
->  Nghe "REST API best practices" clip 5 phút.
-
 **DTO Pattern**
 
 Data Transfer Object: tách API contract khỏi DB entity. Request DTO (input), Response DTO (output). Lợi ích: control exposed fields, add validation, version API độc lập với DB schema. Tools: MapStruct (compile-time), ModelMapper (runtime).
@@ -662,10 +639,6 @@ Baeldung Bean Validation + MapStruct docs
 ## 🔥 Ngày 7 · Spring Profiles + Actuator + @Transactional + @Scheduled + @Async
 
 **06/06 · Thứ 7** · **WEEKEND** · 4h
-
-> 🇬🇧 **** · *Tiếng Anh · 50 phút*
->
-> Parroto shadowing 30 phút "Spring Boot Production Features" + Vocalmax review 20 Spring từ quan trọng nhất tuần. Practice EN câu phỏng vấn Spring Boot.
 
 **Spring Profiles**
 
@@ -823,10 +796,6 @@ Baeldung Spring Profiles + Actuator
 ## 🎯 Ngày 8 · Spaced Review T1-T4 + Mini Project: Student Management REST API full CRUD
 
 **07/06 · CN** · **REVIEW** · 4h
-
-> 🇬🇧 **** · *Tiếng Anh · 30 phút*
->
-> Mock interview EN — answer 5 Spring Boot câu hỏi to ra tiếng Anh. Record và nghe lại. Luyện giải thích Spring DI với whiteboard/notepad.
 
 **Spring Boot recap**
 

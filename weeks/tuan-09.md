@@ -16,10 +16,6 @@
 
 **06/07 — Thứ 2** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN + Vocalmax · 15 phút*
->
-> **🎯 Bắt đầu phase "Ứng dụng" (T9-T12):** tiếng Anh chuyển sang Mock Interview + STAR method + Business English. Mục tiêu: nói về kiến trúc hệ thống bằng tiếng Anh tự tin. **Vocalmax — 10 từ vựng (luyện phát âm + đặt câu):**  **microservice** /ˈmaɪkroʊˌsɜːrvɪs/ — dịch vụ nhỏ, độc lập, tập trung 1 nghiệp vụ. **monolith** /ˈmɒnəlɪθ/ — ứng dụng đơn khối, tất cả trong 1 deployable. **decouple** /diːˈkʌpl/ — tách rời sự phụ thuộc giữa các thành phần. **bounded context** — ranh giới nghiệp vụ rõ ràng (DDD). **scalability** /ˌskeɪləˈbɪləti/ — khả năng mở rộng quy mô. **deployment** /dɪˈplɔɪmənt/ — việc triển khai ứng dụng lên môi trường. **service boundary** — biên giới giữa các service. **distributed** /dɪˈstrɪbjutɪd/ — phân tán trên nhiều node/process. **autonomy** /ɔːˈtɒnəmi/ — tính tự chủ (deploy/own data độc lập). **resilience** /rɪˈzɪliəns/ — khả năng chịu lỗi, phục hồi.  **🎤 Mock EN (nói to ra, ghi âm):** Trả lời *"What are microservices and how do they differ from a monolith?"* trong 60–90 giây. Cấu trúc: definition → key benefit → key trade-off → when you'd choose each.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **1. Monolith là gì? Ưu & nhược**
@@ -141,10 +137,6 @@ Nhiều thách thức: (1) **Network failure & latency** — mỗi lời gọi g
 ## 💪 Ngày 2 · Inter-service Communication: REST Clients & Service Discovery
 
 **07/07 — Thứ 3** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **Vocab (communication):** synchronous, asynchronous, message broker, request-response, fire-and-forget, service discovery, load balancing, payload, latency, throughput. **🎤 STAR method (luyện cho behavioral interview):** trả lời câu *"Tell me about a time you debugged a difficult integration issue."* theo cấu trúc:  **S**ituation — bối cảnh ngắn gọn (1-2 câu). **T**ask — nhiệm vụ/trách nhiệm của bạn. **A**ction — bạn cụ thể đã làm gì (chiếm phần lớn câu trả lời). **R**esult — kết quả đo được (số liệu nếu có).  Ghi âm câu trả lời STAR ~90 giây, nghe lại xem "Action" có cụ thể không.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -308,10 +300,6 @@ Mô hình blocking (thread-per-request) tốn một thread cho mỗi request đa
 
 **08/07 — Thứ 4** · **FULL** · ⏱ 30 phút sáng + 2h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **Vocab (gateway):** entry point, routing, predicate, filter, rate limiting, cross-cutting concern, throttle, gateway, downstream, intercept. **🎤 Mock EN:** trả lời *"How would you handle authentication across many microservices?"* trong 90 giây. Gợi ý cấu trúc câu trả lời: centralized validation at the gateway → propagate identity downstream → services trust the gateway. Ghi âm và nghe lại độ trôi chảy.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **1. API Gateway Pattern**
@@ -473,10 +461,6 @@ Có — vì mọi traffic đi qua nó. Để tránh: (1) chạy **nhiều instan
 
 **09/07 — Thứ 5** · **FULL** · ⏱ 30 phút sáng + 2h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 20 phút*
->
-> **Vocab (resilience):** circuit breaker, fallback, graceful degradation, cascade failure, retry, backoff, timeout, bulkhead, fail fast, fault tolerance. **🎤 Mock EN:** trả lời *"What happens in your system when a downstream service goes down?"* trong 90 giây. Gợi ý: circuit breaker opens → fail fast → return fallback → degrade gracefully → recover when half-open succeeds. Ghi âm, tự chấm độ rõ ràng.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **1. Circuit Breaker Pattern (3 states)**
@@ -629,10 +613,6 @@ Thứ tự rất quan trọng vì nó quyết định cái gì "bọc" cái gì.
 
 **10/07 — Thứ 6** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN + Vocalmax · 15 phút*
->
-> **Vocalmax — vocab phân tán:** idempotency, distributed lock, eventual consistency, strong consistency, race condition, partition tolerance, compensating action, choreography, orchestration, replica. **🎤 Mock EN:** trả lời *"How do you make sure a payment isn't charged twice on a retry?"* trong 60–90 giây. Gợi ý: idempotency key → store processed keys → return cached result on duplicate. Ghi âm, nghe lại.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **1. Idempotency**
@@ -765,10 +745,6 @@ Saga thay thế distributed transaction (vốn không khả thi với database-p
 ## 🔥 Ngày 6 · Docker Compose Multi-service: Gateway + Services + Redis + Postgres
 
 **11/07 — Thứ 7** · **WEEKEND** · ⏱ 4h (sáng + chiều)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 30 phút*
->
-> **Full Mock EN (30 phút):** tự phỏng vấn về kiến trúc microservices. Chuẩn bị trả lời lưu loát các câu:  "Walk me through the architecture of a system you built." "How do your services communicate and discover each other?" "How do you run the whole stack locally for development?"  Ghi âm toàn bộ, nghe lại, gạch các chỗ ấp úng để luyện lại. Tập dùng thuật ngữ: container, image, service, network, volume, healthcheck.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -955,10 +931,6 @@ Compose tuyệt vời cho dev/local và CI vì khai báo đơn giản, dựng nh
 ## 🎯 Ngày 7 · Spaced Review T1-T9 + Mini Project: 2-service System
 
 **12/07 — CN** · **REVIEW** · ⏱ 4h (ôn tập + project)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Full Mock Interview EN · 45 phút*
->
-> **Full Mock (45 phút) — System Design discussion in English.** Tự phỏng vấn (hoặc nhờ AI làm interviewer) cho đề: *"Design a simple e-commerce backend with microservices."* Trình bày to ra theo cấu trúc:  Clarify requirements & scale assumptions. Identify services by bounded context (order, product, payment...). Communication: sync REST vs async events; database per service. Gateway for routing/auth/rate-limit; resilience with circuit breakers. Consistency: idempotency keys, saga for cross-service transactions. How to scale & deploy (Compose for dev, Kubernetes for prod).  Ghi âm toàn bộ 45 phút, nghe lại, đánh dấu thuật ngữ chưa trôi để luyện lại tuần sau.
 
 ### 📖 Lý Thuyết Cốt Lõi (Review T1-T9)
 

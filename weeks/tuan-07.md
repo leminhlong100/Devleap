@@ -16,10 +16,6 @@
 
 **22/06 — Thứ 2** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Vocalmax + Parroto Shadowing · 15 phút*
->
-> **Vocalmax 10 từ:** authentication, authorization, principal, credential, filter chain, granted authority, security context, stateless, role, permission. **Parroto shadow:** "Authentication verifies who you are; authorization decides what you can do."
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Authentication vs Authorization**
@@ -134,10 +130,6 @@ CSRF (Cross-Site Request Forgery): browser tự gửi cookies (session) trong re
 ## 💪 Ngày 2 · JWT: cấu trúc, tạo/validate, stateless auth
 
 **23/06 — Thứ 3** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "A JWT consists of a header, a payload, and a signature", "The token is signed to prevent tampering", "Stateless authentication scales horizontally". **Vocalmax:** token, claim, signature, payload, header, bearer, expiration, secret key, decode, tamper.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -280,10 +272,6 @@ Access token nên short-lived (15p-1h) để giảm rủi ro nếu bị lộ. Nh
 
 **24/06 — Thứ 4** · **FULL** · ⏱ 30 phút sáng + 2h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "The @PreAuthorize annotation checks permissions before the method runs", "Passwords must be hashed, never stored in plain text", "Role-based access control restricts actions by user role". **Vocalmax:** role, authority, permission, hash, salt, bcrypt, pre-authorize, method security, hierarchy, grant.
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Role vs Authority**
@@ -414,10 +402,6 @@ Dùng Spring AOP proxy — wrap method, evaluate SpEL expression trước khi ch
 ## 💪 Ngày 4 · JUnit 5: @Test, assertions, lifecycle, @ParameterizedTest, AAA
 
 **25/06 — Thứ 5** · **FULL** · ⏱ 30 phút sáng + 2h tối
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 20 phút*
->
-> **Câu shadowing:** "A unit test verifies a single piece of behavior in isolation", "Arrange, act, assert is the standard test structure", "Parameterized tests run the same test with different inputs". **Vocalmax:** unit test, assertion, fixture, lifecycle, parameterized, arrange act assert, edge case, coverage, isolation, regression.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -554,10 +538,6 @@ Mỗi test độc lập, không phụ thuộc thứ tự/state test khác. JUnit
 
 **26/06 — Thứ 6** · **LIGHT** · ⏱ 30 phút sáng + 1h tối
 
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Vocalmax + Parroto · 15 phút*
->
-> **Vocalmax 10 từ:** mock, stub, spy, verify, dependency, isolation, behavior, interaction, test slice, integration. **Parroto shadow:** "Mockito lets you replace dependencies with controllable fake objects."
-
 ### 📖 Lý Thuyết Cốt Lõi
 
 **Tại sao Mockito**
@@ -683,10 +663,6 @@ Mock: fake hoàn toàn, mọi method trả default (null/0) trừ khi stub. Spy:
 ## 🔥 Ngày 6 · RAG: embeddings, VectorStore, PGVector, similarity search
 
 **27/06 — Thứ 7** · **WEEKEND** · ⏱ 4h (sáng + chiều)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Parroto Shadowing · 30 phút*
->
-> Nghe + shadow "Introduction to RAG and Vector Databases" 30 phút, practice câu phỏng vấn EN về RAG. **Vocalmax:** review 20 từ Security/Testing/RAG khó nhất tuần.
 
 ### 📖 Lý Thuyết Cốt Lõi
 
@@ -836,10 +812,6 @@ RAG: inject knowledge runtime, update dễ (thêm docs), rẻ, grounding tốt, 
 ## 🎯 Ngày 7 · Spaced Review T1-T7 + Mini Project
 
 **28/06 — CN** · **REVIEW** · ⏱ 4h (ôn tập + project)
-
-> 🌏 **TIẾNG ANH — HỌC TRƯỚC (trên app)** · *Mock Interview EN · 30 phút*
->
-> Mock interview EN — trả lời 10 câu tuần 7 to ra tiếng Anh, record 2 câu hay nhất. Luyện STAR method kể chuyện về implement authentication/testing.
 
 ### 📖 Lý Thuyết Cốt Lõi
 

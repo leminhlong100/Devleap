@@ -115,7 +115,7 @@ function openFeatured() {
           <div class="feat-emoji">☕</div>
           <div class="feat-left-top">
             <span class="feat-tag">🔥 ĐANG HỌC</span>
-            <h3 class="feat-title">Java + Tiếng Anh<br />12 Tuần Bứt Phá</h3>
+            <h3 class="feat-title">Java<br />12 Tuần Bứt Phá</h3>
           </div>
           <div class="feat-progress">
             <div class="feat-progress-top"><span>Tiến độ của bạn</span><span>{{ prog.pct }}%</span></div>
@@ -124,8 +124,8 @@ function openFeatured() {
         </div>
         <div class="feat-right">
           <p>
-            Từ OOP cơ bản đến Microservices, Spring AI & System Design. Mỗi ngày kèm
-            <b>10 từ vựng IT</b> để vừa code giỏi vừa giao tiếp tốt — sẵn sàng đi làm Backend.
+            Từ OOP cơ bản đến Microservices, Spring AI & System Design. Lý thuyết cốt lõi,
+            code mẫu gõ tay và câu hỏi phỏng vấn mỗi ngày — sẵn sàng đi làm Backend.
           </p>
           <div class="feat-stats">
             <div><div class="stat-n sm">{{ javaTotals.weeks }}</div><div class="stat-l">tuần</div></div>

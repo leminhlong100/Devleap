@@ -19,8 +19,8 @@ export const courses = [
     category: '💻 Lập trình',
     routeName: 'java',
     emoji: '☕',
-    name: 'Java + Tiếng Anh 12 Tuần Bứt Phá',
-    desc: 'Từ OOP đến Microservices, Spring AI & System Design — kèm từ vựng IT mỗi ngày.',
+    name: 'Java 12 Tuần Bứt Phá',
+    desc: 'Từ OOP đến Microservices, Spring AI & System Design — sẵn sàng đi làm Backend.',
     weeks: javaTotals.weeks,
     lessons: javaTotals.lessons,
     level: 'Trung cấp',
@@ -84,7 +84,7 @@ export const javaStages = {
 // tính động trong JavaCourseView từ store, nên không để ở đây nữa.
 export const javaMeta = {
   badge: '☕ JAVA BACKEND · TRUNG CẤP',
-  title: 'Lộ Trình Java + Tiếng Anh\n12 Tuần Bứt Phá',
+  title: 'Lộ Trình Java\n12 Tuần Bứt Phá',
   desc: 'Bản đồ chinh phục từng tuần. Hoàn thành một chặng để mở khóa chặng tiếp theo, giữ streak và leo bảng xếp hạng.',
   totalWeeks: javaTotals.weeks,
   goalTitle: 'Đích đến: sẵn sàng đi làm Backend!',

@@ -56,15 +56,14 @@ export function buildSearchIndex() {
   const entries = []
 
   // -------------------- JAVA --------------------
-  // Một entry per từ vựng/câu hỏi, gộp trùng theo nội dung trong cùng khóa.
-  const vocabSeen = new Map() // termNorm -> entry (giữ lần xuất hiện đầu)
+  // Một entry per bài học/câu hỏi, gộp trùng câu hỏi theo nội dung trong khóa.
   const termSeen = new Map()
 
   for (const week of javaWeeksData) {
     for (const day of week.days) {
       const ctx = `Tuần ${week.num} · Ngày ${day.n}`
       const route = { name: 'java-day', params: { week: week.num, day: day.n } }
-      const snippet = clip(stripHtml(day.contentHtml) || stripHtml(day.englishHtml))
+      const snippet = clip(stripHtml(day.contentHtml))
 
       entries.push(
         finalize({
@@ -83,38 +82,9 @@ export function buildSearchIndex() {
             clean(week.title),
             ...day.exercises.map(clean),
             ...day.questions.map((q) => clean(q.prompt)),
-            ...(day.vocab || []),
           ],
         }),
       )
-
-      // Từ vựng tiếng Anh của ngày.
-      for (const term of day.vocab || []) {
-        const key = normalize(term)
-        if (!key) continue
-        const hit = vocabSeen.get(key)
-        if (hit) {
-          hit._count++
-          continue
-        }
-        const e = finalize({
-          id: `java-v-${week.num}-${day.n}-${key}`,
-          type: 'vocab',
-          course: 'java',
-          courseLabel: 'Java',
-          icon: '🔤',
-          title: clean(term),
-          subtitle: `Từ vựng · ${ctx}`,
-          snippet: '',
-          week: week.num,
-          day: day.n,
-          route,
-          keywords: [],
-        })
-        e._count = 1
-        vocabSeen.set(key, e)
-        entries.push(e)
-      }
 
       // Câu hỏi phỏng vấn = thuật ngữ/chủ đề Java.
       for (const q of day.questions) {
