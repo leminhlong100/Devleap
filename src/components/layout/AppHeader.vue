@@ -138,6 +138,7 @@ async function signOut() {
   align-items: center;
   gap: 6px;
   margin-left: 6px;
+  flex: none;
 }
 .nav-link {
   padding: 9px 15px;
@@ -146,6 +147,7 @@ async function signOut() {
   font-weight: 600;
   cursor: pointer;
   color: #5a5a72;
+  white-space: nowrap;
   transition: all 0.15s;
 }
 .nav-link:hover {
