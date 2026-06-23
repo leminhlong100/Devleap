@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
@@ -29,6 +29,11 @@ const syncLabel = computed(
 )
 
 const menuOpen = ref(false)
+const navOpen = ref(false)
+// Đóng menu mobile khi chuyển trang.
+watch(activeKey, () => {
+  navOpen.value = false
+})
 async function signIn() {
   await auth.signInWithGoogle()
 }
@@ -41,18 +46,29 @@ async function signOut() {
 <template>
   <header class="header">
     <div class="header-inner">
+      <button
+        class="nav-toggle"
+        :class="{ open: navOpen }"
+        :aria-expanded="navOpen"
+        aria-label="Mở menu"
+        @click="navOpen = !navOpen"
+      >
+        <span></span><span></span><span></span>
+      </button>
+
       <RouterLink :to="{ name: 'home' }" class="logo">
         <MascotLogo :width="44" :height="47" uid="hdr" />
         <span class="logo-text">Dev<span class="brand-text">leap</span></span>
       </RouterLink>
 
-      <nav class="nav">
+      <nav class="nav" :class="{ open: navOpen }">
         <RouterLink
           v-for="item in nav"
           :key="item.name"
           :to="item.to"
           class="nav-link"
           :class="{ active: isActive(item) }"
+          @click="navOpen = false"
         >
           {{ item.name }}
         </RouterLink>
@@ -139,6 +155,37 @@ async function signOut() {
   gap: 6px;
   margin-left: 6px;
   flex: none;
+}
+/* Nút hamburger — chỉ hiện trên mobile (bật ở media query bên dưới) */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0 9px;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  background: #fff;
+  border-radius: 11px;
+  cursor: pointer;
+  flex: none;
+}
+.nav-toggle span {
+  display: block;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--purple);
+  transition: transform 0.2s, opacity 0.2s;
+}
+.nav-toggle.open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+.nav-toggle.open span:nth-child(2) {
+  opacity: 0;
+}
+.nav-toggle.open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
 }
 .nav-link {
   padding: 9px 15px;
@@ -346,21 +393,38 @@ async function signOut() {
 }
 @media (max-width: 720px) {
   .header-inner {
-    gap: 14px;
+    gap: 12px;
     padding: 12px 18px;
-    flex-wrap: wrap;
   }
-  /* Nav xuống một hàng riêng, cuộn ngang thay vì làm tràn trang */
+  .nav-toggle {
+    display: flex;
+  }
+  /* Nav trở thành panel xổ xuống dưới header, ẩn mặc định */
   .nav {
-    order: 3;
-    flex: 1 1 100%;
-    min-width: 0;
-    margin-left: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-left: 0;
+    padding: 10px 18px 16px;
+    background: rgba(247, 248, 252, 0.98);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(108, 92, 231, 0.12);
+    box-shadow: 0 16px 32px rgba(108, 92, 231, 0.12);
+  }
+  .nav.open {
+    display: flex;
+  }
+  .nav-link {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+  .header-right {
+    gap: 10px;
   }
   .xp-info {
     display: none;
