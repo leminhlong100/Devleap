@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { groupIntoSentences, tidyText } from '@/lib/shadowingSegment'
+import { groupIntoSentences, splitIntoSentences, tidyText } from '@/lib/shadowingSegment'
+import { parseVideoId } from '@/lib/youtube'
 
 // Dòng phụ đề tính bằng mili-giây, đúng định dạng youtube-transcript trả về.
 const L = (text, offset, duration) => ({ text, offset, duration })
@@ -62,5 +63,56 @@ describe('shadowingSegment — groupIntoSentences', () => {
   it('mảng rỗng trả về []', () => {
     expect(groupIntoSentences([])).toEqual([])
     expect(groupIntoSentences(null)).toEqual([])
+  })
+})
+
+describe('shadowingSegment — splitIntoSentences', () => {
+  it('gộp đuôi đoạn này với đầu đoạn kế thành một câu trọn vẹn', () => {
+    const out = splitIntoSentences([
+      { id: 1, text: 'This is a fluent', start: 0, end: 4 },
+      { id: 2, text: 'American. I will play.', start: 4, end: 8 },
+    ])
+    expect(out.map((s) => s.text)).toEqual(['This is a fluent American.', 'I will play.'])
+    expect(out[0].start).toBe(0)
+    expect(out[1].end).toBe(8)
+  })
+
+  it('tách một đoạn chứa hai câu', () => {
+    const out = splitIntoSentences([{ id: 1, text: 'Hello there. How are you?', start: 0, end: 6 }])
+    expect(out).toHaveLength(2)
+    expect(out[0].text).toBe('Hello there.')
+    expect(out[1].text).toBe('How are you?')
+  })
+
+  it('không ngắt ở viết tắt như "Mr."', () => {
+    const out = splitIntoSentences([{ id: 1, text: 'I met Mr. Smith today.', start: 0, end: 5 }])
+    expect(out).toHaveLength(1)
+    expect(out[0].text).toBe('I met Mr. Smith today.')
+  })
+
+  it('câu cuối không có dấu kết vẫn được giữ', () => {
+    const out = splitIntoSentences([{ id: 1, text: 'Done. And then', start: 0, end: 4 }])
+    expect(out.map((s) => s.text)).toEqual(['Done.', 'And then'])
+  })
+
+  it('mảng rỗng / null trả về []', () => {
+    expect(splitIntoSentences([])).toEqual([])
+    expect(splitIntoSentences(null)).toEqual([])
+  })
+})
+
+describe('youtube — parseVideoId', () => {
+  it('nhận dạng các kiểu URL phổ biến', () => {
+    expect(parseVideoId('https://www.youtube.com/watch?v=GpYsomFl6Bs')).toBe('GpYsomFl6Bs')
+    expect(parseVideoId('https://youtu.be/GpYsomFl6Bs?t=10')).toBe('GpYsomFl6Bs')
+    expect(parseVideoId('https://www.youtube.com/shorts/GpYsomFl6Bs')).toBe('GpYsomFl6Bs')
+    expect(parseVideoId('youtube.com/watch?v=GpYsomFl6Bs&list=abc')).toBe('GpYsomFl6Bs')
+    expect(parseVideoId('GpYsomFl6Bs')).toBe('GpYsomFl6Bs')
+  })
+
+  it('trả null với chuỗi không hợp lệ', () => {
+    expect(parseVideoId('')).toBe(null)
+    expect(parseVideoId('https://example.com/watch?v=abc')).toBe(null)
+    expect(parseVideoId('not a url')).toBe(null)
   })
 })

@@ -3,12 +3,54 @@ import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, watch } 
 import { loadYouTubeApi } from '@/lib/youtube'
 import { recognitionSupported, recognizeOnce } from '@/lib/speechRecognize'
 import { scoreTranscript, scoreVerdict } from '@/lib/pronounceScore'
+import { fetchSentenceIpa } from '@/lib/ipa'
 import { useUserStore } from '@/stores/user'
 
-// Một clip = { videoId, title, level, topic, sentences:[{id,text,start,end}] }
+// Một clip = { videoId, title, level, topic, sentences } với sentences là:
+//  - mảng [{id,text,start,end}] (clip gợi ý có sẵn), HOẶC
+//  - { ai:[…], original:[…] } (bài tải từ URL — có cả bản gốc & bản AI).
 const props = defineProps({ clip: { type: Object, required: true } })
 
-const sentences = computed(() => props.clip?.sentences || [])
+// —— Bản gốc / AI + danh sách câu đang luyện (có thể đã chỉnh sửa) ——
+const STORAGE = (vid, v) => `shadow-edit:${vid}:${v}`
+const hasVariants = computed(() => {
+  const s = props.clip?.sentences
+  return !!s && !Array.isArray(s) && !!(s.ai || s.original)
+})
+const variant = ref('ai') // 'ai' | 'original'
+function baseList() {
+  const s = props.clip?.sentences
+  if (!s) return []
+  if (Array.isArray(s)) return s
+  return s[variant.value] || s.ai || s.original || []
+}
+const working = ref([]) // danh sách câu hiện hành (sau khi áp bản sửa nếu có)
+function loadWorking() {
+  try {
+    const saved = localStorage.getItem(STORAGE(props.clip.videoId, variant.value))
+    if (saved) {
+      working.value = JSON.parse(saved)
+      return
+    }
+  } catch {
+    /* localStorage bị chặn — dùng bản gốc */
+  }
+  working.value = baseList().map((s) => ({ ...s }))
+}
+function persistEdits() {
+  try {
+    localStorage.setItem(STORAGE(props.clip.videoId, variant.value), JSON.stringify(working.value))
+  } catch {
+    /* hết chỗ / bị chặn — bỏ qua */
+  }
+}
+function setVariant(v) {
+  if (v === variant.value) return
+  variant.value = v
+  resetPlayback()
+  loadWorking()
+}
+const sentences = computed(() => working.value)
 
 // ---- Trình phát YouTube ----
 const mountEl = ref(null)
@@ -33,12 +75,91 @@ const endOf = (s) => s.end + PAD
 const activeSentence = computed(() => sentences.value.find((s) => s.id === activeId.value) || null)
 const activeIndex = computed(() => sentences.value.findIndex((s) => s.id === activeId.value))
 
+// Mốc thời gian hiển thị kiểu "0:00.50 – 0:05.89 (5.4s)".
+const fmtClock = (s) => {
+  const m = Math.floor(s / 60)
+  return `${m}:${(s - m * 60).toFixed(2).padStart(5, '0')}`
+}
+const fmtRange = (s) => `${fmtClock(s.start)} – ${fmtClock(s.end)} (${(s.end - s.start).toFixed(1)}s)`
+
 function clearWatcher() {
   if (watcher) {
     clearInterval(watcher)
     watcher = null
   }
 }
+
+// Dừng phát & bỏ chọn câu (khi đổi bản gốc/AI hoặc sửa cấu trúc câu).
+function resetPlayback() {
+  clearWatcher()
+  activeId.value = null
+  playing.value = false
+  player?.pauseVideo?.()
+}
+
+// ---- Chế độ sửa câu: sửa chữ, gộp với câu kế, tách tại con trỏ ----
+const editing = ref(false)
+const caret = reactive({}) // id -> vị trí con trỏ trong textarea
+const renumber = () => working.value.forEach((s, i) => (s.id = i + 1))
+function onCaret(s, e) {
+  caret[s.id] = e.target.selectionStart
+}
+function editText(s, e) {
+  s.text = e.target.value
+  persistEdits()
+}
+function mergeDown(i) {
+  const a = working.value[i]
+  const b = working.value[i + 1]
+  if (!a || !b) return
+  a.text = `${a.text} ${b.text}`.replace(/\s+/g, ' ').trim()
+  a.end = b.end
+  working.value.splice(i + 1, 1)
+  renumber()
+  resetPlayback()
+  persistEdits()
+}
+function splitAt(i) {
+  const s = working.value[i]
+  if (!s) return
+  const pos = Math.min(Math.max(caret[s.id] ?? Math.floor(s.text.length / 2), 1), s.text.length - 1)
+  const left = s.text.slice(0, pos).trim()
+  const right = s.text.slice(pos).trim()
+  if (!left || !right) return
+  const mid = Math.round((s.start + (s.end - s.start) * (pos / s.text.length)) * 100) / 100
+  working.value.splice(i, 1, { ...s, text: left, end: mid }, { ...s, text: right, start: mid })
+  renumber()
+  resetPlayback()
+  persistEdits()
+}
+function resetEdits() {
+  try {
+    localStorage.removeItem(STORAGE(props.clip.videoId, variant.value))
+  } catch {
+    /* bỏ qua */
+  }
+  resetPlayback()
+  loadWorking()
+}
+
+// ---- IPA dưới câu đang phát (tra theo từ, có cache) ----
+const ipaOn = ref(true)
+const ipaWords = ref([]) // [{ word, ipa }]
+const ipaLoading = ref(false)
+let ipaToken = 0
+async function loadIpaFor(s) {
+  ipaWords.value = []
+  if (!s || !ipaOn.value) return
+  const token = ++ipaToken
+  ipaLoading.value = true
+  try {
+    const res = await fetchSentenceIpa(s.text.split(/\s+/))
+    if (token === ipaToken) ipaWords.value = res
+  } finally {
+    if (token === ipaToken) ipaLoading.value = false
+  }
+}
+watch([activeSentence, ipaOn], ([s]) => loadIpaFor(s))
 
 // Theo dõi thời gian phát: tới cuối câu thì lặp lại (nếu bật) hoặc dừng.
 function watchSentence(s) {
@@ -286,6 +407,8 @@ async function initPlayer() {
 }
 
 onMounted(() => {
+  variant.value = 'ai'
+  loadWorking()
   hydrateBest()
   initPlayer()
   document.addEventListener('click', onDocClick)
@@ -303,6 +426,10 @@ watch(
     playing.value = false
     attemptError.value = ''
     justCompleted.value = false
+    editing.value = false
+    variant.value = 'ai' // bài mới -> về bản AI
+    loadWorking()
+    ipaWords.value = []
     // Dọn điểm/bản thu của bài cũ (kết quả đã lưu vào store rồi).
     Object.values(recordings).forEach((url) => URL.revokeObjectURL(url))
     for (const k of Object.keys(recordings)) delete recordings[k]
@@ -328,151 +455,154 @@ onBeforeUnmount(() => {
 <template>
   <div class="sh-player">
     <div class="sh-head">
-      <div>
-        <span class="sh-level">{{ clip.level }}</span>
-        <h2 class="sh-title">{{ clip.title }}</h2>
-        <p class="sh-topic">Chủ đề: {{ clip.topic }} · {{ sentences.length }} câu</p>
-      </div>
+      <span class="sh-level">{{ clip.level }}</span>
+      <h2 class="sh-title">{{ clip.title }}</h2>
+      <p class="sh-topic">{{ clip.topic }}</p>
     </div>
 
     <div class="sh-stage">
-      <!-- Cột trái: video + điều khiển + tổng kết (dính lại khi cuộn trên màn rộng) -->
+      <!-- Cột trái: video + bảng điều khiển kèm câu đang luyện (dính khi cuộn) -->
       <div class="sh-left">
-      <!-- Trình phát YouTube -->
-      <div class="sh-video">
-        <div ref="mountEl" class="sh-iframe"></div>
-        <div v-if="!playerReady" class="sh-loading">Đang tải trình phát…</div>
-      </div>
-
-      <!-- Thanh điều khiển chung -->
-      <div class="sh-bar">
-        <button class="sh-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="step(-1)">⏮</button>
-        <button v-if="!playing" class="sh-ctrl primary" :disabled="!activeSentence" title="Phát lại câu" @click="replay">▶ Phát câu</button>
-        <button v-else class="sh-ctrl primary" title="Tạm dừng" @click="pause">⏸ Dừng</button>
-        <button class="sh-ctrl" :disabled="activeIndex < 0 || activeIndex >= sentences.length - 1" title="Câu sau" @click="step(1)">⏭</button>
-
-        <button class="sh-ctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁 Lặp</button>
-
-        <div ref="ratesEl" class="sh-rates">
-          <button
-            class="sh-rate-toggle"
-            :class="{ open: rateMenuOpen }"
-            title="Tốc độ phát"
-            @click="rateMenuOpen = !rateMenuOpen"
-          >
-            🐢 {{ rate }}× <span class="sh-rate-caret">▾</span>
-          </button>
-          <div v-if="rateMenuOpen" class="sh-rate-menu">
-            <button
-              v-for="r in RATES"
-              :key="r"
-              class="sh-rate"
-              :class="{ on: rate === r }"
-              @click="setRate(r)"
-            >
-              {{ r }}×
-            </button>
-          </div>
+        <div class="sh-video">
+          <div ref="mountEl" class="sh-iframe"></div>
+          <div v-if="!playerReady" class="sh-loading">Đang tải trình phát…</div>
         </div>
-      </div>
-      <p class="sh-hint">
-        Bấm một câu để phát đúng đoạn đó. Bật 🔁 để lặp, giảm 🐢 tốc độ, rồi bấm
-        <b>🎤 Nói thử</b> — một nút vừa <b>chấm điểm</b> vừa <b>giữ bản thu để nghe lại</b>.
-      </p>
-      <p class="sh-keys">
-        Phím tắt: <kbd>Space</kbd> phát lại câu · <kbd>←</kbd><kbd>→</kbd> câu trước/sau ·
-        <kbd>L</kbd> lặp · <kbd>R</kbd> nói thử
-      </p>
-      <p v-if="!canScore" class="sh-note">
-        ⓘ Chấm điểm giọng nói cần Chrome hoặc Edge. Trình duyệt khác vẫn nói thử được để tự nghe lại bản thu.
-      </p>
 
-      <!-- Tổng kết cả bài: ĐẠT khi xong TẤT CẢ câu (mỗi câu ≥ SENT_PASS%) và điểm trung bình ≥ CLIP_AVG_PASS% -->
-      <div class="sh-clip-sum" :class="{ passed: clipPassed }">
-        <div class="sh-sum-main">
+        <!-- Bảng điều khiển + câu đang luyện -->
+        <div class="sh-panel">
+          <div class="sh-panel-top">
+            <span class="sh-status">{{ playing ? '● Đang phát' : '❚❚ Tạm dừng' }}</span>
+            <div v-if="hasVariants" class="sh-seg">
+              <button class="sh-seg-btn" :class="{ on: variant === 'original' }" @click="setVariant('original')">Bản gốc</button>
+              <button class="sh-seg-btn" :class="{ on: variant === 'ai' }" @click="setVariant('ai')">AI</button>
+            </div>
+          </div>
+
+          <div class="sh-controls">
+            <button class="sh-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="step(-1)">⏮</button>
+            <button v-if="!playing" class="sh-ctrl primary" :disabled="!activeSentence" title="Phát lại câu" @click="replay">▶</button>
+            <button v-else class="sh-ctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
+            <button class="sh-ctrl" :disabled="activeIndex < 0 || activeIndex >= sentences.length - 1" title="Câu sau" @click="step(1)">⏭</button>
+            <button class="sh-ctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁</button>
+            <div ref="ratesEl" class="sh-rates">
+              <button class="sh-rate-toggle" :class="{ open: rateMenuOpen }" title="Tốc độ phát" @click="rateMenuOpen = !rateMenuOpen">
+                {{ rate }}× <span class="sh-rate-caret">▾</span>
+              </button>
+              <div v-if="rateMenuOpen" class="sh-rate-menu">
+                <button v-for="r in RATES" :key="r" class="sh-rate" :class="{ on: rate === r }" @click="setRate(r)">{{ r }}×</button>
+              </div>
+            </div>
+            <button class="sh-ctrl chip" :class="{ on: ipaOn }" title="Phiên âm IPA" @click="ipaOn = !ipaOn">IPA</button>
+          </div>
+
+          <!-- Câu đang luyện: chữ lớn + IPA dưới từng từ -->
+          <div class="sh-current">
+            <template v-if="activeSentence">
+              <div class="sh-current-text">
+                <template v-if="ipaOn && ipaWords.length">
+                  <span v-for="(w, i) in ipaWords" :key="i" class="sh-cw">
+                    <span class="sh-cw-text">{{ w.word }}</span>
+                    <span class="sh-cw-phon">{{ w.ipa || '·' }}</span>
+                  </span>
+                </template>
+                <span v-else class="sh-current-plain">{{ activeSentence.text }}</span>
+              </div>
+              <button
+                class="sh-mic"
+                :class="{ listening: attemptingId === activeId }"
+                :title="attemptingId === activeId ? 'Dừng' : 'Nói thử'"
+                @click="attemptingId === activeId ? stopAttempt() : attempt(activeSentence)"
+              >🎤</button>
+            </template>
+            <p v-else class="sh-current-empty">Bấm một câu bên phải để bắt đầu luyện.</p>
+          </div>
+
+          <!-- Bản thu + kết quả chấm điểm của câu đang luyện -->
+          <div v-if="activeSentence && recordings[activeId]" class="sh-playback">
+            <audio :src="recordings[activeId]" controls class="sh-audio"></audio>
+          </div>
+          <div v-if="activeSentence && scores[activeId]" class="sh-result" :class="scores[activeId].verdict.kind">
+            <div class="sh-result-top">
+              <span class="sh-score-num">{{ scores[activeId].score }}%</span>
+              <span class="sh-verdict">{{ scores[activeId].verdict.label }}</span>
+              <span class="sh-hit">{{ scores[activeId].hit }}/{{ scores[activeId].total }} từ đúng</span>
+            </div>
+            <div class="sh-words">
+              <span v-for="(w, i) in scores[activeId].words" :key="i" class="sh-word" :class="{ miss: !w.ok }">{{ w.word }}</span>
+            </div>
+            <div class="sh-heard">Bạn nói: “{{ scores[activeId].heard }}”</div>
+          </div>
+          <p v-if="attemptError" class="sh-mic-err">⚠️ {{ attemptError }}</p>
+        </div>
+
+        <!-- Tổng kết cả bài -->
+        <div class="sh-clip-sum" :class="{ passed: clipPassed }">
           <div class="sh-sum-score">
             <span class="sh-sum-num">{{ clipScore }}%</span>
             <span class="sh-sum-cap">điểm TB</span>
           </div>
           <div class="sh-sum-info">
             <div class="sh-sum-bar"><div class="sh-sum-fill" :style="{ width: clipScore + '%' }"></div></div>
-            <div class="sh-sum-meta">
-              Cần xong tất cả {{ sentences.length }} câu (mỗi câu ≥ {{ SENT_PASS }}%) và trung bình ≥ {{ CLIP_AVG_PASS }}%
-              · đã xong {{ doneCount }}/{{ sentences.length }} câu
-            </div>
             <div class="sh-sum-meta-mini">Đã xong {{ doneCount }}/{{ sentences.length }} câu</div>
           </div>
+          <div v-if="clipPassed" class="sh-sum-badge done">✓ Hoàn thành</div>
+          <div v-else class="sh-sum-badge">{{ missLabel }}</div>
         </div>
-        <div v-if="clipPassed" class="sh-sum-badge done">✓ Hoàn thành</div>
-        <div v-else class="sh-sum-badge">{{ missLabel }}</div>
-      </div>
-      <p v-if="justCompleted" class="sh-congrats">🎉 Chúc mừng! Bạn đã hoàn thành bài này (+{{ 120 }} XP).</p>
-
-      <p v-if="attemptError" class="sh-mic-err">⚠️ {{ attemptError }}</p>
+        <p v-if="justCompleted" class="sh-congrats">🎉 Hoàn thành bài này (+120 XP).</p>
       </div>
 
-      <!-- Cột phải: danh sách câu để đọc/đối chiếu -->
+      <!-- Cột phải: danh sách câu -->
       <div class="sh-right">
-      <!-- Danh sách câu -->
-      <ol ref="listEl" class="sh-list">
-        <li
-          v-for="s in sentences"
-          :key="s.id"
-          :ref="(el) => (rowEls[s.id] = el)"
-          class="sh-row"
-          :class="{ active: s.id === activeId }"
-        >
-          <div class="sh-row-main">
-            <button class="sh-play" :title="`Phát câu ${s.id}`" @click="playSentence(s)">
-              {{ s.id === activeId && playing ? '🔊' : '▶' }}
+        <div class="sh-list-head">
+          <span class="sh-list-count">{{ sentences.length }} câu</span>
+          <div class="sh-list-tools">
+            <div v-if="hasVariants" class="sh-seg">
+              <button class="sh-seg-btn" :class="{ on: variant === 'original' }" @click="setVariant('original')">Bản gốc</button>
+              <button class="sh-seg-btn" :class="{ on: variant === 'ai' }" @click="setVariant('ai')">AI</button>
+            </div>
+            <button class="sh-tool-btn" :class="{ on: editing }" title="Sửa cách ngắt câu" @click="editing = !editing">✎ {{ editing ? 'Xong' : 'Sửa' }}</button>
+            <button v-if="editing" class="sh-tool-btn" title="Khôi phục bản gốc" @click="resetEdits">↺</button>
+          </div>
+        </div>
+
+        <ol ref="listEl" class="sh-list">
+          <li
+            v-for="(s, index) in sentences"
+            :key="s.id"
+            :ref="(el) => (rowEls[s.id] = el)"
+            class="sh-row"
+            :class="{ active: s.id === activeId, done: isSentDone(s.id) }"
+          >
+            <!-- Chế độ sửa -->
+            <div v-if="editing" class="sh-edit">
+              <textarea
+                class="sh-edit-text"
+                :value="s.text"
+                rows="2"
+                @input="editText(s, $event)"
+                @keyup="onCaret(s, $event)"
+                @click="onCaret(s, $event)"
+                @select="onCaret(s, $event)"
+              ></textarea>
+              <div class="sh-edit-btns">
+                <button class="sh-edit-btn" title="Tách tại con trỏ" @click="splitAt(index)">✂ Tách</button>
+                <button class="sh-edit-btn" :disabled="index >= sentences.length - 1" title="Gộp với câu kế" @click="mergeDown(index)">⬇ Gộp</button>
+              </div>
+            </div>
+
+            <!-- Hàng câu: badge + chữ + thời gian -->
+            <button v-else class="sh-row-btn" @click="playSentence(s)">
+              <span class="sh-badge" :class="{ done: isSentDone(s.id) }">
+                {{ isSentDone(s.id) ? '✓' : index + 1 }}
+              </span>
+              <span class="sh-row-body">
+                <span class="sh-text">{{ s.text }}</span>
+                <span class="sh-time">{{ fmtRange(s) }}</span>
+              </span>
+              <span v-if="bestScores[s.id] != null && !isSentDone(s.id)" class="sh-best-chip">{{ bestScores[s.id] }}%</span>
             </button>
-            <div class="sh-text" @click="playSentence(s)">{{ s.text }}</div>
-
-            <div class="sh-actions">
-              <span
-                v-if="bestScores[s.id] != null"
-                class="sh-best-chip"
-                :class="{ done: isSentDone(s.id) }"
-                :title="isSentDone(s.id) ? 'Câu đã đạt' : 'Điểm tốt nhất của câu'"
-              >{{ isSentDone(s.id) ? '✓ ' : '' }}{{ bestScores[s.id] }}%</span>
-              <button
-                class="sh-score-btn"
-                :class="{ listening: attemptingId === s.id, redo: scores[s.id] || recordings[s.id] }"
-                :disabled="attemptingId && attemptingId !== s.id"
-                :title="attemptingId === s.id ? 'Dừng' : 'Nói thử: chấm điểm + giữ bản thu'"
-                @click="attemptingId === s.id ? stopAttempt() : attempt(s)"
-              >
-                {{ attemptingId === s.id ? '⏹ Đang nghe…' : (scores[s.id] || recordings[s.id]) ? '🎤 Nói lại' : '🎤 Nói thử' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Bản thu của người học để tự nghe lại -->
-          <div v-if="recordings[s.id]" class="sh-playback">
-            <span class="sh-playback-label">Bản thu của bạn</span>
-            <audio :src="recordings[s.id]" controls class="sh-audio"></audio>
-          </div>
-
-          <!-- Kết quả chấm điểm: từ đọc đúng giữ màu, từ sai/thiếu tô đỏ gạch -->
-          <div v-if="scores[s.id]" class="sh-result" :class="scores[s.id].verdict.kind">
-            <div class="sh-result-top">
-              <span class="sh-score-num">{{ scores[s.id].score }}%</span>
-              <span class="sh-verdict">{{ scores[s.id].verdict.label }}</span>
-              <span class="sh-hit">{{ scores[s.id].hit }}/{{ scores[s.id].total }} từ đúng</span>
-              <span v-if="isSentDone(s.id)" class="sh-done-chip">✓ Đạt câu</span>
-            </div>
-            <div class="sh-words">
-              <span
-                v-for="(w, i) in scores[s.id].words"
-                :key="i"
-                class="sh-word"
-                :class="{ miss: !w.ok }"
-              >{{ w.word }}</span>
-            </div>
-            <div class="sh-heard">Bạn nói: “{{ scores[s.id].heard }}”</div>
-          </div>
-        </li>
-      </ol>
+          </li>
+        </ol>
       </div>
     </div>
   </div>
@@ -482,16 +612,16 @@ onBeforeUnmount(() => {
 .sh-player {
   background: #fff;
   border: 1px solid rgba(108, 92, 231, 0.1);
-  border-radius: 28px;
-  padding: 28px;
-  box-shadow: 0 18px 50px rgba(108, 92, 231, 0.1);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(108, 92, 231, 0.08);
 }
 .sh-head {
   margin-bottom: 18px;
 }
 .sh-level {
   display: inline-block;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   color: var(--purple);
   background: var(--purple-soft);
@@ -499,29 +629,45 @@ onBeforeUnmount(() => {
   border-radius: 99px;
 }
 .sh-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-top: 8px;
 }
 .sh-topic {
-  font-size: 14px;
-  color: #7a7a92;
+  font-size: 13.5px;
+  color: var(--muted);
   margin-top: 4px;
 }
+
+/* —— Bố cục 2 cột —— */
+.sh-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+@media (min-width: 960px) {
+  .sh-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .sh-left {
+    position: sticky;
+    top: 78px;
+  }
+}
+
+/* —— Video —— */
 .sh-video {
-  position: sticky;
-  /* lùi xuống dưới header dính (cao 65px) để không bị che */
-  top: 73px;
-  z-index: 5;
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
   background: #000;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }
-/* YouTube API thay thế thẻ div bằng iframe (mất class), nên target qua .sh-video. */
 .sh-iframe,
 .sh-video :deep(iframe) {
   width: 100%;
@@ -537,21 +683,66 @@ onBeforeUnmount(() => {
   color: #fff;
   font-size: 14px;
 }
-.sh-bar {
+
+/* —— Bảng điều khiển + câu đang luyện —— */
+.sh-panel {
+  margin-top: 14px;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: #fbfaff;
+}
+.sh-panel-top {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 10px;
-  margin-top: 16px;
+  margin-bottom: 12px;
+}
+.sh-status {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+}
+.sh-seg {
+  display: inline-flex;
+  background: #efeafc;
+  border-radius: 10px;
+  padding: 3px;
+}
+.sh-seg-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted-2);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sh-seg-btn.on {
+  background: #fff;
+  color: var(--purple);
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.18);
+}
+.sh-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .sh-ctrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
   border: 1px solid rgba(108, 92, 231, 0.18);
   background: #fff;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 9px 14px;
-  border-radius: 12px;
+  border-radius: 11px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -559,7 +750,7 @@ onBeforeUnmount(() => {
   background: var(--purple-soft);
 }
 .sh-ctrl:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 .sh-ctrl.primary {
@@ -572,25 +763,33 @@ onBeforeUnmount(() => {
   color: #fff;
   border-color: var(--purple);
 }
+.sh-ctrl.chip {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.sh-ctrl.chip.on {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+}
 .sh-rates {
   position: relative;
-  display: flex;
-  align-items: center;
   margin-left: auto;
 }
 .sh-rate-toggle {
+  height: 40px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   border: 1px solid rgba(108, 92, 231, 0.18);
   background: #fff;
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
-  padding: 9px 13px;
-  border-radius: 12px;
+  padding: 0 13px;
+  border-radius: 11px;
   cursor: pointer;
-  transition: all 0.15s;
 }
 .sh-rate-toggle:hover,
 .sh-rate-toggle.open {
@@ -598,12 +797,8 @@ onBeforeUnmount(() => {
   border-color: var(--purple);
 }
 .sh-rate-caret {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted-2);
-  transition: transform 0.15s;
-}
-.sh-rate-toggle.open .sh-rate-caret {
-  transform: rotate(180deg);
 }
 .sh-rate-menu {
   position: absolute;
@@ -618,16 +813,16 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(108, 92, 231, 0.18);
-  min-width: 84px;
+  min-width: 78px;
 }
 .sh-rate {
-  border: 1px solid transparent;
+  border: none;
   background: #fff;
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
-  padding: 8px 12px;
-  border-radius: 9px;
+  padding: 7px 12px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: center;
 }
@@ -638,292 +833,71 @@ onBeforeUnmount(() => {
   background: var(--purple);
   color: #fff;
 }
-.sh-sum-meta-mini {
-  display: none;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--muted-2);
-  margin-top: 6px;
-}
-.sh-hint {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 12px;
-}
-.sh-keys {
-  font-size: 12.5px;
-  color: var(--muted-2);
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-}
-.sh-keys kbd {
-  font-family: inherit;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--ink);
+
+/* —— Câu đang luyện —— */
+.sh-current {
+  position: relative;
+  margin-top: 14px;
+  padding: 18px 16px;
   background: #fff;
-  border: 1px solid rgba(108, 92, 231, 0.25);
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  padding: 1px 6px;
-  margin: 0 1px;
-}
-.sh-note {
-  font-size: 12.5px;
-  color: var(--muted-2);
-  background: rgba(108, 92, 231, 0.06);
-  border-radius: 10px;
-  padding: 8px 12px;
-  margin-top: 8px;
-}
-/* —— tổng kết cả bài —— */
-.sh-clip-sum {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 16px;
-  padding: 14px 18px;
-  border: 1px solid rgba(108, 92, 231, 0.16);
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f5f3ff, #ffffff);
-}
-.sh-clip-sum.passed {
-  border-color: rgba(0, 214, 143, 0.4);
-  background: linear-gradient(135deg, #eafff6, #ffffff);
-}
-.sh-sum-main {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
-}
-.sh-sum-score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: none;
-}
-.sh-sum-num {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--purple);
-  line-height: 1;
-}
-.sh-clip-sum.passed .sh-sum-num {
-  color: #00b377;
-}
-.sh-sum-cap {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted-2);
-  margin-top: 3px;
-}
-.sh-sum-info {
-  flex: 1;
-  min-width: 0;
-}
-.sh-sum-bar {
-  height: 9px;
-  border-radius: 99px;
-  background: #ececf5;
-  overflow: hidden;
-}
-.sh-sum-fill {
-  height: 100%;
-  border-radius: 99px;
-  background: var(--grad-brand, var(--grad-purple));
-  transition: width 0.4s;
-}
-.sh-clip-sum.passed .sh-sum-fill {
-  background: linear-gradient(90deg, #00d68f, #00b377);
-}
-.sh-sum-meta {
-  font-size: 12.5px;
-  color: var(--muted-2);
-  margin-top: 7px;
-}
-.sh-sum-prev {
-  font-weight: 700;
-  color: var(--purple);
-}
-.sh-sum-badge {
-  flex: none;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 7px 14px;
-  border-radius: 99px;
-  color: var(--muted-2);
-  background: #efeff7;
-}
-.sh-sum-badge.done {
-  color: #fff;
-  background: linear-gradient(135deg, #00d68f, #00b377);
-}
-.sh-congrats {
-  margin-top: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #00936a;
-  background: rgba(0, 214, 143, 0.1);
-  border: 1px solid rgba(0, 214, 143, 0.3);
-  padding: 10px 14px;
-  border-radius: 12px;
-}
-.sh-score-btn.redo {
-  background: #fff;
-}
-.sh-mic-err {
-  font-size: 13px;
-  font-weight: 700;
-  color: #d6512b;
-  background: rgba(214, 81, 43, 0.08);
-  border: 1px solid rgba(214, 81, 43, 0.25);
-  padding: 9px 13px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-.sh-list {
-  list-style: none;
-  margin: 18px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 460px;
-  overflow-y: auto;
-}
-/* —— màn rộng: chia hai cột, video bên trái dính, câu bên phải —— */
-@media (min-width: 960px) {
-  .sh-stage {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-  }
-  .sh-left {
-    position: sticky;
-    /* lùi xuống dưới header dính (cao 65px) */
-    top: 78px;
-    align-self: start;
-  }
-  /* video không cần tự dính nữa vì cả cột trái đã dính */
-  .sh-video {
-    position: relative;
-    top: 0;
-    box-shadow: none;
-  }
-  .sh-list {
-    margin-top: 0;
-    max-height: calc(100vh - 100px);
-  }
-}
-.sh-row {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 14px;
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 14px;
-  background: #fff;
-  transition: all 0.15s;
-}
-.sh-row.active {
-  border-color: var(--purple);
-  background: linear-gradient(135deg, #f5f3ff, #ffffff);
-}
-.sh-row-main {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  min-height: 72px;
+  display: flex;
   align-items: center;
-  gap: 12px;
 }
-.sh-play {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  border: 1px solid rgba(108, 92, 231, 0.16);
-  background: #fff;
-  color: var(--purple);
-  font-size: 15px;
-  cursor: pointer;
-  flex: none;
+.sh-current-text {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-right: 46px;
 }
-.sh-play:hover {
-  background: var(--purple-soft);
+.sh-cw {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
 }
-.sh-text {
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: #2f2f47;
-  cursor: pointer;
-}
-.sh-row.active .sh-text {
+.sh-cw-text {
+  font-size: 19px;
   font-weight: 700;
   color: var(--ink);
 }
-.sh-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
+.sh-cw-phon {
+  font-size: 12.5px;
+  color: var(--purple);
 }
-.sh-best-chip {
-  font-size: 12px;
-  font-weight: 800;
-  padding: 4px 9px;
-  border-radius: 99px;
-  color: var(--amber-ink);
-  background: rgba(255, 176, 32, 0.16);
-  white-space: nowrap;
+.sh-current-plain {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--ink);
 }
-.sh-best-chip.done {
-  color: #00936a;
-  background: rgba(0, 214, 143, 0.14);
+.sh-current-empty {
+  font-size: 14.5px;
+  color: var(--muted-2);
 }
-.sh-score-btn {
-  border: 1px solid rgba(108, 92, 231, 0.35);
+.sh-mic {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(108, 92, 231, 0.25);
   background: var(--purple-soft);
   color: var(--purple);
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 7px 11px;
-  border-radius: 10px;
+  font-size: 17px;
   cursor: pointer;
-  white-space: nowrap;
 }
-.sh-score-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+.sh-mic:hover {
+  background: #fff;
 }
-.sh-score-btn.listening {
+.sh-mic.listening {
   background: var(--purple);
   color: #fff;
   border-color: var(--purple);
-  animation: sh-pulse 1s infinite;
-}
-.sh-rec-btn {
-  border: 1px solid rgba(0, 214, 143, 0.4);
-  background: rgba(0, 214, 143, 0.08);
-  color: #00936a;
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 7px 11px;
-  border-radius: 10px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.sh-rec-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-.sh-rec-btn.rec {
-  background: #ff4757;
-  color: #fff;
-  border-color: #ff4757;
   animation: sh-pulse 1s infinite;
 }
 @keyframes sh-pulse {
@@ -931,36 +905,26 @@ onBeforeUnmount(() => {
     opacity: 0.55;
   }
 }
+
+/* —— Bản thu + kết quả chấm —— */
 .sh-playback {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.sh-playback-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted-2);
-  flex: none;
+  margin-top: 10px;
 }
 .sh-audio {
   height: 34px;
   width: 100%;
-  max-width: 280px;
 }
-/* —— kết quả chấm điểm —— */
 .sh-result {
+  margin-top: 10px;
   border-radius: 12px;
   padding: 12px 14px;
   background: var(--bg);
   border-left: 4px solid var(--purple);
 }
-.sh-result.great {
-  border-left-color: #00c281;
-  background: rgba(0, 214, 143, 0.07);
-}
+.sh-result.great,
 .sh-result.good {
   border-left-color: #00c281;
-  background: rgba(0, 214, 143, 0.05);
+  background: rgba(0, 214, 143, 0.06);
 }
 .sh-result.ok {
   border-left-color: #ffb020;
@@ -977,140 +941,320 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 .sh-score-num {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--ink);
 }
 .sh-verdict {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
 }
 .sh-hit {
-  font-size: 12.5px;
-  color: var(--muted-2);
-  font-weight: 600;
-}
-.sh-done-chip {
-  margin-left: auto;
   font-size: 12px;
-  font-weight: 800;
-  color: #00936a;
-  background: rgba(0, 214, 143, 0.14);
-  padding: 3px 10px;
-  border-radius: 99px;
-}
-.sh-xp {
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 800;
-  color: #00936a;
-  background: rgba(0, 214, 143, 0.14);
-  padding: 3px 10px;
-  border-radius: 99px;
-  animation: sh-pop 0.3s ease;
-}
-@keyframes sh-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
+  color: var(--muted-2);
 }
 .sh-words {
-  margin-top: 10px;
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px 7px;
+  gap: 4px 7px;
 }
 .sh-word {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 600;
   color: #1f7a52;
 }
 .sh-word.miss {
   color: #d6512b;
   text-decoration: line-through;
-  text-decoration-thickness: 1.5px;
   opacity: 0.75;
 }
 .sh-heard {
-  margin-top: 10px;
-  font-size: 13px;
+  margin-top: 8px;
+  font-size: 12.5px;
   font-style: italic;
   color: var(--muted);
 }
+.sh-mic-err {
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #d6512b;
+  background: rgba(214, 81, 43, 0.08);
+  border: 1px solid rgba(214, 81, 43, 0.22);
+  padding: 9px 12px;
+  border-radius: 10px;
+}
+
+/* —— Tổng kết —— */
+.sh-clip-sum {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border: 1px solid rgba(108, 92, 231, 0.14);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f5f3ff, #fff);
+}
+.sh-clip-sum.passed {
+  border-color: rgba(0, 214, 143, 0.4);
+  background: linear-gradient(135deg, #eafff6, #fff);
+}
+.sh-sum-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+}
+.sh-sum-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--purple);
+  line-height: 1;
+}
+.sh-clip-sum.passed .sh-sum-num {
+  color: #00b377;
+}
+.sh-sum-cap {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+  margin-top: 3px;
+}
+.sh-sum-info {
+  flex: 1;
+  min-width: 0;
+}
+.sh-sum-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: #ececf5;
+  overflow: hidden;
+}
+.sh-sum-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--grad-brand, var(--grad-purple));
+  transition: width 0.4s;
+}
+.sh-clip-sum.passed .sh-sum-fill {
+  background: linear-gradient(90deg, #00d68f, #00b377);
+}
+.sh-sum-meta-mini {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-2);
+  margin-top: 6px;
+}
+.sh-sum-badge {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 13px;
+  border-radius: 99px;
+  color: var(--muted-2);
+  background: #efeff7;
+}
+.sh-sum-badge.done {
+  color: #fff;
+  background: linear-gradient(135deg, #00d68f, #00b377);
+}
+.sh-congrats {
+  margin-top: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #00936a;
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.3);
+  padding: 9px 13px;
+  border-radius: 12px;
+}
+
+/* —— Cột phải: danh sách câu —— */
+.sh-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.sh-list-count {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.sh-list-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sh-tool-btn {
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  background: #fff;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 11px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.sh-tool-btn:hover {
+  background: var(--purple-soft);
+}
+.sh-tool-btn.on {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+}
+.sh-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+@media (min-width: 960px) {
+  .sh-list {
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+.sh-row {
+  border-radius: 12px;
+}
+.sh-row-btn {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  text-align: left;
+  padding: 11px 12px;
+  border: 1px solid rgba(108, 92, 231, 0.1);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.sh-row-btn:hover {
+  border-color: rgba(108, 92, 231, 0.3);
+  background: #fbfaff;
+}
+.sh-row.active .sh-row-btn {
+  border-color: var(--purple);
+  background: linear-gradient(135deg, #f5f3ff, #fff);
+}
+.sh-badge {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted-2);
+  background: #f0eef9;
+}
+.sh-badge.done {
+  color: #fff;
+  background: linear-gradient(135deg, #00d68f, #00b377);
+}
+.sh-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sh-text {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #2f2f47;
+}
+.sh-row.active .sh-text {
+  font-weight: 700;
+  color: var(--ink);
+}
+.sh-time {
+  font-size: 11.5px;
+  color: var(--muted-2);
+}
+.sh-best-chip {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 99px;
+  color: var(--amber-ink);
+  background: rgba(255, 176, 32, 0.16);
+  white-space: nowrap;
+}
+
+/* —— Sửa câu —— */
+.sh-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 12px;
+  background: #fff;
+}
+.sh-edit-text {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  border-radius: 10px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+.sh-edit-text:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+.sh-edit-btns {
+  display: flex;
+  gap: 8px;
+}
+.sh-edit-btn {
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  background: var(--purple-soft);
+  color: var(--purple);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.sh-edit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .sh-player {
     padding: 14px;
-    border-radius: 20px;
-  }
-  /* Bớt tiêu đề cồng kềnh để dành chỗ */
-  .sh-head {
-    margin-bottom: 12px;
+    border-radius: 18px;
   }
   .sh-title {
-    font-size: 19px;
+    font-size: 18px;
   }
-  /* Ẩn hướng dẫn dài dòng + phím tắt trên mobile (không có bàn phím) */
-  .sh-hint,
-  .sh-keys {
-    display: none;
+  .sh-current-plain {
+    font-size: 17px;
   }
-  .sh-bar {
-    gap: 8px;
-    margin-top: 12px;
+  .sh-cw-text {
+    font-size: 17px;
   }
-  .sh-ctrl {
-    padding: 8px 11px;
-    font-size: 13px;
-  }
-  /* Hàng tốc độ xuống dòng riêng cho gọn */
-  .sh-rates {
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-start;
-  }
-  /* Nút chiếm cả hàng nên neo menu theo mép TRÁI (dưới nút), tránh văng sang phải */
-  .sh-rate-menu {
-    right: auto;
-    left: 0;
-  }
-  .sh-row-main {
-    grid-template-columns: auto 1fr;
-  }
-  .sh-actions {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
-  }
-  /* Thu gọn thẻ tổng kết: số + thanh tiến độ, bỏ bớt chữ phụ */
-  .sh-clip-sum {
-    gap: 10px;
-    padding: 10px 12px;
-    margin-top: 12px;
-  }
-  .sh-sum-main {
-    gap: 10px;
-  }
-  .sh-sum-num {
-    font-size: 22px;
-  }
-  /* Mobile: bỏ dòng giải thích dài, chỉ giữ "đã xong x/N câu" */
-  .sh-sum-meta {
-    display: none;
-  }
-  .sh-sum-meta-mini {
-    display: block;
-  }
-  .sh-sum-badge {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-  /* Danh sách câu cuộn trong khung cao hơn để xem được nhiều câu */
   .sh-list {
-    max-height: 60vh;
-  }
-  .sh-text {
-    font-size: 14.5px;
+    max-height: 56vh;
+    overflow-y: auto;
   }
 }
 </style>

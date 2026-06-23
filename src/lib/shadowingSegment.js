@@ -34,6 +34,67 @@ export function tidyText(raw) {
 
 const wordCount = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0)
 
+const roundSec = (s) => Math.round(s * 100) / 100 // giữ 2 chữ số thập phân (giây)
+
+// Một "từ" kết thúc câu khi tận cùng là . ! ? (cho phép theo sau là dấu nháy/ngoặc đóng),
+// nhưng KHÔNG tính các chữ viết tắt phổ biến (Mr. Mrs. Dr. …) để tránh ngắt nhầm.
+const ABBREV = /\b(mr|mrs|ms|dr|st|vs|etc|jr|sr|no|prof)\.$/i
+const endsSentence = (word) => /[.!?]['")\]]*$/.test(word) && !ABBREV.test(word)
+
+/**
+ * Tái ngắt các đoạn (đã có dấu câu) thành CÂU TRỌN VẸN cho shadowing — mỗi thẻ là
+ * một câu, ngắt tại dấu kết câu `. ? !`. Vừa GỘP đuôi đoạn này với đầu đoạn kế khi
+ * chúng cùng một câu, vừa TÁCH đoạn chứa nhiều câu.
+ *
+ * Timestamp của từng từ được nội suy đều trong khoảng [start, end] của đoạn gốc,
+ * nên mốc thời gian của câu mới vẫn bám sát video.
+ *
+ * @param {Array<{text:string, start:number, end:number}>} segments  (đơn vị: GIÂY)
+ * @returns {Array<{id:number, text:string, start:number, end:number}>}
+ */
+export function splitIntoSentences(segments) {
+  // 1) Trải mọi đoạn thành chuỗi "từ" liên tục, mỗi từ kèm khoảng thời gian ước lượng.
+  const words = []
+  for (const seg of segments || []) {
+    const text = String(seg?.text || '').replace(/\s+/g, ' ').trim()
+    if (!text) continue
+    const parts = text.split(' ')
+    const start = +seg.start
+    const end = +seg.end
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      // Không có thời gian hợp lệ -> vẫn giữ từ, gắn mốc tạm bằng start.
+      for (const w of parts) words.push({ w, start: start || 0, end: start || 0 })
+      continue
+    }
+    const span = (end - start) / parts.length
+    parts.forEach((w, i) => words.push({ w, start: start + i * span, end: start + (i + 1) * span }))
+  }
+
+  // 2) Gom từ thành câu, ngắt sau từ kết thúc câu.
+  const out = []
+  let cur = null // { parts:[], start, end }
+  const flush = () => {
+    if (!cur) return
+    const text = cur.parts.join(' ').trim()
+    if (text) out.push({ id: out.length + 1, text, start: roundSec(cur.start), end: roundSec(cur.end) })
+    cur = null
+  }
+  for (const item of words) {
+    if (!cur) cur = { parts: [], start: item.start, end: item.end }
+    cur.parts.push(item.w)
+    cur.end = item.end
+    if (endsSentence(item.w)) flush()
+  }
+  flush()
+
+  // 3) Kẹp end không vượt start câu kế (giống groupIntoSentences) để phát gọn từng câu.
+  for (let i = 0; i < out.length - 1; i++) {
+    const next = out[i + 1].start
+    if (out[i].end > next) out[i].end = Math.max(next, roundSec(out[i].start + 0.3))
+  }
+  return out
+}
+
 /**
  * @param {Array<{text:string, offset:number, duration:number}>} lines
  * @param {{maxGapMs?:number, targetMs?:number, maxWords?:number}} [opts]

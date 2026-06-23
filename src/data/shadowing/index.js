@@ -6,18 +6,11 @@ const files = import.meta.glob('./clips/*.json')
 /** Danh mục hiển thị ở trang chọn clip. */
 export const shadowingClips = [
   {
-    "videoId": "EkY9cCOIIKk",
-    "title": "Restaurant Dialogue — Gọi món ở nhà hàng",
-    "level": "A1-A2",
-    "topic": "Nhà hàng",
-    "sentenceCount": 21
-  },
-  {
     "videoId": "GpYsomFl6Bs",
     "title": "Shadowing Technique — Hướng dẫn nhập môn",
     "level": "A1-A2",
     "topic": "Cách luyện shadowing",
-    "sentenceCount": 40
+    "sentenceCount": 53
   }
 ]
 

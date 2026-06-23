@@ -11,15 +11,12 @@ import { writeFile, readFile, mkdir, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { YoutubeTranscript } from 'youtube-transcript'
-import { groupIntoSentences, tidyText } from '../src/lib/shadowingSegment.js'
+import { groupIntoSentences, splitIntoSentences } from '../src/lib/shadowingSegment.js'
+import { polishSegments } from '../netlify/functions/_shadowing.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'src', 'data', 'shadowing')
 const CLIPS_DIR = join(DATA_DIR, 'clips')
-
-// —— Đánh bóng transcript bằng Groq (tùy chọn, chỉ khi có GROQ_API_KEY) ——
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
 
 /** Lấy GROQ_API_KEY từ env hoặc .env.local (script chạy ngoài Vite nên tự đọc). */
 async function loadGroqKey() {
@@ -34,61 +31,28 @@ async function loadGroqKey() {
   }
 }
 
-/**
- * Nhờ AI thêm dấu câu / viết hoa / sửa lỗi chính tả nhận dạng cho TỪNG câu,
- * giữ NGUYÊN số câu & thứ tự để timestamp không lệch. Trả về mảng văn bản mới
- * (cùng độ dài) hoặc null nếu không dùng được (để giữ bản heuristic an toàn).
- */
-async function llmPolish(texts, key) {
-  const system = [
-    'You clean up auto-generated English captions for a language-learning shadowing app.',
-    'Input is a JSON object {"segments": string[]} — lowercase, no punctuation, possible misspellings.',
-    'Return ONLY a JSON object {"segments": string[]} with the SAME number of items in the SAME order.',
-    'For each segment: add proper capitalization and sentence punctuation, fix obvious speech-recognition spelling errors.',
-    'Keep the original wording and meaning. Do NOT merge, split, add, or remove segments.',
-  ].join('\n')
-  const res = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      temperature: 0.2,
-      max_tokens: 6000,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: JSON.stringify({ segments: texts }) },
-      ],
-    }),
-  })
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text().catch(() => '')).slice(0, 160)}`)
-  const data = await res.json()
-  const out = JSON.parse(data?.choices?.[0]?.message?.content || '{}')?.segments
-  if (!Array.isArray(out) || out.length !== texts.length) throw new Error('số câu trả về không khớp')
-  // Vẫn chạy tidyText để chắc chắn "I" hoa & khoảng trắng gọn.
-  return out.map((t) => tidyText(t))
-}
-
 // Catalog các video đã xác minh có phụ đề (xem scripts/verify-shadowing.mjs).
 const CATALOG = [
   { videoId: 'GpYsomFl6Bs', level: 'A1-A2', title: 'Shadowing Technique — Hướng dẫn nhập môn', topic: 'Cách luyện shadowing' },
-  { videoId: 'EkY9cCOIIKk', level: 'A1-A2', title: 'Restaurant Dialogue — Gọi món ở nhà hàng', topic: 'Nhà hàng' },
 ]
 
 async function curateOne(meta, groqKey) {
   const raw = await YoutubeTranscript.fetchTranscript(meta.videoId, { lang: 'en' })
-  const sentences = groupIntoSentences(raw)
+  let sentences = groupIntoSentences(raw)
   let polished = 'heuristic'
   // Đánh bóng bằng AI nếu có key — lỗi gì cũng giữ bản heuristic an toàn.
   if (groqKey) {
     try {
-      const cleaned = await llmPolish(sentences.map((s) => s.text), groqKey)
+      const cleaned = await polishSegments(sentences.map((s) => s.text), groqKey)
       sentences.forEach((s, i) => (s.text = cleaned[i]))
       polished = 'AI (Groq)'
     } catch (e) {
       console.log(`    (bỏ qua đánh bóng AI: ${e.message})`)
     }
   }
+  // Tái ngắt theo CÂU TRỌN VẸN (.?!): mỗi thẻ là một câu, không cắt giữa câu.
+  // Chỉ có tác dụng khi text đã có dấu câu (sau bước đánh bóng AI).
+  sentences = splitIntoSentences(sentences)
   const clip = {
     videoId: meta.videoId,
     title: meta.title,

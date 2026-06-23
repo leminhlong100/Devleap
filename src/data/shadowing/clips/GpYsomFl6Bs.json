@@ -9,14 +9,14 @@
   "sentences": [
     {
       "id": 1,
-      "text": "Put put, this is a shadow exercise, a fluent",
+      "text": "Put put, this is a shadow exercise, a fluent American.",
       "start": 0.32,
-      "end": 4.88
+      "end": 5.26
     },
     {
       "id": 2,
-      "text": "American. I'll play for you a conversation between two people.",
-      "start": 4.88,
+      "text": "I'll play for you a conversation between two people.",
+      "start": 5.26,
       "end": 8.72
     },
     {
@@ -27,222 +27,300 @@
     },
     {
       "id": 4,
-      "text": "Try to capture my same intonation, pronunciation, and stress. Did you see the ball drop?",
+      "text": "Try to capture my same intonation, pronunciation, and stress.",
       "start": 12.64,
-      "end": 17.84
+      "end": 15.76
     },
     {
       "id": 5,
-      "text": "Last night. No, I missed it. Honestly, it was probably out by 10 o'clock.",
-      "start": 17.84,
-      "end": 22.88
+      "text": "Did you see the ball drop?",
+      "start": 15.76,
+      "end": 17.84
     },
     {
       "id": 6,
-      "text": "Slept through it, huh? Long week. You can't even imagine.",
-      "start": 22.88,
-      "end": 26.8
+      "text": "Last night.",
+      "start": 17.84,
+      "end": 18.56
     },
     {
       "id": 7,
+      "text": "No, I missed it.",
+      "start": 18.56,
+      "end": 20
+    },
+    {
+      "id": 8,
+      "text": "Honestly, it was probably out by 10 o'clock.",
+      "start": 20,
+      "end": 22.88
+    },
+    {
+      "id": 9,
+      "text": "Slept through it, huh?",
+      "start": 22.88,
+      "end": 24.45
+    },
+    {
+      "id": 10,
+      "text": "Long week.",
+      "start": 24.45,
+      "end": 25.23
+    },
+    {
+      "id": 11,
+      "text": "You can't even imagine.",
+      "start": 25.23,
+      "end": 26.8
+    },
+    {
+      "id": 12,
       "text": "I've been doing 12-hour days at the office since the spring.",
       "start": 26.8,
       "end": 30.32
     },
     {
-      "id": 8,
-      "text": "You can imagine what I do on my days off. I'm guessing",
-      "start": 30.32,
-      "end": 33.44
-    },
-    {
-      "id": 9,
-      "text": "Something that rhymes with 'deep'.",
-      "start": 33.44,
-      "end": 37.28
-    },
-    {
-      "id": 10,
-      "text": "Bingo! My bed sees me more than anyone else does these days.",
-      "start": 37.28,
-      "end": 41.36
-    },
-    {
-      "id": 11,
-      "text": "Hopefully, I can change that soon, though. What about you?",
-      "start": 41.36,
-      "end": 44.96
-    },
-    {
-      "id": 12,
-      "text": "Any resolutions for the new year? I'm gonna try to lay off the sweets and",
-      "start": 44.96,
-      "end": 48
-    },
-    {
       "id": 13,
-      "text": "Alcohol. I think I've definitely put on a few more pounds than I intended to recently.",
-      "start": 48,
-      "end": 53.36
+      "text": "You can imagine what I do on my days off.",
+      "start": 30.32,
+      "end": 32.92
     },
     {
       "id": 14,
-      "text": "Doesn't help that you live next door to that bakery, man. Have you tried the new",
-      "start": 53.36,
-      "end": 56.96
+      "text": "I'm guessing Something that rhymes with 'deep'.",
+      "start": 32.92,
+      "end": 37.28
     },
     {
       "id": 15,
-      "text": "Lemon tarts? They do this thing with the crust. I don't even know how to explain",
-      "start": 56.96,
-      "end": 60.56
+      "text": "Bingo!",
+      "start": 37.28,
+      "end": 37.62
     },
     {
       "id": 16,
-      "text": "It, but it's got the right amount of crunch.",
-      "start": 60.56,
-      "end": 62.72
+      "text": "My bed sees me more than anyone else does these days.",
+      "start": 37.62,
+      "end": 41.36
     },
     {
       "id": 17,
-      "text": "But it still melts in your mouth. It's so good.",
-      "start": 62.72,
-      "end": 66.4
+      "text": "Hopefully, I can change that soon, though.",
+      "start": 41.36,
+      "end": 43.88
     },
     {
       "id": 18,
+      "text": "What about you?",
+      "start": 43.88,
+      "end": 44.96
+    },
+    {
+      "id": 19,
+      "text": "Any resolutions for the new year?",
+      "start": 44.96,
+      "end": 46.18
+    },
+    {
+      "id": 20,
+      "text": "I'm gonna try to lay off the sweets and Alcohol.",
+      "start": 46.18,
+      "end": 48.34
+    },
+    {
+      "id": 21,
+      "text": "I think I've definitely put on a few more pounds than I intended to recently.",
+      "start": 48.34,
+      "end": 53.36
+    },
+    {
+      "id": 22,
+      "text": "Doesn't help that you live next door to that bakery, man.",
+      "start": 53.36,
+      "end": 55.84
+    },
+    {
+      "id": 23,
+      "text": "Have you tried the new Lemon tarts?",
+      "start": 55.84,
+      "end": 57.41
+    },
+    {
+      "id": 24,
+      "text": "They do this thing with the crust.",
+      "start": 57.41,
+      "end": 58.99
+    },
+    {
+      "id": 25,
+      "text": "I don't even know how to explain It, but it's got the right amount of crunch.",
+      "start": 58.99,
+      "end": 62.72
+    },
+    {
+      "id": 26,
+      "text": "But it still melts in your mouth.",
+      "start": 62.72,
+      "end": 65.3
+    },
+    {
+      "id": 27,
+      "text": "It's so good.",
+      "start": 65.3,
+      "end": 66.4
+    },
+    {
+      "id": 28,
       "text": "I can die from exhaustion, and you can die from diabetes.",
       "start": 66.4,
       "end": 69.68
     },
     {
-      "id": 19,
+      "id": 29,
       "text": "Sound fair?",
       "start": 69.68,
       "end": 73.84
     },
     {
-      "id": 20,
+      "id": 30,
       "text": "Did you see the ball drop last night?",
       "start": 75.04,
       "end": 78.56
     },
     {
-      "id": 21,
-      "text": "No, I missed it. Honestly, it was probably",
+      "id": 31,
+      "text": "No, I missed it.",
       "start": 81.12,
-      "end": 83.2
+      "end": 82.16
     },
     {
-      "id": 22,
-      "text": "Up by 10 o'clock.",
-      "start": 83.2,
+      "id": 32,
+      "text": "Honestly, it was probably Up by 10 o'clock.",
+      "start": 82.16,
       "end": 87.84
     },
     {
-      "id": 23,
-      "text": "Slept through it, huh? Long week.",
+      "id": 33,
+      "text": "Slept through it, huh?",
       "start": 90.88,
+      "end": 93.28
+    },
+    {
+      "id": 34,
+      "text": "Long week.",
+      "start": 93.28,
       "end": 94.48
     },
     {
-      "id": 24,
-      "text": "You can't even imagine. I've been doing 12-hour days at the office since the spring.",
+      "id": 35,
+      "text": "You can't even imagine.",
       "start": 96.4,
+      "end": 97.77
+    },
+    {
+      "id": 36,
+      "text": "I've been doing 12-hour days at the office since the spring.",
+      "start": 97.77,
       "end": 101.52
     },
     {
-      "id": 25,
+      "id": 37,
       "text": "You can imagine what I do on my days off.",
       "start": 101.52,
       "end": 115.52
     },
     {
-      "id": 26,
+      "id": 38,
       "text": "I'm guessing something that rhymes with 'deep'.",
       "start": 115.52,
       "end": 121.04
     },
     {
-      "id": 27,
-      "text": "Bingo! My bed sees me more than anyone else does these days.",
+      "id": 39,
+      "text": "Bingo!",
       "start": 124.64,
+      "end": 124.98
+    },
+    {
+      "id": 40,
+      "text": "My bed sees me more than anyone else does these days.",
+      "start": 124.98,
       "end": 128.72
     },
     {
-      "id": 28,
-      "text": "Hopefully, I can change that soon, though. What about you?",
+      "id": 41,
+      "text": "Hopefully, I can change that soon, though.",
       "start": 128.72,
+      "end": 131.24
+    },
+    {
+      "id": 42,
+      "text": "What about you?",
+      "start": 131.24,
       "end": 132.32
     },
     {
-      "id": 29,
+      "id": 43,
       "text": "Any resolutions for the new year?",
       "start": 132.32,
       "end": 143.84
     },
     {
-      "id": 30,
-      "text": "I'm gonna try to lay off the sweets in",
+      "id": 44,
+      "text": "I'm gonna try to lay off the sweets in Alcohol.",
       "start": 146.96,
-      "end": 148.48
+      "end": 148.76
     },
     {
-      "id": 31,
-      "text": "Alcohol. I think I've definitely put on a few more pounds than I",
-      "start": 148.48,
-      "end": 152.16
-    },
-    {
-      "id": 32,
-      "text": "Intended to recently.",
-      "start": 152.16,
+      "id": 45,
+      "text": "I think I've definitely put on a few more pounds than I Intended to recently.",
+      "start": 148.76,
       "end": 157.84
     },
     {
-      "id": 33,
-      "text": "Doesn't help that you live next door to",
+      "id": 46,
+      "text": "Doesn't help that you live next door to That bakery.",
       "start": 164.32,
-      "end": 165.76
-    },
-    {
-      "id": 34,
-      "text": "That bakery.",
-      "start": 165.76,
       "end": 171.52
     },
     {
-      "id": 35,
-      "text": "Man, have you tried the new lemon tarts? They do this thing with the crust. I",
+      "id": 47,
+      "text": "Man, have you tried the new lemon tarts?",
       "start": 171.52,
-      "end": 175.04
+      "end": 173.28
     },
     {
-      "id": 36,
-      "text": "Don't even know how to explain it, but",
-      "start": 175.04,
-      "end": 176.56
+      "id": 48,
+      "text": "They do this thing with the crust.",
+      "start": 173.28,
+      "end": 174.82
     },
     {
-      "id": 37,
-      "text": "It's got the right amount of crunch.",
-      "start": 176.56,
+      "id": 49,
+      "text": "I Don't even know how to explain it, but It's got the right amount of crunch.",
+      "start": 174.82,
       "end": 185.84
     },
     {
-      "id": 38,
-      "text": "But it still melts in your mouth. It's so good.",
+      "id": 50,
+      "text": "But it still melts in your mouth.",
       "start": 188.24,
+      "end": 191.49
+    },
+    {
+      "id": 51,
+      "text": "It's so good.",
+      "start": 191.49,
       "end": 192.88
     },
     {
-      "id": 39,
+      "id": 52,
       "text": "I can die from exhaustion, and you can die from diabetes.",
       "start": 196,
       "end": 199.36
     },
     {
-      "id": 40,
+      "id": 53,
       "text": "Sound fair?",
       "start": 199.36,
       "end": 211.84
