@@ -20,6 +20,75 @@ import { useUserStore } from '@/stores/user'
 // 'YYYY-M-D' giống hàm ymd nội bộ của store (không pad số 0).
 const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 
+describe('user store — recordShadowing', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('giữ tiến độ (best) cao nhất qua nhiều lần thử', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidA', 60, false)
+    s.recordShadowing('vidA', 45, false)
+    const r = s.shadowingOf('vidA')
+    expect(r.best).toBe(60)
+    expect(r.attempts).toBe(2)
+    expect(r.passed).toBe(false)
+  })
+
+  it('hoàn thành (passed=true): +120 XP + 1 huy hiệu, chỉ thưởng một lần', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidB', 80, true)
+    expect(s.shadowingPassed('vidB')).toBe(true)
+    expect(s.xp).toBe(120)
+    expect(s.badges).toBe(1)
+    // thử lại không cộng thêm; giữ best cao nhất
+    s.recordShadowing('vidB', 100, true)
+    expect(s.xp).toBe(120)
+    expect(s.badges).toBe(1)
+    expect(s.shadowingOf('vidB').best).toBe(100)
+  })
+
+  it('passed một lần thì giữ luôn, dù lần sau chưa đủ câu đạt', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidD', 80, true)
+    s.recordShadowing('vidD', 40, false)
+    expect(s.shadowingPassed('vidD')).toBe(true)
+  })
+
+  it('shadowingPassedCount đếm số bài đã hoàn thành', () => {
+    const s = useUserStore()
+    s.recordShadowing('a', 80, true)
+    s.recordShadowing('b', 50, false)
+    s.recordShadowing('c', 90, true)
+    expect(s.shadowingPassedCount).toBe(2)
+  })
+
+  it('kết quả shadowing được bền hoá vào localStorage', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidC', 90, true)
+    const raw = JSON.parse(localStorage.getItem('devleap:user:v2'))
+    expect(raw.shadowingScores.vidC.passed).toBe(true)
+  })
+
+  it('lưu điểm tốt nhất TỪNG CÂU, gộp max qua các lần thử', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidE', 50, false, { 1: 80, 2: 40 })
+    s.recordShadowing('vidE', 50, false, { 1: 60, 2: 90, 3: 100 })
+    expect(s.shadowingSentences('vidE')).toEqual({ 1: 80, 2: 90, 3: 100 })
+  })
+
+  it('điểm từng câu khôi phục được sau khi tải lại từ localStorage', () => {
+    const s = useUserStore()
+    s.recordShadowing('vidF', 50, false, { 1: 75 })
+    // mô phỏng phiên mới: hydrate từ localStorage
+    setActivePinia(createPinia())
+    const s2 = useUserStore()
+    s2.hydrate()
+    expect(s2.shadowingSentences('vidF')).toEqual({ 1: 75 })
+  })
+})
+
 describe('user store — toggleDay', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

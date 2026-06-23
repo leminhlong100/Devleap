@@ -16,6 +16,7 @@ const { user: authUser, ready: authReady } = storeToRefs(auth)
 const nav = [
   { name: 'Trang chủ', to: { name: 'home' }, match: ['home'] },
   { name: 'Khóa học', to: { name: 'courses' }, match: ['courses', 'java', 'ielts', 'java-day', 'ielts-day'] },
+  { name: 'Shadowing', to: { name: 'shadowing' }, match: ['shadowing'] },
   { name: 'Công cụ', to: { name: 'tools' }, match: ['tools', 'tools-tab'] },
 ]
 

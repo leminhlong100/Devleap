@@ -1,0 +1,137 @@
+{
+  "videoId": "EkY9cCOIIKk",
+  "title": "Restaurant Dialogue — Gọi món ở nhà hàng",
+  "level": "A1-A2",
+  "topic": "Nhà hàng",
+  "lang": "en",
+  "source": "youtube-transcript",
+  "cleanup": "heuristic",
+  "sentences": [
+    {
+      "id": 1,
+      "text": "This is a shadowing exercise I will say a whole conversation",
+      "start": 0.32,
+      "end": 4.96
+    },
+    {
+      "id": 2,
+      "text": "Then repeat it with pauses between sentences",
+      "start": 4.96,
+      "end": 8.08
+    },
+    {
+      "id": 3,
+      "text": "For you to repeat try to copy the pronunciation",
+      "start": 8.08,
+      "end": 12.16
+    },
+    {
+      "id": 4,
+      "text": "The intonation and stress I heard there's a lunch special on pot",
+      "start": 12.16,
+      "end": 17.12
+    },
+    {
+      "id": 5,
+      "text": "Pies today that's right two for one any sides come with that steamed",
+      "start": 17.12,
+      "end": 22.08
+    },
+    {
+      "id": 6,
+      "text": "Asparagus and a roll you guys wouldn't happen to have a",
+      "start": 22.08,
+      "end": 24.96
+    },
+    {
+      "id": 7,
+      "text": "Vegetarian option on the pot pies would you sorry normally we do but the specials",
+      "start": 24.96,
+      "end": 30.72
+    },
+    {
+      "id": 8,
+      "text": "Are pre-made with chicken that's fine I'll just order my wife a salad or something",
+      "start": 30.72,
+      "end": 34.16
+    },
+    {
+      "id": 9,
+      "text": "Can I get another minute with the menu then of course any drinks while you decide",
+      "start": 34.16,
+      "end": 38.8
+    },
+    {
+      "id": 10,
+      "text": "Got any tea left we're brewing another batch it should be",
+      "start": 38.8,
+      "end": 41.84
+    },
+    {
+      "id": 11,
+      "text": "Right up lemon yeah I'll take a slice thanks",
+      "start": 41.84,
+      "end": 46.4
+    },
+    {
+      "id": 12,
+      "text": "I heard there's a lunch special on pot pies today",
+      "start": 46.4,
+      "end": 50.48
+    },
+    {
+      "id": 13,
+      "text": "That's right two for one any sides come with that steamed",
+      "start": 50.48,
+      "end": 57.28
+    },
+    {
+      "id": 14,
+      "text": "Asparagus and a roll",
+      "start": 57.28,
+      "end": 60.4
+    },
+    {
+      "id": 15,
+      "text": "You guys wouldn't happen to have a vegetarian option on the pot pies would you",
+      "start": 61.44,
+      "end": 66.96
+    },
+    {
+      "id": 16,
+      "text": "Sorry normally we do but the specials are pre-made with chicken",
+      "start": 67.52,
+      "end": 73.44
+    },
+    {
+      "id": 17,
+      "text": "That's fine I'll just order my wife a salad or something can I get another",
+      "start": 73.44,
+      "end": 76.72
+    },
+    {
+      "id": 18,
+      "text": "Minute with the menu then",
+      "start": 76.72,
+      "end": 79.76
+    },
+    {
+      "id": 19,
+      "text": "Of course any drinks while you decide",
+      "start": 82,
+      "end": 86.64
+    },
+    {
+      "id": 20,
+      "text": "Got any tea left we're brewing another batch it should be",
+      "start": 86.64,
+      "end": 91.52
+    },
+    {
+      "id": 21,
+      "text": "Right up lemon yeah I'll take a slice thanks",
+      "start": 91.52,
+      "end": 101.2
+    }
+  ]
+}

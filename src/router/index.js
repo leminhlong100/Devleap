@@ -36,6 +36,9 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // Luyện shadowing với video YouTube có phụ đề (yêu cầu đăng nhập như khóa học)
+  { path: '/shadowing', name: 'shadowing', component: () => import('@/views/ShadowingView.vue'), meta: { requiresAuth: true } },
+
   // Khu công cụ học chung
   { path: '/tools', name: 'tools', component: () => import('@/views/ToolsView.vue') },
   { path: '/tools/:tool', name: 'tools-tab', component: () => import('@/views/ToolsView.vue'), props: true },
