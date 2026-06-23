@@ -20,7 +20,15 @@ const activeId = ref(null) // câu đang chọn
 const playing = ref(false)
 const loop = ref(false)
 const RATES = [0.5, 0.75, 1]
-const rate = ref(0.75)
+const rate = ref(1)
+const rateMenuOpen = ref(false)
+const ratesEl = ref(null)
+
+// Đệm đầu/cuối mỗi câu (giây): phụ đề YouTube hay lệch nhẹ nên lùi điểm bắt đầu
+// và nới điểm kết thúc để không bị cụt từ đầu/cuối câu.
+const PAD = 0.15
+const startOf = (s) => Math.max(0, s.start - PAD)
+const endOf = (s) => s.end + PAD
 
 const activeSentence = computed(() => sentences.value.find((s) => s.id === activeId.value) || null)
 const activeIndex = computed(() => sentences.value.findIndex((s) => s.id === activeId.value))
@@ -38,9 +46,9 @@ function watchSentence(s) {
   watcher = setInterval(() => {
     if (!player) return
     const t = player.getCurrentTime?.() ?? 0
-    if (t >= s.end - 0.05) {
+    if (t >= endOf(s) - 0.05) {
       if (loop.value) {
-        player.seekTo(s.start, true)
+        player.seekTo(startOf(s), true)
       } else {
         player.pauseVideo()
         playing.value = false
@@ -54,7 +62,7 @@ function playSentence(s) {
   if (!player || !playerReady.value) return
   activeId.value = s.id
   player.setPlaybackRate(rate.value)
-  player.seekTo(s.start, true)
+  player.seekTo(startOf(s), true)
   player.playVideo()
   playing.value = true
   watchSentence(s)
@@ -77,13 +85,66 @@ function step(delta) {
 function setRate(r) {
   rate.value = r
   player?.setPlaybackRate(r)
+  rateMenuOpen.value = false
+}
+// Đóng menu tốc độ khi bấm ra ngoài
+function onDocClick(e) {
+  if (rateMenuOpen.value && ratesEl.value && !ratesEl.value.contains(e.target)) {
+    rateMenuOpen.value = false
+  }
+}
+
+// ---- Phím tắt (desktop): Space=phát lại câu, ←/→=câu trước/sau, L=lặp, R=nói thử ----
+function isTypingTarget(el) {
+  if (!el) return false
+  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable
+}
+function onKeydown(e) {
+  if (!playerReady.value) return
+  if (e.ctrlKey || e.metaKey || e.altKey) return
+  if (isTypingTarget(e.target)) return
+  switch (e.key) {
+    case ' ': // Space: phát lại câu đang chọn (chưa chọn thì phát câu đầu)
+      e.preventDefault()
+      if (activeSentence.value) replay()
+      else if (sentences.value.length) playSentence(sentences.value[0])
+      break
+    case 'ArrowLeft':
+      e.preventDefault()
+      step(-1)
+      break
+    case 'ArrowRight':
+      e.preventDefault()
+      step(1)
+      break
+    case 'l':
+    case 'L':
+      loop.value = !loop.value
+      break
+    case 'r':
+    case 'R': // nói thử câu đang chọn (đang thu thì dừng)
+      if (!activeSentence.value) break
+      e.preventDefault()
+      if (attemptingId.value === activeSentence.value.id) stopAttempt()
+      else attempt(activeSentence.value)
+      break
+  }
 }
 
 // ---- Tự cuộn câu đang phát vào tầm nhìn ----
+// Chỉ cuộn TRONG khung danh sách (không cuộn cả trang) để video luôn còn thấy.
 const rowEls = reactive({})
+const listEl = ref(null)
 async function scrollToActive() {
   await nextTick()
-  rowEls[activeId.value]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  const row = rowEls[activeId.value]
+  const list = listEl.value
+  if (!row || !list) return
+  const listRect = list.getBoundingClientRect()
+  const rowRect = row.getBoundingClientRect()
+  // đưa câu vào giữa khung danh sách
+  const delta = rowRect.top - listRect.top - (list.clientHeight - rowRect.height) / 2
+  list.scrollTo({ top: list.scrollTop + delta, behavior: 'smooth' })
 }
 
 // ---- Một lần "Nói thử": vừa THU (để nghe lại) vừa CHẤM (so khớp văn bản) ----
@@ -227,6 +288,8 @@ async function initPlayer() {
 onMounted(() => {
   hydrateBest()
   initPlayer()
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeydown)
 })
 
 // Đổi clip -> nạp video mới, reset trạng thái.
@@ -255,6 +318,8 @@ watch(
 onBeforeUnmount(() => {
   clearWatcher()
   stopAttempt()
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeydown)
   Object.values(recordings).forEach((url) => URL.revokeObjectURL(url))
   player?.destroy?.()
 })
@@ -271,6 +336,8 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="sh-stage">
+      <!-- Cột trái: video + điều khiển + tổng kết (dính lại khi cuộn trên màn rộng) -->
+      <div class="sh-left">
       <!-- Trình phát YouTube -->
       <div class="sh-video">
         <div ref="mountEl" class="sh-iframe"></div>
@@ -286,22 +353,35 @@ onBeforeUnmount(() => {
 
         <button class="sh-ctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁 Lặp</button>
 
-        <div class="sh-rates">
-          <span class="sh-rates-label">🐢 Tốc độ</span>
+        <div ref="ratesEl" class="sh-rates">
           <button
-            v-for="r in RATES"
-            :key="r"
-            class="sh-rate"
-            :class="{ on: rate === r }"
-            @click="setRate(r)"
+            class="sh-rate-toggle"
+            :class="{ open: rateMenuOpen }"
+            title="Tốc độ phát"
+            @click="rateMenuOpen = !rateMenuOpen"
           >
-            {{ r }}×
+            🐢 {{ rate }}× <span class="sh-rate-caret">▾</span>
           </button>
+          <div v-if="rateMenuOpen" class="sh-rate-menu">
+            <button
+              v-for="r in RATES"
+              :key="r"
+              class="sh-rate"
+              :class="{ on: rate === r }"
+              @click="setRate(r)"
+            >
+              {{ r }}×
+            </button>
+          </div>
         </div>
       </div>
       <p class="sh-hint">
         Bấm một câu để phát đúng đoạn đó. Bật 🔁 để lặp, giảm 🐢 tốc độ, rồi bấm
         <b>🎤 Nói thử</b> — một nút vừa <b>chấm điểm</b> vừa <b>giữ bản thu để nghe lại</b>.
+      </p>
+      <p class="sh-keys">
+        Phím tắt: <kbd>Space</kbd> phát lại câu · <kbd>←</kbd><kbd>→</kbd> câu trước/sau ·
+        <kbd>L</kbd> lặp · <kbd>R</kbd> nói thử
       </p>
       <p v-if="!canScore" class="sh-note">
         ⓘ Chấm điểm giọng nói cần Chrome hoặc Edge. Trình duyệt khác vẫn nói thử được để tự nghe lại bản thu.
@@ -320,6 +400,7 @@ onBeforeUnmount(() => {
               Cần xong tất cả {{ sentences.length }} câu (mỗi câu ≥ {{ SENT_PASS }}%) và trung bình ≥ {{ CLIP_AVG_PASS }}%
               · đã xong {{ doneCount }}/{{ sentences.length }} câu
             </div>
+            <div class="sh-sum-meta-mini">Đã xong {{ doneCount }}/{{ sentences.length }} câu</div>
           </div>
         </div>
         <div v-if="clipPassed" class="sh-sum-badge done">✓ Hoàn thành</div>
@@ -328,9 +409,12 @@ onBeforeUnmount(() => {
       <p v-if="justCompleted" class="sh-congrats">🎉 Chúc mừng! Bạn đã hoàn thành bài này (+{{ 120 }} XP).</p>
 
       <p v-if="attemptError" class="sh-mic-err">⚠️ {{ attemptError }}</p>
+      </div>
 
+      <!-- Cột phải: danh sách câu để đọc/đối chiếu -->
+      <div class="sh-right">
       <!-- Danh sách câu -->
-      <ol class="sh-list">
+      <ol ref="listEl" class="sh-list">
         <li
           v-for="s in sentences"
           :key="s.id"
@@ -389,6 +473,7 @@ onBeforeUnmount(() => {
           </div>
         </li>
       </ol>
+      </div>
     </div>
   </div>
 </template>
@@ -425,12 +510,16 @@ onBeforeUnmount(() => {
   margin-top: 4px;
 }
 .sh-video {
-  position: relative;
+  position: sticky;
+  /* lùi xuống dưới header dính (cao 65px) để không bị che */
+  top: 73px;
+  z-index: 5;
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 18px;
   overflow: hidden;
   background: #000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }
 /* YouTube API thay thế thẻ div bằng iframe (mất class), nên target qua .sh-video. */
 .sh-iframe,
@@ -484,35 +573,103 @@ onBeforeUnmount(() => {
   border-color: var(--purple);
 }
 .sh-rates {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
   margin-left: auto;
 }
-.sh-rates-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted-2);
-}
-.sh-rate {
+.sh-rate-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid rgba(108, 92, 231, 0.18);
   background: #fff;
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
-  padding: 7px 11px;
-  border-radius: 10px;
+  padding: 9px 13px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.15s;
+}
+.sh-rate-toggle:hover,
+.sh-rate-toggle.open {
+  background: var(--purple-soft);
+  border-color: var(--purple);
+}
+.sh-rate-caret {
+  font-size: 11px;
+  color: var(--muted-2);
+  transition: transform 0.15s;
+}
+.sh-rate-toggle.open .sh-rate-caret {
+  transform: rotate(180deg);
+}
+.sh-rate-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(108, 92, 231, 0.18);
+  min-width: 84px;
+}
+.sh-rate {
+  border: 1px solid transparent;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: center;
+}
+.sh-rate:hover {
+  background: var(--purple-soft);
 }
 .sh-rate.on {
   background: var(--purple);
   color: #fff;
-  border-color: var(--purple);
+}
+.sh-sum-meta-mini {
+  display: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+  margin-top: 6px;
 }
 .sh-hint {
   font-size: 13px;
   color: var(--muted);
   margin-top: 12px;
+}
+.sh-keys {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.sh-keys kbd {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin: 0 1px;
 }
 .sh-note {
   font-size: 12.5px;
@@ -638,6 +795,31 @@ onBeforeUnmount(() => {
   gap: 8px;
   max-height: 460px;
   overflow-y: auto;
+}
+/* —— màn rộng: chia hai cột, video bên trái dính, câu bên phải —— */
+@media (min-width: 960px) {
+  .sh-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .sh-left {
+    position: sticky;
+    /* lùi xuống dưới header dính (cao 65px) */
+    top: 78px;
+    align-self: start;
+  }
+  /* video không cần tự dính nữa vì cả cột trái đã dính */
+  .sh-video {
+    position: relative;
+    top: 0;
+    box-shadow: none;
+  }
+  .sh-list {
+    margin-top: 0;
+    max-height: calc(100vh - 100px);
+  }
 }
 .sh-row {
   display: flex;
@@ -859,7 +1041,39 @@ onBeforeUnmount(() => {
 }
 @media (max-width: 640px) {
   .sh-player {
-    padding: 18px;
+    padding: 14px;
+    border-radius: 20px;
+  }
+  /* Bớt tiêu đề cồng kềnh để dành chỗ */
+  .sh-head {
+    margin-bottom: 12px;
+  }
+  .sh-title {
+    font-size: 19px;
+  }
+  /* Ẩn hướng dẫn dài dòng + phím tắt trên mobile (không có bàn phím) */
+  .sh-hint,
+  .sh-keys {
+    display: none;
+  }
+  .sh-bar {
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sh-ctrl {
+    padding: 8px 11px;
+    font-size: 13px;
+  }
+  /* Hàng tốc độ xuống dòng riêng cho gọn */
+  .sh-rates {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  /* Nút chiếm cả hàng nên neo menu theo mép TRÁI (dưới nút), tránh văng sang phải */
+  .sh-rate-menu {
+    right: auto;
+    left: 0;
   }
   .sh-row-main {
     grid-template-columns: auto 1fr;
@@ -868,8 +1082,35 @@ onBeforeUnmount(() => {
     grid-column: 1 / -1;
     justify-content: flex-end;
   }
-  .sh-rates {
-    margin-left: 0;
+  /* Thu gọn thẻ tổng kết: số + thanh tiến độ, bỏ bớt chữ phụ */
+  .sh-clip-sum {
+    gap: 10px;
+    padding: 10px 12px;
+    margin-top: 12px;
+  }
+  .sh-sum-main {
+    gap: 10px;
+  }
+  .sh-sum-num {
+    font-size: 22px;
+  }
+  /* Mobile: bỏ dòng giải thích dài, chỉ giữ "đã xong x/N câu" */
+  .sh-sum-meta {
+    display: none;
+  }
+  .sh-sum-meta-mini {
+    display: block;
+  }
+  .sh-sum-badge {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  /* Danh sách câu cuộn trong khung cao hơn để xem được nhiều câu */
+  .sh-list {
+    max-height: 60vh;
+  }
+  .sh-text {
+    font-size: 14.5px;
   }
 }
 </style>
