@@ -43,6 +43,17 @@ const routes = [
   { path: '/tools', name: 'tools', component: () => import('@/views/ToolsView.vue') },
   { path: '/tools/:tool', name: 'tools-tab', component: () => import('@/views/ToolsView.vue'), props: true },
 
+  // Khu quản trị — chỉ admin (có dòng trong bảng admins) mới vào được.
+  {
+    path: '/admin',
+    component: () => import('@/views/admin/AdminLayout.vue'),
+    meta: { requiresAdmin: true },
+    children: [
+      { path: '', name: 'admin-home', component: () => import('@/views/admin/AdminHomeView.vue') },
+      { path: 'shadowing', name: 'admin-shadowing', component: () => import('@/views/admin/AdminShadowingView.vue') },
+    ],
+  },
+
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
@@ -76,12 +87,19 @@ function waitForAuthReady(auth) {
   })
 }
 
-// Chặn vào khóa học khi chưa đăng nhập: đẩy về trang chủ kèm cờ mở hộp đăng nhập.
+// Chặn vào khóa học/quản trị khi chưa đăng nhập (hoặc không đủ quyền).
 router.beforeEach(async (to) => {
-  if (!to.meta?.requiresAuth) return true
+  if (!to.meta?.requiresAuth && !to.meta?.requiresAdmin) return true
 
   const auth = useAuthStore()
   await waitForAuthReady(auth)
+
+  // Khu quản trị: bắt buộc có cloud + đăng nhập + là admin.
+  if (to.meta?.requiresAdmin) {
+    if (!auth.cloudEnabled) return { name: 'home' }
+    if (!auth.isAuthed) return { name: 'home', query: { login: 'required', redirect: to.fullPath } }
+    return auth.isAdmin ? true : { name: 'home' }
+  }
 
   // Chưa cấu hình Supabase → không thể đăng nhập, cho qua ở chế độ khách.
   if (!auth.cloudEnabled) return true

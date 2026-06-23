@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null, // { id, email, name, avatar } hoặc null
     ready: false, // đã kiểm tra phiên ban đầu xong chưa
+    isAdmin: false, // user hiện tại có dòng trong bảng admins không
   }),
 
   getters: {
@@ -51,9 +52,29 @@ export const useAuthStore = defineStore('auth', {
           avatar: u.user_metadata?.avatar_url || u.user_metadata?.picture || null,
         }
         await user.pullAndMerge(u.id)
+        await this.refreshAdmin(u.id)
       } else {
         this.user = null
+        this.isAdmin = false
         user.detachCloud()
+      }
+    },
+
+    /** Kiểm tra user có phải admin (có dòng trong bảng admins). RLS chỉ cho đọc dòng của chính mình. */
+    async refreshAdmin(userId) {
+      if (!isCloudEnabled) {
+        this.isAdmin = false
+        return
+      }
+      try {
+        const { data } = await supabase
+          .from('admins')
+          .select('user_id')
+          .eq('user_id', userId)
+          .maybeSingle()
+        this.isAdmin = !!data
+      } catch {
+        this.isAdmin = false
       }
     },
 

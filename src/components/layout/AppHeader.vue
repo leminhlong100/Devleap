@@ -11,7 +11,7 @@ const route = useRoute()
 const user = useUserStore()
 const auth = useAuthStore()
 const { xp, streak, level, xpPct, syncStatus } = storeToRefs(user)
-const { user: authUser, ready: authReady } = storeToRefs(auth)
+const { user: authUser, ready: authReady, isAdmin } = storeToRefs(auth)
 
 const nav = [
   { name: 'Trang chủ', to: { name: 'home' }, match: ['home'] },
@@ -122,6 +122,14 @@ async function signOut() {
                   <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
                 </div>
                 <div v-if="syncLabel" class="menu-sync" :class="syncStatus">{{ syncLabel }}</div>
+                <RouterLink
+                  v-if="isAdmin"
+                  :to="{ name: 'admin-home' }"
+                  class="menu-admin"
+                  @click="menuOpen = false"
+                >
+                  ⚙️ Quản trị
+                </RouterLink>
                 <button class="menu-out" @click="signOut">Đăng xuất</button>
               </div>
             </div>
@@ -412,6 +420,21 @@ async function signOut() {
 }
 .menu-sync.error {
   color: #d6512b;
+}
+.menu-admin {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  border: 1px solid rgba(108, 92, 231, 0.22);
+  background: var(--purple-soft);
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px;
+  border-radius: 10px;
+}
+.menu-admin:hover {
+  background: rgba(108, 92, 231, 0.14);
 }
 .menu-out {
   margin-top: 12px;
