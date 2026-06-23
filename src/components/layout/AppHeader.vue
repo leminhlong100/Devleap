@@ -105,7 +105,8 @@ async function signOut() {
               <img v-if="authUser.avatar" :src="authUser.avatar" class="account-avatar" alt="" referrerpolicy="no-referrer" />
               <span v-else class="account-avatar fallback">{{ (authUser.name || '?')[0].toUpperCase() }}</span>
             </button>
-            <div v-if="menuOpen" class="menu" @click.self="menuOpen = false">
+            <div v-if="menuOpen" class="menu-backdrop" @click="menuOpen = false"></div>
+            <div v-if="menuOpen" class="menu">
               <div class="menu-card">
                 <div class="menu-name">{{ authUser.name }}</div>
                 <div class="menu-email">{{ authUser.email }}</div>
@@ -350,6 +351,11 @@ async function signOut() {
   font-weight: 800;
   font-size: 16px;
 }
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+}
 .menu {
   position: absolute;
   top: calc(100% + 10px);
@@ -424,8 +430,19 @@ async function signOut() {
 }
 @media (max-width: 720px) {
   .header-inner {
-    gap: 12px;
-    padding: 12px 18px;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  /* Thu gọn logo để chừa chỗ cho search + avatar */
+  .logo {
+    gap: 8px;
+  }
+  .logo :deep(svg) {
+    width: 34px;
+    height: 36px;
+  }
+  .logo-text {
+    font-size: 20px;
   }
   .nav-toggle {
     display: flex;
