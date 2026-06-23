@@ -3,22 +3,14 @@ import { supabase, isCloudEnabled } from '@/lib/supabase'
 /**
  * Lớp truy cập dữ liệu clip Shadowing.
  *
- * Nguồn chính là bảng `shadowing_clips` trên Supabase (thêm/sửa qua trang admin,
- * không cần deploy). Nếu chưa cấu hình Supabase (chế độ khách / dev local không
- * có .env) thì tự fallback về kho tĩnh cũ src/data/shadowing để app vẫn chạy.
+ * Nguồn duy nhất là bảng `shadowing_clips` trên Supabase (thêm/sửa qua trang
+ * admin, không cần deploy). Khi chưa cấu hình Supabase (chế độ khách / dev local
+ * không có .env), danh mục trả rỗng — người dùng vẫn dán URL YouTube để tự tạo bài.
  */
-
-/** Fallback: nạp module tĩnh cũ chỉ khi cần (tránh kéo vào bundle khi đã có cloud). */
-async function staticModule() {
-  return import('@/data/shadowing')
-}
 
 /** Danh mục clip (cột nhẹ) cho lưới chọn clip. */
 export async function fetchClipList() {
-  if (!isCloudEnabled) {
-    const { shadowingClips } = await staticModule()
-    return shadowingClips
-  }
+  if (!isCloudEnabled) return []
   const { data, error } = await supabase
     .from('shadowing_clips')
     .select('video_id, title, level, topic, sentence_count')
@@ -35,10 +27,7 @@ export async function fetchClipList() {
 
 /** Nạp đầy đủ một clip (kèm câu) theo videoId. Trả null nếu không có. */
 export async function fetchClip(videoId) {
-  if (!isCloudEnabled) {
-    const { loadShadowingClip } = await staticModule()
-    return loadShadowingClip(videoId)
-  }
+  if (!isCloudEnabled) return null
   const { data, error } = await supabase
     .from('shadowing_clips')
     .select('*')
