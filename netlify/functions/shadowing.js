@@ -6,8 +6,10 @@
  * gom nhịp, đánh bóng AI (Groq) rồi ngắt theo câu trọn vẹn (.?!). Trả về
  * { videoId, title, author, thumbnail, sentences: { ai, original } }.
  *
- * Lưu ý: YouTube có thể chặn IP datacenter của Netlify -> phụ đề rỗng. Khi đó
- * trả 422 với thông điệp rõ ràng để client gợi ý người dùng chọn clip có sẵn.
+ * Lưu ý: YouTube chặn IP datacenter của Netlify nên scrape trực tiếp (youtube-transcript)
+ * trả phụ đề rỗng. Trên production ta dùng Supadata (https://supadata.ai) — API đi qua
+ * proxy residential nên không bị chặn. Đặt env var SUPADATA_API_KEY ở Netlify để bật.
+ * Local không có key thì tự fallback về youtube-transcript. Nếu vẫn rỗng -> trả 422.
  */
 import { YoutubeTranscript } from 'youtube-transcript'
 import { parseVideoId } from '../../src/lib/youtube.js'
@@ -32,13 +34,38 @@ async function fetchMeta(videoId) {
   }
 }
 
-/** Lấy phụ đề: thử kèm lang 'en' trước, lỗi thì thử mặc định. */
-async function fetchTranscript(videoId) {
+/**
+ * Lấy phụ đề qua Supadata — trả về mảng { text, offset, duration } (mili-giây),
+ * đúng định dạng groupIntoSentences cần. API đi qua proxy residential nên chạy
+ * được trên IP datacenter của Netlify.
+ */
+async function fetchTranscriptSupadata(videoId, key) {
+  const url =
+    'https://api.supadata.ai/v1/transcript?lang=en&url=' +
+    encodeURIComponent('https://www.youtube.com/watch?v=' + videoId)
+  const res = await fetch(url, { headers: { 'x-api-key': key } })
+  if (!res.ok) throw new Error('Supadata HTTP ' + res.status)
+  const data = await res.json()
+  // content: [{ text, offset, duration, lang }] — map thẳng sang dạng cần dùng.
+  return Array.isArray(data?.content)
+    ? data.content.map((c) => ({ text: c.text, offset: c.offset, duration: c.duration }))
+    : []
+}
+
+/** Fallback khi không có key (local dev): scrape trực tiếp qua youtube-transcript. */
+async function fetchTranscriptScrape(videoId) {
   try {
     return await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' })
   } catch {
     return await YoutubeTranscript.fetchTranscript(videoId)
   }
+}
+
+/** Ưu tiên Supadata nếu có key (production), ngược lại fallback scrape (local). */
+async function fetchTranscript(videoId) {
+  const key = process.env.SUPADATA_API_KEY
+  if (key) return fetchTranscriptSupadata(videoId, key)
+  return fetchTranscriptScrape(videoId)
 }
 
 export default async (req) => {
