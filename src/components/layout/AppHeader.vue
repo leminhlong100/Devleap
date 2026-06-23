@@ -350,6 +350,18 @@ async function signOut() {
     padding: 12px 18px;
     flex-wrap: wrap;
   }
+  /* Nav xuống một hàng riêng, cuộn ngang thay vì làm tràn trang */
+  .nav {
+    order: 3;
+    flex: 1 1 100%;
+    min-width: 0;
+    margin-left: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
   .xp-info {
     display: none;
   }
