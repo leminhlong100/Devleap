@@ -109,6 +109,17 @@ async function signOut() {
               <div class="menu-card">
                 <div class="menu-name">{{ authUser.name }}</div>
                 <div class="menu-email">{{ authUser.email }}</div>
+                <!-- Streak + XP: chỉ hiện trong dropdown trên mobile -->
+                <div class="menu-stats">
+                  <div class="menu-stat">
+                    <span class="streak-icon">🔥</span> {{ streak }} ngày liên tiếp
+                  </div>
+                  <div class="menu-stat">
+                    <span class="lv">Lv.{{ level }}</span>
+                    <span class="xp-num">{{ xp }} XP</span>
+                  </div>
+                  <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
+                </div>
                 <div v-if="syncLabel" class="menu-sync" :class="syncStatus">{{ syncLabel }}</div>
                 <button class="menu-out" @click="signOut">Đăng xuất</button>
               </div>
@@ -364,6 +375,26 @@ async function signOut() {
   margin-top: 2px;
   word-break: break-all;
 }
+/* Streak + XP trong dropdown — ẩn ở desktop, hiện trên mobile */
+.menu-stats {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(108, 92, 231, 0.12);
+}
+.menu-stat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.menu-stats .xp-track {
+  width: 100%;
+}
 .menu-sync {
   font-size: 11.5px;
   font-weight: 700;
@@ -426,8 +457,13 @@ async function signOut() {
   .header-right {
     gap: 10px;
   }
-  .xp-info {
+  /* Mobile: chỉ giữ search + avatar; streak/XP chuyển vào dropdown */
+  .streak,
+  .xp-chip {
     display: none;
+  }
+  .menu-stats {
+    display: flex;
   }
 }
 </style>
