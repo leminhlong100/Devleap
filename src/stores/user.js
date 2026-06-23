@@ -33,6 +33,10 @@ const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 const union = (a = [], b = []) => Array.from(new Set([...a, ...b]))
 // XP thưởng khi ôn một thẻ đang đến hạn (chấm "Khó" được ít hơn "Tốt/Dễ").
 const XP_REVIEW = { hard: 5, good: 10, easy: 10 }
+// Thưởng khi lần đầu hoàn thành một bài shadowing. Việc một bài "đạt" hay chưa
+// do component tính theo SỐ CÂU đạt mốc cá nhân (xem ShadowingPlayer.vue), không
+// suy từ một ngưỡng điểm trung bình ở đây.
+const XP_SHADOWING_PASS = 120
 // Hợp nhất lịch SRS: với mỗi thẻ, giữ bản ôn gần nhất (so theo `last`, dạng ISO).
 const mergeSrs = (a = {}, b = {}) => {
   const out = { ...a }
@@ -73,6 +77,32 @@ const mergeSaved = (a = {}, b = {}) => {
   }
   return out
 }
+// Hợp nhất kết quả shadowing: mỗi bài giữ điểm cao nhất, OR trạng thái đạt,
+// lấy số lần thử & ngày lớn hơn (đủ cho đồng bộ đa thiết bị cá nhân).
+const mergeShadowing = (a = {}, b = {}) => {
+  const out = { ...a }
+  for (const [k, v] of Object.entries(b)) {
+    const cur = out[k]
+    if (!cur) {
+      out[k] = v
+      continue
+    }
+    out[k] = {
+      best: Math.max(cur.best || 0, v.best || 0),
+      passed: !!(cur.passed || v.passed),
+      attempts: Math.max(cur.attempts || 0, v.attempts || 0),
+      lastAt: laterDate(cur.lastAt, v.lastAt),
+      sentences: mergeSentenceScores(cur.sentences, v.sentences),
+    }
+  }
+  return out
+}
+// Gộp điểm từng câu giữa 2 thiết bị: mỗi câu giữ điểm cao nhất.
+const mergeSentenceScores = (a = {}, b = {}) => {
+  const out = { ...(a || {}) }
+  for (const [id, v] of Object.entries(b || {})) out[id] = Math.max(out[id] || 0, v || 0)
+  return out
+}
 // Chọn ngày muộn hơn giữa 2 chuỗi 'YYYY-M-D' (null-safe).
 const laterDate = (a, b) => {
   if (!a) return b || null
@@ -98,6 +128,11 @@ export const useUserStore = defineStore('user', {
     // { [key]: { term, ipa, vi, ex, cat, srsId, context, savedAt } }. Dùng làm
     // một bộ flashcard riêng (srsId dạng "saved:từ" để có lịch ôn độc lập).
     savedWords: {},
+    // kết quả luyện shadowing, khóa theo videoId:
+    // { [videoId]: { best, passed, attempts, lastAt, sentences: { [id]: bestPct } } }
+    // best = điểm trung bình các câu; `sentences` lưu điểm tốt nhất TỪNG CÂU để
+    // tải lại không mất tiến độ.
+    shadowingScores: {},
 
     // —— đồng bộ cloud ——
     cloudUserId: null, // id user khi đã đăng nhập; null = chế độ khách
@@ -134,6 +169,14 @@ export const useUserStore = defineStore('user', {
     savedCount: (s) => Object.keys(s.savedWords).length,
     /** Một từ đã được lưu chưa? Dùng: user.isWordSaved('inheritance'). */
     isWordSaved: (s) => (term) => !!s.savedWords[String(term).trim().toLowerCase()],
+    /** Kết quả shadowing một bài (null nếu chưa luyện). Dùng: user.shadowingOf(videoId). */
+    shadowingOf: (s) => (videoId) => s.shadowingScores[videoId] || null,
+    /** Đã hoàn thành (đủ số câu đạt mốc) một bài shadowing chưa? */
+    shadowingPassed: (s) => (videoId) => !!s.shadowingScores[videoId]?.passed,
+    /** Số bài shadowing đã đạt (để hiện huy hiệu/tiến độ). */
+    shadowingPassedCount: (s) => Object.values(s.shadowingScores).filter((v) => v.passed).length,
+    /** Map điểm tốt nhất từng câu của một bài: { [sentenceId]: bestPct }. */
+    shadowingSentences: (s) => (videoId) => s.shadowingScores[videoId]?.sentences || {},
     /** Đếm số ngày đã hoàn thành của một khóa. */
     doneCount: (s) => (course) => (s.completed[course] || []).length,
     /** Một ngày đã hoàn thành chưa? Dùng như hàm: user.isDone('java', w, d). */
@@ -275,6 +318,44 @@ export const useUserStore = defineStore('user', {
       this.persist()
     },
 
+    /**
+     * Ghi kết quả luyện một bài shadowing.
+     * @param {number} pct  tiến độ cả bài = % số câu đã đạt mốc cá nhân (0..100).
+     * @param {boolean} passed  bài đã hoàn thành chưa (đủ tỉ lệ câu đạt mốc) — do
+     *   component quyết định theo "số câu đạt / tổng số câu", không suy từ điểm trung bình.
+     * Giữ tiến độ cao nhất; lần đầu hoàn thành thì thưởng XP + huy hiệu (như đạt bài kiểm tra).
+     * @returns {object} bản ghi kết quả của bài.
+     */
+    recordShadowing(videoId, pct, passed = false, sentences = null) {
+      if (!videoId) return null
+      const prev = this.shadowingScores[videoId]
+      const wasPassed = !!prev?.passed
+      const best = Math.max(prev?.best || 0, Math.round(pct))
+      // Gộp điểm tốt nhất TỪNG CÂU (giữ max) để tải lại không mất tiến độ.
+      const sent = { ...(prev?.sentences || {}) }
+      if (sentences) {
+        for (const [id, v] of Object.entries(sentences)) {
+          const n = Math.round(Number(v))
+          if (Number.isFinite(n) && n > (sent[id] || 0)) sent[id] = n
+        }
+      }
+      const entry = {
+        best,
+        passed: wasPassed || !!passed,
+        attempts: (prev?.attempts || 0) + 1,
+        lastAt: ymd(new Date()),
+        sentences: sent,
+      }
+      this.shadowingScores[videoId] = entry
+      if (!wasPassed && entry.passed) {
+        this.xp += XP_SHADOWING_PASS
+        this.badges += 1
+      }
+      this.bumpStreak()
+      this.persist()
+      return entry
+    },
+
     // ——————————————————————— lưu trữ ———————————————————————
 
     /** Ảnh chụp phần dữ liệu cần bền hoá (không gồm trạng thái sync). */
@@ -289,6 +370,7 @@ export const useUserStore = defineStore('user', {
         completed: this.completed,
         quizScores: this.quizScores,
         savedWords: this.savedWords,
+        shadowingScores: this.shadowingScores,
       }
     },
 
@@ -303,6 +385,8 @@ export const useUserStore = defineStore('user', {
       this.completed = { java: [], ielts: [], ...(s.completed || {}) }
       this.quizScores = s.quizScores && typeof s.quizScores === 'object' ? s.quizScores : {}
       this.savedWords = s.savedWords && typeof s.savedWords === 'object' ? s.savedWords : {}
+      this.shadowingScores =
+        s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {}
     },
 
     persist() {
@@ -338,7 +422,7 @@ export const useUserStore = defineStore('user', {
       try {
         const { data, error } = await supabase
           .from('progress')
-          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words')
+          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores')
           .eq('user_id', userId)
           .maybeSingle()
         if (error) throw error
@@ -355,6 +439,7 @@ export const useUserStore = defineStore('user', {
             completed: data.completed || {},
             quizScores: data.quiz_scores || {},
             savedWords: data.saved_words || {},
+            shadowingScores: data.shadowing_scores || {},
           }
           this.applySnapshot(mergeSnapshots(local, remote))
         }
@@ -408,6 +493,7 @@ export const useUserStore = defineStore('user', {
             completed: s.completed,
             quiz_scores: s.quizScores,
             saved_words: s.savedWords,
+            shadowing_scores: s.shadowingScores,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id' },
@@ -440,5 +526,6 @@ function mergeSnapshots(local, remote) {
     },
     quizScores: mergeQuiz(local.quizScores, remote.quizScores),
     savedWords: mergeSaved(local.savedWords, remote.savedWords),
+    shadowingScores: mergeShadowing(local.shadowingScores, remote.shadowingScores),
   }
 }
