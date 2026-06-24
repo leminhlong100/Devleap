@@ -261,7 +261,10 @@ export function getIeltsDay(weekNum, dayNum) {
     phrases,
     sentences,
     lessonScript: week.lessonScripts[idx] || null,
+    skills: week.skills, // bài giảng & khung mẫu của tuần (bài đọc, script nghe, khung Speaking/Writing…)
     quizHtml: week.quizHtml,
+    // Tự luyện cuối tuần (Part A/B/C + đáp án) — chỉ hiện ở BUỔI CUỐI để ôn trước bài kiểm tra tuần.
+    weekPracticeHtml: isLastDay ? week.weekPracticeHtml : '',
     quiz: dayQuiz, // quiz trắc nghiệm từ vựng riêng từng buổi (khác nhau mỗi ngày)
     // ngữ cảnh tuần để điều hướng
     week: week.num,

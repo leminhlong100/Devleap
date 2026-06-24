@@ -18,11 +18,12 @@ describe('parseIeltsWeek() — fixtures thật', () => {
     expect(w.subtitle).toContain('Khởi động') // phần trong ngoặc
   })
 
-  it('tách nội dung cấp tuần: ngữ pháp / từ vựng / kỹ năng / lesson / quiz', () => {
+  it('tách nội dung cấp tuần: ngữ pháp / từ vựng / quiz', () => {
     const w = parseIeltsWeek(read('NenTang_Tuan1.md'))
     expect(w.grammar.length).toBeGreaterThanOrEqual(3) // Backbone, Be, Do/Does/Did
     expect(w.vocabThemes.length).toBeGreaterThanOrEqual(2)
-    expect(w.lessonScripts.length).toBeGreaterThanOrEqual(3)
+    // "Kịch bản bài học" khuôn rỗng đã gỡ — lessonScripts giờ là mảng (có thể rỗng).
+    expect(Array.isArray(w.lessonScripts)).toBe(true)
     expect(w.weekQuiz.length).toBeGreaterThan(0)
     // mỗi mục có html đã render
     expect(w.grammar[0].html).toContain('<')

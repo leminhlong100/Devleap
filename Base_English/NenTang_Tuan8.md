@@ -2,6 +2,25 @@
 
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
+### Nhịp học hằng ngày
+
+| Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
+| --- | --- | --- | --- |
+| Day 50 | Modals (should / can) | 5 câu khuyên + 5 câu khả năng | Nhớ-lại 3 cụm Tuần 7 |
+| Day 51 | Câu điều kiện loại 1 | 6 câu điều kiện | Đọc to câu Day 50 |
+| Day 52 | Từ vựng IELTS + nhớ "5 lần gặp" | 5 từ qua 5 bước | Nhớ-lại điều kiện loại 1 |
+| Day 53 | Speaking Part 2 (sườn + cue card) | Bản ghi 90 giây | Lật Flashcard |
+| Day 54 | Speaking Part 3 + Task 2 Lite | Intro + 1 thân đoạn | Nghe lại bản ghi Part 2 |
+| Day 55 | Sản phẩm: Task 2 Lite + nói 2 phút | Bài Task 2 + bản ghi 2 phút | Xem sổ lỗi tuần |
+| Day 56 | Ôn nhẹ phần output | Sửa 1 đoạn cũ cho gọn | Nghe lại 2 bản ghi nói |
+| Day 57 | Mini-mock: ôn ngữ pháp qua sổ lỗi | 10 câu chuẩn | Đọc sổ lỗi 8 tuần |
+| Day 58 | Mini-mock: Reading | 2 passage + câu tóm tắt | Nhớ-lại 4 bước đọc |
+| Day 59 | Mini-mock: Listening | 3 script + 5 cụm | Cặp số dễ nhầm |
+| Day 60 | Mini-mock: Writing | Task 1 Lite + đoạn Task 2 | Khung T-S-E-F |
+| Day 61 | Mini-mock: Speaking | Cue card 2 phút + Part 3 | Khung Part 2/3 |
+| Day 62 | MINI-MOCK trọn gói (~90') | Bài mock 4 kỹ năng | Tổng ôn |
+| Day 63 | Nhìn lại + tự chấm band readiness | Thư gửi Tuần 0 + Bài kiểm tra | Nghe lại "mốc 0" |
+
 ### 5.11 Sản phẩm IELTS có hỗ trợ
 
 - **Mục tiêu tuần:** Em viết/nói có khung nhưng không máy móc.
@@ -267,159 +286,107 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 39. Explain how technology can distract students.
 40. Send a voice message to your future self.
 
-## 📅 Lịch học 7 ngày (Daily Checklist)
+## 📅 Lịch học 14 ngày (Daily Checklist)
 
-### Day 50
+> Tuần cuối nặng hơn nên trải 14 buổi: **Buổi 50–56** = sản phẩm IELTS có hỗ trợ; **Buổi 57–63** = mini-mock + nhìn lại. Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 50 — Modals (should / can)
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 7.
+- [ ] Học: should/can + động từ nguyên mẫu (không "to", không "-s"): "Students should review…", "It can have an impact".
+- [ ] Viết: 5 câu lời khuyên (should) + 5 câu khả năng (can); nhờ AI chữa.
+- [ ] Nói & Quiz: dùng cụm "lead to / a possible solution" khi nói với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi "should to / can has".
 
-### Day 51
+### Day 51 — Câu điều kiện loại 1 (if + hiện tại, will + V)
+- [ ] Ôn (5'): đọc to 3 câu của Day 50.
+- [ ] Học: "If + present simple, … will + V" — "If English becomes too stressful, they will lose interest."
+- [ ] Viết: 6 câu điều kiện loại 1 về việc học + 1 đoạn 4 câu (2 điều kiện + 1 modal); nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi "If … will become".
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 52 — Từ vựng IELTS + mô hình nhớ "5 lần gặp"
+- [ ] Ôn (5'): nhớ-lại quy tắc điều kiện loại 1 bằng tiếng Việt.
+- [ ] Học: phòng "Từ liên hệ IELTS" + mô hình Meet → Understand → Copy → Change → Use.
+- [ ] Từ vựng: chọn 5 từ, làm đủ 5 bước cho mỗi từ; nghe 🔊, lưu Flashcard.
+- [ ] Viết & Nói: dùng 3 cụm trong câu nói/viết thật (AI chữa) + quiz từ vựng.
+- [ ] Sổ lỗi (5'): từ nào chưa qua bước "Use"?
 
-### Day 52
+### Day 53 — Speaking Part 2: khung sườn truyện + 1 cue card
+- [ ] Ôn (5'): lật 5 từ Day 52.
+- [ ] Học: khung 7 bước Part 2 + đọc câu trả lời mẫu.
+- [ ] Viết: chọn 1 cue card (trong 20), viết 7 gạch đầu dòng (không viết cả câu).
+- [ ] Nói: nói 90 giây theo 7 gạch đầu dòng với AI; dùng "emergency fillers"; ghi âm.
+- [ ] Sổ lỗi (5'): chỗ kẹt → câu nối nào cứu?
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 54 — Speaking Part 3 + Writing Task 2 Lite (intro + 1 thân đoạn)
+- [ ] Ôn (5'): nghe lại bản ghi Part 2 Day 53, ghi 2 điểm sửa.
+- [ ] Học: khung Part 3 (General → Reason → Vietnam example → Soft conclusion) + đề Task 2 Lite mẫu.
+- [ ] Viết: lập dàn ý (Opinion – Reason – Example – Balance) rồi viết intro + 1 thân đoạn; nhờ AI chữa.
+- [ ] Nói & Quiz: trả lời 2 câu Part 3 với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu chủ đề đã nêu rõ ý kiến chưa?
 
-### Day 53
+### Day 55 — Ngày sản phẩm: Task 2 Lite hoàn chỉnh + nói 2 phút
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học: đọc bài mẫu Task 2 Lite; chọn 1 thử thách trong "40 Mini Speaking Challenges".
+- [ ] Viết: viết hoàn chỉnh Task 2 Lite (intro + 1 body), tự soát rồi nhờ AI chữa.
+- [ ] Sản phẩm: ghi âm 2 phút; mắc lỗi thì quay lại sửa rồi nói tiếp (đây là mốc kiểm tra).
+- [ ] Sổ lỗi (5'): 3 lỗi cần sửa trước mini-mock.
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 56 — Ôn nhẹ phần output
+- [ ] Ôn (10'): đọc lại 3 bài viết tốt nhất tuần; nghe lại 2 bản ghi nói.
+- [ ] Học: chọn 5 câu mẫu hay nhất của mình để "shadow" lại.
+- [ ] Nói & Quiz: nói 1 cue card nữa với AI + quiz từ vựng.
+- [ ] Viết: sửa lại 1 đoạn cũ cho gọn và rõ hơn; nhờ AI chữa.
+- [ ] Sổ lỗi (5'): chọn 3 lỗi lặp để tập trung trong mini-mock.
 
-### Day 54
+### Day 57 — Mini-mock (1/7): ôn ngữ pháp toàn khóa qua sổ lỗi
+- [ ] Ôn (10'): đọc lại sổ lỗi cả 8 tuần, gom 10 lỗi hay gặp nhất.
+- [ ] Học: với mỗi lỗi, viết 1 câu đúng làm "câu chuẩn" để nhớ.
+- [ ] Viết: viết 10 câu chuẩn đó; nhờ AI chữa.
+- [ ] Nói & Quiz: đọc to 10 câu chuẩn (ghi âm) + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi nào vẫn còn → cần luyện thêm.
 
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 58 — Mini-mock (2/7): Reading
+- [ ] Ôn (5'): nhớ-lại 4 bước đọc (Tuần 7).
+- [ ] Đọc: chọn 2 passage Tuần 7 chưa làm kỹ, trả lời câu hỏi, tính giờ.
+- [ ] Tự chấm: đếm đúng/sai; với câu sai, tìm bằng chứng trong bài.
+- [ ] Viết & Quiz: viết 1 câu tóm tắt cho mỗi passage; quiz từ vựng.
+- [ ] Sổ lỗi (5'): dạng câu hỏi nào hay sai (TFNG/matching)?
 
-### Day 55
+### Day 59 — Mini-mock (3/7): Listening
+- [ ] Ôn (5'): cặp số dễ nhầm (13/30…), spelling tên.
+- [ ] Nghe: nghe lại 3 Script (Tuần 7) không nhìn transcript, trả lời.
+- [ ] Tự chấm: đọc transcript đối chiếu; shadow 1 script.
+- [ ] Viết & Quiz: ghi 5 cụm nghe được; quiz từ vựng.
+- [ ] Sổ lỗi (5'): từ nào nghe vẫn chưa ra?
 
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 60 — Mini-mock (4/7): Writing
+- [ ] Ôn (5'): mẫu câu Task 1 + khung T-S-E-F.
+- [ ] Viết: 1 Task 1 Lite (mô tả số liệu) + 1 đoạn Task 2 Lite; canh giờ.
+- [ ] Tự soát: dùng bảng "Sửa lỗi Writing" rồi nhờ AI chữa.
+- [ ] Nói & Quiz: đọc to bài viết + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi viết lặp lại nhiều nhất?
 
-### Day 56
+### Day 61 — Mini-mock (5/7): Speaking
+- [ ] Ôn (5'): khung Part 2 (7 bước) + Part 3.
+- [ ] Nói: 1 cue card Part 2 (2 phút) + 2 câu Part 3 với AI; ghi âm.
+- [ ] Tự chấm: nghe lại, đánh dấu chỗ ngập ngừng/lỗi lặp.
+- [ ] Viết & Quiz: ghi 5 câu muốn cải thiện; quiz từ vựng.
+- [ ] Sổ lỗi (5'): 3 điểm nói cần sửa.
 
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 62 — MINI-MOCK trọn gói (~90 phút)
+- [ ] Listening (~15'): 3 script, không nhìn transcript.
+- [ ] Reading (~25'): 1 passage + 5 câu, tính giờ.
+- [ ] Writing (~30'): 1 Task 1 Lite + 1 đoạn Task 2 Lite; nhờ AI chữa.
+- [ ] Speaking (~15'): 1 cue card 2 phút + 2 câu Part 3; ghi âm.
+- [ ] Sổ lỗi (5'): tổng kết 5 lỗi lớn nhất của bài mock.
 
-## 🏁 Mini-mock cuối khóa
-
-### Day 57
-
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 58
-
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 59
-
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 60
-
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 61
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 62
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 63
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 8.1 — Modals Should and Can
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** modals should/can. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 8.2 — Conditionals Basic
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** conditionals basic. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 8.3 — Mini Essay
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** mini essay. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 8.4 — Mini-mock nhẹ
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** chuẩn bị mini-mock nhẹ. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 8.5 — Before and After Reflection
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** before/after reflection. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 63 — Nhìn lại + tự chấm band readiness + Bài kiểm tra tuần
+- [ ] Tự chấm "band readiness": Chưa sẵn sàng (còn rơi rụng be/động từ, câu hay đứt) → Gần sẵn sàng ~3.5–4.0 (câu cơ bản đúng, nói 60–90s có khung) → Sẵn sàng vào IELTS ~4.0–4.5 (nói 2 phút có sườn, viết intro+body, đọc tìm được bằng chứng).
+- [ ] So sánh: nghe lại "bản ghi mốc 0" (Day 1) — ghi 3 tiến bộ rõ nhất.
+- [ ] Nhiệm vụ nhẹ: viết lá thư ngắn gửi lại bản thân ở Tuần 0.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 8 (đạt ≥70%).
+- [ ] Bước tiếp theo: sau khóa nền tảng này, em đã đủ sức bắt đầu một khóa IELTS thật (band descriptors đầy đủ + full mock 4 kỹ năng).
 
 ## ✅ Quiz tuần 8
 
@@ -462,34 +429,34 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don't like coffee.
-4. There is many students here.
-5. I didn't went out yesterday.
+1. Students should to review every day.
+2. Using English can has a positive impact.
+3. If English will become too stressful, they lose interest.
+4. If she study hard, she will pass.
+5. I like English. It is useful. It helps my future.
 
 ### Part B — Complete the answers
 
-1. I study English because ______ .
-2. Although English is difficult, ______ .
-3. One useful habit is ______ .
-4. I feel more confident when ______ .
-5. In my opinion, students should ______ .
+1. One main reason is that ______.
+2. A possible solution is to ______.
+3. If students practise every day, they ______.
+4. Students should ______ because ______.
+5. In my opinion, ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 2 minutes:
 
-- What is one thing you learned this week?
+- "Should students learn English from a young age?" Give your opinion, one reason and one example.
 
-### Answer Key Part A
+### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn't like coffee.
-4. There are many students here.
-5. I didn't go out yesterday.
+1. Students should review every day.
+2. Using English can have a positive impact.
+3. If English becomes too stressful, they will lose interest.
+4. If she studies hard, she will pass.
+5. I like English because it is useful for my future.
 
 ### Teacher note
 
-If the student still repeats the same error after correction, do not say "we learned this already". Say: "This pattern needs more review. Let's repair it again with a new sentence."
+Nếu người học vẫn lặp lại cùng một lỗi sau khi được sửa, đừng nói "we learned this already". Hãy nói: "This pattern needs more review. Let's repair it again with a new sentence."

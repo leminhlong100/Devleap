@@ -184,6 +184,7 @@ export function parseIeltsWeek(raw) {
   let goalsHtml = ''
   let rhythm = []
   let quizHtml = ''
+  let weekPracticeHtml = ''
 
   for (const sec of h2) {
     const h = sec.heading
@@ -216,6 +217,10 @@ export function parseIeltsWeek(raw) {
       skills.push({ title: h.replace(/^[\p{Extended_Pictographic}️‍\s]+/u, '').trim(), html: md(sec.lines.join('\n')) })
     } else if (/Quiz/i.test(h)) {
       quizHtml = md(sec.lines.join('\n'))
+      // Phần TỰ LUYỆN cuối tuần = các tiểu mục Part A/B/C + đáp án (bỏ "Quiz Nhanh"
+      // vì đó là bài kiểm tra tuần có chấm điểm, hiển thị riêng ở AssessmentView).
+      const practiceSubs = splitByLevel(sec.lines, 3).filter((s) => !/Quiz\s*Nhanh/i.test(s.heading))
+      weekPracticeHtml = md(practiceSubs.map((s) => `### ${s.heading}\n${s.lines.join('\n')}`).join('\n\n'))
     }
     // các section khác (Lịch học, Kịch bản, Mini-mock) xử lý qua quét ### bên dưới
   }
@@ -241,5 +246,5 @@ export function parseIeltsWeek(raw) {
     }
   }
 
-  return { ...meta, intro: md(intro), goalsHtml, rhythm, grammar, vocabThemes, skills, days, lessonScripts, quizHtml, weekQuiz }
+  return { ...meta, intro: md(intro), goalsHtml, rhythm, grammar, vocabThemes, skills, days, lessonScripts, quizHtml, weekPracticeHtml, weekQuiz }
 }

@@ -143,6 +143,11 @@ export const useUserStore = defineStore('user', {
     // và để khóa tiến độ; chưa đẩy lên cloud nên không cần đổi schema bảng progress.
     writings: {},
 
+    // tiến độ checklist "việc cần làm hôm nay", khóa theo "course:week:day":
+    // { [key]: [bool, bool, …] } theo thứ tự mục. Local-only (như writings) để
+    // khóa hoàn thành buổi mà không phải đổi schema bảng progress.
+    checklists: {},
+
     // tùy chọn chế độ hội thoại (hiện chỉ có persona lời phê) — chỉ local.
     convoPrefs: { ...DEFAULT_CONVO },
 
@@ -175,12 +180,17 @@ export const useUserStore = defineStore('user', {
      *  Bỏ qua khóa "gday:" — đó là cổng luyện ngữ pháp theo ngày, không phải bài kiểm tra. */
     quizPassedCount: (s) => (course) =>
       Object.entries(s.quizScores).filter(
-        ([k, v]) => k.startsWith(`${course}:`) && !k.includes(':gday:') && v.passed,
+        ([k, v]) => k.startsWith(`${course}:`) && !k.includes(':gday:') && !k.includes(':vday:') && v.passed,
       ).length,
     /** Đã ĐẠT cổng luyện ngữ pháp của một ngày chưa? Dùng để khóa/mở ngày kế.
      *  Khóa lưu dạng "course:gday:week:day" trong cùng cột quizScores (đồng bộ sẵn). */
     grammarDayPassed: (s) => (course, week, day) =>
       !!s.quizScores[`${course}:gday:${week}:${day}`]?.passed,
+    /** Đã ĐẠT cổng quiz từ vựng của một ngày chưa? Khóa "course:vday:week:day". */
+    vocabDayPassed: (s) => (course, week, day) =>
+      !!s.quizScores[`${course}:vday:${week}:${day}`]?.passed,
+    /** Trạng thái tick của checklist một ngày (mảng bool theo thứ tự mục). */
+    checklistState: (s) => (course, week, day) => s.checklists[`${course}:${week}:${day}`] || [],
     /** Bài viết của một ngày (null nếu chưa viết). Dùng: user.writingOf('ielts',w,d). */
     writingOf: (s) => (course, week, day) => s.writings[`${course}:${week}:${day}`] || null,
     /** Đã NỘP xong bài viết của một ngày chưa? (dùng để khóa hoàn thành buổi) */
@@ -345,6 +355,41 @@ export const useUserStore = defineStore('user', {
     },
 
     /**
+     * Ghi nhận kết quả CỔNG quiz từ vựng theo ngày (trắc nghiệm nghĩa từ).
+     * Như recordGrammarDay nhưng khóa "course:vday:week:day"; chỉ ghi trạng thái
+     * đạt (≥ngưỡng) để mở khóa hoàn thành buổi. `passed` là "dính".
+     * @returns {boolean} đã đạt (tích lũy) hay chưa.
+     */
+    recordVocabDay(course, week, day, correct, total, threshold = PASS_PCT) {
+      if (!course || !total) return false
+      const key = `${course}:vday:${week}:${day}`
+      const pct = Math.round((correct / total) * 100)
+      const prev = this.quizScores[key] || null
+      const keepNew = !prev || pct > prev.pct
+      this.quizScores[key] = {
+        best: keepNew ? correct : prev.best,
+        total: keepNew ? total : prev.total,
+        pct: keepNew ? pct : prev.pct,
+        attempts: (prev?.attempts || 0) + 1,
+        passed: !!prev?.passed || pct >= threshold * 100,
+        lastAt: ymd(new Date()),
+      }
+      this.bumpStreak()
+      this.persist()
+      return this.quizScores[key].passed
+    },
+
+    /**
+     * Lưu trạng thái tick của checklist một ngày (mảng bool). Dùng để khóa hoàn
+     * thành buổi: phải tick hết các mục mới qua được.
+     */
+    setChecklist(course, week, day, arr) {
+      if (!course) return
+      this.checklists[`${course}:${week}:${day}`] = Array.isArray(arr) ? arr.slice() : []
+      this.persist()
+    },
+
+    /**
      * Lưu bài tập viết của một ngày (text + trạng thái đã nộp + kết quả AI chữa).
      * Gọi khi gõ (lưu nháp) và khi AI chữa xong (done=true, kèm review). `done`
      * là "dính" — đã xong thì giữ.
@@ -439,6 +484,7 @@ export const useUserStore = defineStore('user', {
         savedWords: this.savedWords,
         shadowingScores: this.shadowingScores,
         writings: this.writings,
+        checklists: this.checklists,
       }
     },
 
@@ -456,6 +502,7 @@ export const useUserStore = defineStore('user', {
       this.shadowingScores =
         s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {}
       this.writings = s.writings && typeof s.writings === 'object' ? s.writings : {}
+      this.checklists = s.checklists && typeof s.checklists === 'object' ? s.checklists : {}
     },
 
     persist() {
@@ -621,7 +668,23 @@ function mergeSnapshots(local, remote) {
     savedWords: mergeSaved(local.savedWords, remote.savedWords),
     shadowingScores: mergeShadowing(local.shadowingScores, remote.shadowingScores),
     writings: mergeWritings(local.writings, remote.writings),
+    checklists: mergeChecklists(local.checklists, remote.checklists),
   }
+}
+
+// Hợp nhất checklist: mỗi ngày OR theo từng vị trí (đã tick ở thiết bị nào thì giữ).
+function mergeChecklists(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  for (const [k, v] of Object.entries(b || {})) {
+    const cur = out[k]
+    if (!cur) {
+      out[k] = v
+      continue
+    }
+    const len = Math.max(cur.length, v.length)
+    out[k] = Array.from({ length: len }, (_, i) => !!cur[i] || !!v[i])
+  }
+  return out
 }
 
 // Hợp nhất bài viết: mỗi ngày giữ bản mới hơn (theo `at`), OR trạng thái đã nộp.

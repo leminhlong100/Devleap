@@ -15,14 +15,14 @@
 ### Nhịp học hằng ngày
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
-|-----|----------------|--------------|--------|
-| Day 1 | Nắm lộ trình tuần và chép tay 5 câu mẫu. | Đọc to 5 câu mẫu. | Ôn 5 câu dễ nhất của tuần trước. |
-| Day 2 | Học ngữ pháp ngắn và luyện có kiểm soát. | Viết 8 câu dùng điểm ngữ pháp của tuần. | Gấp tài liệu và viết lại 3 quy tắc bằng tiếng Việt. |
-| Day 3 | Xây nhóm từ vựng theo chủ đề. | Làm 10 thẻ từ có cụm đi kèm, không chỉ ghi từ đơn. | Tự kiểm tra: English → Vietnamese → English. |
-| Day 4 | Luyện nói có ghi âm. | Thu âm 60–90 giây. | Nghe lại một lần và chỉ ghi 2 điểm cần sửa. |
-| Day 5 | Đọc/nghe một đoạn ngắn. | Trả lời câu hỏi ngắn. | Gạch chân 5 cụm hữu ích và dùng lại 2 cụm. |
-| Day 6 | Viết đoạn ngắn. | Viết một đoạn hoặc một mini task. | Ghi 3 lỗi vào sổ lỗi. |
-| Day 7 | Ngày nhẹ. | Nhiệm vụ nhẹ + checkpoint tuần. | Chọn nội dung cần lặp lại tuần sau. |
+| --- | --- | --- | --- |
+| Day 15 | Present simple + tần suất | 6 thói quen | Nhớ-lại 3 cụm Tuần 2 |
+| Day 16 | Câu hỏi wh + do/does | 20 câu hỏi + 10 trả lời | Đọc to thói quen Day 15 |
+| Day 17 | Phòng từ vựng Routine/Food/Hobbies | 12 thẻ cụm | Anh→Việt→Anh |
+| Day 18 | Phát âm & sự tự tin | Shadowing 5 câu (ghi âm) | Lật Flashcard |
+| Day 19 | Nói Part 1 (khung A-R-E-F) | Bản ghi ~90s | Đọc to câu shadowing |
+| Day 20 | Đoạn văn 80 từ về một ngày | Đoạn 80 từ (ghi âm) | Xem sổ lỗi tuần |
+| Day 21 | Tổng hợp + kiểm tra tuần | Bài kiểm tra Tuần 3 | Nhớ-lại 6 cụm + khung |
 
 ### Quyền học chậm
 
@@ -328,106 +328,63 @@ Không có từ khủng. Nhưng có đường đi.
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-### Day 15
+> Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Đích tuần: nói được 90 giây về một ngày bình thường, không dịch từng chữ.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 15 — Present simple + trạng từ tần suất
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 2.
+- [ ] Học: "she/he/it + s/es"; vị trí usually/often/sometimes/rarely/never.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 6 thói quen có trạng từ tần suất; nhờ AI chữa.
+- [ ] Nói & Quiz: nói với AI về buổi sáng của em + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi "She study / He don't".
 
-### Day 16
+### Day 16 — Câu hỏi (wh + do/does) cho Speaking Part 1
+- [ ] Ôn (5'): đọc to 6 câu thói quen Day 15.
+- [ ] Học: "Where do you live?" (không "Where you live?").
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 20 câu hỏi cho một người bạn + trả lời 10 câu; nhờ AI chữa.
+- [ ] Nói: tự hỏi–tự đáp 5 câu với AI (ghi âm).
+- [ ] Sổ lỗi (5'): lỗi thiếu do/does trong câu hỏi.
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 17 — Phòng từ vựng Daily routine / Food / Hobbies
+- [ ] Ôn (5'): nhớ-lại cấu trúc câu hỏi bằng tiếng Việt.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
+- [ ] Từ vựng: học theo cụm (follow a routine, eat out, be into…), nghe 🔊, lưu Flashcard.
+- [ ] Viết: viết 4 câu về sở thích & ăn uống, mỗi câu 1 cụm mới; nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): cụm khó nhớ?
 
-### Day 17
+### Day 18 — Phát âm & sự tự tin (final sounds, word stress, thought groups)
+- [ ] Ôn (5'): lật thẻ Flashcard từ vựng Day 17.
+- [ ] Học: âm cuối /t/ /d/ /s/ /z/; trọng âm từ (com-fort-a-ble); ngắt thought groups.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: làm bài viết của buổi; nhờ AI chữa.
+- [ ] Nói: shadowing 5 câu (gạch chéo thought groups), ghi âm lượt cuối.
+- [ ] Sổ lỗi (5'): 2 từ trọng âm hay sai.
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 19 — Speaking Part 1 (khung Answer–Reason–Example–Feeling)
+- [ ] Ôn (5'): đọc to 5 câu shadowing Day 18.
+- [ ] Học: khung trả lời 4 bước + ngân hàng câu hỏi (Study/Hometown/Food…).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết dàn ý 4 câu hỏi theo 4 bước; nhờ AI chữa.
+- [ ] Nói: trả lời 4 câu hỏi với AI (~90s, ghi âm).
+- [ ] Sổ lỗi (5'): chỗ bị kẹt → cần filler nào?
 
-### Day 18
+### Day 20 — Ngày sản phẩm: đoạn văn 80 từ về một ngày
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học: bảng "sửa thói quen dịch từng chữ" — chuyển 3 câu Việt sang tiếng Anh tự nhiên.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết đoạn 80 từ "một ngày của tôi" (present simple + tần suất); nhờ AI chữa.
+- [ ] Sản phẩm: đọc to & ghi âm đoạn vừa viết.
+- [ ] Sổ lỗi (5'): câu nào còn dịch word-by-word?
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 19
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 20
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 21
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 3.1 — Present Simple Routine
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** present simple routine. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 3.2 — Frequency Adverbs
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** frequency adverbs. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 3.3 — Like + V-Ing
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** like + V-ing. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 3.4 — Daily Routine Speaking
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** daily routine speaking. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 3.5 — Photo Diary
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** photo diary. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 21 — Tổng hợp tuần + Bài kiểm tra tuần
+- [ ] Ôn (10'): nhớ-lại 6 cụm + khung Part 1.
+- [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
+- [ ] Viết: viết 8 câu vận dụng ngữ pháp tuần; nhờ AI chữa.
+- [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 3 (mốc: nói 90 giây về một ngày).
+- [ ] Kế hoạch: chọn 3 nội dung cần lặp lại.
 
 ## ✅ Quiz tuần 3
 
@@ -470,34 +427,34 @@ Không có từ khủng. Nhưng có đường đi.
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don't like coffee.
-4. There is many students here.
-5. I didn't went out yesterday.
+1. She study English every day.
+2. He don't like tea.
+3. Where you live?
+4. What she likes in her free time?
+5. I go usually to school by bus.
 
 ### Part B — Complete the answers
 
-1. I study English because ________.
-2. Although English is difficult, ________.
-3. One useful habit is ________.
-4. I feel more confident when ________.
-5. In my opinion, students should ________.
+1. I usually ______ in the morning.
+2. On weekends, I often ______.
+3. I am into ______ because ______.
+4. How often do you ______?
+5. I rarely ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 90 seconds:
 
-- What is one thing you learned this week?
+- Describe your daily routine from morning to night.
 
-### Answer Key Part A
+### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn't like coffee.
-4. There are many students here.
-5. I didn't go out yesterday.
+1. She studies English every day.
+2. He doesn't like tea.
+3. Where do you live?
+4. What does she like in her free time?
+5. I usually go to school by bus.
 
 ### Teacher note
 
-If the student still repeats the same error after correction, do not say "we learned this already". Say: "This pattern needs more review. Let's repair it again with a new sentence."
+Nếu người học vẫn lặp lại cùng một lỗi sau khi được sửa, đừng nói "we learned this already". Hãy nói: "This pattern needs more review. Let's repair it again with a new sentence."

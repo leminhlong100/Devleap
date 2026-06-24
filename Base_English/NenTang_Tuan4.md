@@ -16,13 +16,13 @@
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
 | --- | --- | --- | --- |
-| Day 1 | Nắm lộ trình tuần và chép tay 5 câu mẫu. | Đọc to 5 câu mẫu. | Ôn 5 câu dễ nhất của tuần trước. |
-| Day 2 | Học ngữ pháp ngắn và luyện có kiểm soát. | Viết 8 câu dùng điểm ngữ pháp của tuần. | Gấp tài liệu và viết lại 3 quy tắc bằng tiếng Việt. |
-| Day 3 | Xây nhóm từ vựng theo chủ đề. | Làm 10 thẻ từ có cụm đi kèm, không chỉ ghi từ đơn. | Tự kiểm tra: English → Vietnamese → English. |
-| Day 4 | Luyện nói có ghi âm. | Thu âm 60–90 giây. | Nghe lại một lần và chỉ ghi 2 điểm cần sửa. |
-| Day 5 | Đọc/nghe một đoạn ngắn. | Trả lời câu hỏi ngắn. | Gạch chân 5 cụm hữu ích và dùng lại 2 cụm. |
-| Day 6 | Viết đoạn ngắn. | Viết một đoạn hoặc một mini task. | Ghi 3 lỗi vào sổ lỗi. |
-| Day 7 | Ngày nhẹ. | Nhiệm vụ nhẹ + checkpoint tuần. | Chọn nội dung cần lặp lại tuần sau. |
+| Day 22 | Past simple (kể việc đã xong) | Chuyện 10 câu hôm qua | Nhớ-lại 3 cụm Tuần 3 |
+| Day 23 | Present continuous | 8 việc đang diễn ra | Đọc to câu quá khứ |
+| Day 24 | Future + từ vựng Transport | 5 kế hoạch + 5 dự đoán | Nhớ-lại present continuous |
+| Day 25 | Nói: kể chuyện quá khứ | Bản ghi 60–90s | Lật Flashcard |
+| Day 26 | Chuẩn bị truyện "my worst Monday" | 4–6 khung truyện | Đọc to phần kể chuyện |
+| Day 27 | Đoạn quá khứ 8–10 câu | Bản ghi kể chuyện | Xem sổ lỗi tuần |
+| Day 28 | Tổng hợp + kiểm tra tuần | Bài kiểm tra Tuần 4 | Bài dịch câu 41–60 |
 
 ### Quyền học chậm
 
@@ -254,106 +254,63 @@ Translate naturally. Do not translate word by word.
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-### Day 22
+> Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Tuần này em bắt đầu điều khiển thời gian: quá khứ, hiện tại tiếp diễn, tương lai.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 22 — Past simple (kể việc đã xong)
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 3.
+- [ ] Học: V2/ed + dấu hiệu thời gian (yesterday, last week, ago); "didn't + base verb".
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết chuyện 10 câu về hôm qua, khoanh tròn động từ quá khứ; nhờ AI chữa.
+- [ ] Nói & Quiz: kể lại chuyện đó với AI (ghi âm) + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi "I go there yesterday / didn't went".
 
-### Day 23
+### Day 23 — Present continuous (đang xảy ra)
+- [ ] Ôn (5'): đọc to 3 câu quá khứ Day 22.
+- [ ] Học: am/is/are + V-ing; phân biệt với present simple.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: nhìn 1 tranh/video, viết 8 việc đang diễn ra; nhờ AI chữa.
+- [ ] Nói & Quiz: mô tả việc đang diễn ra với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu nào thiếu "be"?
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 24 — Future (going to / will) + Phòng từ vựng Transport
+- [ ] Ôn (5'): nhớ-lại quy tắc present continuous bằng tiếng Việt.
+- [ ] Học: going to (kế hoạch) vs will (dự đoán/quyết định nhanh).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Từ vựng: học cụm Transport & Travel (book a ticket, travel abroad…), nghe 🔊, lưu Flashcard.
+- [ ] Viết: 5 kế hoạch (going to) + 5 dự đoán (will); nhờ AI chữa.
+- [ ] Sổ lỗi (5'): lỗi "I going to / She will studies".
 
-### Day 24
+### Day 25 — Luyện nói: kể chuyện quá khứ
+- [ ] Ôn (5'): lật thẻ Flashcard từ vựng Day 24.
+- [ ] Học: làm bài dịch Việt→Anh (câu 1–20), đối chiếu đáp án.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: dựng 6 ý cho chuyện "a trip / a weekend" theo trình tự thời gian; nhờ AI chữa.
+- [ ] Nói: kể 60–90s với AI (ghi âm).
+- [ ] Sổ lỗi (5'): động từ bất quy tắc hay sai (go/went, buy/bought).
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 26 — Ngày nạp/dịch: chuẩn bị truyện tranh "my worst Monday"
+- [ ] Ôn (5'): đọc to phần kể chuyện Day 25.
+- [ ] Học: làm bài dịch Việt→Anh (câu 21–40), ưu tiên ý chính.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: ghi 4–6 khung "my worst Monday", mỗi khung 1 câu quá khứ; nhờ AI chữa.
+- [ ] Nói & Quiz: thử kể với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu nào còn dịch cứng?
 
-### Day 25
+### Day 27 — Ngày sản phẩm: đoạn quá khứ 8–10 câu
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học: từ nối trình tự (first, then, after that, finally).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết "my worst Monday" 8–10 câu; nhờ AI chữa.
+- [ ] Sản phẩm: kể lại bằng giọng nói (ghi âm), không đọc nguyên văn.
+- [ ] Sổ lỗi (5'): 3 lỗi cần sửa trước Day 28.
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 26
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 27
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 28
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week’s repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 4.1 — Past Simple Story
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** past simple story. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 4.2 — Time Markers
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** time markers. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 4.3 — Present Continuous
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** present continuous. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 4.4 — Future Plan
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** future plan. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 4.5 — Comic Strip Storytelling
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** comic strip storytelling. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 28 — Tổng hợp tuần + Bài kiểm tra tuần
+- [ ] Ôn (10'): làm bài dịch Việt→Anh (câu 41–60) như bài ôn.
+- [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
+- [ ] Viết: viết 8 câu vận dụng 3 thì đã học; nhờ AI chữa.
+- [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 4 (mốc: kể chuyện quá khứ 8–10 câu).
+- [ ] Kế hoạch: chọn 3 nội dung cần lặp lại (thường là động từ bất quy tắc).
 
 ## ✅ Quiz tuần 4
 
@@ -396,34 +353,34 @@ Translate naturally. Do not translate word by word.
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don’t like coffee.
-4. There is many students here.
-5. I didn’t went out yesterday.
+1. I go there yesterday.
+2. She didn't went home.
+3. I learning English now.
+4. I going to study tonight.
+5. She will studies abroad next year.
 
 ### Part B — Complete the answers
 
-1. I study English because ______.
-2. Although English is difficult, ______.
-3. One useful habit is ______.
-4. I feel more confident when ______.
-5. In my opinion, students should ______.
+1. Last weekend, I ______.
+2. Right now, I am ______.
+3. Next month, I am going to ______.
+4. When I was a child, I ______.
+5. I think the weather tomorrow will ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 90 seconds:
 
-- What is one thing you learned this week?
+- Tell a short story about a trip or a memorable day (use the past tense): what happened, where, who, and how you felt.
 
-### Answer Key Part A
+### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn’t like coffee.
-4. There are many students here.
-5. I didn’t go out yesterday.
+1. I went there yesterday.
+2. She didn't go home.
+3. I am learning English now.
+4. I am going to study tonight.
+5. She will study abroad next year.
 
 ### Teacher note
 
-If the student still repeats the same error after correction, do not say “we learned this already”. Say: “This pattern needs more review. Let’s repair it again with a new sentence.”
+Nếu người học vẫn lặp lại cùng một lỗi sau khi được sửa, đừng nói "we learned this already". Hãy nói: "This pattern needs more review. Let's repair it again with a new sentence."

@@ -16,13 +16,13 @@
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
 | --- | --- | --- | --- |
-| Day 1 | Nắm lộ trình tuần và chép tay 5 câu mẫu. | Đọc to 5 câu mẫu. | Ôn 5 câu dễ nhất của tuần trước. |
-| Day 2 | Học ngữ pháp ngắn và luyện có kiểm soát. | Viết 8 câu dùng điểm ngữ pháp của tuần. | Gấp tài liệu và viết lại 3 quy tắc bằng tiếng Việt. |
-| Day 3 | Xây nhóm từ vựng theo chủ đề. | Làm 10 thẻ từ có cụm đi kèm, không chỉ ghi từ đơn. | Tự kiểm tra: English → Vietnamese → English. |
-| Day 4 | Luyện nói có ghi âm. | Thu âm 60–90 giây. | Nghe lại một lần và chỉ ghi 2 điểm cần sửa. |
-| Day 5 | Đọc/nghe một đoạn ngắn. | Trả lời câu hỏi ngắn. | Gạch chân 5 cụm hữu ích và dùng lại 2 cụm. |
-| Day 6 | Viết đoạn ngắn. | Viết một đoạn hoặc một mini task. | Ghi 3 lỗi vào sổ lỗi. |
-| Day 7 | Ngày nhẹ. | Nhiệm vụ nhẹ + checkpoint tuần. | Chọn nội dung cần lặp lại tuần sau. |
+| Day 43 | Mạo từ + mệnh đề quan hệ | 10 câu who/which/that | Nhớ-lại 3 cụm Tuần 6 |
+| Day 44 | Giới từ theo cảnh | 10 nhãn đồ vật | Đọc to câu Day 43 |
+| Day 45 | Từ vựng Environment + chiến thuật đọc | Passage 1–2 + 5 cụm | Lật Flashcard |
+| Day 46 | Reading True / False / Not Given | Passage 3–4 (bằng chứng) | Nhớ-lại 4 bước đọc |
+| Day 47 | Listening micro-skills | Script 1–2 + shadowing | Đọc to 5 cụm |
+| Day 48 | Passage 5–6 + câu tóm tắt | 2 câu tóm tắt + 1 response | Xem sổ lỗi tuần |
+| Day 49 | Tổng hợp + kiểm tra tuần | Bài kiểm tra Tuần 7 | 1 passage làm lại, tính giờ |
 
 ### Quyền học chậm
 
@@ -452,106 +452,63 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-### Day 43
+> Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Tuần này luyện đọc/nghe có chiến thuật — không hoảng khi chưa hiểu hết. Trong trang có sẵn 6 bài đọc và 3 script nghe kèm đáp án. Đích: trả lời 10 câu Reading từ một đoạn ngắn.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 43 — Mạo từ (a/an/the) + Mệnh đề quan hệ (who/which/that)
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 6.
+- [ ] Học: "I am a student"; "teachers who explain clearly"; không bỏ mạo từ.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: mô tả 5 người + 5 đồ vật bằng who/which/that; nhờ AI chữa.
+- [ ] Nói & Quiz: mô tả người/vật quanh em với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi bỏ mạo từ / lặp chủ ngữ ("the app which it is").
 
-### Day 44
+### Day 44 — Giới từ theo "cảnh" + ôn mệnh đề quan hệ
+- [ ] Ôn (5'): đọc to 4 câu Day 43.
+- [ ] Học: giới từ theo cụm (good at, interested in, depend on); tránh "depend of / discuss about".
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: vẽ bàn học, ghi nhãn 10 đồ vật bằng in/on/under/next to/between; nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): 2 cụm giới từ hay sai.
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 45 — Phòng từ vựng Environment + chiến thuật đọc
+- [ ] Ôn (5'): lật thẻ Flashcard từ vựng.
+- [ ] Học: quy trình đọc 4 bước (predict → main idea → keywords → answer by evidence).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Đọc: làm Passage 1 (The Study Corner) + Passage 2 (Learning Through Stories), trả lời + tự chấm.
+- [ ] Viết & Quiz: thu thập 5 cụm hữu ích từ 2 bài đọc; nhờ AI chữa; quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu sai do đoán theo cảm giác?
 
-### Day 45
+### Day 46 — Reading: True/False/Not Given + Passage 3–4
+- [ ] Ôn (5'): nhớ-lại 4 bước đọc.
+- [ ] Học: True = cùng nghĩa; False = trái nghĩa; Not Given = bài chưa cho đủ chứng cứ.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Đọc: làm Passage 3 (Phones and Attention) + Passage 4 (A Gentle Classroom), trả lời + tự chấm.
+- [ ] Viết & Quiz: với mỗi đáp án, ghi 1 dòng "bằng chứng ở câu nào"; quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu nào nhầm True ↔ Not Given?
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 47 — Listening micro-skills + Script 1–2
+- [ ] Ôn (5'): đọc to 5 cụm Day 45.
+- [ ] Học: cặp số (13/30, 14/40…), spelling tên, giờ, paraphrase lite.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Nghe: nghe (nút phát/đọc to bằng TTS) Script 1 (Study Club) + Script 2 (Phone Problem), trả lời + tự chấm.
+- [ ] Viết & Quiz: đọc to lại transcript 1 lần (shadowing); làm bài viết của buổi; quiz từ vựng.
+- [ ] Sổ lỗi (5'): từ nào "nhìn biết, nghe không ra"?
 
-### Day 46
+### Day 48 — Ngày sản phẩm: Passage 5–6 + Script 3 + câu tóm tắt
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học/Đọc: Passage 5 (Short Reviews) + Passage 6 (Why Examples Matter); nghe Script 3 (Healthy Habit).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 1 câu tóm tắt cho mỗi passage + 1 short response; nhờ AI chữa.
+- [ ] Sản phẩm: trả lời câu hỏi 3 bài (tự chấm).
+- [ ] Sổ lỗi (5'): chỗ hiểu sai ý chính?
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 47
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 48
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 49
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 7.1 — Relative Clauses
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** relative clauses. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 7.2 — Prepositions With Scenes
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** prepositions with scenes. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 7.3 — True, False, Not Given
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** tfng foundation. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 7.4 — Listening Prediction
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** listening prediction. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 7.5 — English Signs Around Me
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** English signs around me. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 49 — Tổng hợp tuần + Bài kiểm tra tuần
+- [ ] Ôn (10'): chọn 1 passage làm lại + 5 câu hỏi (tính thời gian).
+- [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
+- [ ] Viết: viết 8 câu vận dụng mạo từ/giới từ/mệnh đề quan hệ; nhờ AI chữa.
+- [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 7 (mốc: 10 câu Reading từ một đoạn ngắn).
+- [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước tuần output IELTS.
 
 ## ✅ Quiz tuần 7
 
@@ -594,33 +551,33 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don't like coffee.
-4. There is many students here.
-5. I didn't went out yesterday.
+1. I am student.
+2. Sun is very hot today.
+3. She is interested on Korean music.
+4. I like teacher explain clearly.
+5. This is a place I usually study at there.
 
 ### Part B — Complete the answers
 
-1. I study English because               .
-2. Although English is difficult,                                            .
-3. One useful habit is                .
-4. I feel more confident when
-5. In my opinion, students should
+1. I am good at ______ but weak in ______.
+2. I like people who ______.
+3. We can protect the environment by ______.
+4. The book that helped me most is ______.
+5. I usually study at ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 60–90 seconds:
 
-- What is one thing you learned this week?
+- Describe a place, a person or an object you like. Use who/which/that and prepositions (in/at/on/interested in…).
 
-### Answer Key Part A
+### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn't like coffee.
-4. There are many students here.
-5. I didn't go out yesterday.
+1. I am a student.
+2. The sun is very hot today.
+3. She is interested in Korean music.
+4. I like teachers who explain things clearly.
+5. This is a place where I usually study.
 
 ### Teacher note
 

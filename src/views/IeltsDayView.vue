@@ -129,8 +129,54 @@ function svHtml(l) {
   return out
 }
 
-// Hoàn thành buổi: phải XONG cả luyện ngữ pháp lẫn bài viết (việc cần làm tại bài).
-const dayReady = computed(() => grammarPassed.value && writingDone.value)
+// —— Cổng QUIZ TỪ VỰNG: phải ĐẠT ≥70% mới hoàn thành buổi ——
+const vocabQuiz = computed(() => d.value?.quiz || [])
+const vocabGateNeeded = computed(() => vocabQuiz.value.length > 0)
+const vocabPassed = computed(
+  () => !!d.value && (!vocabGateNeeded.value || user.vocabDayPassed('ielts', d.value.week, d.value.n)),
+)
+function onVocabComplete(r) {
+  if (d.value) user.recordVocabDay('ielts', d.value.week, d.value.n, r.score, r.total, 0.7)
+}
+
+// —— CHECKLIST tương tác: tick được, lưu lại, phải TICK HẾT mới hoàn thành buổi ——
+const checkState = ref([])
+watch(
+  d,
+  (cur) => {
+    if (!cur) {
+      checkState.value = []
+      return
+    }
+    const saved = user.checklistState('ielts', cur.week, cur.n)
+    checkState.value = cur.checklist.map((_, i) => !!saved[i])
+  },
+  { immediate: true },
+)
+function toggleCheck(i) {
+  if (done.value) return // đã hoàn thành buổi thì khóa, tránh sửa nhầm
+  checkState.value[i] = !checkState.value[i]
+  if (d.value) user.setChecklist('ielts', d.value.week, d.value.n, checkState.value)
+}
+const checklistNeeded = computed(() => !!d.value && d.value.checklist.length > 0)
+const checklistCount = computed(() => checkState.value.filter(Boolean).length)
+const checklistDone = computed(
+  () => !checklistNeeded.value || (d.value && checklistCount.value >= d.value.checklist.length),
+)
+
+// Hoàn thành buổi: phải XONG TẤT CẢ phần có trên trang — luyện ngữ pháp, bài viết,
+// quiz từ vựng và checklist. Phần nào không có trên buổi thì tự bỏ qua (adaptive).
+const dayReady = computed(
+  () => grammarPassed.value && writingDone.value && vocabPassed.value && checklistDone.value,
+)
+// Nhãn nút "hoàn thành" theo cổng còn thiếu (ưu tiên trên xuống dưới).
+const nextGateLabel = computed(() => {
+  if (!grammarPassed.value) return '🔒 Làm bài tập ngữ pháp trước'
+  if (!writingDone.value) return '🔒 Nộp bài viết trước'
+  if (!vocabPassed.value) return '🔒 Làm quiz từ vựng trước'
+  if (!checklistDone.value) return '🔒 Tick hết checklist trước'
+  return '✓ Đánh dấu hoàn thành'
+})
 
 // Mở khóa tuần tự: một buổi chỉ mở khi buổi LIỀN TRƯỚC đã hoàn thành.
 const dayUnlocked = (n) => {
@@ -171,9 +217,10 @@ const agenda = computed(() => {
   if (grammarDrills.value.length) a.push({ title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · bắt buộc đạt` })
   if (writingTask.value) a.push({ title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
   if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
+  if (d.value.skills?.length) a.push({ title: 'Bài giảng & khung mẫu', meta: `${d.value.skills.length} mục` })
   if (d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
   a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
-  if (d.value.quiz.length) a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu` })
+  if (d.value.quiz.length) a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · bắt buộc đạt` })
   return a
 })
 
@@ -258,16 +305,26 @@ const aiContext = computed(() =>
         <AgendaRail title="Buổi học hôm nay" subtitle="Nhẹ nhàng, làm lần lượt nhé" :items="agenda" />
 
         <div class="main">
-          <!-- CHECKLIST -->
-          <section v-if="d.checklist.length" class="step-card current">
+          <!-- CHECKLIST — bắt buộc tick hết để hoàn thành buổi -->
+          <section v-if="d.checklist.length" class="step-card" :class="{ current: !checklistDone }">
             <div class="step-head">
               <div>
-                <div class="eyebrow green">VIỆC CẦN LÀM HÔM NAY</div>
+                <div class="eyebrow" :class="{ green: checklistDone }">VIỆC CẦN LÀM HÔM NAY</div>
                 <h2 class="step-title">✅ Checklist buổi {{ d.n }}</h2>
               </div>
+              <span class="wt-badge" :class="{ ok: checklistDone }">{{ checklistCount }}/{{ d.checklist.length }}</span>
             </div>
+            <p class="quiz-intro">Tick từng việc khi làm xong. <b>Phải xong hết</b> mới hoàn thành buổi.</p>
             <ul class="check-list">
-              <li v-for="(c, i) in d.checklist" :key="i"><span class="tick">○</span>{{ c }}</li>
+              <li
+                v-for="(c, i) in d.checklist"
+                :key="i"
+                class="check-item"
+                :class="{ ticked: checkState[i], locked: done }"
+                @click="toggleCheck(i)"
+              >
+                <span class="tick">{{ checkState[i] ? '☑' : '☐' }}</span>{{ c }}
+              </li>
             </ul>
             <div v-if="d.rhythm" class="rhythm">
               <div v-if="d.rhythm.product"><b>Sản phẩm nhỏ:</b> {{ d.rhythm.product }}</div>
@@ -362,6 +419,21 @@ const aiContext = computed(() =>
             </div>
           </section>
 
+          <!-- BÀI GIẢNG & KHUNG MẪU — bài đọc, script nghe, khung Speaking/Writing… -->
+          <section v-if="d.skills && d.skills.length" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">BÀI GIẢNG & KHUNG MẪU</div>
+                <h2 class="step-title">📚 Tài liệu & thực hành của tuần</h2>
+              </div>
+            </div>
+            <p class="quiz-intro">Bài đọc, script nghe và khung mẫu Speaking/Writing của tuần. Mở đúng mục mà checklist hôm nay nhắc đến.</p>
+            <details v-for="(sk, i) in d.skills" :key="i" class="skill-acc">
+              <summary>{{ sk.title }}</summary>
+              <div class="prose" v-html="sk.html"></div>
+            </details>
+          </section>
+
           <!-- VOCAB (week) -->
           <section v-if="d.vocab.length || d.reviewVocab.length" class="step-card">
             <div class="step-head">
@@ -415,16 +487,33 @@ const aiContext = computed(() =>
           <!-- AI CHAT — luyện giao tiếp -->
           <AiChat :context="aiContext" />
 
-          <!-- QUIZ -->
-          <section v-if="d.quiz.length" class="step-card">
+          <!-- QUIZ TỪ VỰNG — cổng bắt buộc đạt ≥70% để qua buổi -->
+          <section v-if="vocabQuiz.length" class="step-card" :class="{ current: !vocabPassed }">
             <div class="step-head">
               <div>
-                <div class="eyebrow">ÔN NHANH</div>
+                <div class="eyebrow" :class="{ green: vocabPassed }">ÔN NHANH — BẮT BUỘC ĐẠT</div>
                 <h2 class="step-title">❓ Quiz từ vựng buổi {{ d.n }}</h2>
               </div>
+              <span class="wt-badge" :class="{ ok: vocabPassed }">{{ vocabPassed ? '✅ Đã đạt' : 'Cần ≥70%' }}</span>
             </div>
-            <p class="quiz-intro">{{ d.quiz.length }} câu trắc nghiệm về nghĩa các từ học buổi này — mỗi buổi một bộ khác nhau.</p>
-            <button class="ghost-btn" @click="goTool('quiz')">❓ Mở quiz →</button>
+            <p class="quiz-intro">{{ vocabQuiz.length }} câu về nghĩa các từ học buổi này. <b>Đạt ≥70%</b> để hoàn thành buổi.</p>
+            <div class="grammar-drill">
+              <QuizTool :questions="vocabQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onVocabComplete" />
+            </div>
+            <div v-if="vocabPassed" class="gate-line ok">✅ Bạn đã đạt quiz từ vựng.</div>
+            <div v-else class="gate-line">🔒 Đạt ≥70% quiz từ vựng để hoàn thành buổi.</div>
+          </section>
+
+          <!-- TỰ LUYỆN CUỐI TUẦN (Part A/B/C bám tuần, có đáp án) -->
+          <section v-if="d.weekPracticeHtml" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">TỰ LUYỆN CUỐI TUẦN</div>
+                <h2 class="step-title">📋 Ôn tập tuần (có đáp án)</h2>
+              </div>
+            </div>
+            <p class="quiz-intro">Sửa câu, hoàn thành câu và nói — bám đúng ngữ pháp & chủ đề tuần này. Tự luyện trước khi làm bài kiểm tra tuần.</p>
+            <div class="prose" v-html="d.weekPracticeHtml"></div>
           </section>
 
           <!-- BÀI KIỂM TRA TUẦN (lưu điểm) -->
@@ -458,7 +547,7 @@ const aiContext = computed(() =>
             <div class="cp-cta">
               <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Buổi {{ d.prevDay }}</button>
               <button v-if="!done" class="green-btn" :class="{ locked: !dayReady }" :disabled="!dayReady" @click="markDone">
-                {{ dayReady ? '✓ Đánh dấu hoàn thành' : !grammarPassed ? '🔒 Làm bài tập ngữ pháp trước' : '🔒 Nộp bài viết trước' }}
+                {{ nextGateLabel }}
               </button>
               <template v-else>
                 <button class="outline-btn" @click="unmark">↩ Bỏ đánh dấu</button>
@@ -722,6 +811,66 @@ const aiContext = computed(() =>
   line-height: 1.4;
   flex: none;
 }
+.check-item {
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  transition: background 0.12s;
+  user-select: none;
+}
+.check-item:hover {
+  background: rgba(0, 214, 143, 0.06);
+}
+.check-item.ticked {
+  color: #00966a;
+}
+.check-item.ticked .tick {
+  color: #00a86f;
+}
+.check-item.locked {
+  cursor: default;
+  opacity: 0.85;
+}
+.check-item.locked:hover {
+  background: transparent;
+}
+
+/* accordion bài giảng & khung mẫu */
+.skill-acc {
+  margin-top: 14px;
+  border: 1px solid rgba(0, 214, 143, 0.18);
+  border-radius: 14px;
+  padding: 4px 16px;
+  background: #fbfffd;
+}
+.skill-acc + .skill-acc {
+  margin-top: 10px;
+}
+.skill-acc > summary {
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  padding: 12px 0;
+  list-style: none;
+}
+.skill-acc > summary::-webkit-details-marker {
+  display: none;
+}
+.skill-acc > summary::before {
+  content: '▸ ';
+  color: #00a86f;
+  font-weight: 900;
+}
+.skill-acc[open] > summary::before {
+  content: '▾ ';
+}
+.skill-acc[open] > summary {
+  border-bottom: 1px solid rgba(0, 214, 143, 0.14);
+  margin-bottom: 8px;
+}
+
 .rhythm {
   margin-top: 18px;
   background: #e6fbf2;

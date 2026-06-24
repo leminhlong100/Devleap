@@ -15,14 +15,14 @@
 ### Nhịp học hằng ngày
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
-|-----|----------------|--------------|--------|
-| Day 1 – Day 2 | Nắm lộ trình tuần và chép tay 5 câu mẫu. | Đọc to 5 câu mẫu. | Ôn 5 câu dễ nhất của tuần trước. |
-| Day 3 – Day 4 – Day 5 | Học ngữ pháp ngắn và luyện có kiểm soát. | Viết 8 câu dùng điểm ngữ pháp của tuần. | Gấp tài liệu và viết lại 3 quy tắc bằng tiếng Việt. |
-| Day 6 | Xây nhóm từ vựng theo chủ đề. | Làm 10 thẻ từ có cụm đi kèm, không chỉ ghi từ đơn. | Tự kiểm tra: English → Vietnamese → English. |
-| | Luyện nói có ghi âm. | Thu âm 60–90 giây. | Nghe lại một lần và chỉ ghi 2 điểm cần sửa. |
-| | Đọc/nghe một đoạn ngắn. | Trả lời câu hỏi ngắn. | Gạch chân 5 cụm hữu ích và dùng lại 2 cụm. |
-| | Viết đoạn ngắn. | Viết một đoạn hoặc một mini task. | Ghi 3 lỗi vào sổ lỗi. |
-| Day 7 | Ngày nhẹ. | Nhiệm vụ nhẹ + checkpoint tuần. | Chọn nội dung cần lặp lại tuần sau. |
+| --- | --- | --- | --- |
+| Day 29 | Từ nối because / so / but | 15 câu từ nối | Nhớ-lại 3 cụm Tuần 4 |
+| Day 30 | although / when / if + đại từ | 6 câu mệnh đề phụ | Đọc to câu Day 29 |
+| Day 31 | Phòng từ vựng City & Culture | 10 thẻ cụm | Anh→Việt→Anh |
+| Day 32 | Quy trình viết 6 bước | 3 câu qua 6 bước | Lật Flashcard |
+| Day 33 | Khung đoạn T-S-E-F | 1 đoạn theo khung | Đọc to đoạn Day 30 |
+| Day 34 | Đoạn 100–120 từ | Đoạn hoàn chỉnh | Xem sổ lỗi tuần |
+| Day 35 | Tổng hợp + kiểm tra tuần | Bài kiểm tra Tuần 5 | Nhớ-lại khung T-S-E-F |
 
 ### Quyền học chậm
 
@@ -187,106 +187,63 @@ Người học viết 80-120 từ cho mỗi đề, dùng khung T-S-E-F và ưu t
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-### Day 29
+> Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Tuần này chuyển từ câu rời sang đoạn có mạch. Đích: viết một đoạn rõ nghĩa 100–120 từ.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 29 — Từ nối because / so / but (không làm đứt câu)
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 4.
+- [ ] Học: nối 2 ý đúng cách; tránh "Because I was tired. I slept early." (cần dấu phẩy, 1 câu).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 5 câu because, 5 câu but, 5 câu so; nhờ AI chữa.
+- [ ] Nói & Quiz: nói ý kiến + lý do với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): câu nào bị tách đôi sai?
 
-### Day 30
+### Day 30 — although / when / if + tham chiếu đại từ
+- [ ] Ôn (5'): đọc to 3 câu Day 29.
+- [ ] Học: although mở mệnh đề phụ (+ dấu phẩy); dùng it/they/this để không lặp từ.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 6 câu (2 although, 2 when, 2 if), thay danh từ lặp bằng đại từ; nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): chỗ lặp từ có thể rút gọn?
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 31 — Phòng từ vựng City & Culture/Media
+- [ ] Ôn (5'): nhớ-lại quy tắc although bằng tiếng Việt.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
+- [ ] Từ vựng: học cụm (traffic jam, green space, spread information…), nghe 🔊, lưu Flashcard.
+- [ ] Viết: viết 3 "Câu nối IELTS" thật về thành phố/văn hóa; nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): cụm khó nhớ?
 
-### Day 31
+### Day 32 — Quy trình viết 6 bước (+ Speaking: lý do + ví dụ)
+- [ ] Ôn (5'): lật thẻ Flashcard Day 31.
+- [ ] Học: Ý Việt → câu đơn → thêm chi tiết → nối ý → sửa lỗi → nâng nhẹ.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: chọn 1 đề, đi qua đủ 6 bước cho 3 câu; nhờ AI chữa.
+- [ ] Nói: nói 5 câu "ý kiến + lý do + ví dụ" với AI (ghi âm).
+- [ ] Sổ lỗi (5'): bước nào em hay bỏ?
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 33 — Khung đoạn T-S-E-F
+- [ ] Ôn (5'): đọc to đoạn 4 câu Day 30.
+- [ ] Học: Topic – Support – Example – Feeling; phân tích đoạn mẫu (gạch T/S/E/F).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: viết 1 đoạn ngắn theo khung T-S-E-F; nhờ AI chữa.
+- [ ] Nói & Quiz: trình bày miệng đoạn với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): thiếu phần nào trong T-S-E-F?
 
-### Day 32
+### Day 34 — Ngày sản phẩm: đoạn 100–120 từ
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học: bảng "Sửa lỗi Writing" (missing be, run-on, word form, từ to mà sai).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: chọn 1 đề, viết 100–120 từ theo T-S-E-F; tự soát rồi nhờ AI chữa.
+- [ ] Sản phẩm: đánh dấu 3 chỗ đã sửa.
+- [ ] Sổ lỗi (5'): loại lỗi lặp lại nhiều nhất?
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 33
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 34
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 35
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 5.1 — Because, So, But
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** because/so/but. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 5.2 — Although Without Broken Sentence
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** although without broken sentence. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 5.3 — Topic Sentence
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** topic sentence. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 5.4 — Example Building
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** example building. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 5.5 — 100-Word Paragraph
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** 100-word paragraph. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 35 — Tổng hợp tuần + Bài kiểm tra tuần
+- [ ] Ôn (10'): nhớ-lại 5 cụm + khung T-S-E-F.
+- [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
+- [ ] Viết: viết 1 đoạn vận dụng từ nối + T-S-E-F; nhờ AI chữa.
+- [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 5 (mốc: đoạn 100–120 từ rõ nghĩa).
+- [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước khi vào cầu nối IELTS.
 
 ## ✅ Quiz tuần 5
 
@@ -329,34 +286,34 @@ Người học viết 80-120 từ cho mỗi đề, dùng khung T-S-E-F và ưu t
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don't like coffee.
-4. There is many students here.
-5. I didn't went out yesterday.
+1. Because I was tired. I slept early.
+2. Although it was raining. We went out.
+3. I like English it is useful for my future.
+4. Although English is difficult but I keep trying.
+5. I study in the morning so my mind is fresh.
 
 ### Part B — Complete the answers
 
-1. I study English because ____________.
-2. Although English is difficult, ____________.
-3. One useful habit is ____________.
-4. I feel more confident when ____________.
-5. In my opinion, students should ____________.
+1. I study in the morning because ______.
+2. Technology is useful, but ______.
+3. Although my city is crowded, ______.
+4. If I have free time, I ______.
+5. Reading helps me, so ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 60 seconds:
 
-- What is one thing you learned this week?
+- Give your opinion: "Is technology good for students?" Add one reason and one example.
 
 ### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn't like coffee.
-4. There are many students here.
-5. I didn't go out yesterday.
+1. Because I was tired, I slept early.
+2. Although it was raining, we went out.
+3. I like English because it is useful for my future.
+4. Although English is difficult, I keep trying.
+5. I study in the morning because my mind is fresh.
 
 ### Teacher note
 
-If the student still repeats the same error after correction, do not say "we learned this already". Say: "This pattern needs more review. Let's repair it again with a new sentence."
+Nếu người học vẫn lặp lại cùng một lỗi sau khi được sửa, đừng nói "we learned this already". Hãy nói: "This pattern needs more review. Let's repair it again with a new sentence."

@@ -15,14 +15,14 @@
 ### Nhịp học hằng ngày
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
-|-----|----------------|--------------|--------|
-| Day 1–2 | Nắm lộ trình tuần và chép tay 5 câu mẫu. | Đọc to 5 câu mẫu. | Ôn 5 câu dễ nhất của tuần trước. |
-| Day 3–4 | Học ngữ pháp ngắn và luyện có kiểm soát. | Viết 8 câu dùng điểm ngữ pháp của tuần. | Gấp tài liệu và viết lại 3 quy tắc bằng tiếng Việt. |
-| | Xây nhóm từ vựng theo chủ đề. | Làm 10 thẻ từ có cụm đi kèm, không chỉ ghi từ đơn. | Tự kiểm tra: English → Vietnamese → English. |
-| | Luyện nói có ghi âm. | Thu âm 60–90 giây. | Nghe lại một lần và chỉ ghi 2 điểm cần sửa. |
-| Day 5–6–7 | Đọc/nghe một đoạn ngắn. | Trả lời câu hỏi ngắn. | Gạch chân 5 cụm hữu ích và dùng lại 2 cụm. |
-| | Viết đoạn ngắn. | Viết một đoạn hoặc một mini task. | Ghi 3 lỗi vào sổ lỗi. |
-| | Ngày nhẹ. | Nhiệm vụ nhẹ + checkpoint tuần. | Chọn nội dung cần lặp lại tuần sau. |
+| --- | --- | --- | --- |
+| Day 36 | So sánh hơn + as…as | 4 câu so sánh | Nhớ-lại 3 cụm Tuần 5 |
+| Day 37 | So sánh nhất + bị động + cụm danh từ | 3+3 câu, 5 cụm | Đọc to câu so sánh |
+| Day 38 | Phòng từ vựng Technology / Work | 10 thẻ cụm | Anh→Việt→Anh |
+| Day 39 | Writing Task 1 Lite | 6 câu mô tả số liệu | Lật Flashcard |
+| Day 40 | Part 1 mở rộng + Part 2 sườn | 6 gạch đầu dòng cue card | Đọc to câu Task 1 |
+| Day 41 | Biểu đồ 6–8 câu | Bài mô tả (đọc to) | Xem sổ lỗi tuần |
+| Day 42 | Tổng hợp + kiểm tra tuần | Bài kiểm tra Tuần 6 | Nhớ-lại động từ Task 1 |
 
 ### Quyền học chậm
 
@@ -140,106 +140,63 @@ Người học viết 6 câu:
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-### Day 36
+> Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Tuần này là cầu nối IELTS — tiếp cận bằng phiên bản nhỏ, tránh quá tải. Đích: mô tả một biểu đồ đơn giản 6–8 câu.
 
-- [ ] Set up the week map. Copy 5 model sentences. Record yourself reading them.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 36 — So sánh hơn (comparatives) + as…as
+- [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 5.
+- [ ] Học: "-er / more + adj / as…as"; tránh "more cheaper / as easier as".
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: so sánh 2 điện thoại, 2 thành phố, 2 thói quen, 2 món ăn; nhờ AI chữa.
+- [ ] Nói & Quiz: so sánh đời sống của em với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): lỗi "more + er".
 
-### Day 37
+### Day 37 — So sánh nhất + bị động cơ bản + cụm danh từ
+- [ ] Ôn (5'): đọc to 4 câu so sánh Day 36.
+- [ ] Học 3 mảnh hay cần ở Task 1: superlative (the + -est / the most + adj), passive (be + V3), noun phrase (a serious problem, a sharp increase).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: 3 câu superlative + 3 câu passive + 5 noun phrase; nhờ AI chữa.
+- [ ] Nói & Quiz: dùng noun phrase khi nói với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): passive chia "be" đúng chưa?
 
-- [ ] Do the grammar mini-lesson. Write 8 controlled sentences. Correct with the answer key.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 38 — Phòng từ vựng Technology + Work & Money
+- [ ] Ôn (5'): nhớ-lại quy tắc superlative bằng tiếng Việt.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
+- [ ] Từ vựng: học cụm (scroll through social media, work part-time, save money…), nghe 🔊, lưu Flashcard.
+- [ ] Viết: viết 3 "Câu nối IELTS" thật; nhờ AI chữa.
+- [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
+- [ ] Sổ lỗi (5'): cụm dễ nhầm (much/many money…).
 
-### Day 38
+### Day 39 — Writing Task 1 Lite: mô tả số liệu
+- [ ] Ôn (5'): lật thẻ Flashcard Day 38.
+- [ ] Học: động từ tăng/giảm (increase/rise, decrease/fall, remain stable, peak at) + mẫu câu.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: dùng bảng số liệu mẫu, viết 6 câu + 1 câu "Overall…"; nhờ AI chữa.
+- [ ] Nói & Quiz: đọc to bài mô tả + quiz từ vựng.
+- [ ] Sổ lỗi (5'): đã so sánh đúng số liệu chưa? (không thêm cảm xúc cá nhân).
 
-- [ ] Build one vocabulary room. Make 10 phrase cards. Use 3 in your own sentences.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
+### Day 40 — Speaking Part 1 mở rộng + Part 2 (khung sườn truyện)
+- [ ] Ôn (5'): đọc to 6 câu Task 1 Day 39.
+- [ ] Học: mở rộng câu trả lời Part 1 (thêm lý do + ví dụ); sườn Part 2 (what → when → first → next → why → feeling).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: 6 gạch đầu dòng cho 1 cue card (a useful app / a place to study); nhờ AI chữa.
+- [ ] Nói: nói theo 6 gạch đầu dòng với AI (~60–90s, ghi âm).
+- [ ] Sổ lỗi (5'): chỗ kẹt → cần filler nào?
 
-### Day 39
+### Day 41 — Ngày sản phẩm: biểu đồ 6–8 câu (+ nghe form completion lite)
+- [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
+- [ ] Học: dự đoán ô trống khi nghe form (tên → cách viết, số → giá/ngày).
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
+- [ ] Viết: tự tạo bảng số liệu nhỏ (thời lượng dùng điện thoại) và mô tả 6–8 câu; nhờ AI chữa.
+- [ ] Sản phẩm: đọc to bài mô tả; gạch chân động từ tăng/giảm.
+- [ ] Sổ lỗi (5'): số liệu nào mô tả còn sai?
 
-- [ ] Speaking mirror day. Answer one question in 60–90 seconds. Save the recording.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 40
-
-- [ ] Input day. Read one short passage or listen to one transcript. Collect 5 chunks.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 41
-
-- [ ] Output day. Write a paragraph or mini description. Add mistakes to Error Ledger.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-### Day 42
-
-- [ ] Soft review. Do the fun task, weekly checkpoint, and plan next week's repeat points.
-- [ ] Review 5 old items using recall, not rereading.
-- [ ] Write one sentence beginning with: Today I can...
-- [ ] Vietnamese reflection: Hôm nay mình thấy dễ hơn ở điểm nào?
-
-## 📝 Kịch bản bài học (Lesson Scripts)
-
-### Bài học 6.1 — Comparatives
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** comparatives. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 6.2 — Task 1 Lite Numbers
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** Task 1 Lite numbers. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 6.3 — Part 2 Story Spine
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** Part 2 story spine. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 6.4 — Scan For Keywords
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** scan for keywords. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
-
-### Bài học 6.5 — Phone Use Data
-
-- **Mở bài:** Hôm nay, lớp tập trung làm rõ một điểm nhỏ trong tiếng Anh và dùng ngay điểm đó trong câu thật.
-- **Trọng tâm:** phone use data. Người học cần hiểu điểm này, dùng ngay trong câu và ghi lại để ôn.
-- **Mẫu:** Giáo viên viết 3 ví dụ ngắn lên bảng hoặc bài đăng. Người học đọc to, nhận ra mẫu câu hữu ích rồi thay một từ để câu đúng với bản thân.
-- **Luyện có hướng dẫn:** Người học hoàn thành 5 câu có kiểm soát. Giáo viên chỉ sửa đúng trọng tâm của buổi học để người học không bị quá tải.
-- **Sản phẩm cuối buổi:** Người học dùng trọng tâm của bài để tạo một sản phẩm ngắn: bản ghi âm 30 giây, đoạn 5 câu hoặc bình luận dưới bài đăng.
-- **Sửa lỗi:** Chọn một ví dụ ẩn danh, cho thấy câu trước và sau khi sửa, giải thích bằng tiếng Việt rồi yêu cầu cả lớp viết một câu mới theo mẫu đã sửa.
-- **Kết buổi:** Khi một điểm nhỏ rõ hơn, nền tảng của người học chắc thêm một phần.
+### Day 42 — Tổng hợp tuần + Bài kiểm tra tuần
+- [ ] Ôn (10'): nhớ-lại 5 cụm + động từ Task 1.
+- [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
+- [ ] Viết: viết 8 câu vận dụng so sánh + Task 1; nhờ AI chữa.
+- [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Kiểm tra: làm Bài kiểm tra Tuần 6 (mốc: mô tả biểu đồ 6–8 câu).
+- [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước tuần Reading/Listening.
 
 ## ✅ Quiz tuần 6
 
@@ -282,34 +239,34 @@ Người học viết 6 câu:
 
 ### Part A — Fix the sentences
 
-1. She very tired today.
-2. I am go to school by bus.
-3. He don't like coffee.
-4. There is many students here.
-5. I didn't went out yesterday.
+1. My phone is more cheaper than yours.
+2. Speaking is not as easier as reading.
+3. Online classes are more flexibler than traditional ones.
+4. Lan had the most biggest increase.
+5. English speak in many countries.
 
 ### Part B — Complete the answers
 
-1. I study English because ______.
-2. Although English is difficult, ______.
-3. One useful habit is ______.
-4. I feel more confident when ______.
-5. In my opinion, students should ______.
+1. The number of ______ increased from ______ to ______.
+2. ______ is more ______ than ______.
+3. Overall, ______ showed an upward trend.
+4. The biggest ______ in the chart is ______.
+5. ______ is used by many people because ______.
 
 ### Part C — Speaking
 
-Answer one question in 60 seconds:
+Answer in 60–90 seconds:
 
-- What is one thing you learned this week?
+- Describe some simple data about your week (e.g., hours of study or phone use). Use increase, decrease and compare.
 
 ### Answer Key — Part A
 
-1. She is very tired today.
-2. I go to school by bus.
-3. He doesn't like coffee.
-4. There are many students here.
-5. I didn't go out yesterday.
+1. My phone is cheaper than yours.
+2. Speaking is not as easy as reading.
+3. Online classes are more flexible than traditional ones.
+4. Lan had the biggest increase.
+5. English is spoken in many countries.
 
 ### Teacher note
 
-If the student still repeats the same error after correction, do not say "we learned this already". Say: "This pattern needs more review. Let's repair it again with a new sentence."
+Nếu người học vẫn lặp lại cùng một lỗi sau khi được sửa, đừng nói "we learned this already". Hãy nói: "This pattern needs more review. Let's repair it again with a new sentence."
