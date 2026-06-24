@@ -1,13 +1,15 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
 import VocabCard from '@/components/day/VocabCard.vue'
 import AiChat from '@/components/day/AiChat.vue'
+import QuizTool from '@/components/tools/QuizTool.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
 import { getIeltsDay } from '@/data/courseIelts'
 import { speak } from '@/lib/speak'
+import { correctWriting } from '@/lib/aiChat'
 
 function say(text) {
   speak(text)
@@ -22,11 +24,137 @@ const d = computed(() => getIeltsDay(props.week, props.day))
 // Tiến độ thật: số buổi đã hoàn thành trong tuần & trạng thái buổi hiện tại.
 const isDone = (n) => !!d.value && user.isDone('ielts', d.value.week, n)
 const done = computed(() => !!d.value && isDone(d.value.n))
+
+// —— Cổng luyện ngữ pháp: phải ĐẠT bài tập (≥70%) mới hoàn thành buổi & mở buổi kế ——
+const grammarDrills = computed(() => d.value?.grammarDrills || [])
+const grammarGateNeeded = computed(() => grammarDrills.value.length > 0)
+const grammarPassed = computed(
+  () => !!d.value && (!grammarGateNeeded.value || user.grammarDayPassed('ielts', d.value.week, d.value.n)),
+)
+function onGrammarComplete(r) {
+  if (d.value) user.recordGrammarDay('ielts', d.value.week, d.value.n, r.score, r.total, 0.7)
+}
+
+// —— Bài tập VIẾT làm ngay tại bài (vd "Viết 10 câu…") ——
+const writingTask = computed(() => d.value?.writingTask || null)
+const writingNeeded = computed(() => !!writingTask.value)
+const writingText = ref('')
+// Nạp bản nháp đã lưu khi đổi buổi.
+watch(
+  d,
+  (cur) => {
+    if (cur) writingText.value = user.writingOf('ielts', cur.week, cur.n)?.text || ''
+  },
+  { immediate: true },
+)
+// Số câu cần viết lấy từ đề ("Viết 10 câu" -> 10), kẹp 3..20.
+const requiredSentences = computed(() => {
+  const m = /(\d+)\s*câu/i.exec(writingTask.value?.prompt || '')
+  return m ? Math.min(Math.max(Number(m[1]), 3), 20) : 3
+})
+// Đếm câu đã viết: tách theo dòng / dấu kết câu, mỗi câu phải có ≥ 2 từ.
+const writtenCount = computed(
+  () =>
+    writingText.value
+      .split(/[\n.!?]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.split(/\s+/).filter(Boolean).length >= 2).length,
+)
+const writingMet = computed(() => writtenCount.value >= requiredSentences.value)
+const writingDone = computed(
+  () => !writingNeeded.value || (!!d.value && user.writingDone('ielts', d.value.week, d.value.n)),
+)
+// Kết quả AI chữa bài (đã lưu) của ngày hiện tại.
+const writingReview = computed(() => (d.value ? user.writingOf('ielts', d.value.week, d.value.n)?.review : null))
+const reviewing = ref(false) // đang gọi AI
+const reviewError = ref('')
+
+function saveWritingDraft() {
+  if (d.value) user.saveWriting('ielts', d.value.week, d.value.n, writingText.value, false)
+}
+// Nộp bài -> nhờ AI chữa từng câu; chữa xong mới tính là hoàn thành bài viết.
+async function askAiCorrect() {
+  if (!d.value || !writingMet.value || reviewing.value) return
+  reviewing.value = true
+  reviewError.value = ''
+  try {
+    const review = await correctWriting(writingText.value, {
+      title: d.value.title,
+      week: d.value.week,
+      weekTitle: d.value.weekTitle,
+      grammar: d.value.grammar.map((g) => g.title),
+      vocab: d.value.vocab.map((v) => v.term),
+    })
+    if (!review) throw new Error('AI chưa trả về kết quả. Thử lại nhé.')
+    user.saveWriting('ielts', d.value.week, d.value.n, writingText.value, true, review)
+  } catch (e) {
+    reviewError.value = e?.message || 'Không gọi được AI. Thử lại nhé.'
+  } finally {
+    reviewing.value = false
+  }
+}
+
+// Gạch chân chủ ngữ (1 gạch) + động từ (2 gạch) trong câu AI đã sửa — thay cho
+// việc "gạch chân" không làm được trong ô viết. subject/verb là substring của corrected.
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+function svHtml(l) {
+  const text = l?.corrected || ''
+  const marks = []
+  for (const [field, cls] of [['subject', 'u-subj'], ['verb', 'u-verb']]) {
+    const frag = (l?.[field] || '').trim()
+    if (!frag) continue
+    const start = text.indexOf(frag)
+    if (start >= 0) marks.push({ start, end: start + frag.length, cls })
+  }
+  marks.sort((a, b) => a.start - b.start)
+  // bỏ phần chồng lấn để không lồng thẻ
+  const clean = []
+  let lastEnd = -1
+  for (const mk of marks) {
+    if (mk.start >= lastEnd) {
+      clean.push(mk)
+      lastEnd = mk.end
+    }
+  }
+  let out = ''
+  let pos = 0
+  for (const mk of clean) {
+    out += escapeHtml(text.slice(pos, mk.start))
+    out += `<span class="${mk.cls}">${escapeHtml(text.slice(mk.start, mk.end))}</span>`
+    pos = mk.end
+  }
+  out += escapeHtml(text.slice(pos))
+  return out
+}
+
+// Hoàn thành buổi: phải XONG cả luyện ngữ pháp lẫn bài viết (việc cần làm tại bài).
+const dayReady = computed(() => grammarPassed.value && writingDone.value)
+
+// Mở khóa tuần tự: một buổi chỉ mở khi buổi LIỀN TRƯỚC đã hoàn thành.
+const dayUnlocked = (n) => {
+  if (!d.value) return false
+  const i = d.value.days.findIndex((dd) => dd.n === n)
+  return i <= 0 || isDone(d.value.days[i - 1].n)
+}
+// Vào thẳng URL một buổi bị khóa -> đẩy về buổi chưa hoàn thành đầu tiên.
+watch(
+  d,
+  (cur) => {
+    if (cur && !dayUnlocked(cur.n)) {
+      const target = cur.days.find((dd) => !isDone(dd.n)) || cur.days[0]
+      if (target && target.n !== cur.n) router.replace({ name: 'ielts-day', params: { week: props.week, day: target.n } })
+    }
+  },
+  { immediate: true },
+)
 const weekDoneCount = computed(() => (d.value ? d.value.days.filter((dd) => isDone(dd.n)).length : 0))
 const ringPct = computed(() => (d.value ? Math.round((weekDoneCount.value / d.value.totalDays) * 100) : 0))
 
 function markDone() {
-  if (d.value && !done.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)
+  // Phải xong cả luyện ngữ pháp lẫn bài viết trước khi cho hoàn thành buổi.
+  if (d.value && !done.value && dayReady.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)
 }
 function unmark() {
   if (d.value && done.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)
@@ -36,7 +164,12 @@ const agenda = computed(() => {
   if (!d.value) return []
   const a = []
   if (d.value.checklist.length) a.push({ title: 'Việc cần làm hôm nay', meta: `${d.value.checklist.length} mục` })
-  if (d.value.grammar.length) a.push({ title: 'Ngữ pháp tuần này', meta: `${d.value.grammar.length} điểm` })
+  if (d.value.grammar.length) {
+    const label = d.value.grammarMode === 'new' ? 'Ngữ pháp hôm nay' : d.value.grammarMode === 'final' ? 'Tổng hợp ngữ pháp tuần' : 'Ôn tập ngữ pháp'
+    a.push({ title: label, meta: `${d.value.grammar.length} điểm` })
+  }
+  if (grammarDrills.value.length) a.push({ title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · bắt buộc đạt` })
+  if (writingTask.value) a.push({ title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
   if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
   if (d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
   a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
@@ -45,7 +178,7 @@ const agenda = computed(() => {
 })
 
 function goDay(n) {
-  if (n) router.push({ name: 'ielts-day', params: { week: props.week, day: n } })
+  if (n && dayUnlocked(n)) router.push({ name: 'ielts-day', params: { week: props.week, day: n } })
 }
 function goTool(tool) {
   // Mang theo ngữ cảnh buổi học để Flashcard nạp đúng từ vựng của tuần này.
@@ -111,10 +244,12 @@ const aiContext = computed(() =>
           v-for="dd in d.days"
           :key="dd.n"
           class="day-chip"
-          :class="{ on: dd.n === d.n, done: isDone(dd.n) }"
+          :class="{ on: dd.n === d.n, done: isDone(dd.n), locked: !dayUnlocked(dd.n) }"
+          :disabled="!dayUnlocked(dd.n)"
           @click="goDay(dd.n)"
         >
-          <span v-if="isDone(dd.n)" class="chip-tick">✓</span>Buổi {{ dd.n }}
+          <span v-if="isDone(dd.n)" class="chip-tick">✓</span>
+          <span v-else-if="!dayUnlocked(dd.n)" class="chip-tick">🔒</span>Buổi {{ dd.n }}
         </button>
       </div>
 
@@ -140,17 +275,90 @@ const aiContext = computed(() =>
             </div>
           </section>
 
-          <!-- GRAMMAR (week) -->
+          <!-- GRAMMAR (theo ngày: điểm mới / ôn tập / tổng hợp cuối tuần) -->
           <section v-if="d.grammar.length" class="step-card">
             <div class="step-head">
               <div>
-                <div class="eyebrow">NGỮ PHÁP TUẦN NÀY</div>
-                <h2 class="step-title">📖 Điểm ngữ pháp trọng tâm</h2>
+                <div class="eyebrow">{{ d.grammarMode === 'new' ? 'NGỮ PHÁP HÔM NAY' : d.grammarMode === 'final' ? 'TỔNG HỢP NGỮ PHÁP TUẦN' : 'ÔN TẬP NGỮ PHÁP' }}</div>
+                <h2 class="step-title">
+                  {{ d.grammarMode === 'new' ? '📖 Điểm ngữ pháp của buổi' : d.grammarMode === 'final' ? '🧩 Ôn lại toàn bộ ngữ pháp tuần' : '🔁 Ôn lại ngữ pháp đã học' }}
+                </h2>
               </div>
             </div>
+            <p v-if="d.grammarMode !== 'new'" class="quiz-intro">
+              {{ d.grammarMode === 'final' ? 'Buổi cuối tuần — xâu chuỗi lại tất cả điểm ngữ pháp trước khi làm bài kiểm tra tuần.' : 'Hôm nay không có điểm mới — ôn lại cho nhớ rồi luyện tập bên dưới.' }}
+            </p>
             <div v-for="(g, i) in d.grammar" :key="i" class="grammar-block">
               <h3 class="grammar-title">{{ g.title }}</h3>
               <div class="prose" v-html="g.html"></div>
+            </div>
+          </section>
+
+          <!-- LUYỆN TẬP NGỮ PHÁP (cổng bắt buộc đạt ≥70% để qua buổi) -->
+          <section v-if="grammarDrills.length" class="step-card" :class="{ current: !grammarPassed }">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow" :class="{ green: grammarPassed }">LUYỆN TẬP — VẬN DỤNG NGAY</div>
+                <h2 class="step-title">✏️ Bài tập ngữ pháp ({{ grammarDrills.length }} câu)</h2>
+              </div>
+              <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarPassed ? '✅ Đã đạt' : 'Cần ≥70%' }}</span>
+            </div>
+            <p class="quiz-intro">Điền chỗ trống và sửa câu sai. <b>Đạt từ 70%</b> để hoàn thành buổi và mở buổi kế tiếp.</p>
+            <div class="grammar-drill">
+              <QuizTool :questions="grammarDrills" mode="practice" :pass-threshold="0.7" embedded @complete="onGrammarComplete" />
+            </div>
+            <div v-if="grammarPassed" class="gate-line ok">✅ Bạn đã đạt phần luyện tập.</div>
+            <div v-else class="gate-line">🔒 Đạt ≥70% phần luyện tập để hoàn thành buổi.</div>
+          </section>
+
+          <!-- BÀI TẬP VIẾT — làm ngay tại bài (bắt buộc nộp để qua buổi) -->
+          <section v-if="writingTask" class="step-card" :class="{ current: !writingDone }">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow" :class="{ green: writingDone }">LÀM NGAY TẠI BÀI</div>
+                <h2 class="step-title">✍️ Bài tập viết</h2>
+              </div>
+              <span class="wt-badge" :class="{ ok: writingDone }">{{ writingDone ? '✅ Đã nộp' : `${writtenCount}/${requiredSentences} câu` }}</span>
+            </div>
+            <p class="quiz-intro">{{ writingTask.prompt }}</p>
+            <textarea
+              v-model="writingText"
+              class="write-area"
+              rows="8"
+              placeholder="Viết mỗi câu trên một dòng…"
+              @change="saveWritingDraft"
+            ></textarea>
+            <div class="write-foot">
+              <span class="write-count" :class="{ ok: writingMet }">✍️ {{ writtenCount }}/{{ requiredSentences }} câu</span>
+              <button
+                class="green-btn"
+                :class="{ locked: !writingMet || reviewing }"
+                :disabled="!writingMet || reviewing"
+                @click="askAiCorrect"
+              >
+                {{ reviewing ? '🤖 AI đang chữa…' : writingDone ? '↻ Nhờ AI chữa lại' : writingMet ? '🤖 Nhờ AI chữa bài' : `Cần thêm ${Math.max(0, requiredSentences - writtenCount)} câu` }}
+              </button>
+            </div>
+            <div v-if="reviewError" class="rev-error">⚠️ {{ reviewError }}</div>
+
+            <!-- KẾT QUẢ AI CHỮA BÀI -->
+            <div v-if="writingReview" class="review">
+              <div class="rev-top">
+                <span class="rev-cefr">{{ writingReview.cefr || '—' }}</span>
+                <div class="rev-score-wrap">
+                  <div class="rev-score-bar"><div class="rev-score-fill" :style="{ width: (writingReview.score || 0) + '%' }"></div></div>
+                  <span class="rev-score-num">{{ writingReview.score ?? 0 }}/100</span>
+                </div>
+              </div>
+              <p v-if="writingReview.summary" class="rev-summary">{{ writingReview.summary }}</p>
+              <div class="rev-legend">Gạch chân: <span class="u-subj">chủ ngữ</span> · <span class="u-verb">động từ</span></div>
+              <ul class="rev-lines">
+                <li v-for="(l, i) in writingReview.lines || []" :key="i" class="rev-line" :class="{ ok: l.ok }">
+                  <div v-if="!l.ok && l.corrected !== l.original" class="rev-orig"><s>{{ l.original }}</s></div>
+                  <div class="rev-corr"><span class="rev-mark">{{ l.ok ? '✓' : '✕' }}</span><span v-html="svHtml(l)"></span></div>
+                  <div v-if="l.note" class="rev-note">💡 {{ l.note }}</div>
+                </li>
+              </ul>
             </div>
           </section>
 
@@ -249,7 +457,9 @@ const aiContext = computed(() =>
             </div>
             <div class="cp-cta">
               <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Buổi {{ d.prevDay }}</button>
-              <button v-if="!done" class="green-btn" @click="markDone">✓ Đánh dấu hoàn thành</button>
+              <button v-if="!done" class="green-btn" :class="{ locked: !dayReady }" :disabled="!dayReady" @click="markDone">
+                {{ dayReady ? '✓ Đánh dấu hoàn thành' : !grammarPassed ? '🔒 Làm bài tập ngữ pháp trước' : '🔒 Nộp bài viết trước' }}
+              </button>
               <template v-else>
                 <button class="outline-btn" @click="unmark">↩ Bỏ đánh dấu</button>
                 <button v-if="d.nextDay" class="green-btn" @click="goDay(d.nextDay)">Buổi {{ d.nextDay }} →</button>
@@ -422,6 +632,15 @@ const aiContext = computed(() =>
   color: #fff;
   border-color: transparent;
 }
+.day-chip.locked {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: #f1f1f6;
+  color: #b0b0c0;
+  cursor: not-allowed;
+}
+.day-chip.locked:hover {
+  background: #f1f1f6;
+}
 .chip-tick {
   font-weight: 900;
   margin-right: 5px;
@@ -528,6 +747,193 @@ const aiContext = computed(() =>
   font-weight: 800;
   color: var(--ink);
   margin-top: 14px;
+}
+.grammar-drill {
+  margin-top: 18px;
+  background: var(--bg);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.write-area {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0, 214, 143, 0.25);
+  font-size: 15px;
+  line-height: 1.6;
+  font-family: inherit;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.write-area:focus {
+  border-color: var(--green);
+}
+.write-area[readonly] {
+  background: rgba(0, 214, 143, 0.05);
+  border-color: rgba(0, 214, 143, 0.3);
+}
+.write-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.write-count {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #8a8aa0;
+}
+.write-count.ok {
+  color: #00a86f;
+}
+.rev-error {
+  margin-top: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #e04848;
+  background: rgba(255, 90, 90, 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.review {
+  margin-top: 18px;
+  border-top: 1px solid rgba(108, 92, 231, 0.1);
+  padding-top: 18px;
+}
+.rev-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.rev-cefr {
+  background: var(--grad-purple);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  flex: none;
+}
+.rev-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 160px;
+}
+.rev-score-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 99px;
+  background: #ececf5;
+  overflow: hidden;
+}
+.rev-score-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #00d68f, #00a86f);
+  transition: width 0.4s;
+}
+.rev-score-num {
+  font-size: 13px;
+  font-weight: 800;
+  color: #00966a;
+  flex: none;
+}
+.rev-summary {
+  margin-top: 12px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #4a4a62;
+  background: var(--bg);
+  border-left: 3px solid var(--purple);
+  border-radius: 12px;
+  padding: 12px 15px;
+}
+.rev-lines {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rev-line {
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  background: rgba(255, 90, 90, 0.04);
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+.rev-line.ok {
+  border-color: rgba(0, 214, 143, 0.25);
+  background: rgba(0, 214, 143, 0.05);
+}
+.rev-legend {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+}
+.rev-orig {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #b0b0c0;
+}
+.rev-orig s {
+  text-decoration-color: rgba(255, 107, 107, 0.6);
+}
+.rev-mark {
+  font-weight: 900;
+  color: #e04848;
+  margin-right: 7px;
+}
+.rev-line.ok .rev-mark {
+  color: #00a86f;
+}
+.rev-corr {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.7;
+}
+/* gạch chân: chủ ngữ 1 gạch, động từ 2 gạch */
+.u-subj {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--purple);
+}
+.u-verb {
+  text-decoration: underline double;
+  text-underline-offset: 3px;
+  text-decoration-color: #00a86f;
+}
+.rev-note {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #7a7a92;
+}
+.gate-line {
+  margin-top: 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #8a8aa0;
+  background: #f1f1f6;
+  border-radius: 12px;
+  padding: 11px 15px;
+}
+.gate-line.ok {
+  color: #00966a;
+  background: rgba(0, 214, 143, 0.1);
 }
 
 /* prose */

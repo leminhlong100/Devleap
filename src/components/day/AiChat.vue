@@ -1,17 +1,18 @@
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, reactive, nextTick, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { marked } from 'marked'
-import { sendChat, translateToVi } from '@/lib/aiChat'
+import { coachTurn, reFeedback, getHint, getIdea, translateWord, translateToVi } from '@/lib/aiChat'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
+import { VOCAB_GLOSSARY } from '@/data/vocabGlossary'
 import { useUserStore } from '@/stores/user'
 
 /**
- * Khung trò chuyện với AI để luyện giao tiếp tiếng Anh theo bài học.
- * Gửi ngữ cảnh bài (chủ đề + từ vựng + ngữ pháp) để AI bám sát nội dung.
- * Có nghe (đọc câu trả lời) và nói (Speech-to-Text) để luyện cả 4 kỹ năng.
+ * Khung "Trò chuyện với AI" — coach hội thoại tiếng Anh theo bài học.
+ * Mỗi lượt người học gửi đi, AI vừa CHẤM câu (sửa lỗi + điểm CEFR + lời phê theo
+ * phong cách hài hước) vừa NÓI TIẾP (kèm gợi ý từ nên dùng). Có nghe/nói, tra từ
+ * tại chỗ, lưu/đánh dấu sao từ, và chọn phong cách lời phê.
  */
 const props = defineProps({
   // { title, week, weekTitle, vocab: string[], grammar: string[] }
@@ -21,56 +22,106 @@ const props = defineProps({
 const router = useRouter()
 const user = useUserStore()
 
-const messages = ref([]) // { role:'user'|'assistant', text }
+// —— Danh sách phong cách lời phê (khớp PERSONAS ở backend _llm.js) ——
+const PERSONAS = [
+  { key: 'cotnha', label: '😜 Cợt nhả', desc: 'Hài hước, trêu nhẹ' },
+  { key: 'chuiboi', label: '🔥 Chửi bới', desc: 'Cà khịa cho vui' },
+  { key: 'gaubong', label: '🧸 Gấu bông', desc: 'Ấm áp, động viên' },
+  { key: 'nghiemtuc', label: '🎓 Nghiêm túc', desc: 'Giáo viên thẳng thắn' },
+]
+// —— Trạng thái phiên ——
+const messages = ref([]) // xem mô hình bên dưới
 const input = ref('')
 const loading = ref(false)
 const error = ref('')
 const autoSpeak = ref(true)
 const listening = ref(false)
 const scroller = ref(null)
-
-// Chế độ "lưu từ": bật rồi chạm vào từ trong câu trả lời của AI để lưu vào
-// danh sách cá nhân (học lại bằng Flashcard). Tắt mặc định để khỏi vướng khi đọc.
-const saveMode = ref(false)
-const savedToast = ref('') // thông báo thoáng qua sau khi lưu
-const translatingKey = ref('') // câu đang được dịch (hiện trạng thái ⏳)
+const savedToast = ref('')
 let toastTimer = null
+
+// Phong cách lời phê — nhớ lần chọn gần nhất (lưu local).
+const persona = ref(user.convoPrefs.persona || 'cotnha')
+function setPersona(key) {
+  persona.value = key
+  user.setConvoPrefs({ persona: key })
+}
 
 const speakable = canSpeak()
 const listenable = canListen()
 let recognizer = null
 
-const targetWords = computed(() => (props.context?.vocab || []).slice(0, 6))
+// Bộ từ của bài (để gợi ý người học dùng trong câu trả lời).
+const vocab = computed(() => (props.context?.vocab || []).filter(Boolean))
 
-// Lời mở đầu tĩnh (không tốn quota) — giới thiệu chủ đề & gợi ý từ cần dùng.
+// Ngữ cảnh gửi lên backend.
+const chatContext = computed(() => ({
+  title: props.context?.title,
+  week: props.context?.week,
+  weekTitle: props.context?.weekTitle,
+  grammar: props.context?.grammar || [],
+  vocab: vocab.value,
+  exam: props.context?.exam || 'none',
+  suggestWords: true,
+}))
+
+// Câu mở đầu tĩnh (không tốn quota).
 const opener = computed(() => {
-  const topic = props.context?.title ? `**${props.context.title}**` : 'today’s topic'
-  const words = targetWords.value.length ? ` Try to use: _${targetWords.value.join(', ')}_.` : ''
-  return `Hi there! 👋 Let’s practise English about ${topic}. Tell me about your day or ask me anything to get started.${words}`
+  const topic = props.context?.title ? props.context.title : 'today’s topic'
+  return `Hi there! 👋 Let's practise English about ${topic}. Tell me about your day or ask me anything to get started.`
 })
 
-const renderedOpener = computed(() => marked.parse(opener.value))
-const render = (text) => marked.parse(text || '')
+// Vào chat ngay: hiện câu mở đầu + gợi ý vài từ của bài (không còn màn thiết lập).
+function initSession() {
+  messages.value = [
+    { role: 'assistant', message: opener.value, suggestedWords: vocab.value.slice(0, 3), ui: reactive({}) },
+  ]
+  input.value = ''
+  error.value = ''
+  closePop()
+}
+onMounted(initSession)
 
 async function scrollToEnd() {
   await nextTick()
   if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight
 }
 
+// Lịch sử gọn để gửi backend: assistant -> message, user -> text.
+function historyFor(upto = messages.value.length) {
+  return messages.value.slice(0, upto).map((m) =>
+    m.role === 'assistant' ? { role: 'assistant', text: m.message } : { role: 'user', text: m.text },
+  )
+}
+
 async function send() {
   const text = input.value.trim()
   if (!text || loading.value) return
   error.value = ''
-  messages.value.push({ role: 'user', text })
+  const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
+  messages.value.push(userEntry)
   input.value = ''
   loading.value = true
   scrollToEnd()
 
   try {
-    const reply = await sendChat({ messages: messages.value, context: props.context })
-    messages.value.push({ role: 'assistant', text: reply })
-    if (autoSpeak.value) speak(reply)
+    const { evaluation, next } = await coachTurn({
+      messages: historyFor(),
+      context: chatContext.value,
+      persona: persona.value,
+    })
+    userEntry.evaluation = evaluation || null
+    userEntry.evaluating = false
+    const aiEntry = {
+      role: 'assistant',
+      message: next?.message || '…',
+      suggestedWords: Array.isArray(next?.suggestedWords) ? next.suggestedWords.slice(0, 3) : [],
+      ui: reactive({}),
+    }
+    messages.value.push(aiEntry)
+    if (autoSpeak.value) speak(aiEntry.message)
   } catch (e) {
+    userEntry.evaluating = false
     error.value = e.message || 'Có lỗi xảy ra, thử lại nhé.'
   } finally {
     loading.value = false
@@ -78,88 +129,160 @@ async function send() {
   }
 }
 
+// —— Đổi phong cách lời phê & chấm lại tại chỗ ——
+async function changePersona(userEntry, key) {
+  if (userEntry.reEvaluating || userEntry.persona === key) {
+    persona.value = key
+    user.setConvoPrefs({ persona: key })
+    return
+  }
+  persona.value = key
+  user.setConvoPrefs({ persona: key })
+  const idx = messages.value.indexOf(userEntry)
+  if (idx === -1) return
+  userEntry.reEvaluating = true
+  try {
+    const evaluation = await reFeedback({
+      messages: historyFor(idx + 1),
+      context: chatContext.value,
+      persona: key,
+    })
+    if (evaluation) userEntry.evaluation = evaluation
+    userEntry.persona = key
+  } catch (e) {
+    flashToast('⚠️ Không chấm lại được, thử lại nhé')
+  } finally {
+    userEntry.reEvaluating = false
+  }
+}
+
+// —— Nút trợ giúp dưới mỗi lượt của AI ——
+async function showHint(m) {
+  if (m.ui.hint || m.ui.hintLoading) {
+    m.ui.showHint = !m.ui.showHint
+    return
+  }
+  m.ui.hintLoading = true
+  try {
+    m.ui.hint = await getHint(m.message, chatContext.value)
+    m.ui.showHint = true
+  } catch {
+    m.ui.hint = 'Không lấy được gợi ý, thử lại nhé.'
+    m.ui.showHint = true
+  } finally {
+    m.ui.hintLoading = false
+  }
+}
+async function showIdea(m) {
+  if (m.ui.idea || m.ui.ideaLoading) {
+    m.ui.showIdea = !m.ui.showIdea
+    return
+  }
+  m.ui.ideaLoading = true
+  try {
+    m.ui.idea = await getIdea(m.message, chatContext.value)
+    m.ui.showIdea = true
+  } catch {
+    m.ui.idea = 'Không lấy được ý tưởng, thử lại nhé.'
+    m.ui.showIdea = true
+  } finally {
+    m.ui.ideaLoading = false
+  }
+}
+async function showTranslation(m) {
+  if (m.ui.vi || m.ui.viLoading) {
+    m.ui.showVi = !m.ui.showVi
+    return
+  }
+  m.ui.viLoading = true
+  try {
+    m.ui.vi = await translateToVi(m.message)
+    m.ui.showVi = true
+  } catch {
+    m.ui.vi = 'Không dịch được, thử lại nhé.'
+    m.ui.showVi = true
+  } finally {
+    m.ui.viLoading = false
+  }
+}
+
 function replay(text) {
   speak(text)
 }
 
-// —— Lưu từ vựng từ câu trả lời của AI ——
+function useIdeaAsAnswer(text) {
+  input.value = text
+}
+
+// —— Tra/lưu/đánh dấu sao TỪ tại chỗ ——
+const pop = reactive({ open: false, word: '', vi: '', ipa: '', loading: false, x: 0, y: 0 })
+
+// Tách văn bản thành token: số lẻ là "từ" bấm được.
+function tokenize(text) {
+  return (text || '')
+    .split(/([A-Za-z][A-Za-z'’-]*)/)
+    .map((t, i) => ({ t, word: i % 2 === 1 && t.length >= 2 }))
+}
+
+async function tapWord(word, ev) {
+  const w = String(word).trim()
+  if (!w || w.length < 2) return
+  pop.open = true
+  pop.word = w
+  pop.x = Math.min(ev.clientX, window.innerWidth - 230)
+  pop.y = ev.clientY + 14
+  const g = VOCAB_GLOSSARY[w.toLowerCase()]
+  if (g) {
+    pop.vi = g.vi || ''
+    pop.ipa = g.ipa || ''
+    pop.loading = false
+    return
+  }
+  pop.vi = ''
+  pop.ipa = ''
+  pop.loading = true
+  try {
+    pop.vi = await translateWord(w)
+  } catch {
+    pop.vi = '(không dịch được)'
+  } finally {
+    pop.loading = false
+  }
+}
+function closePop() {
+  pop.open = false
+}
+
 function flashToast(msg) {
   savedToast.value = msg
   if (toastTimer) clearTimeout(toastTimer)
   toastTimer = setTimeout(() => (savedToast.value = ''), 1800)
 }
 
-// Gỡ ký hiệu markdown (** _ ` #) để hiển thị sạch trong chế độ chọn từ.
-function stripMd(text) {
-  return (text || '')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/__([^_]+)__/g, '$1')
-    .replace(/_([^_]+)_/g, '$1')
-    .replace(/^[#>]+\s*/gm, '')
-}
-
-// Tách một đoạn thành token: mỗi từ tiếng Anh là token bấm được (word=true);
-// dấu câu/khoảng trắng giữ nguyên để câu vẫn đọc được.
-function tokenize(text) {
-  // split giữ lại nhóm bắt được -> chỉ số lẻ là "từ", chẵn là phần ngăn cách.
-  return (text || '')
-    .split(/([A-Za-z][A-Za-z'’-]*)/)
-    .map((t, i) => ({ t, word: i % 2 === 1 && t.length >= 2 }))
-}
-
-// Tách câu trả lời của AI thành từng CÂU (kèm token từng từ) để vừa chọn từ,
-// vừa lưu cả câu. Mỗi câu có nút "💾 Lưu câu" riêng.
-function pickSentences(text) {
-  const plain = stripMd(text)
-  return plain
-    .split(/(?<=[.!?])\s+|\n+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s, i) => ({ text: s, key: i + ':' + s.slice(0, 24), tokens: tokenize(s) }))
-}
-
-// Chọn/bỏ chọn một từ: chưa lưu -> lưu (kèm câu ngữ cảnh); đã lưu -> bỏ.
-// Từ có trong kho (glossary) dùng nghĩa sẵn (kèm IPA/ví dụ); từ chưa có nghĩa
-// thì nhờ AI dịch sang tiếng Việt để mặt sau flashcard luôn có nghĩa.
-async function toggleWord(word, fullText) {
-  const w = String(word).trim().toLowerCase()
-  if (!w || w.length < 2) return
+// Lưu từ trong popover vào danh sách flashcard (kèm nghĩa đã có).
+function saveWordFromPop() {
+  const w = pop.word.toLowerCase()
   if (user.isWordSaved(w)) {
     user.removeSavedWord(w)
     flashToast(`Đã bỏ “${w}”`)
     return
   }
   const card = cardsFromTerms([w], 'saved')[0]
-  const context = sentenceFor(w, fullText)
-  let vi = card.vi
-  if (!vi) {
-    if (translatingKey.value) return // đang dịch mục khác -> bỏ qua
-    translatingKey.value = w
-    try {
-      vi = await translateToVi(w)
-    } catch {
-      vi = '' // dịch lỗi vẫn lưu, mặt sau để trống
-    } finally {
-      translatingKey.value = ''
-    }
-  }
-  user.saveWord(context ? { ...card, vi, context } : { ...card, vi })
+  user.saveWord({ ...card, vi: card.vi || pop.vi, ipa: card.ipa || pop.ipa })
   flashToast(`✓ Đã lưu “${w}”`)
 }
-
-// Lưu/bỏ cả câu: khi lưu sẽ nhờ AI dịch sang tiếng Việt làm mặt sau flashcard.
-async function toggleSentence(sentence) {
-  const s = String(sentence).trim()
+// Lưu cả câu (dịch sang tiếng Việt làm mặt sau flashcard).
+const savingSentence = ref('')
+async function saveSentence(text) {
+  const s = String(text || '').trim()
   if (!s) return
   if (user.isWordSaved(s)) {
     user.removeSavedWord(s)
     flashToast('Đã bỏ câu')
     return
   }
-  if (translatingKey.value) return // đang dịch câu khác -> bỏ qua
-  translatingKey.value = s
+  if (savingSentence.value) return
+  savingSentence.value = s
   try {
     const vi = await translateToVi(s)
     const base = cardsFromTerms([s], 'saved')[0]
@@ -168,17 +291,8 @@ async function toggleSentence(sentence) {
   } catch {
     flashToast('⚠️ Không dịch được, thử lại nhé')
   } finally {
-    translatingKey.value = ''
+    savingSentence.value = ''
   }
-}
-
-// Trích câu chứa từ trong đoạn văn bản (để hiện ngữ cảnh trên flashcard).
-function sentenceFor(word, text) {
-  const plain = (text || '').replace(/[*_`#>]/g, ' ').replace(/\s+/g, ' ').trim()
-  if (!plain) return ''
-  const sentences = plain.split(/(?<=[.!?])\s+/)
-  const hit = sentences.find((s) => new RegExp(`\\b${word}\\b`, 'i').test(s))
-  return (hit || '').slice(0, 160)
 }
 
 function openSavedDeck() {
@@ -205,7 +319,7 @@ function toggleMic() {
     },
     onEnd: (finalText) => {
       listening.value = false
-      if (finalText) send() // nói xong tự gửi
+      if (finalText) send()
     },
   })
   if (!recognizer) return
@@ -215,12 +329,10 @@ function toggleMic() {
 }
 
 function reset() {
-  messages.value = []
-  input.value = ''
-  error.value = ''
+  initSession()
 }
 
-// Đổi bài học thì làm mới hội thoại.
+// Đổi bài học thì làm mới phiên.
 watch(
   () => props.context?.title,
   () => reset(),
@@ -228,7 +340,7 @@ watch(
 </script>
 
 <template>
-  <section class="step-card ai-chat">
+  <section class="step-card ai-chat" @click="closePop">
     <div class="step-head">
       <div>
         <div class="eyebrow">LUYỆN GIAO TIẾP</div>
@@ -240,107 +352,161 @@ watch(
           class="tool-toggle"
           :class="{ on: autoSpeak }"
           :title="autoSpeak ? 'Đang tự đọc câu trả lời' : 'Tự đọc câu trả lời: tắt'"
-          @click="autoSpeak = !autoSpeak"
+          @click.stop="autoSpeak = !autoSpeak"
         >
           {{ autoSpeak ? '🔊 Đọc' : '🔇 Đọc' }}
         </button>
-        <button
-          class="tool-toggle"
-          :class="{ on: saveMode }"
-          :title="saveMode ? 'Đang bật: chạm vào từ để lưu' : 'Bật chế độ lưu từ vựng'"
-          @click="saveMode = !saveMode"
-        >
-          📌 Lưu từ
-        </button>
-        <button v-if="messages.length" class="tool-toggle" title="Xóa hội thoại" @click="reset">↺ Mới</button>
+        <button class="tool-toggle" title="Bắt đầu lại từ đầu" @click.stop="reset">↺ Mới</button>
       </div>
     </div>
 
-    <p v-if="saveMode" class="hint hint-save">
-      📌 Đang bật <b>chế độ chọn</b> — bấm <b>từ</b> để lưu từ, hoặc bấm <b>💾 Lưu câu</b> để lưu cả câu (tự dịch sang tiếng Việt). Bấm lần nữa để bỏ.
-    </p>
-    <p v-else class="hint">Nhắn tin hoặc bấm 🎤 để nói tiếng Anh — AI sẽ trả lời, sửa lỗi nhẹ và hỏi lại để bạn luyện nói.</p>
+    <!-- Thanh chọn phong cách lời phê (đổi được bất cứ lúc nào) -->
+    <div class="persona-bar">
+      <span class="persona-bar-label">Phong cách AI:</span>
+      <button
+        v-for="p in PERSONAS"
+        :key="p.key"
+        class="pchip"
+        :class="{ on: persona === p.key }"
+        :title="p.desc"
+        @click.stop="setPersona(p.key)"
+      >{{ p.label }}</button>
+    </div>
 
-    <button v-if="user.savedCount" class="saved-pill" @click="openSavedDeck">
-      📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
-    </button>
+    <!-- ———————————— HỘI THOẠI ———————————— -->
+    <button v-if="user.savedCount" class="saved-pill" @click.stop="openSavedDeck">
+        📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
+      </button>
+      <p class="hint">Chạm vào <b>từ</b> để tra nghĩa / lưu. Bấm 🎤 để nói.</p>
 
-    <div ref="scroller" class="chat-log">
-      <!-- lời mở đầu -->
-      <div class="msg ai">
-        <div class="avatar">🤖</div>
-        <div class="bubble" v-html="renderedOpener"></div>
-      </div>
+      <div ref="scroller" class="chat-log">
+        <template v-for="(m, i) in messages" :key="i">
+          <!-- Lượt của AI -->
+          <div v-if="m.role === 'assistant'" class="msg ai">
+            <div class="avatar">🤖</div>
+            <div class="bubble">
+              <div class="prose-words">
+                <template v-for="(tok, ti) in tokenize(m.message)" :key="ti">
+                  <button
+                    v-if="tok.word"
+                    class="wordchip"
+                    :class="{ saved: user.isWordSaved(tok.t) }"
+                    @click.stop="tapWord(tok.t, $event)"
+                  >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
+                </template>
+                <button v-if="speakable" class="speak-mini" title="Nghe lại" @click.stop="replay(m.message)">🔊</button>
+              </div>
 
-      <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.role === 'user' ? 'me' : 'ai'">
-        <div class="avatar">{{ m.role === 'user' ? '🧑' : '🤖' }}</div>
-        <div class="bubble">
-          <!-- Chế độ chọn: mỗi từ là một chip bấm để lưu; mỗi câu có nút lưu cả câu -->
-          <div v-if="m.role === 'assistant' && saveMode" class="prose-pick">
-            <div v-for="sen in pickSentences(m.text)" :key="sen.key" class="pick-sentence">
-              <template v-for="(tok, ti) in sen.tokens" :key="ti">
-                <button
-                  v-if="tok.word"
-                  class="wordchip"
-                  :class="{ saved: user.isWordSaved(tok.t), busy: translatingKey === tok.t.toLowerCase() }"
-                  :title="user.isWordSaved(tok.t) ? 'Bấm để bỏ lưu' : 'Bấm để lưu từ này'"
-                  @click="toggleWord(tok.t, sen.text)"
-                >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
-              </template>
-              <button
-                class="sentchip"
-                :class="{ saved: user.isWordSaved(sen.text), busy: translatingKey === sen.text }"
-                :disabled="translatingKey === sen.text"
-                :title="user.isWordSaved(sen.text) ? 'Bấm để bỏ lưu câu' : 'Lưu cả câu (kèm bản dịch)'"
-                @click="toggleSentence(sen.text)"
-              >{{ translatingKey === sen.text ? '⏳ Đang dịch…' : user.isWordSaved(sen.text) ? '✓ Đã lưu câu' : '💾 Lưu câu' }}</button>
+              <!-- Gợi ý từ nên dùng -->
+              <div v-if="m.suggestedWords && m.suggestedWords.length" class="suggest">
+                <span class="suggest-label">Hãy thử dùng các từ:</span>
+                <span v-for="w in m.suggestedWords" :key="w" class="suggest-chip">{{ w }}</span>
+              </div>
+
+              <!-- Nút trợ giúp -->
+              <div class="turn-actions">
+                <button class="ta" @click.stop="showHint(m)">{{ m.ui.hintLoading ? '⏳' : '💡' }} Xem gợi ý</button>
+                <button class="ta" @click.stop="showIdea(m)">{{ m.ui.ideaLoading ? '⏳' : '🤔' }} Bí ý tưởng?</button>
+                <button class="ta" @click.stop="showTranslation(m)">{{ m.ui.viLoading ? '⏳' : '🌐' }} Dịch câu hỏi?</button>
+                <button class="ta" :class="{ saved: user.isWordSaved(m.message) }" :disabled="savingSentence === m.message" @click.stop="saveSentence(m.message)">
+                  {{ savingSentence === m.message ? '⏳' : user.isWordSaved(m.message) ? '✓' : '💾' }} Lưu câu
+                </button>
+              </div>
+              <p v-if="m.ui.showHint" class="aux hint-box">💡 {{ m.ui.hint }}</p>
+              <div v-if="m.ui.showIdea" class="aux idea-box">
+                🤔 <i>{{ m.ui.idea }}</i>
+                <button class="use-idea" @click.stop="useIdeaAsAnswer(m.ui.idea)">Dùng câu này →</button>
+              </div>
+              <p v-if="m.ui.showVi" class="aux vi-box">🌐 {{ m.ui.vi }}</p>
             </div>
           </div>
-          <div v-else-if="m.role === 'assistant'" class="prose-mini" v-html="render(m.text)"></div>
-          <template v-else>{{ m.text }}</template>
-          <button
-            v-if="m.role === 'assistant' && speakable"
-            class="speak-mini"
-            title="Nghe lại"
-            @click="replay(m.text)"
-          >
-            🔊
-          </button>
+
+          <!-- Lượt của người học + thẻ đánh giá -->
+          <div v-else class="user-turn">
+            <div class="msg me">
+              <div class="avatar">🧑</div>
+              <div class="bubble">{{ m.text }}</div>
+            </div>
+
+            <div v-if="m.evaluating" class="eval-card loading">⏳ Đang chấm câu…</div>
+
+            <div v-else-if="m.evaluation" class="eval-card">
+              <div class="eval-row">
+                <span class="eval-tag ok">✅ Câu đúng</span>
+                <span class="eval-corrected">{{ m.evaluation.corrected }}</span>
+              </div>
+              <div class="eval-row score-row">
+                <span class="eval-tag score">🎯 {{ m.evaluation.cefr }}</span>
+                <div class="persona-pills">
+                  <button
+                    v-for="p in PERSONAS"
+                    :key="p.key"
+                    class="ppill"
+                    :class="{ on: (m.persona || persona) === p.key }"
+                    :disabled="m.reEvaluating"
+                    :title="p.desc"
+                    @click.stop="changePersona(m, p.key)"
+                  >{{ p.label }}</button>
+                </div>
+              </div>
+              <ul class="eval-feedback" :class="{ dim: m.reEvaluating }">
+                <li v-for="(line, fi) in m.evaluation.feedback" :key="fi">{{ line }}</li>
+              </ul>
+              <div class="eval-reco">
+                <span class="reco-label">💡 Gợi ý trả lời:</span>
+                <span class="reco-text">{{ m.evaluation.recommended }}</span>
+                <button v-if="speakable" class="speak-mini" title="Nghe" @click.stop="replay(m.evaluation.recommended)">🔊</button>
+                <div v-if="m.evaluation.recommendedVi" class="reco-vi">{{ m.evaluation.recommendedVi }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <div v-if="loading" class="msg ai">
+          <div class="avatar">🤖</div>
+          <div class="bubble typing"><span></span><span></span><span></span></div>
         </div>
       </div>
 
-      <div v-if="loading" class="msg ai">
-        <div class="avatar">🤖</div>
-        <div class="bubble typing"><span></span><span></span><span></span></div>
+      <p v-if="error" class="chat-error">⚠️ {{ error }}</p>
+
+      <form class="composer" @submit.prevent="send">
+        <button
+          v-if="listenable"
+          type="button"
+          class="mic-btn"
+          :class="{ live: listening }"
+          :title="listening ? 'Đang nghe… bấm để dừng' : 'Bấm để nói'"
+          @click.stop="toggleMic"
+        >
+          {{ listening ? '⏹️' : '🎤' }}
+        </button>
+        <input
+          v-model="input"
+          type="text"
+          class="composer-input"
+          :placeholder="listening ? 'Đang nghe bạn nói…' : 'Nhập câu tiếng Anh của bạn…'"
+          :disabled="loading"
+          @click.stop
+        />
+        <button type="submit" class="send-btn" :disabled="loading || !input.trim()">Gửi →</button>
+      </form>
+
+    <!-- Popover tra từ -->
+    <div v-if="pop.open" class="word-pop" :style="{ left: pop.x + 'px', top: pop.y + 'px' }" @click.stop>
+      <div class="wp-head">
+        <b>{{ pop.word }}</b>
+        <span v-if="pop.ipa" class="wp-ipa">{{ pop.ipa }}</span>
+      </div>
+      <div class="wp-vi">{{ pop.loading ? 'Đang dịch…' : pop.vi || '(chưa có nghĩa)' }}</div>
+      <div class="wp-actions">
+        <button @click.stop="saveWordFromPop">{{ user.isWordSaved(pop.word) ? '✓ Đã lưu' : '💾 Lưu từ' }}</button>
       </div>
     </div>
-
-    <p v-if="error" class="chat-error">⚠️ {{ error }}</p>
 
     <Transition name="toast">
       <div v-if="savedToast" class="save-toast">{{ savedToast }}</div>
     </Transition>
-
-    <form class="composer" @submit.prevent="send">
-      <button
-        v-if="listenable"
-        type="button"
-        class="mic-btn"
-        :class="{ live: listening }"
-        :title="listening ? 'Đang nghe… bấm để dừng' : 'Bấm để nói'"
-        @click="toggleMic"
-      >
-        {{ listening ? '⏹️' : '🎤' }}
-      </button>
-      <input
-        v-model="input"
-        type="text"
-        class="composer-input"
-        :placeholder="listening ? 'Đang nghe bạn nói…' : 'Nhập câu tiếng Anh của bạn…'"
-        :disabled="loading"
-      />
-      <button type="submit" class="send-btn" :disabled="loading || !input.trim()">Gửi →</button>
-    </form>
   </section>
 </template>
 
@@ -349,8 +515,6 @@ watch(
   display: flex;
   flex-direction: column;
   position: relative;
-  /* Nền card tự chứa: ở DayView lớp .step-card (scoped) đã tạo nền, nhưng khi
-     dùng trong tab Công cụ không có .step-card nên tự khai báo ở đây cho đồng nhất. */
   background: #fff;
   border-radius: 22px;
   padding: 26px 28px;
@@ -381,24 +545,42 @@ watch(
   border-color: transparent;
   color: #fff;
 }
-.hint {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-top: 12px;
+
+/* —— Thanh chọn phong cách lời phê —— */
+.persona-bar {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
-.hint-save {
-  color: #00805a;
-  background: #e6fbf2;
-  border: 1px solid rgba(0, 214, 143, 0.25);
-  padding: 9px 13px;
-  border-radius: 12px;
+.persona-bar-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #3a3a52;
+  margin-right: 2px;
 }
-.hint-save b {
-  color: #00805a;
+.pchip {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6c5ce7;
+  background: #fff;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  border-radius: 999px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+.pchip:hover {
+  background: #f5f3ff;
+}
+.pchip.on {
+  background: #6c5ce7;
+  border-color: transparent;
+  color: #fff;
 }
 
-/* Lối tắt sang Flashcard cho các từ đã lưu */
+/* —— Lối tắt & gợi ý —— */
 .saved-pill {
   align-self: flex-start;
   margin-top: 12px;
@@ -410,109 +592,21 @@ watch(
   font-weight: 800;
   padding: 9px 14px;
   border-radius: 11px;
-  transition: transform 0.12s, box-shadow 0.15s;
 }
-.saved-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.22);
-}
-
-/* Chế độ chọn: mỗi câu một dòng, mỗi từ là chip bấm được */
-.prose-pick {
-  word-break: break-word;
-}
-.pick-sentence {
-  line-height: 2.1;
-  margin-bottom: 6px;
-}
-.pick-sentence:last-child {
-  margin-bottom: 0;
-}
-/* Nút lưu cả câu (đứng cuối mỗi câu) */
-.sentchip {
-  display: inline-block;
-  margin-left: 6px;
-  vertical-align: middle;
-  cursor: pointer;
-  font-size: 11.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  color: #6c5ce7;
-  background: rgba(108, 92, 231, 0.1);
-  border: 1px solid rgba(108, 92, 231, 0.28);
-  border-radius: 999px;
-  padding: 3px 10px;
-  transition: all 0.12s;
-}
-.sentchip:hover {
-  background: rgba(108, 92, 231, 0.18);
-}
-.sentchip.saved {
-  background: #6c5ce7;
-  border-color: transparent;
-  color: #fff;
-}
-.sentchip.busy {
-  opacity: 0.7;
-  cursor: progress;
-}
-.wordchip {
-  font: inherit;
-  color: inherit;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 1px 3px;
-  border-radius: 6px;
-  border-bottom: 1.5px dashed rgba(0, 168, 111, 0.55);
-  transition: background 0.12s, color 0.12s;
-}
-.wordchip:hover {
-  background: rgba(0, 214, 143, 0.16);
-}
-.wordchip.saved {
-  background: #00a86f;
-  color: #fff;
-  font-weight: 700;
-  border-bottom-color: transparent;
-}
-.wordchip.busy {
-  opacity: 0.55;
-  cursor: progress;
+.hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 10px;
 }
 
-/* Toast xác nhận lưu từ */
-.save-toast {
-  position: absolute;
-  left: 50%;
-  bottom: 78px;
-  transform: translateX(-50%);
-  background: #2d2d44;
-  color: #fff;
-  font-size: 13.5px;
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 999px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
-  z-index: 5;
-  white-space: nowrap;
-}
-.toast-enter-active,
-.toast-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translate(-50%, 8px);
-}
-
+/* —— Log hội thoại —— */
 .chat-log {
-  margin-top: 16px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 420px;
+  max-height: 460px;
   overflow-y: auto;
   padding: 6px 4px 2px;
 }
@@ -539,9 +633,9 @@ watch(
 }
 .bubble {
   position: relative;
-  max-width: 78%;
+  max-width: 82%;
   font-size: 14.5px;
-  line-height: 1.6;
+  line-height: 1.7;
   padding: 11px 15px;
   border-radius: 16px;
   background: #f3f4f8;
@@ -556,6 +650,28 @@ watch(
 .msg.ai .bubble {
   border-bottom-left-radius: 5px;
 }
+.wordchip {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 1px;
+  border-radius: 5px;
+  border-bottom: 1.5px dotted rgba(108, 92, 231, 0.4);
+  transition: background 0.12s;
+}
+.wordchip:hover {
+  background: rgba(108, 92, 231, 0.16);
+}
+.wordchip.saved {
+  background: rgba(0, 168, 111, 0.16);
+  border-bottom-color: transparent;
+}
+.wordchip.starred {
+  background: rgba(255, 193, 7, 0.25);
+  border-bottom-color: transparent;
+}
 .speak-mini {
   border: none;
   background: transparent;
@@ -568,24 +684,272 @@ watch(
 .speak-mini:hover {
   opacity: 1;
 }
-.prose-mini :deep(p) {
-  margin: 0 0 6px;
+
+/* Gợi ý từ */
+.suggest {
+  margin-top: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
-.prose-mini :deep(p:last-child) {
-  margin-bottom: 0;
+.suggest-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
 }
-.prose-mini :deep(strong) {
+.suggest-chip {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #00805a;
+  background: #e6fbf2;
+  border: 1px solid rgba(0, 214, 143, 0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* Nút trợ giúp dưới lượt AI */
+.turn-actions {
+  margin-top: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ta {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c5ce7;
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.ta:hover {
+  background: rgba(108, 92, 231, 0.16);
+}
+.ta.saved {
+  background: #6c5ce7;
+  border-color: transparent;
+  color: #fff;
+}
+.aux {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+.hint-box {
+  background: #fff8e6;
+  border: 1px solid #ffe2a8;
+  color: #8a6d1b;
+}
+.idea-box {
+  background: #eef6ff;
+  border: 1px solid #c9e0ff;
+  color: #1c4f8a;
+}
+.use-idea {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  background: #1c4f8a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.vi-box {
+  background: #f3f4f8;
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  color: #3a3a52;
+}
+
+/* Thẻ đánh giá */
+.user-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eval-card {
+  align-self: flex-end;
+  max-width: 88%;
+  background: #fbfbfe;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 16px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.06);
+}
+.eval-card.loading {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.eval-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.eval-tag {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.eval-tag.ok {
+  background: #e6fbf2;
   color: #00805a;
 }
-.prose-mini :deep(em) {
+.eval-tag.score {
+  background: #ede9fe;
   color: #6c5ce7;
-  font-style: normal;
+}
+.eval-corrected {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f1f33;
+}
+.score-row {
+  justify-content: space-between;
+  align-items: center;
+}
+.persona-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ppill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6c5ce7;
+  background: #fff;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  border-radius: 999px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.ppill.on {
+  background: #6c5ce7;
+  border-color: transparent;
+  color: #fff;
+}
+.ppill:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.eval-feedback {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.8px;
+  line-height: 1.7;
+  color: #3a3a52;
+}
+.eval-feedback.dim {
+  opacity: 0.5;
+}
+.eval-reco {
+  background: #f5f3ff;
+  border-radius: 11px;
+  padding: 9px 12px;
+  font-size: 13.8px;
+  line-height: 1.6;
+}
+.reco-label {
+  font-weight: 800;
+  color: #6c5ce7;
+  margin-right: 5px;
+}
+.reco-text {
+  color: #1f1f33;
   font-weight: 600;
 }
-.prose-mini :deep(ul),
-.prose-mini :deep(ol) {
-  margin: 6px 0;
-  padding-left: 18px;
+.reco-vi {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.8px;
+}
+
+/* Popover tra từ */
+.word-pop {
+  position: fixed;
+  z-index: 30;
+  width: 210px;
+  background: #fff;
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  padding: 11px 13px;
+}
+.wp-head {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.wp-head b {
+  font-size: 15px;
+  color: #1f1f33;
+}
+.wp-ipa {
+  font-size: 12px;
+  color: var(--muted);
+}
+.wp-vi {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #00805a;
+  font-weight: 600;
+}
+.wp-actions {
+  margin-top: 9px;
+  display: flex;
+  gap: 7px;
+}
+.wp-actions button {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  background: #fff;
+  color: #6c5ce7;
+  border-radius: 9px;
+  padding: 6px;
+  cursor: pointer;
+}
+.wp-actions button:hover {
+  background: #f5f3ff;
+}
+
+/* Toast */
+.save-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 78px;
+  transform: translateX(-50%);
+  background: #2d2d44;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  z-index: 25;
+  white-space: nowrap;
+}
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 8px);
 }
 
 /* typing indicator */
@@ -608,9 +972,7 @@ watch(
   animation-delay: 0.4s;
 }
 @keyframes blink {
-  0%,
-  80%,
-  100% {
+  0%, 80%, 100% {
     opacity: 0.3;
   }
   40% {
@@ -654,8 +1016,7 @@ watch(
   animation: pulse 1.1s infinite;
 }
 @keyframes pulse {
-  0%,
-  100% {
+  0%, 100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5);
   }
   50% {
@@ -701,6 +1062,9 @@ watch(
 @media (max-width: 560px) {
   .bubble {
     max-width: 86%;
+  }
+  .persona-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

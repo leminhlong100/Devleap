@@ -1,7 +1,7 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { askLLM, buildSystemPrompt } from './netlify/functions/_llm.js'
+import { runChat } from './netlify/functions/_llm.js'
 import shadowingHandler from './netlify/functions/shadowing.js'
 
 /**
@@ -26,10 +26,10 @@ function chatDevPlugin(env) {
         req.on('data', (c) => (raw += c))
         req.on('end', async () => {
           try {
-            const { messages, context } = JSON.parse(raw || '{}')
+            const payload = JSON.parse(raw || '{}')
             const key = env.GROQ_API_KEY
             if (!key) return send({ error: 'Thiếu GROQ_API_KEY trong .env.local' }, 500)
-            const reply = await askLLM({ key, system: buildSystemPrompt(context), messages })
+            const { reply } = await runChat(payload, key)
             send({ reply })
           } catch (e) {
             send({ error: e?.message || 'Lỗi không xác định' }, 500)

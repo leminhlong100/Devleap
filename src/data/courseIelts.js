@@ -33,12 +33,17 @@ export const ieltsWeekStructure = ieltsWeeksData.map((w, i) => ({
 
 const isWeekDone = (wk, completed) => wk.dayNums.every((d) => completed.includes(`${wk.num}:${d}`))
 
-/** Trạng thái mỗi tuần (done/current/locked) từ danh sách ngày đã hoàn thành. */
-export function computeIeltsStatuses(completed = []) {
+/**
+ * Trạng thái mỗi tuần (done/current/locked).
+ * Một tuần coi là "done" (để mở tuần kế) khi ĐÃ XONG HẾT NGÀY **và** ĐÃ ĐẠT bài
+ * kiểm tra tuần — đúng yêu cầu "pass hết mới qua tuần mới". `isWeekPassed` do view
+ * truyền vào (đọc từ store); mặc định luôn true để tương thích ngược.
+ */
+export function computeIeltsStatuses(completed = [], isWeekPassed = () => true) {
   const map = {}
   let prevDone = true
   for (const wk of ieltsWeekStructure) {
-    const done = isWeekDone(wk, completed)
+    const done = isWeekDone(wk, completed) && isWeekPassed(wk.num)
     map[wk.num] = done ? 'done' : prevDone ? 'current' : 'locked'
     prevDone = done
   }
@@ -46,20 +51,22 @@ export function computeIeltsStatuses(completed = []) {
 }
 
 /** Dựng mảng tuần kèm trạng thái mở khóa theo tiến độ hiện tại. */
-export function computeIeltsWeeks(completed = []) {
-  const statuses = computeIeltsStatuses(completed)
+export function computeIeltsWeeks(completed = [], isWeekPassed = () => true) {
+  const statuses = computeIeltsStatuses(completed, isWeekPassed)
   return ieltsWeekStructure.map((w) => ({ num: w.num, icon: w.icon, title: w.title, sub: w.sub, status: statuses[w.num] }))
 }
 
 /** Tóm tắt tiến độ IELTS: số tuần xong, % theo ngày, tuần hiện tại & buổi học tiếp theo. */
-export function computeIeltsProgress(completed = []) {
-  const statuses = computeIeltsStatuses(completed)
+export function computeIeltsProgress(completed = [], isWeekPassed = () => true) {
+  const statuses = computeIeltsStatuses(completed, isWeekPassed)
   const doneWeeks = ieltsWeekStructure.filter((w) => statuses[w.num] === 'done').length
   const cur = ieltsWeekStructure.find((w) => statuses[w.num] === 'current')
   let next
   if (cur) {
+    // Còn ngày chưa xong -> tới ngày đó; đã xong hết ngày nhưng chưa đạt bài kiểm tra
+    // tuần -> đưa về ngày CUỐI (nơi có thẻ "tổng hợp + bài kiểm tra tuần").
     const firstUndone = cur.dayNums.find((d) => !completed.includes(`${cur.num}:${d}`))
-    next = { week: cur.num, day: firstUndone ?? cur.dayNums[0] }
+    next = { week: cur.num, day: firstUndone ?? cur.dayNums[cur.dayNums.length - 1] }
   } else {
     const last = ieltsWeekStructure[ieltsWeekStructure.length - 1]
     next = { week: last.num, day: last.dayNums[0] }
@@ -172,6 +179,55 @@ export function getIeltsDay(weekNum, dayNum) {
   const rhythm = week.rhythm[idx] || null
   const title = rhythm?.task?.replace(/\s*\.?\s*$/, '') || `Buổi học ${day.n}`
 
+  // —— Ngữ pháp theo NGÀY: MỖI NGÀY ĐỀU CÓ VIỆC HỌC (không ngày nào trống) ——
+  //  - Ngày 1..n: học MỘT điểm ngữ pháp mới (n = số điểm trong tuần).
+  //  - Ngày giữa (đã hết điểm mới, chưa phải cuối): ÔN xoay vòng một điểm/ngày
+  //    (idx % n) — mỗi ngày ôn một điểm khác nhau + viết áp dụng điểm đó.
+  //  - Ngày CUỐI: TỔNG HỢP cả tuần + viết bài dùng tất cả các điểm.
+  // Nhờ vậy ngày nào cũng có bài tập (luyện + viết) để bắt buộc học.
+  const G = week.grammar
+  const n = G.length
+  const totalDaysG = week.days.length
+  const isLastDay = idx === totalDaysG - 1
+  const isNewGrammarDay = idx < n && !isLastDay
+
+  let dayGrammar
+  let grammarMode
+  let focusPoint // điểm ngữ pháp trọng tâm của ngày (null khi ngày tổng hợp)
+  if (isNewGrammarDay) {
+    focusPoint = G[idx]
+    dayGrammar = [{ ...focusPoint, isReview: false }]
+    grammarMode = 'new'
+  } else if (isLastDay) {
+    focusPoint = null
+    dayGrammar = G.map((g) => ({ ...g, isReview: true }))
+    grammarMode = 'final'
+  } else {
+    focusPoint = n ? G[idx % n] : null
+    dayGrammar = focusPoint ? [{ ...focusPoint, isReview: true }] : []
+    grammarMode = 'review'
+  }
+
+  // Bài tập luyện của ngày: ngày tổng hợp lấy của cả tuần, còn lại lấy của điểm trọng tâm.
+  const grammarDrills = (grammarMode === 'final' ? G.flatMap((g) => g.drills || []) : focusPoint?.drills || []).slice(0, 12)
+
+  // Bài tập VIẾT — NGÀY NÀO CŨNG CÓ (việc cần làm tại bài):
+  let writingTask = null
+  if (grammarMode === 'new' && focusPoint?.writing) {
+    writingTask = { title: focusPoint.title, prompt: focusPoint.writing }
+  } else if (grammarMode === 'review' && focusPoint) {
+    writingTask = {
+      title: focusPoint.title,
+      prompt: `Viết 6 câu áp dụng điểm ngữ pháp “${focusPoint.title}”. Mỗi câu một dòng.`,
+    }
+  } else if (grammarMode === 'final' && n) {
+    const titles = G.map((g) => g.title).join('; ')
+    writingTask = {
+      title: 'Tổng hợp tuần',
+      prompt: `Viết 8 câu về ${week.title || 'chủ đề tuần này'}, vận dụng các điểm ngữ pháp đã học: ${titles}. Mỗi câu một dòng.`,
+    }
+  }
+
   // Từ vựng theo cửa sổ trượt: mỗi buổi học phần MỚI của tuần + ôn lại phần buổi
   // trước, để các ngày khác nhau nhưng vẫn nhắc lại cho nhớ. Câu mẫu & cụm từ lấy
   // theo chính chủ đề chứa từ mới hôm nay (chất liệu để nói thật, không chỉ từ đơn).
@@ -196,7 +252,10 @@ export function getIeltsDay(weekNum, dayNum) {
     subtitle: week.subtitle,
     rhythm,
     checklist: day.checklist,
-    grammar: week.grammar,
+    grammar: dayGrammar, // ngữ pháp theo ngày (mới hoặc ôn tổng hợp)
+    grammarMode, // 'new' | 'review' | 'final'
+    grammarDrills, // bài tập ngữ pháp của riêng ngày này (dùng để khóa tiến độ)
+    writingTask, // bài tập viết làm ngay tại bài (null nếu ngày ôn / điểm không có)
     vocab: decorateVocab(newSlice.map((x) => x.w)),
     reviewVocab: decorateVocab(reviewSlice.map((x) => x.w)),
     phrases,

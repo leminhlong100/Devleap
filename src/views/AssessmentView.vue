@@ -18,7 +18,7 @@ const set = computed(() => getQuizSet(props.course, props.scope))
 // Thi cuối khóa chỉ mở khi đã hoàn thành toàn bộ lộ trình. Chặn cả khi gõ thẳng URL.
 const courseDone = computed(() =>
   props.course === 'ielts'
-    ? computeIeltsProgress(user.completed.ielts).allDone
+    ? computeIeltsProgress(user.completed.ielts, (n) => user.quizPassed('ielts', `week:${n}`)).allDone
     : computeJavaProgress(user.completed.java).allDone,
 )
 const finalLocked = computed(() => props.scope === 'final' && !courseDone.value)

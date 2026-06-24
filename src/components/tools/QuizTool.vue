@@ -13,7 +13,10 @@ const props = defineProps({
   scope: { type: String, default: '' }, // "week:N" | "final"
   passThreshold: { type: Number, default: 0.7 },
   limit: { type: Number, default: 0 }, // 0 = lấy hết
+  embedded: { type: Boolean, default: false }, // bỏ khung thẻ khi nhúng trong mục ngữ pháp
 })
+// 'complete' phát khi làm xong (cả practice lẫn assessment) -> view dùng để khóa tiến độ.
+const emit = defineEmits(['complete'])
 
 const user = useUserStore()
 const isAssessment = computed(() => props.mode === 'assessment')
@@ -45,6 +48,10 @@ const hasQuiz = computed(() => total.value > 0)
 
 const index = ref(0)
 const selected = ref(null)
+// Trạng thái cho câu nhập chữ (cloze / sửa câu).
+const typed = ref('')
+const checked = ref(false)
+const textCorrect = ref(false)
 const score = ref(0)
 const done = ref(false)
 // Lần này có phải lần ĐẦU đạt không (để hiện thưởng XP). Khai báo trước watch
@@ -52,8 +59,10 @@ const done = ref(false)
 const justPassed = ref(false)
 
 const current = computed(() => qs.value[index.value])
+// Câu nhập chữ: cloze (điền chỗ trống) hoặc error (sửa câu sai) — không có opts.
+const isText = computed(() => current.value && (current.value.type === 'cloze' || current.value.type === 'error'))
 
-const answered = computed(() => selected.value !== null)
+const answered = computed(() => (isText.value ? checked.value : selected.value !== null))
 const isLast = computed(() => index.value + 1 >= total.value)
 const progress = computed(() => Math.round(((index.value + (answered.value ? 1 : 0)) / total.value) * 100))
 
@@ -70,6 +79,28 @@ function select(i) {
     if (!isAssessment.value) user.addXp(10) // bài kiểm tra thưởng theo kết quả cuối
   }
 }
+// So khớp đáp án nhập tay: bỏ dấu, viết thường, gộp khoảng trắng, bỏ dấu câu cuối/quanh.
+function normAnswer(s) {
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[“”"'’`]/g, '')
+    .replace(/[.,!?;:]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+function checkText() {
+  if (checked.value || !typed.value.trim()) return
+  checked.value = true
+  const accepted = current.value.answer || []
+  const ok = accepted.some((a) => normAnswer(a) === normAnswer(typed.value))
+  textCorrect.value = ok
+  if (ok) {
+    score.value++
+    if (!isAssessment.value) user.addXp(10)
+  }
+}
 function optStyle(i) {
   if (selected.value === null) return { bg: '#fff', color: '#3a3a52', border: 'rgba(108,92,231,.16)', mark: String.fromCharCode(65 + i) }
   if (i === current.value.correct) return { bg: 'rgba(0,214,143,.1)', border: '#00D68F', color: '#00A86F', mark: '✓' }
@@ -84,15 +115,22 @@ function next() {
       user.recordQuiz(props.course, props.scope, score.value, total.value, props.passThreshold)
       justPassed.value = !wasPassed && passed.value
     }
+    emit('complete', { score: score.value, total: total.value, pct: pct.value, passed: passed.value })
   } else {
     index.value++
     selected.value = null
+    typed.value = ''
+    checked.value = false
+    textCorrect.value = false
   }
 }
 function restart() {
   buildQs()
   index.value = 0
   selected.value = null
+  typed.value = ''
+  checked.value = false
+  textCorrect.value = false
   score.value = 0
   done.value = false
   justPassed.value = false
@@ -104,7 +142,7 @@ watch(() => props.questions, restart, { immediate: true })
 </script>
 
 <template>
-  <div class="quiz">
+  <div class="quiz" :class="{ embedded }">
     <!-- CHƯA CÓ QUIZ THEO BÀI -->
     <div v-if="!hasQuiz" class="result empty-quiz">
       <div class="trophy">📝</div>
@@ -142,19 +180,48 @@ watch(() => props.questions, restart, { immediate: true })
         <span class="qscore">⭐ {{ score }} đúng</span>
       </div>
       <div class="track"><div class="fill" :style="{ width: progress + '%' }"></div></div>
-      <h2 class="question">{{ current.q }}</h2>
-      <div class="options">
-        <div
-          v-for="(o, i) in current.opts"
-          :key="i"
-          class="option"
-          :style="{ background: optStyle(i).bg, color: optStyle(i).color, borderColor: optStyle(i).border }"
-          @click="select(i)"
-        >
-          <span class="mark">{{ optStyle(i).mark }}</span>
-          {{ o }}
+
+      <!-- CÂU NHẬP CHỮ: điền chỗ trống / sửa câu sai -->
+      <template v-if="isText">
+        <span class="qtype" :class="current.type">{{ current.type === 'cloze' ? '✏️ Điền chỗ trống' : '🔧 Sửa câu sai' }}</span>
+        <h2 class="question">
+          <template v-if="current.type === 'error'">Viết lại cho đúng: </template>
+          <span :class="{ wrong: current.type === 'error' }">{{ current.q }}</span>
+        </h2>
+        <input
+          v-model="typed"
+          class="answer-input"
+          :class="{ ok: checked && textCorrect, bad: checked && !textCorrect }"
+          type="text"
+          :readonly="checked"
+          :placeholder="current.type === 'cloze' ? 'Gõ từ vào chỗ trống…' : 'Gõ lại câu đúng…'"
+          @keyup.enter="checked ? next() : checkText()"
+        />
+        <div v-if="checked" class="verdict-line" :class="{ ok: textCorrect }">
+          {{ textCorrect ? '✓ Chính xác!' : `✕ Đáp án đúng: ${current.answer[0]}` }}
         </div>
-      </div>
+        <div v-if="!checked" class="action-row">
+          <button class="next" :disabled="!typed.trim()" @click="checkText">Kiểm tra</button>
+        </div>
+      </template>
+
+      <!-- CÂU TRẮC NGHIỆM -->
+      <template v-else>
+        <h2 class="question">{{ current.q }}</h2>
+        <div class="options">
+          <div
+            v-for="(o, i) in current.opts"
+            :key="i"
+            class="option"
+            :style="{ background: optStyle(i).bg, color: optStyle(i).color, borderColor: optStyle(i).border }"
+            @click="select(i)"
+          >
+            <span class="mark">{{ optStyle(i).mark }}</span>
+            {{ o }}
+          </div>
+        </div>
+      </template>
+
       <div v-if="answered" class="explain-row">
         <div class="explain">💡 {{ current.ex }}</div>
         <button class="next" @click="next">{{ isLast ? 'Xem kết quả' : 'Câu tiếp' }} →</button>
@@ -172,6 +239,15 @@ watch(() => props.questions, restart, { immediate: true })
   box-shadow: 0 18px 50px rgba(108, 92, 231, 0.1);
   max-width: 680px;
   margin: 0 auto;
+}
+/* Nhúng trong mục ngữ pháp: bỏ khung thẻ để không lồng thẻ-trong-thẻ. */
+.quiz.embedded {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  max-width: none;
+  margin: 0;
 }
 .result {
   text-align: center;
@@ -307,6 +383,69 @@ watch(() => props.questions, restart, { immediate: true })
   justify-content: center;
   font-size: 13px;
   flex: none;
+}
+/* câu nhập chữ */
+.qtype {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+  background: rgba(108, 92, 231, 0.1);
+  color: var(--purple);
+}
+.qtype.error {
+  background: rgba(255, 107, 107, 0.12);
+  color: #e04848;
+}
+.question .wrong {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 107, 107, 0.6);
+  color: #6a6a82;
+}
+.answer-input {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(108, 92, 231, 0.22);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.answer-input:focus {
+  border-color: var(--purple);
+}
+.answer-input.ok {
+  border-color: #00d68f;
+  background: rgba(0, 214, 143, 0.06);
+}
+.answer-input.bad {
+  border-color: #ff6b6b;
+  background: rgba(255, 90, 90, 0.05);
+}
+.verdict-line {
+  margin-top: 12px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #e04848;
+}
+.verdict-line.ok {
+  color: #00a86f;
+}
+.action-row {
+  margin-top: 16px;
+}
+.next:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.next:disabled:hover {
+  transform: none;
 }
 .explain-row {
   margin-top: 20px;

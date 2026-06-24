@@ -24,6 +24,10 @@ const XP_PER_WEEK = 150 // thưởng thêm khi xong trọn 1 tuần
 const XP_QUIZ_PASS = 100 // thưởng khi LẦN ĐẦU đạt một bài kiểm tra
 const PASS_PCT = 0.7 // ngưỡng đạt mặc định (70%)
 const STORAGE_KEY = 'devleap:user:v2'
+// Tùy chọn hội thoại AI + từ đánh dấu sao: chỉ lưu LOCAL (không đồng bộ cloud để
+// khỏi phải thêm cột mới ở bảng `progress`).
+const CONVO_KEY = 'devleap:convo:v1'
+const DEFAULT_CONVO = { persona: 'cotnha' }
 const PUSH_DEBOUNCE_MS = 1200
 
 const dayKey = (week, day) => `${week}:${day}`
@@ -134,6 +138,14 @@ export const useUserStore = defineStore('user', {
     // tải lại không mất tiến độ.
     shadowingScores: {},
 
+    // bài tập VIẾT làm tại bài (vd "Viết 10 câu…"), khóa theo "course:week:day":
+    // { [key]: { text, done, at } }. Lưu cục bộ (localStorage) để không mất bài viết
+    // và để khóa tiến độ; chưa đẩy lên cloud nên không cần đổi schema bảng progress.
+    writings: {},
+
+    // tùy chọn chế độ hội thoại (hiện chỉ có persona lời phê) — chỉ local.
+    convoPrefs: { ...DEFAULT_CONVO },
+
     // —— đồng bộ cloud ——
     cloudUserId: null, // id user khi đã đăng nhập; null = chế độ khách
     syncStatus: 'idle', // 'idle' | 'syncing' | 'synced' | 'error'
@@ -159,9 +171,20 @@ export const useUserStore = defineStore('user', {
     quizOf: (s) => (course, scope) => s.quizScores[`${course}:${scope}`] || null,
     /** Đã đạt một bài kiểm tra chưa? */
     quizPassed: (s) => (course, scope) => !!s.quizScores[`${course}:${scope}`]?.passed,
-    /** Số bài kiểm tra đã đạt của một khóa (để hiện huy hiệu/tiến độ). */
+    /** Số bài kiểm tra đã đạt của một khóa (để hiện huy hiệu/tiến độ).
+     *  Bỏ qua khóa "gday:" — đó là cổng luyện ngữ pháp theo ngày, không phải bài kiểm tra. */
     quizPassedCount: (s) => (course) =>
-      Object.entries(s.quizScores).filter(([k, v]) => k.startsWith(`${course}:`) && v.passed).length,
+      Object.entries(s.quizScores).filter(
+        ([k, v]) => k.startsWith(`${course}:`) && !k.includes(':gday:') && v.passed,
+      ).length,
+    /** Đã ĐẠT cổng luyện ngữ pháp của một ngày chưa? Dùng để khóa/mở ngày kế.
+     *  Khóa lưu dạng "course:gday:week:day" trong cùng cột quizScores (đồng bộ sẵn). */
+    grammarDayPassed: (s) => (course, week, day) =>
+      !!s.quizScores[`${course}:gday:${week}:${day}`]?.passed,
+    /** Bài viết của một ngày (null nếu chưa viết). Dùng: user.writingOf('ielts',w,d). */
+    writingOf: (s) => (course, week, day) => s.writings[`${course}:${week}:${day}`] || null,
+    /** Đã NỘP xong bài viết của một ngày chưa? (dùng để khóa hoàn thành buổi) */
+    writingDone: (s) => (course, week, day) => !!s.writings[`${course}:${week}:${day}`]?.done,
     /** Danh sách từ đã lưu (mảng thẻ), xếp theo thứ tự lưu (cũ trước). */
     savedWordList: (s) =>
       Object.values(s.savedWords).sort((a, b) => ((a.savedAt || '') < (b.savedAt || '') ? -1 : 1)),
@@ -296,6 +319,50 @@ export const useUserStore = defineStore('user', {
     },
 
     /**
+     * Ghi nhận kết quả CỔNG luyện ngữ pháp theo ngày (điền chỗ trống / sửa câu).
+     * Khác recordQuiz: KHÔNG thưởng huy hiệu/XP đạt-bài (XP đã cộng theo từng câu
+     * đúng ở chế độ practice); chỉ ghi trạng thái đạt để mở khóa ngày kế tiếp.
+     * Trạng thái `passed` là "dính" — đã đạt thì giữ, làm lại không mất.
+     * @returns {boolean} đã đạt (tích lũy) hay chưa.
+     */
+    recordGrammarDay(course, week, day, correct, total, threshold = PASS_PCT) {
+      if (!course || !total) return false
+      const key = `${course}:gday:${week}:${day}`
+      const pct = Math.round((correct / total) * 100)
+      const prev = this.quizScores[key] || null
+      const keepNew = !prev || pct > prev.pct
+      this.quizScores[key] = {
+        best: keepNew ? correct : prev.best,
+        total: keepNew ? total : prev.total,
+        pct: keepNew ? pct : prev.pct,
+        attempts: (prev?.attempts || 0) + 1,
+        passed: !!prev?.passed || pct >= threshold * 100,
+        lastAt: ymd(new Date()),
+      }
+      this.bumpStreak()
+      this.persist()
+      return this.quizScores[key].passed
+    },
+
+    /**
+     * Lưu bài tập viết của một ngày (text + trạng thái đã nộp + kết quả AI chữa).
+     * Gọi khi gõ (lưu nháp) và khi AI chữa xong (done=true, kèm review). `done`
+     * là "dính" — đã xong thì giữ.
+     */
+    saveWriting(course, week, day, text, done = false, review = undefined) {
+      if (!course) return
+      const key = `${course}:${week}:${day}`
+      const prev = this.writings[key] || null
+      this.writings[key] = {
+        text: text ?? prev?.text ?? '',
+        done: !!prev?.done || done,
+        review: review !== undefined ? review : prev?.review || null, // kết quả AI chữa bài
+        at: ymd(new Date()),
+      }
+      this.persist()
+    },
+
+    /**
      * Lưu một từ vào danh sách cá nhân (vd khi đang chat với AI).
      * @param {object} card  thẻ từ vựng (term + ipa/vi/ex/cat/srsId) — thường
      *   dựng sẵn bằng `cardsFromTerms([term], 'saved')[0]`; có thể kèm `context`.
@@ -371,6 +438,7 @@ export const useUserStore = defineStore('user', {
         quizScores: this.quizScores,
         savedWords: this.savedWords,
         shadowingScores: this.shadowingScores,
+        writings: this.writings,
       }
     },
 
@@ -387,6 +455,7 @@ export const useUserStore = defineStore('user', {
       this.savedWords = s.savedWords && typeof s.savedWords === 'object' ? s.savedWords : {}
       this.shadowingScores =
         s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {}
+      this.writings = s.writings && typeof s.writings === 'object' ? s.writings : {}
     },
 
     persist() {
@@ -402,11 +471,35 @@ export const useUserStore = defineStore('user', {
     hydrate() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY)
-        if (!raw) return
-        this.applySnapshot(JSON.parse(raw))
+        if (raw) this.applySnapshot(JSON.parse(raw))
       } catch {
         /* ignore */
       }
+      // Nạp tùy chọn hội thoại (local-only).
+      try {
+        const raw = localStorage.getItem(CONVO_KEY)
+        if (raw) {
+          const c = JSON.parse(raw) || {}
+          this.convoPrefs = { ...DEFAULT_CONVO, ...(c.convoPrefs || {}) }
+        }
+      } catch {
+        /* ignore */
+      }
+    },
+
+    /** Lưu phần hội thoại (chỉ local). */
+    persistConvo() {
+      try {
+        localStorage.setItem(CONVO_KEY, JSON.stringify({ convoPrefs: this.convoPrefs }))
+      } catch {
+        /* ignore */
+      }
+    },
+
+    /** Cập nhật một phần tùy chọn hội thoại. Dùng: user.setConvoPrefs({ persona }). */
+    setConvoPrefs(patch = {}) {
+      this.convoPrefs = { ...this.convoPrefs, ...patch }
+      this.persistConvo()
     },
 
     // ——————————————————————— đồng bộ cloud ———————————————————————
@@ -527,5 +620,26 @@ function mergeSnapshots(local, remote) {
     quizScores: mergeQuiz(local.quizScores, remote.quizScores),
     savedWords: mergeSaved(local.savedWords, remote.savedWords),
     shadowingScores: mergeShadowing(local.shadowingScores, remote.shadowingScores),
+    writings: mergeWritings(local.writings, remote.writings),
   }
+}
+
+// Hợp nhất bài viết: mỗi ngày giữ bản mới hơn (theo `at`), OR trạng thái đã nộp.
+function mergeWritings(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  for (const [k, v] of Object.entries(b || {})) {
+    const cur = out[k]
+    if (!cur) {
+      out[k] = v
+      continue
+    }
+    const keepNew = (v.at || '') > (cur.at || '')
+    out[k] = {
+      text: keepNew ? v.text : cur.text,
+      done: !!(cur.done || v.done),
+      review: (keepNew ? v.review : cur.review) || cur.review || v.review || null,
+      at: laterDate(cur.at, v.at),
+    }
+  }
+  return out
 }

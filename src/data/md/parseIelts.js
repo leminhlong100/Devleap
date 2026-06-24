@@ -16,6 +16,7 @@
  * nên getIeltsDay (ở courseIelts.js) ghép checklist của ngày + ngữ cảnh tuần.
  */
 import { parseQuiz } from './quiz'
+import { buildGrammarDrills } from './grammarDrills'
 import { md } from './render'
 
 /** Tách theo heading cấp `level` (## hoặc ###), bỏ qua code fence. */
@@ -110,6 +111,49 @@ function parseThemeExtras(lines) {
   return { phrases, sentences }
 }
 
+/**
+ * Bỏ khỏi phần lý thuyết hiển thị những phần đã chuyển thành HOẠT ĐỘNG làm tại chỗ:
+ *  - bảng "Lỗi thường gặp" (Câu sai | Câu đúng) -> thành bài tập điền/sửa câu.
+ *  - dòng "Bài tập ngắn:" -> thành ô viết ngay trong bài (xem extractWritingTask).
+ * Giữ nguyên các phần còn lại (mẫu câu, câu đúng, nguyên tắc sửa lỗi…).
+ */
+function stripErrorTable(lines) {
+  const out = []
+  let dropping = false
+  for (const raw of lines) {
+    const t = raw.trim()
+    if (/^\*\*.*lỗi thường gặp.*\*\*/i.test(t)) {
+      dropping = true // bỏ nhãn + bảng ngay sau nó
+      continue
+    }
+    if (/^\*\*\s*bài tập ngắn/i.test(t)) continue // chuyển thành ô viết tại chỗ
+    if (dropping) {
+      if (!t || t.startsWith('|')) continue // bỏ dòng trống & các hàng bảng
+      dropping = false // hết bảng -> giữ lại các dòng còn lại
+    }
+    out.push(raw)
+  }
+  return out
+}
+
+/**
+ * Lấy đề "Bài tập ngắn:" của một điểm ngữ pháp (để cho viết ngay tại bài).
+ * Bỏ yêu cầu "gạch chân chủ ngữ/động từ" — không thực hiện được trong ô viết;
+ * thay vào đó AI sẽ tự gạch chân chủ ngữ/động từ trong câu đã sửa (xem review).
+ */
+function extractWritingTask(lines) {
+  for (const raw of lines) {
+    const m = /^\s*\*\*\s*bài tập ngắn:?\s*\*\*\s*(.+)$/i.exec(raw)
+    if (m) {
+      return m[1]
+        .replace(/\*\*/g, '')
+        .replace(/\s*Gạch chân[^.]*\.?/i, '') // bỏ "Gạch chân chủ ngữ … động từ … lần."
+        .trim()
+    }
+  }
+  return ''
+}
+
 /** Checklist của một ngày: các dòng "- [ ] …". */
 function parseChecklist(lines) {
   const items = []
@@ -156,7 +200,12 @@ export function parseIeltsWeek(raw) {
       goalsHtml = md(top.join('\n'))
     } else if (/Ngữ pháp/i.test(h)) {
       for (const s of splitByLevel(sec.lines, 3)) {
-        grammar.push({ title: s.heading, html: md(s.lines.join('\n')) })
+        grammar.push({
+          title: s.heading,
+          html: md(stripErrorTable(s.lines).join('\n')),
+          drills: buildGrammarDrills(s.lines),
+          writing: extractWritingTask(s.lines),
+        })
       }
     } else if (/từ vựng|Phòng từ vựng/i.test(h)) {
       for (const s of splitByLevel(sec.lines, 3)) {

@@ -434,6 +434,72 @@ describe('user store — recordQuiz (bài kiểm tra cuối tuần/khóa)', () =
   })
 })
 
+describe('user store — recordGrammarDay (cổng luyện ngữ pháp theo ngày)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('đạt ≥70% -> ghi passed, KHÔNG thưởng huy hiệu/XP đạt-bài', () => {
+    const s = useUserStore()
+    const passed = s.recordGrammarDay('ielts', 1, 1, 3, 3, 0.7) // 100%
+    expect(passed).toBe(true)
+    expect(s.grammarDayPassed('ielts', 1, 1)).toBe(true)
+    expect(s.badges).toBe(0) // khác bài kiểm tra: không thưởng huy hiệu
+    expect(s.xp).toBe(0) // XP đã cộng theo từng câu ở practice, không cộng lại đây
+  })
+
+  it('dưới ngưỡng -> chưa đạt; trạng thái đạt là "dính" qua các lần làm', () => {
+    const s = useUserStore()
+    expect(s.recordGrammarDay('ielts', 1, 2, 1, 3, 0.7)).toBe(false) // 33%
+    expect(s.grammarDayPassed('ielts', 1, 2)).toBe(false)
+    s.recordGrammarDay('ielts', 1, 2, 3, 3, 0.7) // đạt
+    s.recordGrammarDay('ielts', 1, 2, 0, 3, 0.7) // làm lại kém -> vẫn giữ đạt
+    expect(s.grammarDayPassed('ielts', 1, 2)).toBe(true)
+  })
+
+  it('cổng ngày KHÔNG bị tính vào quizPassedCount (không phải bài kiểm tra)', () => {
+    const s = useUserStore()
+    s.recordGrammarDay('ielts', 1, 1, 3, 3, 0.7)
+    s.recordQuiz('ielts', 'week:1', 8, 10) // 1 bài kiểm tra thật đã đạt
+    expect(s.quizPassedCount('ielts')).toBe(1)
+  })
+})
+
+describe('user store — saveWriting (bài tập viết tại bài)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('lưu nháp rồi nộp; trạng thái nộp là "dính"', () => {
+    const s = useUserStore()
+    s.saveWriting('ielts', 1, 1, 'Câu một. Câu hai.', false)
+    expect(s.writingDone('ielts', 1, 1)).toBe(false)
+    expect(s.writingOf('ielts', 1, 1).text).toContain('Câu một')
+    s.saveWriting('ielts', 1, 1, 'Câu một. Câu hai.', true) // nộp
+    s.saveWriting('ielts', 1, 1, '', false) // sửa tiếp -> vẫn giữ đã nộp
+    expect(s.writingDone('ielts', 1, 1)).toBe(true)
+  })
+
+  it('bền hoá xuống localStorage', () => {
+    const s = useUserStore()
+    s.saveWriting('ielts', 2, 3, 'My day.', true)
+    const saved = JSON.parse(localStorage.getItem('devleap:user:v2'))
+    expect(saved.writings['ielts:2:3']).toMatchObject({ done: true, text: 'My day.' })
+  })
+
+  it('lưu & giữ kết quả AI chữa bài (review)', () => {
+    const s = useUserStore()
+    const review = { cefr: 'A2', score: 60, summary: 'ok', lines: [{ original: 'a', corrected: 'A', ok: false, note: 'x' }] }
+    s.saveWriting('ielts', 1, 1, 'a', true, review)
+    expect(s.writingOf('ielts', 1, 1).review.score).toBe(60)
+    // sửa nháp sau đó (không truyền review) vẫn giữ review cũ
+    s.saveWriting('ielts', 1, 1, 'a b', false)
+    expect(s.writingOf('ielts', 1, 1).review.cefr).toBe('A2')
+  })
+})
+
 describe('user store — savedWords (từ vựng lưu khi chat AI)', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

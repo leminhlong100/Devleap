@@ -28,6 +28,28 @@ describe('parseIeltsWeek() — fixtures thật', () => {
     expect(w.grammar[0].html).toContain('<')
   })
 
+  it('ẩn bảng "Lỗi thường gặp" khỏi lý thuyết nhưng vẫn sinh bài tập', () => {
+    for (const f of files) {
+      const w = parseIeltsWeek(read(f))
+      for (const g of w.grammar) {
+        // Bảng đáp án không còn lộ trong phần hiển thị...
+        expect(g.html.toLowerCase()).not.toContain('lỗi thường gặp')
+        // ...và mỗi điểm ngữ pháp là một mảng bài tập (có thể rỗng nếu không có bảng).
+        expect(Array.isArray(g.drills)).toBe(true)
+      }
+    }
+    // Tuần 1 chắc chắn có bài tập (3 điểm đều có bảng lỗi).
+    const w1 = parseIeltsWeek(read('NenTang_Tuan1.md'))
+    expect(w1.grammar[0].drills.length).toBeGreaterThan(0)
+  })
+
+  it('rút "Bài tập ngắn" thành đề bài viết, không để lẫn trong lý thuyết', () => {
+    const w1 = parseIeltsWeek(read('NenTang_Tuan1.md'))
+    expect(w1.grammar[0].writing).toContain('Viết')
+    // đề bài viết không còn nằm trong HTML lý thuyết (đã chuyển thành ô viết)
+    for (const g of w1.grammar) expect(g.html.toLowerCase()).not.toContain('bài tập ngắn')
+  })
+
   it('phòng từ vựng rút được danh sách "Từ chính"', () => {
     const w = parseIeltsWeek(read('NenTang_Tuan1.md'))
     const withWords = w.vocabThemes.find((t) => t.words.length > 0)

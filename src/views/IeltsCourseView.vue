@@ -9,8 +9,10 @@ import { computeIeltsWeeks, computeIeltsProgress } from '@/data/courseIelts'
 const router = useRouter()
 const user = useUserStore()
 
-const weeks = computed(() => computeIeltsWeeks(user.completed.ielts))
-const prog = computed(() => computeIeltsProgress(user.completed.ielts))
+// Tuần chỉ "xong" khi đã đạt bài kiểm tra tuần -> mới mở tuần kế (pass hết mới qua).
+const weekPassed = (num) => user.quizPassed('ielts', `week:${num}`)
+const weeks = computed(() => computeIeltsWeeks(user.completed.ielts, weekPassed))
+const prog = computed(() => computeIeltsProgress(user.completed.ielts, weekPassed))
 const continueLabel = computed(() =>
   prog.value.allDone
     ? '🎉 Đã hoàn thành lộ trình'
