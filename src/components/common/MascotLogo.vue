@@ -1,6 +1,6 @@
 <script setup>
 // Logo Devleap (ảnh PNG). size='sm' (header), 'lg' (hero/footer).
-import logoUrl from '@/images/LogoDevleap.png'
+import logoUrl from '@/images/favicon.png'
 
 defineProps({
   width: { type: Number, default: 44 },

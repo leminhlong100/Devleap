@@ -57,7 +57,7 @@ async function signOut() {
       </button>
 
       <RouterLink :to="{ name: 'home' }" class="logo">
-        <MascotLogo :width="80" :height="80" uid="hdr" />
+        <MascotLogo :width="50" :height="50" uid="hdr" />
         <span class="logo-text">Dev<span class="brand-text">leap</span></span>
       </RouterLink>
 
