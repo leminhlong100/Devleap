@@ -48,6 +48,31 @@
 
   --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --mono: Consolas, 'SFMono-Regular', ui-monospace, monospace;
+
+  /* ----- Alias token kiểu CDS -> token thật của Devleap -----
+     Để các component buổi học mới (Flashcard, Nghe, Phát âm, Đặt câu, Sổ lỗi)
+     viết theo quy ước --surface-*/--text-*/--border-* vẫn render đúng. */
+  --surface-2: var(--surface);
+  --surface-1: #fbfbfe;
+  --surface-0: var(--bg);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+  --text-muted: var(--muted-2);
+  --text-accent: var(--purple);
+  --bg-accent: var(--purple-soft);
+  --border: var(--line);
+  --border-strong: rgba(108, 92, 231, 0.22);
+  --border-accent: rgba(108, 92, 231, 0.4);
+  --fill-accent: #6c5ce7;
+  --on-accent: #ffffff;
+  --bg-success: rgba(0, 214, 143, 0.12);
+  --text-success: #00966a;
+  --border-success: rgba(0, 214, 143, 0.4);
+  --bg-danger: rgba(255, 107, 107, 0.1);
+  --text-danger: #e04848;
+  --border-danger: rgba(255, 107, 107, 0.4);
+  --bg-warning: rgba(255, 176, 32, 0.14);
+  --text-warning: #b5790b;
 }
 
 * {
@@ -166,4 +191,112 @@ svg {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* ============================================================
+   Lesson UI — class dùng chung cho các component buổi học.
+   Định nghĩa global để component con (InlineFlashcards, ListeningDictation,
+   PronunciationDrill, SentenceBankPractice, ErrorLedger…) render đồng nhất
+   mà không phụ thuộc style scoped của view cha. Các view có bản scoped riêng
+   (độ ưu tiên cao hơn) vẫn giữ nguyên giao diện.
+   ============================================================ */
+.step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eyebrow {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--muted-2);
+  text-transform: uppercase;
+}
+.eyebrow.green {
+  color: #00a86f;
+}
+.step-title {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin-top: 5px;
+}
+.wt-badge {
+  background: rgba(0, 150, 106, 0.1);
+  color: #00966a;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.wt-badge.ok {
+  background: rgba(0, 214, 143, 0.16);
+  color: #00a86f;
+}
+.quiz-intro {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.sub-head {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 24px;
+}
+.green-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  padding: 13px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00d68f, #00a86f);
+  box-shadow: 0 12px 26px rgba(0, 214, 143, 0.3);
+  white-space: nowrap;
+  transition: transform 0.18s;
+}
+.green-btn:hover {
+  transform: translateY(-2px);
+}
+.green-btn.locked {
+  background: #c4d8cf;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.green-btn.locked:hover {
+  transform: none;
+}
+.ghost-btn {
+  margin-top: 18px;
+  border: 1px solid rgba(0, 214, 143, 0.3);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: #00966a;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: #fff;
+  transition: background 0.15s;
+}
+.ghost-btn:hover {
+  background: #e6fbf2;
+}
+.gate-line {
+  margin-top: 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #8a8aa0;
+  background: #f1f1f6;
+  border-radius: 12px;
+  padding: 11px 15px;
+}
+.gate-line.ok {
+  color: #00966a;
+  background: rgba(0, 214, 143, 0.1);
 }

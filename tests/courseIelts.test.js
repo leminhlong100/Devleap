@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getIeltsDay, getIeltsWeek, computeIeltsStatuses } from '@/data/courseIelts'
+import { getIeltsDay, getIeltsWeek, computeIeltsStatuses, assignWeekGrammar } from '@/data/courseIelts'
 
 describe('getIeltsDay() — ngữ pháp chia theo ngày', () => {
   const week = getIeltsWeek(1)
@@ -43,10 +43,73 @@ describe('getIeltsDay() — ngữ pháp chia theo ngày', () => {
     }
   })
 
+  it('ngày học MỚI có 6–10 câu luyện (cổng ≥70% mới có ý nghĩa)', () => {
+    for (let n = 1; n <= totalDays; n++) {
+      const d = getIeltsDay(1, n)
+      if (d.grammarMode !== 'new') continue
+      expect(d.grammarDrills.length, `ngày ${n} (${d.grammar[0].title}) chỉ có ${d.grammarDrills.length} câu`).toBeGreaterThanOrEqual(6)
+      expect(d.grammarDrills.length).toBeLessThanOrEqual(10)
+    }
+  })
+
   it('đề bài viết KHÔNG còn yêu cầu "gạch chân" (không làm được trong ô viết)', () => {
     for (let n = 1; n <= totalDays; n++) {
       expect(getIeltsDay(1, n).writingTask.prompt.toLowerCase()).not.toContain('gạch chân')
     }
+  })
+})
+
+describe('assignWeekGrammar() — gán ngữ pháp theo KẾ HOẠCH NGÀY, không theo vị trí', () => {
+  it('Tuần 4: tiêu đề ngày khớp đúng nội dung ngữ pháp (dù mục NP xếp khác thứ tự dạy)', () => {
+    // Mục ngữ pháp Tuần 4 xếp: Present Continuous, Past Simple, Future.
+    // Nhưng lịch học dạy Past simple trước -> nội dung phải đi theo tiêu đề ngày.
+    const day1 = getIeltsDay(4, 1) // "Past simple"
+    const day2 = getIeltsDay(4, 2) // "Present continuous"
+    expect(day1.grammarMode).toBe('new')
+    expect(day1.grammar[0].title.toLowerCase()).toContain('past simple')
+    expect(day2.grammar[0].title.toLowerCase()).toContain('present continuous')
+  })
+
+  it('mỗi điểm ngữ pháp được DẠY MỚI đúng một ngày (không bỏ sót, không trùng)', () => {
+    for (const wk of [1, 3, 4, 7]) {
+      const week = getIeltsWeek(wk)
+      const plan = assignWeekGrammar(week)
+      const newIdx = plan.filter((s) => s.mode === 'new').map((s) => s.focusIdx)
+      expect(new Set(newIdx).size, `tuần ${wk} có điểm bị trùng/bỏ`).toBe(week.grammar.length)
+    }
+  })
+
+  it('Tuần 8 (không có mục "Ngữ pháp"): không vỡ, các ngày không có ngữ pháp', () => {
+    const week = getIeltsWeek(8)
+    expect(week.grammar.length).toBe(0)
+    const d = getIeltsDay(8, 1)
+    expect(d).toBeTruthy()
+    expect(d.grammar.length).toBe(0)
+  })
+})
+
+describe('buildWeekQuiz() — quiz tự luyện cuối tuần (tổng hợp, mới)', () => {
+  it('chỉ hiện ở BUỔI CUỐI và có câu hỏi', () => {
+    const w1 = getIeltsWeek(1)
+    const last = getIeltsDay(1, w1.days.length)
+    const notLast = getIeltsDay(1, 1)
+    expect(last.weekPracticeQuiz.length).toBeGreaterThan(0)
+    expect(last.weekPracticeQuiz.length).toBeLessThanOrEqual(16)
+    expect(notLast.weekPracticeQuiz).toHaveLength(0)
+  })
+
+  it('gồm cả NGỮ PHÁP (điền/sửa câu) lẫn TỪ VỰNG (trắc nghiệm)', () => {
+    const w1 = getIeltsWeek(1)
+    const q = getIeltsDay(1, w1.days.length).weekPracticeQuiz
+    expect(q.some((x) => x.type === 'cloze' || x.type === 'error')).toBe(true) // ngữ pháp
+    expect(q.some((x) => Array.isArray(x.opts))).toBe(true) // từ vựng trắc nghiệm
+  })
+
+  it('KHÁC quiz của buổi (không trùng nguyên xi tập câu hỏi)', () => {
+    const w1 = getIeltsWeek(1)
+    const week = getIeltsDay(1, w1.days.length).weekPracticeQuiz.map((x) => x.q)
+    const day1 = getIeltsDay(1, 1).quiz.map((x) => x.q)
+    expect(JSON.stringify(week)).not.toBe(JSON.stringify(day1))
   })
 })
 

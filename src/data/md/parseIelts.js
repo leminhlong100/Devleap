@@ -154,6 +154,56 @@ function extractWritingTask(lines) {
   return ''
 }
 
+/**
+ * Bóc các câu mẫu ĐÚNG dưới "**Câu đúng:**" của một điểm ngữ pháp — đây là
+ * chất liệu sạch để luyện NGHE (dictation), PHÁT ÂM và SHADOWING.
+ */
+function parseCorrectExamples(lines) {
+  const out = []
+  let collecting = false
+  for (const raw of lines) {
+    const t = raw.trim()
+    if (/^\*\*\s*câu đúng\s*:?\s*\*\*/i.test(t)) {
+      collecting = true
+      continue
+    }
+    if (collecting) {
+      if (/^\*\*/.test(t)) break // gặp nhãn kế tiếp -> dừng
+      const bm = /^[-*]\s+(.+)$/.exec(t)
+      if (bm) out.push(bm[1].replace(/\*\*/g, '').trim())
+      else if (t && !t.startsWith('|')) break
+    }
+  }
+  return out
+}
+
+/**
+ * Bóc "Ngân hàng luyện tập — 100 câu mở đầu": các dòng đánh số "1. I usually…".
+ * Đây là kho ĐẶT CÂU khổng lồ để luyện Production (nói/viết) — trước đây nằm im
+ * trong accordion. Trả về mảng câu mở đầu (giữ nguyên dấu "…"/"...").
+ */
+function parseSentenceBank(lines) {
+  const out = []
+  for (const raw of lines) {
+    const m = /^\s*\d+\.\s+(.+)$/.exec(raw)
+    if (m) {
+      const s = m[1].replace(/\*\*/g, '').trim()
+      if (s) out.push(s)
+    }
+  }
+  return out
+}
+
+/** Lấy giá trị một mục mục tiêu dạng "**Nhãn:** nội dung" trong phần Mục tiêu tuần. */
+function parseGoalField(lines, label) {
+  const re = new RegExp(`\\*\\*\\s*${label}\\s*:?\\s*\\*\\*\\s*(.+)`, 'i')
+  for (const l of lines) {
+    const m = re.exec(l)
+    if (m) return m[1].replace(/\*\*/g, '').trim()
+  }
+  return ''
+}
+
 /** Checklist của một ngày: các dòng "- [ ] …". */
 function parseChecklist(lines) {
   const items = []
@@ -182,9 +232,12 @@ export function parseIeltsWeek(raw) {
   const skills = []
   const lessonScripts = []
   let goalsHtml = ''
+  let goal = ''
+  let milestone = ''
   let rhythm = []
   let quizHtml = ''
   let weekPracticeHtml = ''
+  let sentenceBank = []
 
   for (const sec of h2) {
     const h = sec.heading
@@ -199,6 +252,8 @@ export function parseIeltsWeek(raw) {
         top.push(l)
       }
       goalsHtml = md(top.join('\n'))
+      goal = parseGoalField(top, 'Mục tiêu tuần')
+      milestone = parseGoalField(top, 'Mốc kiểm tra')
     } else if (/Ngữ pháp/i.test(h)) {
       for (const s of splitByLevel(sec.lines, 3)) {
         grammar.push({
@@ -206,6 +261,7 @@ export function parseIeltsWeek(raw) {
           html: md(stripErrorTable(s.lines).join('\n')),
           drills: buildGrammarDrills(s.lines),
           writing: extractWritingTask(s.lines),
+          examples: parseCorrectExamples(s.lines), // câu đúng -> nghe/phát âm/shadowing
         })
       }
     } else if (/từ vựng|Phòng từ vựng/i.test(h)) {
@@ -214,7 +270,10 @@ export function parseIeltsWeek(raw) {
         vocabThemes.push({ title: s.heading, words: parseThemeWords(s.lines), phrases: extras.phrases, sentences: extras.sentences, html: md(s.lines.join('\n')) })
       }
     } else if (/Kỹ năng|Khung mẫu|luyện tập/i.test(h)) {
-      skills.push({ title: h.replace(/^[\p{Extended_Pictographic}️‍\s]+/u, '').trim(), html: md(sec.lines.join('\n')) })
+      // "Ngân hàng … câu mở đầu" -> kho đặt câu (Production), không nhồi vào accordion.
+      const bank = parseSentenceBank(sec.lines)
+      if (bank.length >= 10) sentenceBank = bank
+      else skills.push({ title: h.replace(/^[\p{Extended_Pictographic}️‍\s]+/u, '').trim(), html: md(sec.lines.join('\n')) })
     } else if (/Quiz/i.test(h)) {
       quizHtml = md(sec.lines.join('\n'))
       // Phần TỰ LUYỆN cuối tuần = các tiểu mục Part A/B/C + đáp án (bỏ "Quiz Nhanh"
@@ -246,5 +305,5 @@ export function parseIeltsWeek(raw) {
     }
   }
 
-  return { ...meta, intro: md(intro), goalsHtml, rhythm, grammar, vocabThemes, skills, days, lessonScripts, quizHtml, weekPracticeHtml, weekQuiz }
+  return { ...meta, intro: md(intro), goalsHtml, goal, milestone, rhythm, grammar, vocabThemes, skills, days, lessonScripts, quizHtml, weekPracticeHtml, weekQuiz, sentenceBank }
 }

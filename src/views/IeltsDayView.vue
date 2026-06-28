@@ -7,7 +7,16 @@ import VocabCard from '@/components/day/VocabCard.vue'
 import AiChat from '@/components/day/AiChat.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
+import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
+import ErrorLedger from '@/components/day/ErrorLedger.vue'
+import ListeningDictation from '@/components/day/ListeningDictation.vue'
+import ReadingComprehension from '@/components/day/ReadingComprehension.vue'
+import ListeningComprehension from '@/components/day/ListeningComprehension.vue'
+import PronunciationDrill from '@/components/day/PronunciationDrill.vue'
+import SentenceBankPractice from '@/components/day/SentenceBankPractice.vue'
+import VoiceRecorder from '@/components/day/VoiceRecorder.vue'
 import { getIeltsDay } from '@/data/courseIelts'
+import { planFromChecklist } from '@/lib/dayPlan'
 import { speak } from '@/lib/speak'
 import { correctWriting } from '@/lib/aiChat'
 
@@ -21,13 +30,27 @@ const user = useUserStore()
 
 const d = computed(() => getIeltsDay(props.week, props.day))
 
+// —— KẾ HOẠCH BUỔI: chỉ hiện những khối mà checklist của ngày thật sự nhắc đến ——
+// Mục tiêu: hết "quá tải" (12 khối/ngày) bằng cách bám đúng nhịp tác giả đã thiết kế
+// cho từng ngày (Ngày 1 = ngữ pháp + viết + ghi âm; ngày từ vựng mới mở phòng từ…).
+// Không có checklist -> hiện đầy đủ (an toàn ngược). Logic ở lib/dayPlan (test riêng).
+const plan = computed(() => planFromChecklist(d.value?.checklist || []))
+
 // Tiến độ thật: số buổi đã hoàn thành trong tuần & trạng thái buổi hiện tại.
 const isDone = (n) => !!d.value && user.isDone('ielts', d.value.week, n)
 const done = computed(() => !!d.value && isDone(d.value.n))
 
 // —— Cổng luyện ngữ pháp: phải ĐẠT bài tập (≥70%) mới hoàn thành buổi & mở buổi kế ——
 const grammarDrills = computed(() => d.value?.grammarDrills || [])
-const grammarGateNeeded = computed(() => grammarDrills.value.length > 0)
+// Cổng ngữ pháp CHỈ bắt buộc ở NGÀY HỌC MỚI điểm đó. Ngày ôn/tổng hợp: bài tập là
+// tự chọn (không bắt làm lại y hệt). Buổi cuối dùng "quiz tổng hợp" thay cho khối lẻ.
+const grammarGateNeeded = computed(
+  () => plan.value.grammar && grammarDrills.value.length > 0 && d.value?.grammarMode === 'new',
+)
+// Có hiện khối "Bài tập ngữ pháp" lẻ không? Ẩn ở buổi cuối để khỏi trùng quiz tổng hợp.
+const showGrammarDrills = computed(
+  () => plan.value.grammar && grammarDrills.value.length > 0 && d.value?.grammarMode !== 'final',
+)
 const grammarPassed = computed(
   () => !!d.value && (!grammarGateNeeded.value || user.grammarDayPassed('ielts', d.value.week, d.value.n)),
 )
@@ -37,7 +60,7 @@ function onGrammarComplete(r) {
 
 // —— Bài tập VIẾT làm ngay tại bài (vd "Viết 10 câu…") ——
 const writingTask = computed(() => d.value?.writingTask || null)
-const writingNeeded = computed(() => !!writingTask.value)
+const writingNeeded = computed(() => plan.value.writing && !!writingTask.value)
 const writingText = ref('')
 // Nạp bản nháp đã lưu khi đổi buổi.
 watch(
@@ -71,6 +94,24 @@ const reviewError = ref('')
 
 function saveWritingDraft() {
   if (d.value) user.saveWriting('ielts', d.value.week, d.value.n, writingText.value, false)
+}
+
+// —— GIÀN GIÁO cho bài viết: người mới không phải viết từ con số 0 ——
+// Mẫu để bắt chước = câu đúng của ngữ pháp hôm nay; khung câu = kho câu mở đầu.
+const writingModel = computed(() => (d.value?.grammarExamples || []).slice(0, 3))
+const writingFrames = computed(() => (d.value?.sentenceBank || []).slice(0, 6))
+const LINK_WORDS = ['and', 'but', 'because', 'so', 'also', 'then']
+// Chèn một câu/khung xuống dòng mới trong ô viết (rồi học viên sửa cho đúng với mình).
+function insertWriting(text) {
+  const clean = String(text || '').replace(/[….]+\s*$/, '').trim()
+  const cur = writingText.value
+  writingText.value = !cur ? clean : cur.replace(/\s*$/, '') + '\n' + clean
+  saveWritingDraft()
+}
+// Chèn từ nối vào cuối câu đang viết.
+function appendWord(w) {
+  writingText.value = (writingText.value.replace(/\s*$/, '') + ' ' + w + ' ').replace(/[ \t]+/g, ' ')
+  saveWritingDraft()
 }
 // Nộp bài -> nhờ AI chữa từng câu; chữa xong mới tính là hoàn thành bài viết.
 async function askAiCorrect() {
@@ -129,52 +170,23 @@ function svHtml(l) {
   return out
 }
 
-// —— Cổng QUIZ TỪ VỰNG: phải ĐẠT ≥70% mới hoàn thành buổi ——
+// —— QUIZ TỪ VỰNG: ÔN NHANH, KHÔNG còn là cổng bắt buộc ——
+// Trước đây quiz từ vựng chặn hoàn thành buổi kể cả ngày trọng tâm là ngữ pháp.
+// Nay chỉ là luyện thêm cho nhớ (vẫn cộng XP/ghi điểm), không khóa qua buổi.
 const vocabQuiz = computed(() => d.value?.quiz || [])
-const vocabGateNeeded = computed(() => vocabQuiz.value.length > 0)
-const vocabPassed = computed(
-  () => !!d.value && (!vocabGateNeeded.value || user.vocabDayPassed('ielts', d.value.week, d.value.n)),
-)
+const vocabPassed = computed(() => !!d.value && user.vocabDayPassed('ielts', d.value.week, d.value.n))
 function onVocabComplete(r) {
   if (d.value) user.recordVocabDay('ielts', d.value.week, d.value.n, r.score, r.total, 0.7)
 }
 
-// —— CHECKLIST tương tác: tick được, lưu lại, phải TICK HẾT mới hoàn thành buổi ——
-const checkState = ref([])
-watch(
-  d,
-  (cur) => {
-    if (!cur) {
-      checkState.value = []
-      return
-    }
-    const saved = user.checklistState('ielts', cur.week, cur.n)
-    checkState.value = cur.checklist.map((_, i) => !!saved[i])
-  },
-  { immediate: true },
-)
-function toggleCheck(i) {
-  if (done.value) return // đã hoàn thành buổi thì khóa, tránh sửa nhầm
-  checkState.value[i] = !checkState.value[i]
-  if (d.value) user.setChecklist('ielts', d.value.week, d.value.n, checkState.value)
-}
-const checklistNeeded = computed(() => !!d.value && d.value.checklist.length > 0)
-const checklistCount = computed(() => checkState.value.filter(Boolean).length)
-const checklistDone = computed(
-  () => !checklistNeeded.value || (d.value && checklistCount.value >= d.value.checklist.length),
-)
-
-// Hoàn thành buổi: phải XONG TẤT CẢ phần có trên trang — luyện ngữ pháp, bài viết,
-// quiz từ vựng và checklist. Phần nào không có trên buổi thì tự bỏ qua (adaptive).
-const dayReady = computed(
-  () => grammarPassed.value && writingDone.value && vocabPassed.value && checklistDone.value,
-)
+// Hoàn thành buổi: phải XONG các HOẠT ĐỘNG có cổng trên trang — luyện ngữ pháp,
+// bài viết, quiz từ vựng. Phần nào không có trên buổi thì tự bỏ qua (adaptive).
+// (Đã bỏ checklist tự-tick: mỗi hoạt động đã là việc làm thật, không cần tick lại.)
+const dayReady = computed(() => grammarPassed.value && writingDone.value)
 // Nhãn nút "hoàn thành" theo cổng còn thiếu (ưu tiên trên xuống dưới).
 const nextGateLabel = computed(() => {
   if (!grammarPassed.value) return '🔒 Làm bài tập ngữ pháp trước'
   if (!writingDone.value) return '🔒 Nộp bài viết trước'
-  if (!vocabPassed.value) return '🔒 Làm quiz từ vựng trước'
-  if (!checklistDone.value) return '🔒 Tick hết checklist trước'
   return '✓ Đánh dấu hoàn thành'
 })
 
@@ -208,19 +220,28 @@ function unmark() {
 
 const agenda = computed(() => {
   if (!d.value) return []
+  const p = plan.value
   const a = []
-  if (d.value.checklist.length) a.push({ title: 'Việc cần làm hôm nay', meta: `${d.value.checklist.length} mục` })
-  if (d.value.grammar.length) {
+  // Thứ tự khớp với trang; chỉ liệt kê khối thực sự hiện trong buổi (theo kế hoạch ngày).
+  if (p.vocab && d.value.vocab.length) a.push({ title: 'Từ vựng buổi này', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
+  if (p.flashcards && d.value.vocab.length) a.push({ title: 'Nhớ nhanh từ', meta: 'lật thẻ · nhớ lại' })
+  if (p.grammar && d.value.grammar.length) {
     const label = d.value.grammarMode === 'new' ? 'Ngữ pháp hôm nay' : d.value.grammarMode === 'final' ? 'Tổng hợp ngữ pháp tuần' : 'Ôn tập ngữ pháp'
     a.push({ title: label, meta: `${d.value.grammar.length} điểm` })
   }
-  if (grammarDrills.value.length) a.push({ title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · bắt buộc đạt` })
-  if (writingTask.value) a.push({ title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
-  if (d.value.vocab.length) a.push({ title: 'Phòng từ vựng', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
-  if (d.value.skills?.length) a.push({ title: 'Bài giảng & khung mẫu', meta: `${d.value.skills.length} mục` })
-  if (d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
-  a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
-  if (d.value.quiz.length) a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · bắt buộc đạt` })
+  if (showGrammarDrills.value) a.push({ title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · ${grammarGateNeeded.value ? 'bắt buộc đạt' : 'tự chọn'}` })
+  if (d.value.reading) a.push({ title: 'Bài đọc hiểu', meta: `${d.value.reading.questions.length} câu hỏi` })
+  if (d.value.listening) a.push({ title: 'Bài nghe (tên & số)', meta: `${d.value.listening.questions.length} câu hỏi` })
+  if (p.reading && d.value.skills?.length) a.push({ title: 'Bài giảng & khung mẫu', meta: `${d.value.skills.length} mục` })
+  if (p.reading && d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
+  if (p.listening && listenSentences.value.length) a.push({ title: 'Luyện nghe', meta: `${listenSentences.value.length} câu nghe–chép` })
+  if (p.pronunciation && pronItems.value.length) a.push({ title: 'Luyện phát âm', meta: `${pronItems.value.length} từ · nghe → nói` })
+  if (recordingTask.value) a.push({ title: 'Ghi âm sản phẩm', meta: 'mốc so sánh' })
+  if (p.sentenceBank && d.value.sentenceBank?.length) a.push({ title: 'Đặt câu về bản thân', meta: `${Math.min(d.value.sentenceBank.length, 8)} câu · AI chữa` })
+  if (p.writing && writingTask.value) a.push({ title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
+  if (p.aiChat) a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
+  if (p.quiz && d.value.quiz.length && d.value.grammarMode !== 'final') a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · ôn nhanh` })
+  if (d.value.weekPracticeQuiz?.length) a.push({ title: 'Bài tập ôn tuần', meta: `${d.value.weekPracticeQuiz.length} câu · tổng hợp` })
   return a
 })
 
@@ -240,6 +261,39 @@ function goWeekTest() {
 // Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
 const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.week}`) : null))
 
+// Sổ lỗi tự động: gom các câu SAI mà AI đã chữa trong bài viết của buổi này.
+const autoErrors = computed(() => {
+  const lines = writingReview.value?.lines || []
+  return lines
+    .filter((l) => !l.ok && l.corrected && l.corrected !== l.original)
+    .map((l) => ({ wrong: l.original, right: l.corrected, note: l.note || '' }))
+})
+
+// Câu để LUYỆN NGHE: ưu tiên câu đúng của ngữ pháp hôm nay, thêm câu mẫu IELTS.
+const listenSentences = computed(() => {
+  if (!d.value) return []
+  return [...(d.value.grammarExamples || []), ...(d.value.sentences || [])].slice(0, 5)
+})
+// Mục để LUYỆN PHÁT ÂM: từ vựng (có IPA) + cụm dùng được của buổi.
+const pronItems = computed(() => {
+  if (!d.value) return []
+  const fromVocab = d.value.vocab.map((v) => ({ term: v.term, ipa: v.ipa || '' }))
+  const fromPhrases = (d.value.phrases || []).map((p) => ({ term: p, ipa: '' }))
+  return [...fromVocab, ...fromPhrases].slice(0, 8)
+})
+
+// —— SẢN PHẨM thu âm của buổi ("mốc 0" buổi 1, bản ghi 60s buổi 6…) ——
+// "Sản phẩm nhỏ" trong nhịp học mô tả việc cần ghi âm; hiện recorder khi việc đó là ghi âm.
+const recordingTask = computed(() => {
+  const product = d.value?.rhythm?.product || ''
+  if (!/ghi\s*âm/i.test(product)) return null
+  return {
+    recId: `ielts:${d.value.week}:${d.value.n}`,
+    label: product.replace(/\s+$/, ''),
+    sentences: listenSentences.value,
+  }
+})
+
 // Ngữ cảnh đưa cho AI để bám sát chủ đề + từ vựng + ngữ pháp của buổi học.
 const aiContext = computed(() =>
   d.value
@@ -257,7 +311,7 @@ const aiContext = computed(() =>
 
 <template>
   <div class="container day">
-    <span class="back" @click="router.push({ name: 'ielts' })">← Lộ trình IELTS · Tuần {{ week }}</span>
+    <span class="back" @click="router.push({ name: 'ielts' })">← Lộ trình nền tảng · Tuần {{ week }}</span>
 
     <template v-if="d">
       <!-- HEADER CARD -->
@@ -271,9 +325,10 @@ const aiContext = computed(() =>
           <h1 class="head-title">{{ d.title }}</h1>
           <p class="head-intro">Tuần {{ d.week }} · {{ d.weekTitle }}</p>
           <div class="head-meta">
-            <span v-if="d.checklist.length" class="meta-chip">✅ {{ d.checklist.length }} việc</span>
-            <span v-if="d.vocab.length" class="meta-chip">🗣️ {{ d.vocab.length + d.reviewVocab.length }} từ</span>
-            <span class="meta-chip">🎯 Mục tiêu Band 6.5</span>
+            <span class="meta-chip">🧱 Tuần nền tảng</span>
+            <span v-if="agenda.length" class="meta-chip">✅ {{ agenda.length }} hoạt động</span>
+            <span v-if="plan.vocab && d.vocab.length" class="meta-chip">🗣️ {{ d.vocab.length + d.reviewVocab.length }} từ</span>
+            <span v-if="d.milestone" class="meta-chip">🎯 Mốc tuần: {{ d.milestone }}</span>
           </div>
         </div>
         <div class="head-ring">
@@ -305,35 +360,53 @@ const aiContext = computed(() =>
         <AgendaRail title="Buổi học hôm nay" subtitle="Nhẹ nhàng, làm lần lượt nhé" :items="agenda" />
 
         <div class="main">
-          <!-- CHECKLIST — bắt buộc tick hết để hoàn thành buổi -->
-          <section v-if="d.checklist.length" class="step-card" :class="{ current: !checklistDone }">
+          <!-- ════ 1) HỌC TỪ VỰNG (Presentation) ════ -->
+          <!-- VOCAB (week) -->
+          <section v-if="plan.vocab && (d.vocab.length || d.reviewVocab.length)" class="step-card">
             <div class="step-head">
               <div>
-                <div class="eyebrow" :class="{ green: checklistDone }">VIỆC CẦN LÀM HÔM NAY</div>
-                <h2 class="step-title">✅ Checklist buổi {{ d.n }}</h2>
+                <div class="eyebrow">PHÒNG TỪ VỰNG · BƯỚC 1 HỌC TỪ</div>
+                <h2 class="step-title">🗣️ Từ vựng buổi này</h2>
               </div>
-              <span class="wt-badge" :class="{ ok: checklistDone }">{{ checklistCount }}/{{ d.checklist.length }}</span>
             </div>
-            <p class="quiz-intro">Tick từng việc khi làm xong. <b>Phải xong hết</b> mới hoàn thành buổi.</p>
-            <ul class="check-list">
-              <li
-                v-for="(c, i) in d.checklist"
-                :key="i"
-                class="check-item"
-                :class="{ ticked: checkState[i], locked: done }"
-                @click="toggleCheck(i)"
-              >
-                <span class="tick">{{ checkState[i] ? '☑' : '☐' }}</span>{{ c }}
-              </li>
-            </ul>
-            <div v-if="d.rhythm" class="rhythm">
-              <div v-if="d.rhythm.product"><b>Sản phẩm nhỏ:</b> {{ d.rhythm.product }}</div>
-              <div v-if="d.rhythm.review"><b>Ôn tập:</b> {{ d.rhythm.review }}</div>
+            <div class="vocab-grid">
+              <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" />
             </div>
+
+            <!-- ÔN LẠI buổi trước -->
+            <template v-if="d.reviewVocab.length">
+              <div class="sub-head">🔁 Ôn lại từ buổi trước</div>
+              <div class="vocab-grid">
+                <VocabCard v-for="v in d.reviewVocab" :key="'r-' + v.term" :vocab="v" />
+              </div>
+            </template>
+
+            <!-- CỤM DÙNG ĐƯỢC -->
+            <template v-if="d.phrases.length">
+              <div class="sub-head">💬 Cụm dùng được</div>
+              <div class="phrase-wrap">
+                <span v-for="(p, i) in d.phrases" :key="i" class="phrase-chip" @click="say(p)">{{ p }} 🔊</span>
+              </div>
+            </template>
+
+            <!-- CÂU MẪU IELTS -->
+            <template v-if="d.sentences.length">
+              <div class="sub-head">📝 Câu mẫu IELTS</div>
+              <ul class="sentence-list">
+                <li v-for="(s, i) in d.sentences" :key="i" @click="say(s)">{{ s }} <span class="say-ico">🔊</span></li>
+              </ul>
+            </template>
+
+            <button class="ghost-btn" @click="goTool('flashcard')">🃏 Luyện lại bằng Flashcard →</button>
           </section>
 
+          <!-- ════ 2) NHỚ LẠI TỪ VỪA HỌC (active recall) ════ -->
+          <!-- FLASHCARD — nhớ lại chủ động ngay sau khi học từ -->
+          <InlineFlashcards v-if="plan.flashcards && d.vocab.length" :vocab="d.vocab" title="Nhớ nhanh từ vừa học" />
+
+          <!-- ════ 3) HỌC NGỮ PHÁP (Presentation) ════ -->
           <!-- GRAMMAR (theo ngày: điểm mới / ôn tập / tổng hợp cuối tuần) -->
-          <section v-if="d.grammar.length" class="step-card">
+          <section v-if="plan.grammar && d.grammar.length" class="step-card">
             <div class="step-head">
               <div>
                 <div class="eyebrow">{{ d.grammarMode === 'new' ? 'NGỮ PHÁP HÔM NAY' : d.grammarMode === 'final' ? 'TỔNG HỢP NGỮ PHÁP TUẦN' : 'ÔN TẬP NGỮ PHÁP' }}</div>
@@ -351,25 +424,80 @@ const aiContext = computed(() =>
             </div>
           </section>
 
-          <!-- LUYỆN TẬP NGỮ PHÁP (cổng bắt buộc đạt ≥70% để qua buổi) -->
-          <section v-if="grammarDrills.length" class="step-card" :class="{ current: !grammarPassed }">
+          <!-- LUYỆN TẬP NGỮ PHÁP — bắt buộc ở ngày học MỚI; ngày ôn là tự chọn -->
+          <section v-if="showGrammarDrills" class="step-card" :class="{ current: grammarGateNeeded && !grammarPassed }">
             <div class="step-head">
               <div>
-                <div class="eyebrow" :class="{ green: grammarPassed }">LUYỆN TẬP — VẬN DỤNG NGAY</div>
+                <div class="eyebrow" :class="{ green: grammarPassed }">{{ grammarGateNeeded ? 'LUYỆN TẬP — VẬN DỤNG NGAY' : 'ÔN LẠI — TỰ CHỌN' }}</div>
                 <h2 class="step-title">✏️ Bài tập ngữ pháp ({{ grammarDrills.length }} câu)</h2>
               </div>
-              <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarPassed ? '✅ Đã đạt' : 'Cần ≥70%' }}</span>
+              <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarGateNeeded ? (grammarPassed ? '✅ Đã đạt' : 'Cần ≥70%') : 'Tự chọn' }}</span>
             </div>
-            <p class="quiz-intro">Điền chỗ trống và sửa câu sai. <b>Đạt từ 70%</b> để hoàn thành buổi và mở buổi kế tiếp.</p>
+            <p v-if="grammarGateNeeded" class="quiz-intro">Điền chỗ trống và sửa câu sai. <b>Đạt từ 70%</b> để hoàn thành buổi và mở buổi kế tiếp.</p>
+            <p v-else class="quiz-intro">Ôn lại điểm ngữ pháp đã học cho nhớ — <b>không bắt buộc</b> để qua buổi.</p>
             <div class="grammar-drill">
               <QuizTool :questions="grammarDrills" mode="practice" :pass-threshold="0.7" embedded @complete="onGrammarComplete" />
             </div>
-            <div v-if="grammarPassed" class="gate-line ok">✅ Bạn đã đạt phần luyện tập.</div>
-            <div v-else class="gate-line">🔒 Đạt ≥70% phần luyện tập để hoàn thành buổi.</div>
+            <div v-if="grammarGateNeeded && grammarPassed" class="gate-line ok">✅ Bạn đã đạt phần luyện tập.</div>
+            <div v-else-if="grammarGateNeeded" class="gate-line">🔒 Đạt ≥70% phần luyện tập để hoàn thành buổi.</div>
           </section>
 
+          <!-- ════ 5) ĐỌC & TÀI LIỆU (Input) ════ -->
+          <!-- BÀI ĐỌC HIỂU — đoạn ngắn (input thật) + câu hỏi đọc hiểu -->
+          <ReadingComprehension v-if="d.reading" :reading="d.reading" />
+
+          <!-- BÀI NGHE HIỂU — nghe đoạn ngắn (tên & số) + câu hỏi -->
+          <ListeningComprehension v-if="d.listening" :listening="d.listening" />
+
+          <!-- BÀI GIẢNG & KHUNG MẪU — bài đọc, script nghe, khung Speaking/Writing… -->
+          <section v-if="plan.reading && d.skills && d.skills.length" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">BÀI GIẢNG & KHUNG MẪU</div>
+                <h2 class="step-title">📚 Tài liệu & thực hành của tuần</h2>
+              </div>
+            </div>
+            <p class="quiz-intro">Bài đọc, script nghe và khung mẫu Speaking/Writing của tuần — phục vụ phần đọc/nghe của buổi hôm nay.</p>
+            <details v-for="(sk, i) in d.skills" :key="i" class="skill-acc">
+              <summary>{{ sk.title }}</summary>
+              <div class="prose" v-html="sk.html"></div>
+            </details>
+          </section>
+
+          <!-- LESSON SCRIPT (đọc/kịch bản) -->
+          <section v-if="plan.reading && d.lessonScript" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">KỊCH BẢN BÀI HỌC</div>
+                <h2 class="step-title">📝 {{ d.lessonScript.title }}</h2>
+              </div>
+            </div>
+            <div class="prose" v-html="d.lessonScript.html"></div>
+          </section>
+
+          <!-- ════ 6) LUYỆN NGHE (Receptive practice) ════ -->
+          <!-- LUYỆN NGHE — nghe & chép lại câu (kỹ năng Listening) -->
+          <ListeningDictation v-if="plan.listening" :sentences="listenSentences" />
+
+          <!-- ════ 7) LUYỆN PHÁT ÂM (Productive — controlled) ════ -->
+          <!-- LUYỆN PHÁT ÂM — nghe mẫu rồi đọc to, máy chấm (kỹ năng Pronunciation) -->
+          <PronunciationDrill v-if="plan.pronunciation" :items="pronItems" />
+
+          <!-- SẢN PHẨM — ghi âm "mốc 0" (đọc to, giữ lại để cuối khóa so sánh) -->
+          <VoiceRecorder
+            v-if="recordingTask"
+            :rec-id="recordingTask.recId"
+            :label="recordingTask.label"
+            :sentences="recordingTask.sentences"
+          />
+
+          <!-- ════ 8) ĐẶT CÂU CÓ KHUNG (Production — guided) ════ -->
+          <!-- ĐẶT CÂU — kho 100 câu mở đầu, viết tiếp cho đúng với mình + AI chữa -->
+          <SentenceBankPractice v-if="plan.sentenceBank" :prompts="d.sentenceBank" :context="aiContext" />
+
+          <!-- ════ 9) VIẾT ĐOẠN (Production — freer) ════ -->
           <!-- BÀI TẬP VIẾT — làm ngay tại bài (bắt buộc nộp để qua buổi) -->
-          <section v-if="writingTask" class="step-card" :class="{ current: !writingDone }">
+          <section v-if="plan.writing && writingTask" class="step-card" :class="{ current: !writingDone }">
             <div class="step-head">
               <div>
                 <div class="eyebrow" :class="{ green: writingDone }">LÀM NGAY TẠI BÀI</div>
@@ -378,11 +506,38 @@ const aiContext = computed(() =>
               <span class="wt-badge" :class="{ ok: writingDone }">{{ writingDone ? '✅ Đã nộp' : `${writtenCount}/${requiredSentences} câu` }}</span>
             </div>
             <p class="quiz-intro">{{ writingTask.prompt }}</p>
+
+            <!-- GIÀN GIÁO — giúp người mới bắt đầu, không phải nghĩ từ con số 0 -->
+            <div class="wt-scaffold">
+              <div v-if="writingModel.length" class="wt-help">
+                <div class="wt-help-label">📖 Viết giống mẫu này (bấm để chèn):</div>
+                <ul class="wt-model">
+                  <li v-for="(m, i) in writingModel" :key="i" @click="insertWriting(m)">
+                    <span>{{ m }}</span><span class="wt-ins">+ chèn</span>
+                  </li>
+                </ul>
+              </div>
+              <div v-if="writingFrames.length" class="wt-help">
+                <div class="wt-help-label">💡 Bí ý? Bấm một khung câu rồi viết tiếp cho đúng với em:</div>
+                <div class="wt-frames">
+                  <button v-for="(f, i) in writingFrames" :key="i" class="wt-frame" @click="insertWriting(f)">
+                    {{ f.replace(/[….]+\s*$/, '') }}…
+                  </button>
+                </div>
+              </div>
+              <div class="wt-help">
+                <div class="wt-help-label">🔗 Từ nối cho câu mượt hơn:</div>
+                <div class="wt-frames">
+                  <button v-for="(w, i) in LINK_WORDS" :key="i" class="wt-link" @click="appendWord(w)">{{ w }}</button>
+                </div>
+              </div>
+            </div>
+
             <textarea
               v-model="writingText"
               class="write-area"
               rows="8"
-              placeholder="Viết mỗi câu trên một dòng…"
+              placeholder="Bấm một câu mẫu hoặc khung câu ở trên để bắt đầu, rồi sửa cho đúng với em…"
               @change="saveWritingDraft"
             ></textarea>
             <div class="write-foot">
@@ -419,102 +574,44 @@ const aiContext = computed(() =>
             </div>
           </section>
 
-          <!-- BÀI GIẢNG & KHUNG MẪU — bài đọc, script nghe, khung Speaking/Writing… -->
-          <section v-if="d.skills && d.skills.length" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">BÀI GIẢNG & KHUNG MẪU</div>
-                <h2 class="step-title">📚 Tài liệu & thực hành của tuần</h2>
-              </div>
-            </div>
-            <p class="quiz-intro">Bài đọc, script nghe và khung mẫu Speaking/Writing của tuần. Mở đúng mục mà checklist hôm nay nhắc đến.</p>
-            <details v-for="(sk, i) in d.skills" :key="i" class="skill-acc">
-              <summary>{{ sk.title }}</summary>
-              <div class="prose" v-html="sk.html"></div>
-            </details>
-          </section>
-
-          <!-- VOCAB (week) -->
-          <section v-if="d.vocab.length || d.reviewVocab.length" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">PHÒNG TỪ VỰNG</div>
-                <h2 class="step-title">🗣️ Từ mới hôm nay</h2>
-              </div>
-            </div>
-            <div class="vocab-grid">
-              <VocabCard v-for="v in d.vocab" :key="v.term" :vocab="v" />
-            </div>
-
-            <!-- ÔN LẠI buổi trước -->
-            <template v-if="d.reviewVocab.length">
-              <div class="sub-head">🔁 Ôn lại từ buổi trước</div>
-              <div class="vocab-grid">
-                <VocabCard v-for="v in d.reviewVocab" :key="'r-' + v.term" :vocab="v" />
-              </div>
-            </template>
-
-            <!-- CỤM DÙNG ĐƯỢC -->
-            <template v-if="d.phrases.length">
-              <div class="sub-head">💬 Cụm dùng được</div>
-              <div class="phrase-wrap">
-                <span v-for="(p, i) in d.phrases" :key="i" class="phrase-chip" @click="say(p)">{{ p }} 🔊</span>
-              </div>
-            </template>
-
-            <!-- CÂU MẪU IELTS -->
-            <template v-if="d.sentences.length">
-              <div class="sub-head">📝 Câu mẫu IELTS</div>
-              <ul class="sentence-list">
-                <li v-for="(s, i) in d.sentences" :key="i" @click="say(s)">{{ s }} <span class="say-ico">🔊</span></li>
-              </ul>
-            </template>
-
-            <button class="ghost-btn" @click="goTool('flashcard')">🃏 Luyện lại bằng Flashcard →</button>
-          </section>
-
-          <!-- LESSON SCRIPT -->
-          <section v-if="d.lessonScript" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">KỊCH BẢN BÀI HỌC</div>
-                <h2 class="step-title">📝 {{ d.lessonScript.title }}</h2>
-              </div>
-            </div>
-            <div class="prose" v-html="d.lessonScript.html"></div>
-          </section>
-
           <!-- AI CHAT — luyện giao tiếp -->
-          <AiChat :context="aiContext" />
+          <AiChat v-if="plan.aiChat" :context="aiContext" />
 
-          <!-- QUIZ TỪ VỰNG — cổng bắt buộc đạt ≥70% để qua buổi -->
-          <section v-if="vocabQuiz.length" class="step-card" :class="{ current: !vocabPassed }">
+          <!-- QUIZ TỪ VỰNG — ÔN NHANH, không bắt buộc; ẩn ở buổi cuối (đã có quiz tổng hợp) -->
+          <section v-if="plan.quiz && vocabQuiz.length && d.grammarMode !== 'final'" class="step-card">
             <div class="step-head">
               <div>
-                <div class="eyebrow" :class="{ green: vocabPassed }">ÔN NHANH — BẮT BUỘC ĐẠT</div>
+                <div class="eyebrow" :class="{ green: vocabPassed }">ÔN NHANH — TỰ CHỌN</div>
                 <h2 class="step-title">❓ Quiz từ vựng buổi {{ d.n }}</h2>
               </div>
-              <span class="wt-badge" :class="{ ok: vocabPassed }">{{ vocabPassed ? '✅ Đã đạt' : 'Cần ≥70%' }}</span>
+              <span class="wt-badge" :class="{ ok: vocabPassed }">{{ vocabPassed ? '✅ Đã đạt' : 'Tự chọn' }}</span>
             </div>
-            <p class="quiz-intro">{{ vocabQuiz.length }} câu về nghĩa các từ học buổi này. <b>Đạt ≥70%</b> để hoàn thành buổi.</p>
+            <p class="quiz-intro">{{ vocabQuiz.length }} câu về nghĩa các từ buổi này. Luyện cho nhớ và cộng XP — <b>không bắt buộc</b> để qua buổi.</p>
             <div class="grammar-drill">
               <QuizTool :questions="vocabQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onVocabComplete" />
             </div>
             <div v-if="vocabPassed" class="gate-line ok">✅ Bạn đã đạt quiz từ vựng.</div>
-            <div v-else class="gate-line">🔒 Đạt ≥70% quiz từ vựng để hoàn thành buổi.</div>
           </section>
 
-          <!-- TỰ LUYỆN CUỐI TUẦN (Part A/B/C bám tuần, có đáp án) -->
-          <section v-if="d.weekPracticeHtml" class="step-card">
+          <!-- TỰ LUYỆN CUỐI TUẦN — quiz TỔNG HỢP MỚI (ngữ pháp + từ vựng cả tuần) -->
+          <section v-if="d.weekPracticeQuiz && d.weekPracticeQuiz.length" class="step-card">
             <div class="step-head">
               <div>
                 <div class="eyebrow">TỰ LUYỆN CUỐI TUẦN</div>
-                <h2 class="step-title">📋 Ôn tập tuần (có đáp án)</h2>
+                <h2 class="step-title">📋 Bài tập ôn tuần ({{ d.weekPracticeQuiz.length }} câu)</h2>
               </div>
             </div>
-            <p class="quiz-intro">Sửa câu, hoàn thành câu và nói — bám đúng ngữ pháp & chủ đề tuần này. Tự luyện trước khi làm bài kiểm tra tuần.</p>
-            <div class="prose" v-html="d.weekPracticeHtml"></div>
+            <p class="quiz-intro">
+              Bài tập <b>mới hoàn toàn</b>: điền chỗ trống, sửa câu và chọn nghĩa — gom cả <b>ngữ pháp</b> và
+              <b>từ vựng cả tuần</b> (khác các quiz từng ngày). Tự luyện trước khi làm bài kiểm tra tuần (không bắt buộc).
+            </p>
+            <div class="grammar-drill">
+              <QuizTool :questions="d.weekPracticeQuiz" mode="practice" embedded />
+            </div>
           </section>
+
+          <!-- SỔ LỖI — tự gom lỗi thật từ bài AI đã chữa + ghi chú thêm -->
+          <ErrorLedger :week="d.week" :day="d.n" :auto-errors="autoErrors" />
 
           <!-- BÀI KIỂM TRA TUẦN (lưu điểm) -->
           <section class="step-card week-test">
@@ -541,7 +638,7 @@ const aiContext = computed(() =>
             <div class="cp-emoji">{{ done ? '✅' : '🎯' }}</div>
             <div class="cp-text">
               <h3>{{ done ? `Đã hoàn thành buổi ${d.n}!` : `Hoàn thành buổi ${d.n} 🎉` }}</h3>
-              <p v-if="!done">Làm hết checklist, học từ vựng và ôn ngữ pháp, rồi đánh dấu hoàn thành để nhận <b>+50 XP</b> và giữ streak.</p>
+              <p v-if="!done">Làm xong các hoạt động của buổi (luyện ngữ pháp + nộp bài viết), rồi đánh dấu hoàn thành để nhận <b>+50 XP</b> và giữ streak.</p>
               <p v-else>Tuần {{ d.week }}: đã xong {{ weekDoneCount }}/{{ d.totalDays }} buổi. Xong cả tuần sẽ mở khóa tuần kế tiếp 🔓</p>
             </div>
             <div class="cp-cta">
@@ -904,6 +1001,81 @@ const aiContext = computed(() =>
   border-radius: 16px;
   padding: 18px 20px;
 }
+.wt-scaffold {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--purple-soft);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 14px;
+  padding: 16px;
+}
+.wt-help-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  margin-bottom: 8px;
+}
+.wt-model {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wt-model li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.wt-model li:hover {
+  border-color: var(--purple);
+}
+.wt-ins {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--purple);
+  white-space: nowrap;
+}
+.wt-frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wt-frame,
+.wt-link {
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  background: #fff;
+  color: var(--purple-deep);
+  border-radius: 99px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.wt-frame:hover,
+.wt-link:hover {
+  background: var(--purple-soft);
+}
+.wt-link {
+  border-color: rgba(0, 184, 217, 0.4);
+  color: #0a7c93;
+}
+.wt-link:hover {
+  background: rgba(0, 184, 217, 0.08);
+}
+
 .write-area {
   width: 100%;
   margin-top: 16px;

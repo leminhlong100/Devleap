@@ -151,6 +151,8 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 
 > Finish these sentences. Keep them true.
 
+> 💡 **Ví dụ câu hoàn chỉnh:** "I usually wake up at seven." · "I feel nervous when I speak English." · "My favourite place is the library near my house." — Hãy viết câu THẬT về bản thân em.
+
 1. I usually...
 2. I rarely...
 3. I feel nervous when...
@@ -259,6 +261,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 ### Day 1 — Xương sống của câu (S–V–O) + ghi âm "mốc 0"
 - [ ] Ôn (5'): đọc to "Mục tiêu tuần" để nắm đích đến.
 - [ ] Học: đọc điểm ngữ pháp của buổi (Sentence Backbone), chép 4 câu mẫu, gạch chân chủ ngữ + động từ.
+- [ ] 💡 Mẹo nhận diện: Chủ ngữ (S) = ai/cái gì đang được nói đến. Động từ (V) = hành động (study, like, go) hoặc trạng thái (is, am, are). Ví dụ: "_I_ **study** English" → S=I, V=study.
 - [ ] Luyện ngữ pháp: làm bài tập trong trang, đạt ≥70% để mở buổi sau.
 - [ ] Viết: làm bài tập viết (10 câu về một ngày của em), nhờ AI chữa.
 - [ ] Sản phẩm: ghi âm đọc to 5 câu của em (giữ làm "bản ghi mốc 0" để cuối khóa so sánh).
@@ -271,14 +274,20 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Từ vựng: học từ mới + nghe phát âm (🔊), lưu vào Flashcard.
 - [ ] Viết: viết 8 câu mô tả phòng/cảm xúc, mỗi câu có "be"; nhờ AI chữa.
 - [ ] Sổ lỗi (5'): ghi mọi câu đã quên "be".
+- [ ] Đọc hiểu: đọc bài Reading của buổi, trả lời 3 câu hỏi.
+- [ ] Luyện nghe: nghe bài Listening, chú ý TÊN và TUỔI; trả lời 3 câu hỏi.
+- [ ] Extra Challenge: viết thêm 4 câu dùng "be" ở thể phủ định (VD: "I am not lazy.").
 
 ### Day 3 — Do / Does / Did (hỏi & phủ định)
 - [ ] Ôn (5'): đọc to 5 câu "be" của Day 2.
 - [ ] Học: đọc điểm ngữ pháp Do/Does/Did; chú ý "You like coffee? → Do you like coffee?".
+- [ ] 💡 Phân biệt: "do" có 2 vai trò — (1) trợ động từ tạo câu hỏi/phủ định: "Do you like…?", (2) động từ hành động = làm: "I do my homework." Đừng nhầm!
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết 5 câu hỏi + 5 câu phủ định; nhờ AI chữa.
 - [ ] Nói & Quiz: tự hỏi–tự đáp 5 câu với AI + làm quiz từ vựng buổi.
 - [ ] Sổ lỗi (5'): chú ý lỗi "doesn't likes / didn't went".
+- [ ] Đọc hiểu: đọc bài Reading của buổi, trả lời 3 câu hỏi.
+- [ ] Luyện nghe: nghe bài Listening, chú ý câu hỏi dùng do/does/did; trả lời 3 câu hỏi.
 
 ### Day 4 — Ôn ngữ pháp + Phòng từ vựng Self & Health
 - [ ] Ôn (5'): nhớ-lại điểm ngữ pháp được ôn hôm nay.
@@ -290,7 +299,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 
 ### Day 5 — Ngày nạp: đọc to, shadowing & nhặt cụm
 - [ ] Ôn (5'): lật 10 thẻ Flashcard theo chiều Anh→Việt→Anh.
-- [ ] Học: đọc to 10–15 câu mẫu của tuần 2 lượt; lượt 2 ghi âm (shadowing giọng mình).
+- [ ] Học: đọc to 10–15 câu (gồm câu mẫu ngữ pháp + "Câu nối IELTS" của tuần) 2 lượt; lượt 2 ghi âm (shadowing giọng mình).
 - [ ] Luyện ngữ pháp: làm bài tập của buổi, đạt ≥70%.
 - [ ] Viết: hoàn thành 8 câu (theo đề viết của buổi); nhờ AI chữa.
 - [ ] Nói & Quiz: nói với AI 5 câu dùng cụm mới + làm quiz từ vựng.
@@ -303,12 +312,17 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Viết: viết đoạn 6–8 câu giới thiệu bản thân (be + do + 2 cụm tuần này); nhờ AI chữa.
 - [ ] Sản phẩm: ghi âm 60 giây; nghe lại một lần, chỉ ghi 2 điểm cần sửa.
 - [ ] Sổ lỗi (5'): so với "bản ghi mốc 0" — đã rõ hơn ở đâu?
+- [ ] Đọc hiểu: đọc bài Reading (một bài giới thiệu mẫu), trả lời 3 câu hỏi.
+- [ ] Luyện nghe: nghe bài Listening (bạn mới giới thiệu), trả lời 3 câu hỏi.
+- [ ] Extra Challenge: thử giới thiệu lại bằng cách đổi 2 thông tin (VD: đổi mục tiêu và sở thích).
 
 ### Day 7 — Tổng hợp tuần + Bài kiểm tra tuần
 - [ ] Ôn (10'): nhớ-lại 5 cụm + 5 câu khó nhất trong tuần (không nhìn vở).
 - [ ] Luyện ngữ pháp: làm bài tập tổng hợp cuối tuần, đạt ≥70%.
 - [ ] Viết: viết 8 câu về chủ đề tuần, vận dụng các điểm ngữ pháp đã học; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
+- [ ] Đọc hiểu: đọc bài Reading tổng hợp cuối tuần, trả lời 3 câu hỏi.
+- [ ] Luyện nghe: nghe bài Listening tổng hợp, trả lời 3 câu hỏi.
 - [ ] Kiểm tra: hoàn thành đủ 7 buổi rồi làm Bài kiểm tra Tuần 1 (đạt ≥70% để mở tuần sau).
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại tuần sau (lấy từ sổ lỗi).
 
@@ -354,6 +368,41 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
    - [ ] I don't went there.
    - [ ] I not go there.
    💡 Sau "did/didn't", động từ về base form ("go", không phải "went").
+
+6. Hoàn thành câu: "My friends ______ friendly."
+   - [ ] is
+   - [x] are
+   - [ ] am
+   - [ ] be
+   💡 My friends = they → dùng "are".
+
+7. "Do" trong câu "I do my homework every day" đóng vai trò gì?
+   - [ ] Trợ động từ (auxiliary)
+   - [x] Động từ hành động (main verb = làm)
+   - [ ] Liên từ
+   - [ ] Giới từ
+   💡 "do" ở đây = "làm" (hành động), khác với "Do you like...?" (trợ động từ).
+
+8. Nghe: "My name is Nam. I am twenty-three years old." — Nam bao nhiêu tuổi?
+   - [ ] Thirteen
+   - [ ] Twenty-two
+   - [x] Twenty-three
+   - [ ] Thirty-three
+   💡 Luyện nghe số: "twenty-three" = 23. Phân biệt với "thirteen" (13).
+
+9. Cụm từ nào ĐÚNG?
+   - [ ] I good at English.
+   - [x] I am good at English.
+   - [ ] I is good at English.
+   - [ ] I are good at English.
+   💡 "I" luôn đi với "am": I am good at = tôi giỏi về.
+
+10. Chọn câu phủ định đúng cho "They go to school":
+    - [ ] They not go to school.
+    - [ ] They doesn't go to school.
+    - [x] They do not go to school.
+    - [ ] They did not goes to school.
+    💡 They + do not + base verb. "doesn't" chỉ dùng cho he/she/it.
 
 ### Part A — Fix the sentences
 

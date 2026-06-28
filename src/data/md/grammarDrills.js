@@ -119,27 +119,88 @@ function splitAlternatives(s) {
   return [...new Set(s.split(/\s+\/\s+/).map((p) => p.trim()).filter(Boolean))]
 }
 
+/**
+ * Bóc các câu mẫu ĐÚNG dưới "**Câu đúng:**" của một mục ngữ pháp (để sinh thêm
+ * cloze). Bản rút gọn của parseCorrectExamples trong parseIelts (giữ độc lập).
+ */
+function extractCorrectExamples(lines) {
+  const out = []
+  let collecting = false
+  for (const raw of lines) {
+    const t = raw.trim()
+    if (/^\*\*\s*câu đúng\s*:?\s*\*\*/i.test(t)) {
+      collecting = true
+      continue
+    }
+    if (collecting) {
+      if (/^\*\*/.test(t)) break
+      const bm = /^[-*]\s+(.+)$/.exec(t)
+      if (bm) out.push(bm[1].replace(/\*\*/g, '').trim())
+      else if (t && !t.startsWith('|')) break
+    }
+  }
+  return out
+}
+
+// Từ ngữ pháp "an toàn" để khoét chỗ trống: đáp án DUY NHẤT, không gây tranh cãi
+// (động từ be, trợ động từ, modal, "there"). KHÔNG khoét động từ thường/mạo từ vì
+// dễ có nhiều đáp án đúng (study/learn, a/the…). Khớp theo thứ tự xuất hiện.
+const SAFE_BLANK = [
+  'am', 'is', 'are', 'was', 'were',
+  'do', 'does', 'did',
+  "don't", "doesn't", "didn't", "isn't", "aren't", "wasn't", "weren't",
+  'have', 'has', 'had',
+  'will', 'would', 'can', 'could', 'should', 'must',
+  'there',
+]
+
+/**
+ * Sinh cloze từ một câu mẫu đúng: khoét TỪ NGỮ PHÁP an toàn đầu tiên gặp được.
+ * Trả về { sentence, answer } hoặc null nếu câu không chứa từ nào trong SAFE_BLANK.
+ */
+function clozeFromExample(sentence) {
+  const tokens = sentence.split(/\s+/).filter(Boolean)
+  if (tokens.length < 3) return null
+  for (let i = 0; i < tokens.length; i++) {
+    const bare = normTok(tokens[i])
+    if (!bare) continue
+    if (SAFE_BLANK.includes(bare)) {
+      const answer = tokens[i].replace(/[.,!?;:]+$/, '').trim()
+      const blanked = tokens.slice()
+      blanked[i] = blanked[i].replace(answer, '_____')
+      return { sentence: blanked.join(' '), answer }
+    }
+  }
+  return null
+}
+
 export function buildGrammarDrills(lines) {
   const rows = extractErrorRows(lines)
   const drills = []
+  const seen = new Set() // tránh trùng câu hỏi giữa nguồn lỗi & câu mẫu
+  const add = (d) => {
+    const key = normTok(d.q)
+    if (seen.has(key) || drills.length >= 12) return
+    seen.add(key)
+    drills.push(d)
+  }
+
+  // (1) Từ bảng "Lỗi thường gặp": cloze (nếu tách được chỗ trống) hoặc sửa câu.
   for (const { wrong, correct } of rows) {
     const cz = buildCloze(wrong, correct)
     if (cz) {
-      drills.push({
-        type: 'cloze',
-        q: cz.sentence,
-        answer: splitAlternatives(cz.answer),
-        ex: `Đáp án: “${cz.answer}”. Câu đúng: “${correct}”.`,
-      })
+      add({ type: 'cloze', q: cz.sentence, answer: splitAlternatives(cz.answer), ex: `Đáp án: “${cz.answer}”. Câu đúng: “${correct}”.` })
     } else {
-      drills.push({
-        type: 'error',
-        q: wrong,
-        answer: splitAlternatives(correct),
-        ex: `Câu đúng: “${correct}”.`,
-      })
+      add({ type: 'error', q: wrong, answer: splitAlternatives(correct), ex: `Câu đúng: “${correct}”.` })
     }
-    if (drills.length >= 12) break
   }
+
+  // (2) Từ câu mẫu ĐÚNG: khoét một từ ngữ pháp an toàn -> thêm bài cloze cho đủ
+  //     số lượng (cổng ≥70% mới có ý nghĩa). Chỉ thêm khi không trùng câu đã có.
+  for (const ex of extractCorrectExamples(lines)) {
+    const cz = clozeFromExample(ex)
+    if (cz) add({ type: 'cloze', q: cz.sentence, answer: [cz.answer], ex: `Đáp án: “${cz.answer}”. Câu đầy đủ: “${ex}”.` })
+  }
+
   return drills
 }

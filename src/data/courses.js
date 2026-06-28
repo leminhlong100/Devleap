@@ -38,7 +38,7 @@ export const courses = [
     routeName: 'ielts',
     emoji: '🎯',
     name: 'IELTS Cơ Bản',
-    desc: 'Nền tảng 4 kỹ năng Listening, Reading, Writing & Speaking — hiểu nhanh, học 15 phút/ngày, không nản.',
+    desc: 'Nền tảng 4 kỹ năng Listening, Reading, Writing & Speaking — hiểu nhanh, học 1 giờ/ngày, không nản.',
     weeks: ieltsTotals.weeks,
     lessons: ieltsTotals.lessons,
     level: 'Cơ bản',
