@@ -79,12 +79,33 @@ function select(i) {
     if (!isAssessment.value) user.addXp(10) // bài kiểm tra thưởng theo kết quả cuối
   }
 }
-// So khớp đáp án nhập tay: bỏ dấu, viết thường, gộp khoảng trắng, bỏ dấu câu cuối/quanh.
+// Bung viết tắt tiếng Anh (he's -> he is, don't -> do not...) để chấm theo nghĩa,
+// không bắt lỗi người học chỉ vì họ dùng dạng rút gọn. Áp cho CẢ đáp án lẫn câu nhập
+// nên hai bên luôn quy về cùng một dạng — không bao giờ làm câu đúng thành sai.
+function expandContractions(s) {
+  return s
+    .replace(/\bwon['’]t\b/g, 'will not')
+    .replace(/\bcan['’]t\b/g, 'can not')
+    .replace(/\bcannot\b/g, 'can not')
+    .replace(/\bshan['’]t\b/g, 'shall not')
+    .replace(/\bain['’]t\b/g, 'is not')
+    .replace(/\b(\w+)n['’]t\b/g, '$1 not') // isn't, don't, didn't, wouldn't...
+    .replace(/\blet['’]s\b/g, 'let us')
+    .replace(/\bi['’]m\b/g, 'i am')
+    .replace(/\b(\w+)['’]re\b/g, '$1 are') // you're, we're, they're
+    .replace(/\b(\w+)['’]ve\b/g, '$1 have') // i've, would've...
+    .replace(/\b(\w+)['’]ll\b/g, '$1 will') // i'll, he'll...
+    .replace(/\b(\w+)['’]d\b/g, '$1 would') // i'd, he'd (had/would — chọn dạng phổ biến)
+    .replace(/\b(\w+)['’]s\b/g, '$1 is') // he's, it's, that's (has/is — chọn dạng phổ biến)
+}
+// So khớp đáp án nhập tay: bỏ dấu, viết thường, bung viết tắt, gộp khoảng trắng, bỏ dấu câu cuối/quanh.
 function normAnswer(s) {
-  return (s || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+  return expandContractions(
+    (s || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, ''),
+  )
     .replace(/[“”"'’`]/g, '')
     .replace(/[.,!?;:]+/g, ' ')
     .replace(/\s+/g, ' ')
