@@ -57,7 +57,7 @@ async function signOut() {
       </button>
 
       <RouterLink :to="{ name: 'home' }" class="logo">
-        <MascotLogo :width="44" :height="47" uid="hdr" />
+        <MascotLogo :width="80" :height="80" uid="hdr" />
         <span class="logo-text">Dev<span class="brand-text">leap</span></span>
       </RouterLink>
 
@@ -460,9 +460,9 @@ async function signOut() {
   .logo {
     gap: 8px;
   }
-  .logo :deep(svg) {
-    width: 34px;
-    height: 36px;
+  .logo :deep(img) {
+    width: 56px;
+    height: 56px;
   }
   .logo-text {
     font-size: 20px;
