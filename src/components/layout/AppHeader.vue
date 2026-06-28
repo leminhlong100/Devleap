@@ -90,50 +90,52 @@ async function signOut() {
               </div>
               <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
             </div>
-          </div>
-        </template>
-
-        <!-- Khu đăng nhập (chỉ hiện khi đã cấu hình Supabase) -->
-        <template v-if="auth.cloudEnabled && authReady">
-          <button v-if="!authUser" class="signin-btn" @click="signIn">
-            <span class="g">G</span> Đăng nhập / Đăng ký
-          </button>
-
-          <div v-else class="account">
-            <button class="account-btn" @click="menuOpen = !menuOpen">
-              <img v-if="authUser.avatar" :src="authUser.avatar" class="account-avatar" alt="" referrerpolicy="no-referrer" />
-              <span v-else class="account-avatar fallback">{{ (authUser.name || '?')[0].toUpperCase() }}</span>
-            </button>
-            <div v-if="menuOpen" class="menu-backdrop" @click="menuOpen = false"></div>
-            <div v-if="menuOpen" class="menu">
-              <div class="menu-card">
-                <div class="menu-name">{{ authUser.name }}</div>
-                <div class="menu-email">{{ authUser.email }}</div>
-                <!-- Streak + XP: chỉ hiện trong dropdown trên mobile -->
-                <div class="menu-stats">
-                  <div class="menu-stat">
-                    <span class="streak-icon">🔥</span> {{ streak }} ngày liên tiếp
+            <!-- Avatar Google nằm trong chip, đóng vai trò nút mở menu tài khoản -->
+            <div v-if="auth.cloudEnabled && authReady" class="account">
+              <button class="account-btn" @click="menuOpen = !menuOpen">
+                <img v-if="authUser.avatar" :src="authUser.avatar" class="account-avatar" alt="" referrerpolicy="no-referrer" />
+                <span v-else class="account-avatar fallback">{{ (authUser.name || '?')[0].toUpperCase() }}</span>
+              </button>
+              <div v-if="menuOpen" class="menu-backdrop" @click="menuOpen = false"></div>
+              <div v-if="menuOpen" class="menu">
+                <div class="menu-card">
+                  <div class="menu-name">{{ authUser.name }}</div>
+                  <div class="menu-email">{{ authUser.email }}</div>
+                  <!-- Streak + XP: chỉ hiện trong dropdown trên mobile -->
+                  <div class="menu-stats">
+                    <div class="menu-stat">
+                      <span class="streak-icon">🔥</span> {{ streak }} ngày liên tiếp
+                    </div>
+                    <div class="menu-stat">
+                      <span class="lv">Lv.{{ level }}</span>
+                      <span class="xp-num">{{ xp }} XP</span>
+                    </div>
+                    <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
                   </div>
-                  <div class="menu-stat">
-                    <span class="lv">Lv.{{ level }}</span>
-                    <span class="xp-num">{{ xp }} XP</span>
-                  </div>
-                  <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
+                  <div v-if="syncLabel" class="menu-sync" :class="syncStatus">{{ syncLabel }}</div>
+                  <RouterLink
+                    v-if="isAdmin"
+                    :to="{ name: 'admin-home' }"
+                    class="menu-admin"
+                    @click="menuOpen = false"
+                  >
+                    ⚙️ Quản trị
+                  </RouterLink>
+                  <button class="menu-out" @click="signOut">Đăng xuất</button>
                 </div>
-                <div v-if="syncLabel" class="menu-sync" :class="syncStatus">{{ syncLabel }}</div>
-                <RouterLink
-                  v-if="isAdmin"
-                  :to="{ name: 'admin-home' }"
-                  class="menu-admin"
-                  @click="menuOpen = false"
-                >
-                  ⚙️ Quản trị
-                </RouterLink>
-                <button class="menu-out" @click="signOut">Đăng xuất</button>
               </div>
             </div>
           </div>
         </template>
+
+        <!-- Nút đăng nhập khi chưa đăng nhập (chỉ hiện khi đã cấu hình Supabase) -->
+        <button
+          v-if="auth.cloudEnabled && authReady && !authUser"
+          class="signin-btn"
+          @click="signIn"
+        >
+          <span class="g">G</span> Đăng nhập / Đăng ký
+        </button>
       </div>
     </div>
   </header>
@@ -250,7 +252,7 @@ async function signOut() {
   gap: 10px;
   background: #fff;
   border: 1px solid rgba(108, 92, 231, 0.14);
-  padding: 7px 14px;
+  padding: 6px 7px 6px 14px;
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(108, 92, 231, 0.07);
 }
@@ -484,9 +486,18 @@ async function signOut() {
   .header-right {
     gap: 10px;
   }
-  /* Mobile: chỉ giữ search + avatar; streak/XP chuyển vào dropdown */
-  .streak,
+  /* Mobile: chỉ giữ search + avatar; streak/XP chuyển vào dropdown.
+     Vẫn giữ chip hiển thị để avatar (nút mở menu) còn truy cập được. */
+  .streak {
+    display: none;
+  }
   .xp-chip {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+  .xp-chip .xp-info {
     display: none;
   }
   .menu-stats {
