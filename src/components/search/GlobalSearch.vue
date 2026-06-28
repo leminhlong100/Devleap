@@ -126,7 +126,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 <template>
   <button class="search-trigger" @click="openPalette" aria-label="Tìm kiếm">
     <span class="mag">🔍</span>
-    <span class="ph">Tìm bài học, từ vựng…</span>
+    <span class="ph">Tìm kiếm</span>
     <kbd class="kbd">{{ isMac ? '⌘' : 'Ctrl' }} K</kbd>
   </button>
 

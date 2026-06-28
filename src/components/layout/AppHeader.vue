@@ -90,7 +90,6 @@ async function signOut() {
               </div>
               <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
             </div>
-            <div class="avatar">🧑‍💻</div>
           </div>
         </template>
 
@@ -251,7 +250,7 @@ async function signOut() {
   gap: 10px;
   background: #fff;
   border: 1px solid rgba(108, 92, 231, 0.14);
-  padding: 6px 8px 6px 13px;
+  padding: 7px 14px;
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(108, 92, 231, 0.07);
 }
@@ -288,18 +287,6 @@ async function signOut() {
   background: var(--grad-brand);
   transition: width 0.5s;
 }
-.avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #6c5ce7, #8b7cf0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex: none;
-}
-
 /* —— đăng nhập / tài khoản —— */
 .signin-btn {
   display: inline-flex;
