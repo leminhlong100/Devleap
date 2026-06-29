@@ -32,6 +32,32 @@ Trong tuần này, người học có quyền đi chậm, lặp lại và dùng 
 
 ## 📖 Ngữ pháp trọng tâm
 
+### Câu phải có động từ — Chủ ngữ hợp động từ
+
+Một câu tiếng Anh phải có động từ, và động từ phải hợp với chủ ngữ. Tiếng Việt nói được 'Cô ấy đẹp', 'Các bạn tôi ở rạp phim' mà không cần 'là/ở'; tiếng Anh thì luôn cần **be** (is/am/are) hoặc một động từ rõ ràng. Ngoài ra, chủ ngữ số nhiều thì danh từ cần thêm 's' và động từ KHÔNG thêm 's'.
+
+**Mẫu câu chính:** Subject + (be / động từ) + Object/Complement
+
+**Câu đúng:**
+
+- My mother is very patient.
+- The streets are crowded at night.
+- My friends are at the cinema.
+- Students need to review regularly.
+
+**Lỗi thường gặp của người học Việt Nam:**
+
+| Câu sai | Câu đúng |
+| --- | --- |
+| She beautiful. | She is beautiful. |
+| My friends at the cinema. | My friends are at the cinema. |
+| Student need to review. | Students need to review. |
+| She like music. | She likes music. |
+
+**Bài tập ngắn:** Thêm động từ còn thiếu vào 5 câu: 1) My mother very patient. 2) The streets crowded at night. 3) My phone on the table. 4) Many students afraid of speaking. 5) Learning English a long journey.
+
+**Mẹo nhớ:** Viết xong câu, tự hỏi "Động từ của câu này đâu?" — nếu câu mô tả tính chất / nơi chốn mà không thấy động từ thường thì chắc chắn cần **be** (is/am/are). Chủ ngữ số nhiều ("students", "friends") đi với động từ nguyên thể, nhưng danh từ số nhiều phải có "s".
+
 ### Countable và Uncountable
 
 English rất quan tâm đến số lượng. Vietnamese often does not mark plural clearly, so learners forget s/es or use much/many wrongly.
@@ -53,62 +79,57 @@ English rất quan tâm đến số lượng. Vietnamese often does not mark plu
 
 **Lỗi thường gặp của người học Việt Nam:**
 
-| Sai | Đúng |
+| Câu sai | Câu đúng |
 | --- | --- |
+| I have many homework. | I have a lot of homework. |
 | many information | a lot of information / much information |
 | two advice | two pieces of advice |
-| student need | students need / a student needs |
+| There is many students in my class. | There are many students in my class. |
 
 **Bài tập ngắn:** Lập hai danh sách: 10 danh từ đếm được và 10 danh từ không đếm được trong đời sống hằng ngày.
 
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+**Mẹo nhớ:** "information", "advice", "homework", "water" là danh từ KHÔNG đếm được — không thêm "s", dùng **much / a lot of** chứ không dùng "many". Cần đếm thì mượn đơn vị: *two pieces of advice*.
 
-### Ngân hàng bài tập ngữ pháp
+## 🏋️ Ngân hàng luyện tập — câu mẫu sạch lỗi
 
-**Bài tập A — Thêm động từ còn thiếu**
+> Đây đều là câu ĐÚNG để đọc to & shadowing (Day 12) và làm mẫu cho "vườn câu" (Day 13).
+> Mỗi câu đã qua 3 lần tự kiểm: có động từ chưa? "s" số nhiều đúng chưa? đếm được/không đếm được đúng chưa?
 
-1. My mother very patient.
-2. The streets crowded at night.
-3. I interested in psychology.
-4. This exercise not difficult.
-5. My friends at the cinema.
-6. Learning English a long journey.
-7. The weather getting colder.
-8. Many students afraid of speaking.
-9. My phone on the table.
-10. I not good at pronunciation yet.
+*Gia đình & quan hệ (be · hòa hợp chủ ngữ–động từ):*
 
-**Answers:** 1 is, 2 are, 3 am, 4 is, 5 are, 6 is, 7 is, 8 are, 9 is, 10 am.
+1. My mother is very patient.
+2. My friends are at the cinema.
+3. My brothers are still at school.
+4. I am close to my sister because she listens to me.
+5. In many Vietnamese families, children respect their parents a lot.
+6. My parents share the housework every evening.
 
-**Bài tập B — Sửa câu**
+*Trường lớp & học tập:*
 
-| # | Câu gốc | Sửa gợi ý |
-| --- | --- | --- |
-| 1 | She like music. | She likes music. |
-| 2 | I am go to school every day. | I go to school every day. |
-| 3 | He doesn’t likes coffee. | He doesn’t like coffee. |
-| 4 | There is many students in my class. | There are many students in my class. |
-| 5 | I went to home late. | I went home late. |
-| 6 | Because I was tired. I slept early. | Because I was tired, I slept early. |
-| 7 | I have many homework. | I have a lot of homework. |
-| 8 | The movie was more better than I expected. | The movie was better than I expected. |
-| 9 | I am very like this book. | I really like this book. |
-| 10 | She is a person which always helps me. | She is a person who always helps me. |
+7. Learning English is a long journey.
+8. Many students are afraid of speaking.
+9. A good teacher makes a difficult subject easier to understand.
+10. Students who review regularly usually remember longer.
+11. Making mistakes is part of learning a language.
+12. She likes music very much.
 
-**Bài tập C — Dịch có kiểm soát**
+*Đếm được / không đếm được (much · many · a lot of):*
 
-| # | Tiếng Việt | Suggested answer |
-| --- | --- | --- |
-| 1 | Tôi thường học tiếng Anh vào buổi tối. | I usually study English in the evening. |
-| 2 | Cô ấy đang chuẩn bị cho kỳ thi. | She is preparing for the exam. |
-| 3 | Tôi đã gặp bạn tôi hôm qua. | I met my friend yesterday. |
-| 4 | Nếu tôi có thời gian, tôi sẽ luyện nói. | If I have time, I will practise speaking. |
-| 5 | Mặc dù tiếng Anh khó, tôi vẫn muốn cải thiện. | Although English is difficult, I still want to improve. |
-| 6 | Có một công viên gần nhà tôi. | There is a park near my house. |
-| 7 | Những học sinh ôn tập thường xuyên thường nhớ lâu hơn. | Students who review regularly usually remember longer. |
-| 8 | Tôi không có nhiều kinh nghiệm với IELTS. | I do not have much experience with IELTS. |
-| 9 | Bạn đã học tiếng Anh bao lâu rồi? | How long have you studied English? / How long have you been learning English? |
-| 10 | Tôi muốn học theo cách tự nhiên hơn. | I want to learn in a more natural way. |
+13. I have a lot of homework this week.
+14. I do not have much free time.
+15. There is a lot of information online.
+16. I do not have much experience with IELTS yet.
+17. She gave me two useful pieces of advice.
+18. There are many students in my class.
+
+*There is / There are · mô tả nơi chốn:*
+
+19. There is a park near my house.
+20. There is a wooden desk near the window.
+21. There are two large windows in the living room.
+22. My phone is on the table.
+23. The streets are crowded at night.
+24. The weather is getting colder these days.
 
 ## 🗂️ Phòng từ vựng
 

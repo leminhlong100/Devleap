@@ -17,8 +17,9 @@
  * Audio: mặc định phát bằng Web Speech API (script). Khi có bản THU GIỌNG NGƯỜI
  * THẬT, chỉ cần đặt `audioUrl` (đường dẫn file .mp3) — component sẽ ưu tiên file.
  *
- * Khóa theo `${week}:${day}` (day = số buổi hiển thị 1..7). Hiện có đủ Tuần 1 · Buổi 1–7;
- * thêm tuần/buổi khác bằng cách bổ sung khóa mới theo đúng cấu trúc.
+ * Khóa theo `${week}:${day}` — day = SỐ THỨ TỰ BUỔI TRONG TUẦN (1..7), không phải số
+ * buổi tuyệt đối. Vì vậy Tuần 2 (hiển thị "Day 8–14" trong .md) vẫn dùng khóa 2:1..2:7.
+ * Hiện có đủ Tuần 1 và Tuần 2; thêm tuần khác bằng cách bổ sung khóa mới theo đúng cấu trúc.
  */
 
 import { ieltsAudioManifest } from './ieltsAudioManifest.js'
@@ -609,6 +610,604 @@ export const ieltsInput = {
           opts: ['Tired', 'Nervous', 'More confident', 'Bored'],
           correct: 2,
           ex: '"Yes, I do. I am more confident." → Học viên tự tin hơn.',
+        },
+      ],
+    },
+  },
+
+  // ═══════════════════════════ TUẦN 2 ═══════════════════════════
+  // Trọng tâm: xương sống câu — chủ ngữ–động từ hợp nhau, đếm được/không đếm được,
+  // bồi câu ngắn thành dài. Từ vựng: Family & Relationships, School & Learning.
+
+  // ───────────────────────── Tuần 2 · Buổi 1 (Day 8) ─────────────────────────
+  // Chủ ngữ – động từ hợp nhau (be vs động từ thường, "s" số nhiều).
+  '2:1': {
+    reading: {
+      title: "Trang's family",
+      subtitle: 'Đọc đoạn về gia đình (68 từ) rồi trả lời câu hỏi',
+      // 68 từ — luyện "be" (is/are) + hòa hợp chủ ngữ–động từ + "s" số nhiều.
+      text:
+        'Trang lives in Nam Dinh with her parents and her two brothers. Her father is ' +
+        'an engineer, and her mother is a nurse. Her brothers are still at school. ' +
+        'Every evening, the family eats dinner together and talks about the day. ' +
+        'Trang and her mother often share the housework. Her brothers are noisy, but ' +
+        'she gets along with them well. She thinks a close family makes life easier.',
+      questions: [
+        {
+          q: "What does Trang's father do?",
+          opts: ['He is a nurse', 'He is an engineer', 'He is a teacher', 'He is a student'],
+          correct: 1,
+          ex: '“Her father is an engineer.” → Bố Trang là kỹ sư.',
+        },
+        {
+          q: 'Where are her brothers during the day?',
+          opts: ['At work', 'At home', 'Still at school', 'In another city'],
+          correct: 2,
+          ex: '“Her brothers are still at school.” → Các em vẫn còn đi học.',
+        },
+        {
+          q: 'What do Trang and her mother often do together?',
+          opts: [
+            'Share the housework',
+            'Cook for the brothers',
+            'Go to work',
+            'Play music',
+          ],
+          correct: 0,
+          ex: '“Trang and her mother often share the housework.” → cùng chia việc nhà.',
+        },
+        {
+          // Paraphrase: "she gets along with them well" diễn đạt lại.
+          q: 'What does the text suggest about Trang and her brothers?',
+          opts: [
+            'They argue all the time',
+            'They have a good relationship',
+            'They never meet',
+            'They study the same subject',
+          ],
+          correct: 1,
+          ex: '“… she gets along with them well.” → quan hệ tốt với các em (dù các em ồn ào).',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'A new classmate',
+      subtitle: 'Điền PHIẾU GIỚI THIỆU — nghe và viết đúng TUỔI, SỐ ANH CHỊ EM và MÔN học',
+      audioUrl: null,
+      script:
+        'Hi, I am Mai Anh. I am sixteen years old. ' +
+        'I have two sisters and one brother. My favourite subject is history.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Age: _____ years old',
+          answer: ['sixteen', '16'],
+          ex: '“I am sixteen years old.” → 16. Cẩn thận sixteen (16) ≠ sixty (60).',
+        },
+        {
+          type: 'cloze',
+          q: 'Number of sisters: _____',
+          answer: ['two', '2'],
+          ex: '“I have two sisters …” → 2.',
+        },
+        {
+          type: 'cloze',
+          q: 'Favourite subject: _____',
+          answer: ['history'],
+          ex: '“My favourite subject is history.” → history.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 2 (Day 9) ─────────────────────────
+  // Đếm được / Không đếm được (much / many / a lot of).
+  '2:2': {
+    reading: {
+      title: 'Too much homework?',
+      subtitle: 'Đọc đoạn về việc học của Nam (74 từ) rồi trả lời câu hỏi',
+      // 74 từ — dùng much/many/a lot of + danh từ đếm được/không đếm được.
+      text:
+        'Nam is a student in Hue. This year, he has a lot of homework and not much ' +
+        'free time. He says, "I do not have many hobbies now, but I still play ' +
+        'football on Sundays." Nam drinks a lot of water during the day, but he does ' +
+        'not drink much coffee. He has many friends at school, and they often share ' +
+        'advice about studying. Nam believes that a little rest every day is important.',
+      questions: [
+        {
+          q: 'How much free time does Nam have this year?',
+          opts: ['A lot', 'Not much', 'Too much', 'No homework'],
+          correct: 1,
+          ex: '“… he has a lot of homework and not much free time.” → ít thời gian rảnh.',
+        },
+        {
+          q: 'What does Nam do on Sundays?',
+          opts: ['He studies all day', 'He plays football', 'He drinks coffee', 'He sleeps'],
+          correct: 1,
+          ex: '“… I still play football on Sundays.”',
+        },
+        {
+          q: 'What do Nam and his friends often share?',
+          opts: [
+            'Their homework',
+            'Their coffee',
+            'Advice about studying',
+            'Their hobbies',
+          ],
+          correct: 2,
+          ex: '“… they often share advice about studying.” (“advice” không đếm được.)',
+        },
+        {
+          // Paraphrase: "a little rest every day is important".
+          q: 'What does Nam believe?',
+          opts: [
+            'Studying all night is best',
+            'Resting a little each day matters',
+            'Coffee helps him study',
+            'Hobbies are a waste of time',
+          ],
+          correct: 1,
+          ex: '“… a little rest every day is important.” → nghỉ ngơi một chút mỗi ngày là quan trọng.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'The shopping list',
+      subtitle: 'Điền PHIẾU MUA HÀNG — nghe và viết đúng SỐ LƯỢNG (đếm được & không đếm được)',
+      audioUrl: null,
+      script:
+        'How many apples do we need? We need six apples and three bottles of milk. ' +
+        'We do not have much sugar, so buy one kilo.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Apples: _____',
+          answer: ['six', '6'],
+          ex: '“We need six apples …” → 6.',
+        },
+        {
+          type: 'cloze',
+          q: 'Bottles of milk: _____',
+          answer: ['three', '3'],
+          ex: '“… and three bottles of milk.” → 3.',
+        },
+        {
+          type: 'cloze',
+          q: 'Sugar to buy: _____ kilo',
+          answer: ['one', '1'],
+          ex: '“… buy one kilo.” → 1 kilo. (“sugar” không đếm được → dùng “much”.)',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 3 (Day 10) ─────────────────────────
+  // Phòng từ vựng Family & School — đọc về một người thầy + nghe thời khóa biểu.
+  '2:3': {
+    reading: {
+      title: 'My favourite teacher',
+      subtitle: 'Đọc đoạn về một người thầy (73 từ) rồi trả lời câu hỏi',
+      // 73 từ — từ vựng School & Learning (pay attention, mistake, review, habit).
+      text:
+        'My favourite teacher is Mr Quang. He teaches maths, and he always pays ' +
+        'attention to weak students. When I make a mistake, he does not get angry. ' +
+        'He explains the problem again in a simple way. He often says, "Mistakes are ' +
+        'part of learning." Because of him, I review my lessons regularly and I am not ' +
+        'afraid of exams. Mr Quang helps me build good study habits, and I respect him a lot.',
+      questions: [
+        {
+          q: 'What subject does Mr Quang teach?',
+          opts: ['English', 'History', 'Maths', 'Science'],
+          correct: 2,
+          ex: '“He teaches maths …” → Thầy dạy Toán.',
+        },
+        {
+          q: 'What does Mr Quang do when the writer makes a mistake?',
+          opts: [
+            'He gets angry',
+            'He explains it again simply',
+            'He ignores the student',
+            'He gives more homework',
+          ],
+          correct: 1,
+          ex: '“… he does not get angry. He explains the problem again in a simple way.”',
+        },
+        {
+          q: 'How does the writer prepare for exams now?',
+          opts: [
+            'By studying only the night before',
+            'By reviewing lessons regularly',
+            'By copying friends',
+            'By avoiding maths',
+          ],
+          correct: 1,
+          ex: '“… I review my lessons regularly …”',
+        },
+        {
+          // Paraphrase: "Mistakes are part of learning."
+          q: 'What does Mr Quang believe about mistakes?',
+          opts: [
+            'They should be punished',
+            'They are a normal part of studying',
+            'They mean a student is lazy',
+            'They must be hidden',
+          ],
+          correct: 1,
+          ex: '“Mistakes are part of learning.” → mắc lỗi là phần bình thường của việc học.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'Today at school',
+      subtitle: 'Điền THỜI KHÓA BIỂU — nghe và viết đúng MÔN, SỐ PHÒNG và GIỜ học',
+      audioUrl: null,
+      script:
+        'Good morning. Today we have English in room ten at eight o’clock. ' +
+        'After that, we have history. Do not forget your homework for Friday.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'First lesson: _____',
+          answer: ['English'],
+          ex: '“… we have English in room ten …” → môn đầu là English.',
+        },
+        {
+          type: 'cloze',
+          q: 'Room number: _____',
+          answer: ['ten', '10'],
+          ex: '“… in room ten …” → phòng 10.',
+        },
+        {
+          type: 'cloze',
+          q: 'Start time: _____ o’clock',
+          answer: ['eight', '8'],
+          ex: '“… at eight o’clock.” → 8 giờ.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 4 (Day 11) ─────────────────────────
+  // Luyện nói Part 1 — đọc bài mẫu cách trả lời + nghe hỏi-đáp Part 1.
+  '2:4': {
+    reading: {
+      title: 'How to answer Part 1',
+      subtitle: 'Đọc mẹo trả lời Speaking Part 1 (74 từ) rồi trả lời câu hỏi',
+      // 74 từ — meta về kỹ năng Part 1: trả lời 2–3 câu, thêm lý do/ví dụ.
+      text:
+        'In a Part 1 interview, the examiner asks simple questions about you. For ' +
+        'example, "Do you work or study?" A good answer has two or three sentences. ' +
+        'You can say, "I am a student. I study economics at university, and I really ' +
+        'enjoy it." Do not answer with only one word. Add a short reason or example. ' +
+        'Many learners are nervous, but a calm, clear answer always sounds better than ' +
+        'a long, confused one.',
+      questions: [
+        {
+          q: 'How many sentences should a good Part 1 answer have?',
+          opts: ['Only one', 'Two or three', 'At least ten', 'None'],
+          correct: 1,
+          ex: '“A good answer has two or three sentences.”',
+        },
+        {
+          q: 'What should you add after your basic answer?',
+          opts: [
+            'A long story',
+            'A short reason or example',
+            'A difficult word',
+            'Nothing more',
+          ],
+          correct: 1,
+          ex: '“Add a short reason or example.”',
+        },
+        {
+          q: 'What kind of answer sounds best?',
+          opts: [
+            'A long, confused one',
+            'A one-word answer',
+            'A calm, clear one',
+            'A very fast one',
+          ],
+          correct: 2,
+          ex: '“… a calm, clear answer always sounds better than a long, confused one.”',
+        },
+        {
+          // Paraphrase: "Do not answer with only one word."
+          q: 'What advice does the text give about short answers?',
+          opts: [
+            'Always answer in one word',
+            'Avoid giving one-word answers',
+            'Never speak to the examiner',
+            'Memorise long introductions',
+          ],
+          correct: 1,
+          ex: '“Do not answer with only one word.” → tránh trả lời cụt lủn một từ.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'A Part 1 interview',
+      subtitle: 'Nghe đoạn hỏi-đáp Part 1 — điền MÔN học, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Examiner: Do you work or study? Candidate: I study. I am a second-year student. ' +
+        'Examiner: What do you study? Candidate: I study computer science. ' +
+        'I like it because it is creative.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Field of study: _____',
+          answer: ['computer science', 'computer-science'],
+          ex: '“I study computer science.” → ngành Khoa học máy tính.',
+        },
+        {
+          q: 'What year is the candidate in?',
+          opts: ['First year', 'Second year', 'Third year', 'Final year'],
+          correct: 1,
+          ex: '“I am a second-year student.” → năm thứ hai.',
+        },
+        {
+          q: 'Why does the candidate like the subject?',
+          opts: ['It is easy', 'It is creative', 'It is short', 'It pays well'],
+          correct: 1,
+          ex: '“I like it because it is creative.” → vì nó sáng tạo.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 5 (Day 12) ─────────────────────────
+  // "Ngày nạp" — mô tả căn phòng (there is/are) + nghe mô tả phòng (SỐ ĐỒ VẬT).
+  '2:5': {
+    reading: {
+      title: 'My bedroom',
+      subtitle: 'Đọc đoạn mô tả một căn phòng (73 từ) rồi trả lời câu hỏi',
+      // 73 từ — luyện "there is / there are" + giới từ chỉ vị trí.
+      text:
+        'My bedroom is small but comfortable. There is a wooden desk near the window, ' +
+        'and there are two shelves full of books above it. On the left, there is a ' +
+        'narrow bed with a blue blanket. There are some photos of my family on the wall. ' +
+        'In the corner, there is an old guitar that I rarely play. The room is quiet in ' +
+        'the morning, so it is a good place to study.',
+      questions: [
+        {
+          q: 'What is near the window?',
+          opts: ['A bed', 'A wooden desk', 'A guitar', 'A shelf'],
+          correct: 1,
+          ex: '“There is a wooden desk near the window …”',
+        },
+        {
+          q: 'How many shelves are there?',
+          opts: ['One', 'Two', 'Three', 'Four'],
+          correct: 1,
+          ex: '“… there are two shelves full of books …” → 2 kệ.',
+        },
+        {
+          q: 'What is in the corner of the room?',
+          opts: ['A television', 'An old guitar', 'A desk', 'A window'],
+          correct: 1,
+          ex: '“In the corner, there is an old guitar …”',
+        },
+        {
+          // Paraphrase: "quiet in the morning, so it is a good place to study".
+          q: 'Why is the room good for studying?',
+          opts: [
+            'Because it is large',
+            'Because it is quiet in the morning',
+            'Because it has a television',
+            'Because it is never used',
+          ],
+          correct: 1,
+          ex: '“The room is quiet in the morning, so it is a good place to study.”',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'The living room',
+      subtitle: 'Điền PHIẾU MÔ TẢ PHÒNG — nghe và viết đúng SỐ LƯỢNG đồ vật',
+      audioUrl: null,
+      script:
+        'This is the living room. There are four chairs and one big table in the middle. ' +
+        'There is a television on the wall. The room has two large windows.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Number of chairs: _____',
+          answer: ['four', '4'],
+          ex: '“There are four chairs …” → 4.',
+        },
+        {
+          type: 'cloze',
+          q: 'Tables in the middle: _____',
+          answer: ['one', '1'],
+          ex: '“… and one big table in the middle.” → 1.',
+        },
+        {
+          type: 'cloze',
+          q: 'Number of windows: _____',
+          answer: ['two', '2'],
+          ex: '“The room has two large windows.” → 2.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 6 (Day 13) ─────────────────────────
+  // "Vườn câu" — đọc về thói quen viết câu sạch lỗi + nghe thầy sửa lỗi (much/many).
+  '2:6': {
+    reading: {
+      title: "Lan's sentence garden",
+      subtitle: 'Đọc đoạn về thói quen viết câu sạch lỗi (75 từ) rồi trả lời câu hỏi',
+      // 75 từ — tổng hợp tuần: thiếu động từ, "s" số nhiều, danh từ đếm được.
+      text:
+        'Lan keeps a small "sentence garden" in her notebook. Every day, she writes a ' +
+        'few clean sentences and checks three things: the verb, the plural "s", and ' +
+        'countable nouns. At first, she wrote, "My sister beautiful," and forgot the ' +
+        'verb. Now she writes, "My sister is beautiful," and she is proud of it. She ' +
+        'does not write many sentences each day, but each one is correct. Lan believes ' +
+        'that slow, careful practice builds strong English.',
+      questions: [
+        {
+          q: 'What three things does Lan check in each sentence?',
+          opts: [
+            'Spelling, length, and colour',
+            'The verb, the plural "s", and countable nouns',
+            'The teacher, the topic, and the date',
+            'Speaking, reading, and listening',
+          ],
+          correct: 1,
+          ex: '“… checks three things: the verb, the plural “s”, and countable nouns.”',
+        },
+        {
+          q: 'What was wrong with "My sister beautiful"?',
+          opts: [
+            'It had no verb',
+            'It had no subject',
+            'It was too long',
+            'It had a spelling mistake',
+          ],
+          correct: 0,
+          ex: '“… and forgot the verb.” → câu thiếu động từ (đúng: My sister IS beautiful).',
+        },
+        {
+          q: 'How many sentences does Lan write each day?',
+          opts: ['Very many', 'Not many, but correct', 'None', 'Exactly fifty'],
+          correct: 1,
+          ex: '“She does not write many sentences each day, but each one is correct.”',
+        },
+        {
+          // Paraphrase: "slow, careful practice builds strong English".
+          q: 'What does Lan believe about practice?',
+          opts: [
+            'Fast practice is best',
+            'Practising slowly and carefully improves her English',
+            'Practice is a waste of time',
+            'Only speaking matters',
+          ],
+          correct: 1,
+          ex: '“… slow, careful practice builds strong English.” → luyện chậm và kỹ giúp giỏi lên.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'Fixing a mistake',
+      subtitle: 'Nghe thầy sửa lỗi — điền CỤM đúng, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Teacher: You wrote, "I have many homework." Remember, homework is uncountable. ' +
+        'Student: So I should say "a lot of homework"? Teacher: Yes, exactly. Good correction.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'The correct phrase is: a lot of _____',
+          answer: ['homework'],
+          ex: '“So I should say a lot of homework?” → a lot of homework.',
+        },
+        {
+          q: 'Why was "many homework" wrong?',
+          opts: [
+            'Homework is uncountable',
+            'Homework is plural',
+            '"Many" is not a word',
+            'The spelling was wrong',
+          ],
+          correct: 0,
+          ex: '“… homework is uncountable.” → danh từ không đếm được, không dùng “many”.',
+        },
+        {
+          q: "What did the teacher think of the student's correction?",
+          opts: ['It was wrong', 'It was good', 'It was too long', 'It was the same'],
+          correct: 1,
+          ex: '“Yes, exactly. Good correction.”',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 2 · Buổi 7 (Day 14) ─────────────────────────
+  // Tổng hợp tuần — đọc bài nhìn lại tuần 2 + nghe hội thoại tổng kết (SỐ & CHI TIẾT).
+  '2:7': {
+    reading: {
+      title: 'My second week',
+      subtitle: 'Đọc đoạn nhìn lại tuần học thứ hai (76 từ) rồi trả lời câu hỏi',
+      // 76 từ — tổng hợp: thiếu be, much/many, sửa lỗi qua sổ lỗi.
+      text:
+        'This week, I learned how to build clean sentences. On Monday, I often forgot ' +
+        'the verb and wrote things like "She tired." Now I always check for a verb ' +
+        'first. I also learned the difference between "much" and "many," so I no longer ' +
+        'say "many information." My writing is still simple, but it has fewer mistakes. ' +
+        'I review my error notebook every evening. I am not perfect yet, but I am ' +
+        'clearly better than last week.',
+      questions: [
+        {
+          q: 'What did the writer often forget on Monday?',
+          opts: ['The subject', 'The verb', 'The topic', 'The homework'],
+          correct: 1,
+          ex: '“… I often forgot the verb …” (vd “She tired” thiếu “is”).',
+        },
+        {
+          q: 'What does the writer check first now?',
+          opts: ['The spelling', 'A verb', 'The length', 'The date'],
+          correct: 1,
+          ex: '“Now I always check for a verb first.”',
+        },
+        {
+          q: 'What does the writer do every evening?',
+          opts: [
+            'Watch television',
+            'Review the error notebook',
+            'Write fifty sentences',
+            'Skip studying',
+          ],
+          correct: 1,
+          ex: '“I review my error notebook every evening.”',
+        },
+        {
+          // Paraphrase: "I am clearly better than last week."
+          q: "What is the writer's overall feeling about the week?",
+          opts: [
+            'No progress was made',
+            'There has been clear improvement',
+            'English became harder',
+            'The week was a waste',
+          ],
+          correct: 1,
+          ex: '“… I am clearly better than last week.” → đã tiến bộ rõ rệt.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'End of week review',
+      subtitle: 'Nghe hội thoại tổng kết — điền CON SỐ, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Teacher: How many grammar rules did you practise this week? ' +
+        'Student: I practised about five rules. Teacher: And which one was the hardest? ' +
+        'Student: Much and many. But I feel more confident now.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Number of grammar rules practised: about _____',
+          answer: ['five', '5'],
+          ex: '“I practised about five rules.” → khoảng 5. Cẩn thận five (5) ≠ nine (9).',
+        },
+        {
+          q: 'Which rule was the hardest for the student?',
+          opts: ['The verb "be"', 'Much and many', 'Plural "s"', 'There is/are'],
+          correct: 1,
+          ex: '“… Much and many.” → khó nhất là much/many.',
+        },
+        {
+          q: 'How does the student feel now?',
+          opts: ['More confident', 'More tired', 'More nervous', 'Bored'],
+          correct: 0,
+          ex: '“But I feel more confident now.”',
         },
       ],
     },

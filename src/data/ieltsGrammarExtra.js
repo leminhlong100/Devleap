@@ -38,6 +38,26 @@ export const ieltsGrammarExtra = {
       { type: 'error', q: 'She do not like tea.', answer: ["She does not like tea.", "She doesn't like tea."], ex: 'Chủ ngữ số ít → does not / doesn’t.' },
     ],
   },
+  2: {
+    'Câu phải có động từ — Chủ ngữ hợp động từ': [
+      // —— Lỗi #1 của người Việt: quên động từ "be" + sai hòa hợp chủ ngữ–động từ + thiếu "s". ——
+      { type: 'error', q: 'My mother very patient.', answer: ['My mother is very patient.'], ex: 'Thiếu động từ "be": My mother is very patient.' },
+      { type: 'error', q: 'Student need to review regularly.', answer: ['Students need to review regularly.', 'A student needs to review regularly.'], ex: 'Số nhiều cần "s": Students need…; hoặc số ít: A student needs…' },
+      { type: 'error', q: 'She like music very much.', answer: ['She likes music very much.'], ex: 'Chủ ngữ số ít "she" → động từ thêm "s": She likes music.' },
+      { type: 'cloze', q: 'Many students _____ afraid of speaking.', answer: ['are'], ex: 'Chủ ngữ số nhiều "many students" → are.' },
+      { type: 'cloze', q: 'Learning English _____ a long journey.', answer: ['is'], ex: 'Chủ ngữ "Learning English" (số ít) → is.' },
+      { type: 'error', q: 'I am go to school every day.', answer: ['I go to school every day.'], ex: 'Động từ hành động "go" không đi với "am": I go to school every day.' },
+    ],
+    'Countable và Uncountable': [
+      // —— Lỗi #1: "many + danh từ không đếm được". Đặt LÊN ĐẦU để được ưu tiên khi gộp. ——
+      { type: 'error', q: 'I have many homework.', answer: ['I have a lot of homework.', 'I have much homework.'], ex: '"homework" không đếm được → dùng "a lot of"/"much", không dùng "many".' },
+      { type: 'error', q: 'She gave me two advice.', answer: ['She gave me two pieces of advice.'], ex: '"advice" không đếm được → đếm bằng "pieces of advice", không thêm "s".' },
+      { type: 'cloze', q: 'I do not have _____ free time. (much/many)', answer: ['much'], ex: '"free time" không đếm được → "much".' },
+      { type: 'cloze', q: 'How _____ books do you read each month? (much/many)', answer: ['many'], ex: '"books" đếm được số nhiều → "many".' },
+      { type: 'cloze', q: 'There is a lot of _____ on this website. (information/informations)', answer: ['information'], ex: '"information" không đếm được → không thêm "s".' },
+      { type: 'error', q: 'There is many students in my class.', answer: ['There are many students in my class.'], ex: '"many students" số nhiều → "There are".' },
+    ],
+  },
 }
 
 /** Lấy mảng bài tập biên soạn thêm cho một điểm ngữ pháp (theo tuần + tiêu đề). */
