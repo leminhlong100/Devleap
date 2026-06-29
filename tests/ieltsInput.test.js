@@ -4,19 +4,28 @@ import { getIeltsDay } from '@/data/courseIelts'
 
 const wordCount = (s) => s.trim().split(/\s+/).filter(Boolean).length
 
-// Mọi câu hỏi (reading/listening) phải đúng định dạng QuizTool: { q, opts, correct }.
+// Mọi câu hỏi phải đúng MỘT trong hai định dạng QuizTool:
+//  - trắc nghiệm:     { q, opts, correct }
+//  - điền chỗ trống:  { type:'cloze'|'error', q, answer: [string, …] }
+// (2–4 câu/mục: reading có thêm 1 câu paraphrase; listening có câu điền phiếu tên/số.)
 function expectValidQuestions(qs) {
   expect(Array.isArray(qs)).toBe(true)
   expect(qs.length).toBeGreaterThanOrEqual(2)
-  expect(qs.length).toBeLessThanOrEqual(3)
+  expect(qs.length).toBeLessThanOrEqual(4)
   for (const q of qs) {
     expect(typeof q.q).toBe('string')
     expect(q.q.length).toBeGreaterThan(0)
-    expect(Array.isArray(q.opts)).toBe(true)
-    expect(q.opts.length).toBeGreaterThanOrEqual(3)
-    expect(Number.isInteger(q.correct)).toBe(true)
-    expect(q.correct).toBeGreaterThanOrEqual(0)
-    expect(q.correct).toBeLessThan(q.opts.length) // index hợp lệ
+    if (q.type === 'cloze' || q.type === 'error') {
+      expect(Array.isArray(q.answer)).toBe(true)
+      expect(q.answer.length).toBeGreaterThanOrEqual(1)
+      for (const a of q.answer) expect(typeof a).toBe('string')
+    } else {
+      expect(Array.isArray(q.opts)).toBe(true)
+      expect(q.opts.length).toBeGreaterThanOrEqual(3)
+      expect(Number.isInteger(q.correct)).toBe(true)
+      expect(q.correct).toBeGreaterThanOrEqual(0)
+      expect(q.correct).toBeLessThan(q.opts.length) // index hợp lệ
+    }
   }
 }
 

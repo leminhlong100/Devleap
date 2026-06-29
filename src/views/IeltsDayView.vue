@@ -30,6 +30,11 @@ const user = useUserStore()
 
 const d = computed(() => getIeltsDay(props.week, props.day))
 
+// BUỔI CHẨN ĐOÁN ĐẦU VÀO ("mốc 0"): Tuần 1 · Buổi 1. Checklist không hiển thị trên
+// trang, nên khung hóa rõ ngay tại đây để người học hiểu hôm nay là đo điểm xuất phát
+// (viết được AI chấm CEFR + ghi âm), KHÔNG phải để lấy điểm cao.
+const isDiagnostic = computed(() => !!d.value && Number(d.value.week) === 1 && d.value.n === 1)
+
 // —— KẾ HOẠCH BUỔI: chỉ hiện những khối mà checklist của ngày thật sự nhắc đến ——
 // Mục tiêu: hết "quá tải" (12 khối/ngày) bằng cách bám đúng nhịp tác giả đã thiết kế
 // cho từng ngày (Ngày 1 = ngữ pháp + viết + ghi âm; ngày từ vựng mới mở phòng từ…).
@@ -355,6 +360,19 @@ const aiContext = computed(() =>
         </button>
       </div>
 
+      <!-- BANNER CHẨN ĐOÁN ĐẦU VÀO — chỉ ở Tuần 1 · Buổi 1 -->
+      <section v-if="isDiagnostic" class="diag-card">
+        <div class="diag-ico">🩺</div>
+        <div class="diag-body">
+          <h3>Buổi chẩn đoán đầu vào — "mốc 0"</h3>
+          <p>
+            Hôm nay <b>không phải để lấy điểm cao</b>, mà để ghi lại <b>điểm xuất phát</b> của em. Hãy làm thật hai việc:
+            (1) <b>viết</b> bài về bản thân rồi nhờ AI chấm — điểm &amp; trình độ <b>CEFR</b> AI đưa ra chính là mốc 0;
+            (2) <b>ghi âm</b> đọc to 5 câu để giữ lại. Cuối khóa em sẽ mở lại "mốc 0" này và thấy mình tiến bộ tới đâu.
+          </p>
+        </div>
+      </section>
+
       <!-- TWO COLUMN -->
       <div class="two-col">
         <AgendaRail title="Buổi học hôm nay" subtitle="Nhẹ nhàng, làm lần lượt nhé" :items="agenda" />
@@ -677,6 +695,39 @@ const aiContext = computed(() =>
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* banner chẩn đoán đầu vào (Tuần 1 · Buổi 1) */
+.diag-card {
+  margin-top: 18px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #fff7e8, #fff1f1);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  border-left: 4px solid #ffb020;
+  border-radius: 18px;
+  padding: 18px 22px;
+}
+.diag-ico {
+  font-size: 30px;
+  line-height: 1;
+  flex: none;
+}
+.diag-body h3 {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #7a5200;
+  letter-spacing: -0.3px;
+}
+.diag-body p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #6a5a3a;
+  margin-top: 6px;
+}
+.diag-body b {
+  color: #5a4300;
 }
 
 /* header */

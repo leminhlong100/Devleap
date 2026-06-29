@@ -26,6 +26,14 @@ export const ieltsGrammarExtra = {
       { type: 'error', q: 'My mother a nurse.', answer: ['My mother is a nurse.'], ex: 'Thiếu "be": My mother is a nurse.' },
     ],
     'Do, Does và Did': [
+      // —— Phân biệt be ↔ động từ thường: lỗi #1 của người Việt ("I am study", "Do you are…").
+      // Đặt LÊN ĐẦU để được ưu tiên giữ khi gộp (cổng cắt còn ≤10 câu/điểm). ——
+      { type: 'error', q: 'I am study English every day.', answer: ['I study English every day.'], ex: 'Động từ hành động "study" KHÔNG đi với "am". Đúng: I study English every day. (Chỉ dùng "be" với danh từ/tính từ/nơi chốn.)' },
+      { type: 'error', q: 'Do you are a student?', answer: ['Are you a student?'], ex: 'Sau danh từ/tính từ dùng "be": câu hỏi là "Are you…?", không phải "Do you are…?".' },
+      { type: 'error', q: 'She is work at a hospital.', answer: ['She works at a hospital.'], ex: '"work" là động từ hành động → bỏ "is": She works at a hospital.' },
+      { type: 'error', q: 'Are you have a car?', answer: ['Do you have a car?'], ex: '"have" là động từ thường → hỏi bằng "Do", không dùng "Are": Do you have a car?' },
+      { type: 'cloze', q: '_____ you a student? — Yes, I am.', answer: ['Are'], ex: 'Trả lời "I am" → câu hỏi dùng "be": Are you a student?' },
+      { type: 'cloze', q: '_____ you study every day? — Yes, I do.', answer: ['Do'], ex: 'Trả lời "I do" → câu hỏi dùng trợ động từ: Do you study every day?' },
       { type: 'cloze', q: '_____ your brother work in a bank?', answer: ['Does'], ex: 'Chủ ngữ số ít "your brother" → Does … work?' },
       { type: 'error', q: 'She do not like tea.', answer: ["She does not like tea.", "She doesn't like tea."], ex: 'Chủ ngữ số ít → does not / doesn’t.' },
     ],

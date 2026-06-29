@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "gen:audio": "node scripts/gen-ielts-audio.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",

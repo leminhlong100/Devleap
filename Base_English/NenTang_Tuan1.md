@@ -12,6 +12,7 @@
 - **Reading:** short personal texts
 - **Listening:** names, numbers, daily actions
 - **Nhiệm vụ nhẹ:** Làm thẻ hồ sơ tiếng Anh về bản thân.
+- **Chẩn đoán đầu vào (mốc 0):** Ngay buổi 1 — viết 5–10 câu về bản thân (AI chấm điểm + xếp trình độ CEFR) và ghi âm đọc to. Đây là "mốc 0" để cuối khóa so sánh, KHÔNG phải để đánh giá cao–thấp.
 - **Mốc kiểm tra:** Viết được 10 câu đơn đúng về bản thân.
 
 ### Nhịp học hằng ngày
@@ -55,9 +56,9 @@ Một câu tiếng Anh bình thường cần ít nhất chủ ngữ và động 
 | I like very much music. | I like music very much. |
 | In my city has many cafés. | There are many cafés in my city. |
 
-**Bài tập ngắn:** Viết 10 câu về một ngày của em. Gạch chân chủ ngữ một lần và động từ hai lần.
+**Bài tập ngắn:** Viết 5 câu về một ngày của em (sáng – trưa – chiều – tối). Gạch chân chủ ngữ một lần và động từ hai lần.
 
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+**Mẹo nhớ:** Mỗi câu tiếng Anh phải có ÍT NHẤT một động từ. Viết xong câu nào, tự hỏi: "Động từ của câu này đâu?" — nếu không tìm thấy, rất có thể em đang thiếu **be** (is/am/are).
 
 ### Be — Động từ dễ bị bỏ quên nhất
 
@@ -82,7 +83,7 @@ Be dùng khi em mô tả identity, feeling, place, state: ai đó là gì, như 
 
 **Bài tập ngắn:** Nhìn quanh phòng và viết 8 câu dùng be, chẳng hạn The desk is..., The books are..., I am....
 
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+**Mẹo nhớ:** Người Việt hay bỏ "là/thì/ở" nên hay quên **be**. Quy tắc nhanh: trước tính từ / danh từ / nơi chốn mà câu KHÔNG có động từ thường → chắc chắn cần am/is/are.
 
 ### Do, Does và Did
 
@@ -107,7 +108,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 
 **Bài tập ngắn:** Chuyển các câu sau thành câu hỏi: You study English, She works here, They went home, He likes cats.
 
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+**Mẹo nhớ:** Khi đã có Do/Does/Did thì động từ chính LUÔN về dạng nguyên thể: *doesn't **like***, *didn't **go*** (không phải "doesn't likes", "didn't went"). Và đừng trộn với "be" — câu có động từ thường thì hỏi bằng Do/Does/Did, không dùng "Are you study…?".
 
 ## 🗂️ Phòng từ vựng
 
@@ -256,15 +257,17 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
-> Mỗi buổi ~45–60 phút. Làm lần lượt các mục bên dưới; hai mục **không được bỏ**: *Ôn đầu giờ* (để nhớ lâu) và *Sổ lỗi* (để sửa tận gốc). Nội dung ngữ pháp & từ vựng của buổi nằm ngay trong trang học.
+> Mỗi buổi ~60–75 phút (buổi nhẹ có thể xong sớm hơn). Làm lần lượt các mục bên dưới; hai mục **không được bỏ**: *Ôn đầu giờ* (để nhớ lâu) và *Sổ lỗi* (để sửa tận gốc). Nội dung ngữ pháp & từ vựng của buổi nằm ngay trong trang học.
 
-### Day 1 — Xương sống của câu (S–V–O) + ghi âm "mốc 0"
+### Day 1 — Xương sống của câu (S–V–O) + chẩn đoán đầu vào "mốc 0"
 - [ ] Ôn (5'): đọc to "Mục tiêu tuần" để nắm đích đến.
 - [ ] Học: đọc điểm ngữ pháp của buổi (Sentence Backbone), chép 4 câu mẫu, gạch chân chủ ngữ + động từ.
 - [ ] 💡 Mẹo nhận diện: Chủ ngữ (S) = ai/cái gì đang được nói đến. Động từ (V) = hành động (study, like, go) hoặc trạng thái (is, am, are). Ví dụ: "_I_ **study** English" → S=I, V=study.
 - [ ] Luyện ngữ pháp: làm bài tập trong trang, đạt ≥70% để mở buổi sau.
-- [ ] Viết: làm bài tập viết (10 câu về một ngày của em), nhờ AI chữa.
-- [ ] Sản phẩm: ghi âm đọc to 5 câu của em (giữ làm "bản ghi mốc 0" để cuối khóa so sánh).
+- [ ] Đọc hiểu: đọc bài Reading "About Mai", trả lời 3 câu hỏi.
+- [ ] Nghe hiểu: nghe bài Listening "Meet Nam", chú ý TÊN và TUỔI; trả lời 3 câu hỏi.
+- [ ] 🩺 Chẩn đoán — Viết: làm bài viết (5 câu về một ngày của em) rồi nhờ AI chữa. Điểm số + trình độ (CEFR) mà AI đưa ra chính là MỐC 0 của em — đừng lo cao thấp, chỉ cần thật.
+- [ ] 🩺 Chẩn đoán — Nói: ghi âm đọc to 5 câu của em (giữ làm "bản ghi mốc 0" để cuối khóa nghe lại và thấy mình tiến bộ).
 - [ ] Sổ lỗi (5'): ghi 2 lỗi hay mắc + viết lại câu đúng.
 
 ### Day 2 — Động từ "be" (động từ hay bị quên nhất)
@@ -275,8 +278,8 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Viết: viết 8 câu mô tả phòng/cảm xúc, mỗi câu có "be"; nhờ AI chữa.
 - [ ] Sổ lỗi (5'): ghi mọi câu đã quên "be".
 - [ ] Đọc hiểu: đọc bài Reading của buổi, trả lời 3 câu hỏi.
-- [ ] Luyện nghe: nghe bài Listening, chú ý TÊN và TUỔI; trả lời 3 câu hỏi.
-- [ ] Extra Challenge: viết thêm 4 câu dùng "be" ở thể phủ định (VD: "I am not lazy.").
+- [ ] Nghe hiểu: nghe bài Listening, chú ý TÊN và TUỔI; trả lời 3 câu hỏi.
+- [ ] Extra Challenge *(không bắt buộc)*: viết thêm 4 câu dùng "be" ở thể phủ định (VD: "I am not lazy.").
 
 ### Day 3 — Do / Does / Did (hỏi & phủ định)
 - [ ] Ôn (5'): đọc to 5 câu "be" của Day 2.
@@ -287,7 +290,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Nói & Quiz: tự hỏi–tự đáp 5 câu với AI + làm quiz từ vựng buổi.
 - [ ] Sổ lỗi (5'): chú ý lỗi "doesn't likes / didn't went".
 - [ ] Đọc hiểu: đọc bài Reading của buổi, trả lời 3 câu hỏi.
-- [ ] Luyện nghe: nghe bài Listening, chú ý câu hỏi dùng do/does/did; trả lời 3 câu hỏi.
+- [ ] Nghe hiểu: nghe bài Listening, chú ý câu hỏi dùng do/does/did; trả lời 3 câu hỏi.
 
 ### Day 4 — Ôn ngữ pháp + Phòng từ vựng Self & Health
 - [ ] Ôn (5'): nhớ-lại điểm ngữ pháp được ôn hôm nay.
@@ -310,10 +313,10 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Học: dựng dàn ý 5 ý (tên/tuổi → học → điểm mạnh → mục tiêu → cảm xúc).
 - [ ] Luyện ngữ pháp: làm bài tập của buổi, đạt ≥70%.
 - [ ] Viết: viết đoạn 6–8 câu giới thiệu bản thân (be + do + 2 cụm tuần này); nhờ AI chữa.
-- [ ] Sản phẩm: ghi âm 60 giây; nghe lại một lần, chỉ ghi 2 điểm cần sửa.
+- [ ] Sản phẩm: ghi âm 60 giây giới thiệu bản thân. Nghe lại 1 lần và tự chấm theo **4 tiêu chí**: (1) đủ 5 ý chưa? (2) câu nào thiếu **be** hoặc sai **do/does**? (3) có đọc rõ ÂM CUỐI (-s, -ed) không? (4) nói có trôi không hay ngắt quá nhiều? → ghi 2 điểm cần sửa.
 - [ ] Sổ lỗi (5'): so với "bản ghi mốc 0" — đã rõ hơn ở đâu?
 - [ ] Đọc hiểu: đọc bài Reading (một bài giới thiệu mẫu), trả lời 3 câu hỏi.
-- [ ] Luyện nghe: nghe bài Listening (bạn mới giới thiệu), trả lời 3 câu hỏi.
+- [ ] Nghe hiểu: nghe bài Listening (bạn mới giới thiệu), trả lời 3 câu hỏi.
 - [ ] Extra Challenge: thử giới thiệu lại bằng cách đổi 2 thông tin (VD: đổi mục tiêu và sở thích).
 
 ### Day 7 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -322,7 +325,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Viết: viết 8 câu về chủ đề tuần, vận dụng các điểm ngữ pháp đã học; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Đọc hiểu: đọc bài Reading tổng hợp cuối tuần, trả lời 3 câu hỏi.
-- [ ] Luyện nghe: nghe bài Listening tổng hợp, trả lời 3 câu hỏi.
+- [ ] Nghe hiểu: nghe bài Listening tổng hợp, trả lời 3 câu hỏi.
 - [ ] Kiểm tra: hoàn thành đủ 7 buổi rồi làm Bài kiểm tra Tuần 1 (đạt ≥70% để mở tuần sau).
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại tuần sau (lấy từ sổ lỗi).
 
@@ -425,6 +428,8 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 Answer in 60 seconds:
 
 - Introduce yourself: your name, what you study, and one goal in English.
+
+**Tự chấm (mỗi ý 1 điểm, tối đa 4):** ☐ Đủ tên + ngành học + mục tiêu · ☐ Mỗi câu có động từ (be / do dùng đúng) · ☐ Đọc rõ âm cuối -s/-ed · ☐ Nói liền 60 giây, không ngắt quá 3 lần.
 
 ### Answer Key — Part A
 

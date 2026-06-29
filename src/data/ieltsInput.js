@@ -4,17 +4,24 @@
  * Vì sao tách riêng file: nội dung tuần (Base_English/*.md) chỉ có ngữ pháp + từ
  * vựng + checklist, KHÔNG có bài đọc/bài nghe đúng nghĩa. Tuần nền tảng vì thế
  * thiếu hẳn kỹ năng tiếp nhận (receptive input). File này bổ sung cho từng buổi:
- *  - reading:  một đoạn ngắn 60–80 từ + 2–3 câu hỏi đọc hiểu (trắc nghiệm).
- *  - listening: một đoạn hội thoại/độc thoại ngắn (tên & con số) + 2–3 câu hỏi.
+ *  - reading:  một đoạn ngắn 60–80 từ + câu hỏi đọc hiểu, trong đó có ÍT NHẤT 1 câu
+ *    dạng PARAPHRASE (đáp án không chép nguyên văn) để luyện đúng phản xạ IELTS.
+ *  - listening: một đoạn ngắn; câu hỏi tên/số/giờ dùng dạng ĐIỀN PHIẾU (form
+ *    completion) như Listening Section 1, câu hiểu/suy luận giữ dạng trắc nghiệm.
  *
- * Câu hỏi dùng đúng định dạng QuizTool: { q, opts, correct, ex }.
+ * Định dạng câu dùng chung với QuizTool:
+ *  - trắc nghiệm:  { q, opts, correct, ex }
+ *  - điền chỗ trống: { type:'cloze', q:'… _____ …', answer:[các dạng chấp nhận], ex }
+ *    (QuizTool tự chuẩn hóa: số/chữ, viết hoa-thường, viết tắt → chấm theo nghĩa).
  *
  * Audio: mặc định phát bằng Web Speech API (script). Khi có bản THU GIỌNG NGƯỜI
  * THẬT, chỉ cần đặt `audioUrl` (đường dẫn file .mp3) — component sẽ ưu tiên file.
  *
- * Khóa theo `${week}:${day}` (day = số buổi hiển thị 1..7). Hiện có Tuần 1 · Buổi 1;
- * thêm buổi khác bằng cách bổ sung khóa mới theo đúng cấu trúc.
+ * Khóa theo `${week}:${day}` (day = số buổi hiển thị 1..7). Hiện có đủ Tuần 1 · Buổi 1–7;
+ * thêm tuần/buổi khác bằng cách bổ sung khóa mới theo đúng cấu trúc.
  */
+
+import { ieltsAudioManifest } from './ieltsAudioManifest.js'
 
 export const ieltsInput = {
   // ───────────────────────── Tuần 1 · Buổi 1 ─────────────────────────
@@ -53,12 +60,24 @@ export const ieltsInput = {
           correct: 3,
           ex: '“My goal is to speak English more confidently.”',
         },
+        {
+          // Paraphrase: đáp án đúng KHÔNG chép nguyên văn câu trong bài.
+          q: 'Which sentence is TRUE about Mai?',
+          opts: [
+            'She dislikes meeting new people',
+            'She studies English every day',
+            'She is already fluent in English',
+            'She lives in Hue',
+          ],
+          correct: 1,
+          ex: '“… I practise every day.” → luyện mỗi ngày (diễn đạt lại bằng từ khác, không chép nguyên văn).',
+        },
       ],
     },
 
     listening: {
       title: 'Meet Nam',
-      subtitle: 'Nghe một người tự giới thiệu — chú ý TÊN và CON SỐ',
+      subtitle: 'Điền PHIẾU THÔNG TIN — nghe rồi viết đúng tên, tuổi, số nhà (giống Listening Section 1)',
       // Phát bằng Web Speech API. Thay bằng file thu giọng thật: đặt audioUrl.
       audioUrl: null,
       script:
@@ -67,22 +86,22 @@ export const ieltsInput = {
         'I have one brother and two sisters.',
       questions: [
         {
-          q: "What is the man's name?",
-          opts: ['Sam', 'Nam', 'Tom', 'Dan'],
-          correct: 1,
-          ex: '“My name is Nam.”',
+          type: 'cloze',
+          q: 'Name: _____',
+          answer: ['Nam'],
+          ex: '“My name is Nam.” → viết hoa tên riêng: Nam.',
         },
         {
-          q: 'How old is he?',
-          opts: ['Thirteen', 'Twenty-two', 'Twenty-three', 'Thirty-three'],
-          correct: 2,
-          ex: '“I am twenty-three years old.” → 23 tuổi.',
+          type: 'cloze',
+          q: 'Age: _____ years old',
+          answer: ['twenty-three', 'twenty three', '23'],
+          ex: '“I am twenty-three years old.” → 23. (Có thể viết số hoặc chữ.)',
         },
         {
-          q: 'How many sisters does he have?',
-          opts: ['One', 'Two', 'Three', 'None'],
-          correct: 1,
-          ex: '“… and two sisters.” → hai chị/em gái.',
+          type: 'cloze',
+          q: 'House number: _____',
+          answer: ['forty-five', 'forty five', '45'],
+          ex: '“… at number forty-five.” → 45. Cẩn thận: forty-FIVE (45), không phải fifty (50).',
         },
       ],
     },
@@ -130,12 +149,24 @@ export const ieltsInput = {
           correct: 1,
           ex: '“… she listens to music and talks to her friends.”',
         },
+        {
+          // Paraphrase: diễn đạt lại "good sleep and a calm mind help her study better".
+          q: 'According to the text, what helps Linh study better?',
+          opts: [
+            'Studying late every night',
+            'Resting well and staying calm',
+            'Drinking lots of coffee',
+            'Skipping breakfast',
+          ],
+          correct: 1,
+          ex: '“… good sleep and a calm mind help her study better.” → nghỉ ngơi tốt và giữ tinh thần bình tĩnh.',
+        },
       ],
     },
 
     listening: {
       title: "Linh's weekday",
-      subtitle: 'Nghe một thời gian biểu — chú ý GIỜ GIẤC và CON SỐ',
+      subtitle: 'Điền THỜI GIAN BIỂU — nghe rồi viết đúng GIỜ GIẤC và CON SỐ',
       audioUrl: null,
       script:
         'Hi, I am Linh. On weekdays, I wake up at six o’clock. ' +
@@ -143,22 +174,22 @@ export const ieltsInput = {
         'every afternoon. I go to bed at eleven.',
       questions: [
         {
-          q: 'What time does Linh wake up?',
-          opts: ['Six o’clock', 'Half past six', 'Seven o’clock', 'Eleven'],
-          correct: 0,
-          ex: '“I wake up at six o’clock.”',
+          type: 'cloze',
+          q: 'Wake-up time: _____ o’clock',
+          answer: ['six', '6'],
+          ex: '“I wake up at six o’clock.” → six (6).',
         },
         {
-          q: 'How many hours does she study every afternoon?',
-          opts: ['Two', 'Three', 'Four', 'Six'],
-          correct: 1,
-          ex: '“… I study at the library for three hours …”',
+          type: 'cloze',
+          q: 'Hours of study each afternoon: _____',
+          answer: ['three', '3'],
+          ex: '“… I study at the library for three hours …” → three (3).',
         },
         {
-          q: 'What time does she go to bed?',
-          opts: ['Ten', 'Half past six', 'Eleven', 'Six'],
-          correct: 2,
-          ex: '“I go to bed at eleven.”',
+          type: 'cloze',
+          q: 'Bedtime: _____ o’clock',
+          answer: ['eleven', '11'],
+          ex: '“I go to bed at eleven.” → eleven (11).',
         },
       ],
     },
@@ -196,34 +227,46 @@ export const ieltsInput = {
           correct: 1,
           ex: '“On Sundays, we go to a small café …”',
         },
+        {
+          // Paraphrase: lý do học chung được diễn đạt lại.
+          q: 'Why do they often study together after class?',
+          opts: [
+            'Because they are in the same class',
+            'Because Hoa lives nearby',
+            'Because they both want to be teachers',
+            'Because the café is free',
+          ],
+          correct: 1,
+          ex: '“Hoa lives near my house, so we often study together …” → vì Hoa ở gần nhà.',
+        },
       ],
     },
 
     listening: {
       title: 'New student',
-      subtitle: 'Nghe một bạn đăng ký lớp — chú ý TÊN và CON SỐ',
+      subtitle: 'Điền PHIẾU ĐĂNG KÝ — nghe và viết đúng HỌ (đánh vần), số phòng, giờ học',
       audioUrl: null,
       script:
         'Good morning. My name is Tom Carter. My family name is Carter. ' +
         'I am in room number twelve. My class starts at nine fifteen.',
       questions: [
         {
-          q: "What is the student's family name?",
-          opts: ['Carver', 'Carter', 'Porter', 'Parker'],
-          correct: 1,
-          ex: '“My family name is Carter.”',
+          type: 'cloze',
+          q: 'Family name: _____',
+          answer: ['Carter'],
+          ex: '“My family name is Carter.” → C-A-R-T-E-R. Nghe kỹ âm cuối để khỏi nhầm Carver/Porter.',
         },
         {
-          q: 'What is his room number?',
-          opts: ['Two', 'Twelve', 'Twenty', 'Nine'],
-          correct: 1,
-          ex: '“I am in room number twelve.”',
+          type: 'cloze',
+          q: 'Room number: _____',
+          answer: ['twelve', '12'],
+          ex: '“I am in room number twelve.” → 12. Cẩn thận twelve (12) ≠ twenty (20).',
         },
         {
-          q: 'What time does his class start?',
-          opts: ['Nine o’clock', 'Nine fifteen', 'Nine fifty', 'Ten fifteen'],
-          correct: 1,
-          ex: '“My class starts at nine fifteen.”',
+          type: 'cloze',
+          q: 'Class starts at: _____',
+          answer: ['nine fifteen', 'nine-fifteen', '9:15', '9.15', '9 15'],
+          ex: '“My class starts at nine fifteen.” → 9:15.',
         },
       ],
     },
@@ -266,12 +309,24 @@ export const ieltsInput = {
           correct: 2,
           ex: '"I am happy because my classmates are friendly." → Tác giả vui vì bạn cùng lớp thân thiện.',
         },
+        {
+          // Paraphrase: "We are all beginners" diễn đạt lại.
+          q: 'What does the text suggest about the students?',
+          opts: [
+            'They are advanced learners',
+            'They are new to learning English',
+            'They are the teachers',
+            'They study on their own',
+          ],
+          correct: 1,
+          ex: '"We are all beginners." → họ đều mới bắt đầu học tiếng Anh.',
+        },
       ],
     },
 
     listening: {
       title: "Tuan's family",
-      subtitle: 'Nghe một người giới thiệu gia đình — chú ý TÊN và TUỔI',
+      subtitle: 'Điền PHIẾU GIA ĐÌNH — nghe và viết đúng TÊN và TUỔI',
       audioUrl: null,
       script:
         'Hi! My name is Tuan. I am twenty years old. My father is Mr Hung. ' +
@@ -279,22 +334,22 @@ export const ieltsInput = {
         'My sister is Linh. She is sixteen.',
       questions: [
         {
-          q: 'How old is Tuan?',
-          opts: ['Sixteen', 'Twenty', 'Forty-five', 'Forty-eight'],
-          correct: 1,
-          ex: '"I am twenty years old." → Tuấn 20 tuổi.',
+          type: 'cloze',
+          q: "Tuan's age: _____",
+          answer: ['twenty', '20'],
+          ex: '"I am twenty years old." → 20.',
         },
         {
-          q: "What is Tuan's father's name?",
-          opts: ['Mr Thao', 'Mr Tuan', 'Mr Hung', 'Mr Linh'],
-          correct: 2,
-          ex: '"My father is Mr Hung." → Bố tên Hùng.',
+          type: 'cloze',
+          q: "Father's name: Mr _____",
+          answer: ['Hung'],
+          ex: '"My father is Mr Hung." → Hùng.',
         },
         {
-          q: 'How old is his sister?',
-          opts: ['Fourteen', 'Fifteen', 'Sixteen', 'Twenty'],
-          correct: 2,
-          ex: '"She is sixteen." → Em gái 16 tuổi.',
+          type: 'cloze',
+          q: "Sister's age: _____",
+          answer: ['sixteen', '16'],
+          ex: '"She is sixteen." → 16. Cẩn thận sixteen (16) ≠ sixty (60).',
         },
       ],
     },
@@ -341,6 +396,18 @@ export const ieltsInput = {
           ],
           correct: 1,
           ex: '"Yes, I do. Mornings give me energy." → Minh thích buổi sáng.',
+        },
+        {
+          // Paraphrase: "does not eat breakfast at home — he buys bread on the way".
+          q: 'What do we learn about Minh’s breakfast?',
+          opts: [
+            'He cooks breakfast at home',
+            'He buys something to eat on the way to school',
+            'He never eats in the morning',
+            'He eats breakfast at the park',
+          ],
+          correct: 1,
+          ex: '"He does not eat breakfast at home — he buys bread on the way to school." → mua đồ ăn trên đường đi học.',
         },
       ],
     },
@@ -413,12 +480,24 @@ export const ieltsInput = {
           correct: 2,
           ex: '"My dream is to work for an international company." → Mơ ước làm việc ở công ty quốc tế.',
         },
+        {
+          // Paraphrase: "I do not like waking up early, but I do it every day for class."
+          q: 'What do we learn about Hoa’s mornings?',
+          opts: [
+            'She loves waking up early',
+            'She wakes up early although she dislikes it',
+            'She never wakes up early',
+            'She has no morning classes',
+          ],
+          correct: 1,
+          ex: '"I do not like waking up early, but I do it every day for class." → dậy sớm dù không thích.',
+        },
       ],
     },
 
     listening: {
       title: 'Hello, class!',
-      subtitle: 'Nghe một bạn giới thiệu bản thân trước lớp — chú ý TÊN và CHI TIẾT',
+      subtitle: 'Điền PHIẾU GIỚI THIỆU — nghe và viết đúng quê quán, tuổi; câu cuối chọn đáp án',
       audioUrl: null,
       script:
         'Hello, everyone! My name is Phuong. I am from Nha Trang. ' +
@@ -426,16 +505,16 @@ export const ieltsInput = {
         'I do not have any brothers, but I have one sister.',
       questions: [
         {
-          q: 'Where is Phuong from?',
-          opts: ['Da Nang', 'Hue', 'Nha Trang', 'Can Tho'],
-          correct: 2,
-          ex: '"I am from Nha Trang." → Phương đến từ Nha Trang.',
+          type: 'cloze',
+          q: 'Hometown: _____',
+          answer: ['Nha Trang'],
+          ex: '"I am from Nha Trang." → Nha Trang.',
         },
         {
-          q: 'How old is Phuong?',
-          opts: ['Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'],
-          correct: 2,
-          ex: '"I am eighteen years old." → Phương 18 tuổi.',
+          type: 'cloze',
+          q: 'Age: _____ years old',
+          answer: ['eighteen', '18'],
+          ex: '"I am eighteen years old." → 18. Cẩn thận eighteen (18) ≠ eighty (80).',
         },
         {
           q: 'Does Phuong have any brothers?',
@@ -489,12 +568,24 @@ export const ieltsInput = {
           correct: 2,
           ex: '"Now I feel more comfortable … I am proud of myself." → Bây giờ thoải mái hơn và tự hào.',
         },
+        {
+          // Paraphrase: "I did not give up, and that is important."
+          q: 'What is the writer’s attitude at the end of the week?',
+          opts: [
+            'She regrets joining the class',
+            'She is proud that she kept going',
+            'She thinks giving up is fine',
+            'She wants to quit English',
+          ],
+          correct: 1,
+          ex: '"I did not give up, and that is important." → tự hào vì đã không bỏ cuộc.',
+        },
       ],
     },
 
     listening: {
       title: 'End of week chat',
-      subtitle: 'Nghe hội thoại giữa thầy giáo và học viên — chú ý SỐ và CHI TIẾT',
+      subtitle: 'Nghe hội thoại thầy–trò — điền CON SỐ, hai câu sau chọn đáp án',
       audioUrl: null,
       script:
         'Teacher: How many new words did you learn this week? ' +
@@ -502,10 +593,10 @@ export const ieltsInput = {
         'Do you feel better about English now? Student: Yes, I do. I am more confident.',
       questions: [
         {
-          q: 'How many new words did the student learn?',
-          opts: ['About thirteen', 'About twenty', 'About thirty', 'About forty'],
-          correct: 2,
-          ex: '"I learned about thirty words." → Khoảng 30 từ mới.',
+          type: 'cloze',
+          q: 'Number of new words learned this week: about _____',
+          answer: ['thirty', '30'],
+          ex: '"I learned about thirty words." → khoảng 30 (gồm ~20 từ chính + các cụm đã học). Cẩn thận thirty (30) ≠ thirteen (13).',
         },
         {
           q: 'What does the teacher think about the result?',
@@ -524,7 +615,14 @@ export const ieltsInput = {
   },
 }
 
-/** Lấy nguồn nhập (reading/listening) cho một buổi, hoặc null nếu chưa có. */
+/** Lấy nguồn nhập (reading/listening) cho một buổi, hoặc null nếu chưa có.
+ * Nếu có bản mp3 trong manifest (sinh bằng `npm run gen:audio` hoặc thu giọng thật),
+ * gắn vào listening.audioUrl để component ưu tiên phát file thay vì Web Speech. */
 export function getIeltsInput(week, day) {
-  return ieltsInput[`${week}:${day}`] || null
+  const key = `${week}:${day}`
+  const entry = ieltsInput[key] || null
+  if (entry?.listening && !entry.listening.audioUrl && ieltsAudioManifest[key]) {
+    entry.listening.audioUrl = ieltsAudioManifest[key]
+  }
+  return entry
 }
