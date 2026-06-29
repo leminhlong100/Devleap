@@ -156,8 +156,19 @@ function buildDayVocabQuiz(dayWords, weekWords, seed = 0) {
     // Giải thích: câu ví dụ đã điền từ + nghĩa câu (nếu có).
     const example = g.ex ? g.ex.replace('{w}', term) + (g.exVi ? ` — ${g.exVi}` : '') : `“${term}” = ${g.vi}`
     const pos = k % 4 // vị trí đáp án đúng xoay vòng cho đỡ đoán mò
-    let type = k % 3
-    if (type === 2 && !hasBlank) type = k % 2 // không có câu ví dụ -> đổi dạng khác
+    let type = k % 4
+    if ((type === 2 || type === 3) && !hasBlank) type = k % 2 // cần câu ví dụ -> lùi về dạng từ/nghĩa
+
+    if (type === 3) {
+      // GÕ từ vào câu (nhập chữ) — đổi tay-bấm sang tay-gõ để chống nhàm; QuizTool dạng cloze.
+      out.push({
+        type: 'cloze',
+        q: `Gõ từ đúng vào chỗ trống: “${g.ex.replace('{w}', '_____')}”`,
+        answer: [term],
+        ex: example,
+      })
+      return
+    }
 
     let q, options, correct
     if (type === 0) {
@@ -187,6 +198,40 @@ function buildDayVocabQuiz(dayWords, weekWords, seed = 0) {
     }
     out.push({ q, opts: options, correct: options.indexOf(correct), ex: example })
   })
+  return out
+}
+
+/**
+ * Sinh bài "SẮP XẾP CÂU" từ các câu ĐÚNG của buổi — đổi vị giác luyện tập (chạm từng
+ * từ về đúng thứ tự thay vì bấm trắc nghiệm). Chỉ lấy câu 4–12 từ cho vừa sức; xáo
+ * TẤT ĐỊNH theo `seed` (xoay vòng) để bài ổn định giữa các lần mở, và luôn KHÁC thứ
+ * tự gốc. QuizTool render dạng `order` (tokens + answer).
+ */
+function buildSentenceOrderQuiz(sentences, seed = 0, max = 3) {
+  const clean = [
+    ...new Set((sentences || []).map((s) => String(s || '').trim().replace(/\s+/g, ' '))),
+  ].filter((s) => {
+    const n = s.split(' ').length
+    return n >= 4 && n <= 12
+  })
+  if (!clean.length) return []
+  const out = []
+  for (let i = 0; i < clean.length && out.length < max; i++) {
+    const s = clean[(seed + i) % clean.length]
+    const words = s.replace(/[.]+$/, '').split(' ')
+    const rot = 1 + ((seed + i) % Math.max(1, words.length - 1)) // xoay -> đảo thứ tự
+    const tokens = [...words.slice(rot), ...words.slice(0, rot)]
+    if (tokens.join(' ') === words.join(' ') && words.length > 1) {
+      ;[tokens[0], tokens[1]] = [tokens[1], tokens[0]] // chẳng may trùng -> hoán 2 từ đầu
+    }
+    out.push({
+      type: 'order',
+      q: 'Sắp xếp các từ thành câu đúng:',
+      tokens,
+      answer: [words.join(' '), s],
+      ex: `Câu đúng: “${s}”`,
+    })
+  }
   return out
 }
 
@@ -398,6 +443,10 @@ export function getIeltsDay(weekNum, dayNum) {
   // Ngày học điểm mới/ôn: lấy câu đúng của điểm trọng tâm; ngày tổng hợp: gom cả tuần.
   const grammarExamples = (grammarMode === 'final' ? G.flatMap((g) => g.examples || []) : focusPoint?.examples || []).slice(0, 8)
 
+  // —— Bài "sắp xếp câu" của buổi: lấy từ các câu ĐÚNG (ngữ pháp + câu nối từ vựng) ——
+  // Trộn vào quiz ôn nhanh để mỗi buổi xoay vòng nhiều DẠNG (chọn nghĩa · gõ từ · xếp câu).
+  const orderQuiz = buildSentenceOrderQuiz([...grammarExamples, ...sentences], idx, 3)
+
   // —— Kho ĐẶT CÂU (Production): chia "100 câu mở đầu" đều cho các buổi -> mỗi buổi
   // ~14 câu khác nhau, không buổi nào trùng, kích hoạt toàn bộ kho luyện tập. ——
   const bank = week.sentenceBank || []
@@ -432,7 +481,7 @@ export function getIeltsDay(weekNum, dayNum) {
     // Tự luyện cuối tuần — chỉ hiện ở BUỔI CUỐI để ôn trước bài kiểm tra tuần.
     // Quiz TỔNG HỢP mới (ngữ pháp + từ vựng cả tuần), khác mọi quiz từng ngày.
     weekPracticeQuiz: isLastDay ? buildWeekQuiz(week) : [],
-    quiz: dayQuiz, // quiz trắc nghiệm từ vựng riêng từng buổi (khác nhau mỗi ngày)
+    quiz: [...dayQuiz, ...orderQuiz], // ôn nhanh: trộn chọn nghĩa · gõ từ · sắp xếp câu (khác nhau mỗi buổi)
     // ngữ cảnh tuần để điều hướng
     week: week.num,
     weekTitle: week.title,

@@ -61,8 +61,15 @@ const justPassed = ref(false)
 const current = computed(() => qs.value[index.value])
 // Câu nhập chữ: cloze (điền chỗ trống) hoặc error (sửa câu sai) — không có opts.
 const isText = computed(() => current.value && (current.value.type === 'cloze' || current.value.type === 'error'))
+// Câu "sắp xếp câu": kéo/chạm các từ xáo trộn về đúng thứ tự (đổi vị giác, chống nhàm).
+const isOrder = computed(() => current.value && current.value.type === 'order')
+// Kho từ còn lại & dãy từ đã chọn (cho dạng order).
+const orderPool = ref([])
+const orderPicked = ref([])
 
-const answered = computed(() => (isText.value ? checked.value : selected.value !== null))
+const answered = computed(() =>
+  isOrder.value ? checked.value : isText.value ? checked.value : selected.value !== null,
+)
 const isLast = computed(() => index.value + 1 >= total.value)
 const progress = computed(() => Math.round(((index.value + (answered.value ? 1 : 0)) / total.value) * 100))
 
@@ -122,6 +129,33 @@ function checkText() {
     if (!isAssessment.value) user.addXp(10)
   }
 }
+// —— Dạng "sắp xếp câu" —— kho từ -> dãy đã chọn và ngược lại; chấm khi xếp đủ từ.
+function initOrder() {
+  if (current.value?.type === 'order') {
+    orderPool.value = (current.value.tokens || []).map((w, i) => ({ id: i, w }))
+    orderPicked.value = []
+  }
+}
+function pickWord(i) {
+  if (checked.value) return
+  orderPicked.value.push(orderPool.value.splice(i, 1)[0])
+}
+function unpickWord(i) {
+  if (checked.value) return
+  orderPool.value.push(orderPicked.value.splice(i, 1)[0])
+}
+function checkOrder() {
+  if (checked.value || orderPool.value.length) return
+  checked.value = true
+  const guess = orderPicked.value.map((t) => t.w).join(' ')
+  const accepted = current.value.answer || []
+  const ok = accepted.some((a) => normAnswer(a) === normAnswer(guess))
+  textCorrect.value = ok
+  if (ok) {
+    score.value++
+    if (!isAssessment.value) user.addXp(10)
+  }
+}
 function optStyle(i) {
   if (selected.value === null) return { bg: '#fff', color: '#3a3a52', border: 'rgba(108,92,231,.16)', mark: String.fromCharCode(65 + i) }
   if (i === current.value.correct) return { bg: 'rgba(0,214,143,.1)', border: '#00D68F', color: '#00A86F', mark: '✓' }
@@ -143,6 +177,7 @@ function next() {
     typed.value = ''
     checked.value = false
     textCorrect.value = false
+    initOrder()
   }
 }
 function restart() {
@@ -155,6 +190,7 @@ function restart() {
   score.value = 0
   done.value = false
   justPassed.value = false
+  initOrder()
 }
 
 // Đổi bài học/đề -> dựng lại bộ câu & làm lại từ đầu. Đặt CUỐI script (sau khi
@@ -223,6 +259,35 @@ watch(() => props.questions, restart, { immediate: true })
         </div>
         <div v-if="!checked" class="action-row">
           <button class="next" :disabled="!typed.trim()" @click="checkText">Kiểm tra</button>
+        </div>
+      </template>
+
+      <!-- CÂU SẮP XẾP CÂU: chạm từ để xếp đúng thứ tự -->
+      <template v-else-if="isOrder">
+        <span class="qtype order">🧩 Sắp xếp câu</span>
+        <h2 class="question">{{ current.q }}</h2>
+        <div class="order-answer" :class="{ ok: checked && textCorrect, bad: checked && !textCorrect }">
+          <button
+            v-for="(t, i) in orderPicked"
+            :key="'p' + t.id"
+            class="chip picked"
+            :disabled="checked"
+            @click="unpickWord(i)"
+          >
+            {{ t.w }}
+          </button>
+          <span v-if="!orderPicked.length" class="order-placeholder">Chạm các từ bên dưới để xếp thành câu…</span>
+        </div>
+        <div class="order-pool">
+          <button v-for="(t, i) in orderPool" :key="'o' + t.id" class="chip" :disabled="checked" @click="pickWord(i)">
+            {{ t.w }}
+          </button>
+        </div>
+        <div v-if="checked" class="verdict-line" :class="{ ok: textCorrect }">
+          {{ textCorrect ? '✓ Chính xác!' : `✕ Đáp án đúng: ${current.answer[0]}` }}
+        </div>
+        <div v-if="!checked" class="action-row">
+          <button class="next" :disabled="orderPool.length > 0" @click="checkOrder">Kiểm tra</button>
         </div>
       </template>
 
@@ -419,6 +484,67 @@ watch(() => props.questions, restart, { immediate: true })
 .qtype.error {
   background: rgba(255, 107, 107, 0.12);
   color: #e04848;
+}
+.qtype.order {
+  background: rgba(0, 184, 217, 0.12);
+  color: #0a8fb0;
+}
+/* dạng sắp xếp câu */
+.order-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  min-height: 56px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(108, 92, 231, 0.3);
+  background: var(--bg);
+}
+.order-answer.ok {
+  border-style: solid;
+  border-color: #00d68f;
+  background: rgba(0, 214, 143, 0.06);
+}
+.order-answer.bad {
+  border-style: solid;
+  border-color: #ff6b6b;
+  background: rgba(255, 90, 90, 0.05);
+}
+.order-placeholder {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted-2);
+}
+.order-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+.chip {
+  border: 1.5px solid rgba(108, 92, 231, 0.22);
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 9px 15px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, background 0.12s;
+}
+.chip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--purple);
+}
+.chip.picked {
+  background: rgba(108, 92, 231, 0.08);
+  border-color: rgba(108, 92, 231, 0.4);
+}
+.chip:disabled {
+  cursor: default;
+  opacity: 0.85;
 }
 .question .wrong {
   text-decoration: line-through;

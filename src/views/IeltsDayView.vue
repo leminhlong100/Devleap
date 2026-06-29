@@ -600,11 +600,11 @@ const aiContext = computed(() =>
             <div class="step-head">
               <div>
                 <div class="eyebrow" :class="{ green: vocabPassed }">ÔN NHANH — TỰ CHỌN</div>
-                <h2 class="step-title">❓ Quiz từ vựng buổi {{ d.n }}</h2>
+                <h2 class="step-title">❓ Ôn nhanh buổi {{ d.n }}</h2>
               </div>
               <span class="wt-badge" :class="{ ok: vocabPassed }">{{ vocabPassed ? '✅ Đã đạt' : 'Tự chọn' }}</span>
             </div>
-            <p class="quiz-intro">{{ vocabQuiz.length }} câu về nghĩa các từ buổi này. Luyện cho nhớ và cộng XP — <b>không bắt buộc</b> để qua buổi.</p>
+            <p class="quiz-intro">{{ vocabQuiz.length }} câu trộn nhiều dạng — <b>chọn nghĩa</b>, <b>gõ từ</b> và <b>🧩 sắp xếp câu</b> — để ôn cho đỡ nhàm và cộng XP. <b>Không bắt buộc</b> để qua buổi.</p>
             <div class="grammar-drill">
               <QuizTool :questions="vocabQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onVocabComplete" />
             </div>
