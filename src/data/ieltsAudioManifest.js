@@ -18,4 +18,11 @@ export const ieltsAudioManifest = {
   '2:5': '/audio/ielts/2-5.mp3',
   '2:6': '/audio/ielts/2-6.mp3',
   '2:7': '/audio/ielts/2-7.mp3',
+  '3:1': '/audio/ielts/3-1.mp3',
+  '3:2': '/audio/ielts/3-2.mp3',
+  '3:3': '/audio/ielts/3-3.mp3',
+  '3:4': '/audio/ielts/3-4.mp3',
+  '3:5': '/audio/ielts/3-5.mp3',
+  '3:6': '/audio/ielts/3-6.mp3',
+  '3:7': '/audio/ielts/3-7.mp3',
 }

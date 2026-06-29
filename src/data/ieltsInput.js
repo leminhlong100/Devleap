@@ -1212,6 +1212,629 @@ export const ieltsInput = {
       ],
     },
   },
+
+  // ═══════════════════════════ TUẦN 3 ═══════════════════════════
+  // Trọng tâm: present simple + trạng từ tần suất, câu hỏi wh + do/does, like/love +
+  // V-ing, there is/are. Chủ đề: daily routine, food, hobbies, transport. Độ khó NHÍCH
+  // hơn Tuần 1–2: đoạn đọc dài hơn (~82–92 từ), câu nghe nhiều chi tiết & suy luận hơn.
+
+  // ───────────────────────── Tuần 3 · Buổi 1 (Day 15) ─────────────────────────
+  // Present simple + trạng từ tần suất — đọc về thói quen hằng ngày + nghe GIỜ & TẦN SUẤT.
+  '3:1': {
+    reading: {
+      title: "An's daily routine",
+      subtitle: 'Đọc đoạn về thói quen hằng ngày (88 từ) rồi trả lời câu hỏi',
+      // 88 từ — dày đặc present simple + trạng từ tần suất (usually/always/rarely/sometimes/never).
+      text:
+        'An is a nursing student in Da Nang. She follows a simple routine every day. ' +
+        'She usually wakes up at half past five and goes for a short run. She always ' +
+        'has breakfast at home because she thinks it gives her energy. On weekdays, she ' +
+        'rarely watches television; instead, she reviews her notes in the evening. She ' +
+        'sometimes feels tired, but she never skips her morning exercise. An believes ' +
+        'that a steady routine helps her stay calm and study better.',
+      questions: [
+        {
+          q: 'When does An usually wake up?',
+          opts: ['At five o’clock', 'At half past five', 'At six o’clock', 'At half past six'],
+          correct: 1,
+          ex: '“She usually wakes up at half past five …” → 5:30.',
+        },
+        {
+          q: 'Why does she always have breakfast at home?',
+          opts: [
+            'Because it is cheaper',
+            'Because she has no time to eat out',
+            'Because she thinks it gives her energy',
+            'Because her family cooks for her',
+          ],
+          correct: 2,
+          ex: '“She always has breakfast at home because she thinks it gives her energy.”',
+        },
+        {
+          q: 'How often does she watch television on weekdays?',
+          opts: ['Always', 'Often', 'Rarely', 'Every evening'],
+          correct: 2,
+          ex: '“… she rarely watches television …” → hiếm khi.',
+        },
+        {
+          // Paraphrase: "a steady routine helps her stay calm and study better".
+          q: 'According to An, what does a steady routine do for her?',
+          opts: [
+            'It makes her very busy',
+            'It keeps her relaxed and helps her learn better',
+            'It wastes her free time',
+            'It makes her skip exercise',
+          ],
+          correct: 1,
+          ex: '“… a steady routine helps her stay calm and study better.” → giúp cô bình tĩnh và học tốt hơn (diễn đạt lại).',
+        },
+      ],
+    },
+
+    listening: {
+      title: "Khanh's weekly plan",
+      subtitle: 'Điền PHIẾU KẾ HOẠCH — nghe và viết đúng GIỜ và SỐ LẦN mỗi tuần',
+      audioUrl: null,
+      script:
+        'Hello, I am Khanh. On weekdays I get up at six fifteen. ' +
+        'I go to the gym three times a week. My first class starts at eight o’clock.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Wake-up time: _____',
+          answer: ['six fifteen', 'six-fifteen', '6:15', '6.15', '6 15'],
+          ex: '“I get up at six fifteen.” → 6:15.',
+        },
+        {
+          type: 'cloze',
+          q: 'Gym visits per week: _____',
+          answer: ['three', '3'],
+          ex: '“I go to the gym three times a week.” → 3 lần.',
+        },
+        {
+          type: 'cloze',
+          q: 'First class starts at: _____ o’clock',
+          answer: ['eight', '8'],
+          ex: '“My first class starts at eight o’clock.” → 8 giờ.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 2 (Day 16) ─────────────────────────
+  // Câu hỏi wh + do/does — đọc về cách hiểu câu hỏi Part 1 + nghe hỏi-đáp Part 1.
+  '3:2': {
+    reading: {
+      title: 'Listen to the question word',
+      subtitle: 'Đọc mẹo hiểu câu hỏi Speaking Part 1 (86 từ) rồi trả lời câu hỏi',
+      // 86 từ — meta về câu hỏi wh + do/does; nhắc nghe đúng từ để hỏi.
+      text:
+        'Speaking Part 1 is really a short interview about your life. The examiner asks ' +
+        'simple questions such as "Where do you live?" or "What do you do in your free ' +
+        'time?" Many learners panic because they do not listen to the question word. ' +
+        'If a question starts with "How often", you should talk about frequency. If it ' +
+        'starts with "Why", you must give a reason. A clear, honest answer of two or ' +
+        'three sentences is always better than a long memorised speech.',
+      questions: [
+        {
+          q: 'What is Speaking Part 1 really about?',
+          opts: [
+            'A long formal test',
+            'A short interview about your life',
+            'A writing exercise',
+            'A grammar quiz',
+          ],
+          correct: 1,
+          ex: '“Speaking Part 1 is really a short interview about your life.”',
+        },
+        {
+          q: 'Why do many learners panic?',
+          opts: [
+            'They speak too fast',
+            'They do not listen to the question word',
+            'They have no vocabulary',
+            'They forget their name',
+          ],
+          correct: 1,
+          ex: '“… they do not listen to the question word.”',
+        },
+        {
+          q: 'If a question starts with "How often", what should you talk about?',
+          opts: ['A place', 'A reason', 'Frequency', 'A person'],
+          correct: 2,
+          ex: '“If a question starts with How often, you should talk about frequency.”',
+        },
+        {
+          // Paraphrase: "A clear, honest answer … is always better than a long memorised speech."
+          q: 'What kind of answer does the text recommend?',
+          opts: [
+            'A long answer learned by heart',
+            'A short, genuine answer',
+            'A one-word answer',
+            'A very fast answer',
+          ],
+          correct: 1,
+          ex: '“A clear, honest answer of two or three sentences is always better than a long memorised speech.” → câu trả lời ngắn, thật lòng.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'Free-time interview',
+      subtitle: 'Nghe hỏi-đáp Part 1 — điền HOẠT ĐỘNG, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Examiner: What do you do in your free time? Candidate: I usually play badminton ' +
+        'with my friends. Examiner: How often do you play? Candidate: About twice a week. ' +
+        'Examiner: Why do you like it? Candidate: Because it helps me relax after class.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Free-time activity: _____',
+          answer: ['badminton'],
+          ex: '“I usually play badminton …” → badminton.',
+        },
+        {
+          q: 'How often does the candidate play?',
+          opts: ['Every day', 'Twice a week', 'Once a month', 'At weekends only'],
+          correct: 1,
+          ex: '“About twice a week.” → khoảng hai lần một tuần.',
+        },
+        {
+          q: 'Why does the candidate like it?',
+          opts: [
+            'It is cheap',
+            'It helps him relax after class',
+            'It is easy',
+            'His friends pay for it',
+          ],
+          correct: 1,
+          ex: '“Because it helps me relax after class.”',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 3 (Day 17) ─────────────────────────
+  // Phòng từ vựng Routine/Food/Hobbies — đọc về nấu ăn + nghe PHIẾU MUA HÀNG.
+  '3:3': {
+    reading: {
+      title: "Huy's favourite hobby",
+      subtitle: 'Đọc đoạn về sở thích nấu ăn (88 từ) rồi trả lời câu hỏi',
+      // 88 từ — từ vựng Food & Hobbies (eat out, homemade, be into, clear my mind).
+      text:
+        'Huy loves cooking, and it is his favourite hobby. He rarely eats out because he ' +
+        'thinks homemade food is healthier and cheaper. Every Sunday, he goes to the ' +
+        'market and buys fresh vegetables and a little meat. He often tries new recipes ' +
+        'from the internet, and he is really into spicy dishes. His friends sometimes ' +
+        'come over for dinner, and they always enjoy the meal. Huy says that cooking ' +
+        'helps him relax and clear his mind after a busy week.',
+      questions: [
+        {
+          q: "What is Huy's favourite hobby?",
+          opts: ['Eating out', 'Cooking', 'Shopping', 'Gardening'],
+          correct: 1,
+          ex: '“Huy loves cooking, and it is his favourite hobby.”',
+        },
+        {
+          q: 'Why does he rarely eat out?',
+          opts: [
+            'Restaurants are far away',
+            'He has no friends',
+            'He thinks homemade food is healthier and cheaper',
+            'He cannot cook',
+          ],
+          correct: 2,
+          ex: '“… he thinks homemade food is healthier and cheaper.”',
+        },
+        {
+          q: 'What does he buy at the market every Sunday?',
+          opts: [
+            'Only rice',
+            'Fresh vegetables and a little meat',
+            'A lot of snacks',
+            'Drinks and sweets',
+          ],
+          correct: 1,
+          ex: '“… buys fresh vegetables and a little meat.”',
+        },
+        {
+          // Paraphrase: "cooking helps him relax and clear his mind after a busy week".
+          q: 'How does cooking affect Huy?',
+          opts: [
+            'It makes him tired',
+            'It helps him relax and feel less stressed',
+            'It costs him a lot of money',
+            'It keeps him awake at night',
+          ],
+          correct: 1,
+          ex: '“… cooking helps him relax and clear his mind …” → giúp anh thư giãn, bớt căng thẳng.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'Dinner shopping list',
+      subtitle: 'Điền PHIẾU MUA HÀNG — nghe và viết đúng SỐ LƯỢNG (đếm được & không đếm được)',
+      audioUrl: null,
+      script:
+        'Let’s plan dinner. We need two kilos of rice and four eggs. ' +
+        'Please also buy one bottle of fish sauce. We do not need much sugar today.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Rice: _____ kilos',
+          answer: ['two', '2'],
+          ex: '“We need two kilos of rice …” → 2.',
+        },
+        {
+          type: 'cloze',
+          q: 'Eggs: _____',
+          answer: ['four', '4'],
+          ex: '“… and four eggs.” → 4.',
+        },
+        {
+          type: 'cloze',
+          q: 'Bottles of fish sauce: _____',
+          answer: ['one', '1'],
+          ex: '“… buy one bottle of fish sauce.” → 1. (“sugar” không đếm được → dùng “much”.)',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 4 (Day 18) ─────────────────────────
+  // Phát âm & sự tự tin — đọc về âm cuối/trọng âm + nghe PHIẾU CLB nói.
+  '3:4': {
+    reading: {
+      title: 'Why final sounds matter',
+      subtitle: 'Đọc đoạn về phát âm và sự tự tin (89 từ) rồi trả lời câu hỏi',
+      // 89 từ — chủ đề phát âm: final sounds, word stress, thought groups, confidence.
+      text:
+        'Many learners are afraid to speak because their mouth is not used to English ' +
+        'sounds. Vietnamese speakers often drop final sounds, so "liked" becomes "like" ' +
+        'and "books" becomes "book". This small habit can make a sentence hard to ' +
+        'understand. A useful method is to read five sentences aloud every day, mark the ' +
+        'thought groups, and record yourself once. You do not need a perfect accent. ' +
+        'What you really need is clear final sounds, correct word stress, and the ' +
+        'confidence to keep talking.',
+      questions: [
+        {
+          q: 'Why are many learners afraid to speak?',
+          opts: [
+            'They have no ideas',
+            'Their mouth is not used to English sounds',
+            'They speak too slowly',
+            'They know too many words',
+          ],
+          correct: 1,
+          ex: '“… their mouth is not used to English sounds.”',
+        },
+        {
+          q: 'What do Vietnamese speakers often drop?',
+          opts: ['First sounds', 'Final sounds', 'Whole words', 'Question words'],
+          correct: 1,
+          ex: '“Vietnamese speakers often drop final sounds …” (liked → like).',
+        },
+        {
+          q: 'What daily method does the text suggest?',
+          opts: [
+            'Memorise long speeches',
+            'Read five sentences aloud, mark thought groups, and record once',
+            'Watch films all day',
+            'Speak as fast as possible',
+          ],
+          correct: 1,
+          ex: '“… read five sentences aloud every day, mark the thought groups, and record yourself once.”',
+        },
+        {
+          // Paraphrase: "You do not need a perfect accent. What you really need is …"
+          q: 'According to the text, what matters more than a perfect accent?',
+          opts: [
+            'Speaking very fast',
+            'Clear sounds, correct stress, and confidence',
+            'Using difficult words',
+            'A British accent',
+          ],
+          correct: 1,
+          ex: '“… clear final sounds, correct word stress, and the confidence to keep talking.” → quan trọng hơn giọng chuẩn.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'The speaking club',
+      subtitle: 'Điền PHIẾU CLB — nghe và viết đúng THỨ, GIỜ và SỐ PHÒNG',
+      audioUrl: null,
+      script:
+        'Welcome to the speaking club. We meet every Tuesday at four thirty in room nine. ' +
+        'The first session focuses on final sounds. Please bring a notebook and a pen.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Meeting day: _____',
+          answer: ['Tuesday'],
+          ex: '“We meet every Tuesday …” → thứ Ba.',
+        },
+        {
+          type: 'cloze',
+          q: 'Time: _____',
+          answer: ['four thirty', 'four-thirty', '4:30', '4.30', '4 30', 'half past four'],
+          ex: '“… at four thirty …” → 4:30.',
+        },
+        {
+          type: 'cloze',
+          q: 'Room number: _____',
+          answer: ['nine', '9'],
+          ex: '“… in room nine.” → phòng 9. Cẩn thận nine (9) ≠ five (5).',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 5 (Day 19) ─────────────────────────
+  // "Ngày nạp" — Speaking Part 1 khung A-R-E-F: đọc bài mẫu dài + nghe phỏng vấn Part 1.
+  '3:5': {
+    reading: {
+      title: 'The four-step answer',
+      subtitle: 'Đọc bài mẫu khung trả lời Part 1 (92 từ) rồi trả lời câu hỏi',
+      // 92 từ — khung Answer–Reason–Example–Feeling, đoạn liền mạch hợp ngày đọc to.
+      text:
+        'A strong Part 1 answer often follows four simple steps: answer, reason, example, ' +
+        'and feeling. Imagine the examiner asks, "Do you like reading?" A weak reply is ' +
+        'just "Yes, I do." A better reply uses the steps: "Yes, I really enjoy reading. ' +
+        'It helps me relax after a long day. For example, I usually read a few pages ' +
+        'before bed. It makes me feel calm." There are no difficult words in this answer, ' +
+        'but there is a clear path. The examiner can follow your ideas easily, and you ' +
+        'sound natural.',
+      questions: [
+        {
+          q: 'How many steps does a strong Part 1 answer follow?',
+          opts: ['Two', 'Three', 'Four', 'Five'],
+          correct: 2,
+          ex: '“… four simple steps: answer, reason, example, and feeling.”',
+        },
+        {
+          q: 'What are the four steps?',
+          opts: [
+            'Answer, reason, example, feeling',
+            'Hello, name, age, goodbye',
+            'Read, write, listen, speak',
+            'Who, what, when, where',
+          ],
+          correct: 0,
+          ex: '“… answer, reason, example, and feeling.”',
+        },
+        {
+          q: 'What is the example given in the model answer?',
+          opts: [
+            'Watching a film',
+            'Reading a few pages before bed',
+            'Going for a run',
+            'Cooking dinner',
+          ],
+          correct: 1,
+          ex: '“For example, I usually read a few pages before bed.”',
+        },
+        {
+          // Paraphrase: "There are no difficult words … but there is a clear path."
+          q: 'Why is the better answer effective even without difficult words?',
+          opts: [
+            'Because it is very long',
+            'Because it has a clear structure the examiner can follow',
+            'Because it uses rare vocabulary',
+            'Because it is memorised',
+          ],
+          correct: 1,
+          ex: '“There are no difficult words … but there is a clear path.” → nhờ có cấu trúc rõ ràng.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'A Part 1 interview',
+      subtitle: 'Điền PHIẾU PHỎNG VẤN — nghe quê quán, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Examiner: Where are you from? Candidate: I am from Hai Duong, a small city in the ' +
+        'north. Examiner: Do you like your hometown? Candidate: Yes, I do, because it is ' +
+        'quiet and friendly. Examiner: Would you like to live there in the future? ' +
+        'Candidate: Probably not. I prefer big cities.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Hometown: _____',
+          answer: ['Hai Duong'],
+          ex: '“I am from Hai Duong …” → Hải Dương.',
+        },
+        {
+          q: 'Why does the candidate like the hometown?',
+          opts: [
+            'It is big and modern',
+            'It is quiet and friendly',
+            'It has many shops',
+            'It is near the sea',
+          ],
+          correct: 1,
+          ex: '“… because it is quiet and friendly.”',
+        },
+        {
+          q: 'Does the candidate want to live there in the future?',
+          opts: [
+            'Yes, definitely',
+            'Probably not — they prefer big cities',
+            'Only in summer',
+            'We do not know',
+          ],
+          correct: 1,
+          ex: '“Probably not. I prefer big cities.”',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 6 (Day 20) ─────────────────────────
+  // Ngày sản phẩm: đoạn 80 từ về một ngày — đọc bài mẫu + nghe THỜI GIAN BIỂU.
+  '3:6': {
+    reading: {
+      title: 'A normal day in my life',
+      subtitle: 'Đọc đoạn mẫu "một ngày của tôi" (90 từ) rồi trả lời câu hỏi',
+      // 90 từ — bài mẫu present simple + tần suất, làm chuẩn cho sản phẩm 80 từ của Day 20.
+      text:
+        'This is a normal day in my life. I usually wake up at six and drink a glass of ' +
+        'water. Then I get ready for school and take the bus at seven. In the morning, I ' +
+        'have three classes, and I always pay attention to the teacher. At lunchtime, I ' +
+        'eat with my friends in the canteen. In the afternoon, I do my homework and ' +
+        'sometimes go for a walk. In the evening, I review new words. I rarely stay up ' +
+        'late because I need enough sleep.',
+      questions: [
+        {
+          q: 'What does the writer drink after waking up?',
+          opts: ['A cup of coffee', 'A glass of water', 'Some milk', 'Tea'],
+          correct: 1,
+          ex: '“… wake up at six and drink a glass of water.”',
+        },
+        {
+          q: 'How does the writer go to school?',
+          opts: ['On foot', 'By bus', 'By bike', 'By car'],
+          correct: 1,
+          ex: '“… take the bus at seven.” → đi xe buýt.',
+        },
+        {
+          q: 'What does the writer do in the evening?',
+          opts: ['Watch films', 'Review new words', 'Go for a walk', 'Cook dinner'],
+          correct: 1,
+          ex: '“In the evening, I review new words.”',
+        },
+        {
+          // Paraphrase: "I rarely stay up late because I need enough sleep."
+          q: 'Why does the writer rarely stay up late?',
+          opts: [
+            'Because the writer is lazy',
+            'Because the writer needs enough rest',
+            'Because there is no electricity',
+            'Because friends call early',
+          ],
+          correct: 1,
+          ex: '“I rarely stay up late because I need enough sleep.” → cần nghỉ ngơi đủ.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'A typical work day',
+      subtitle: 'Điền THỜI GIAN BIỂU — nghe và viết đúng GIỜ và SỐ LẦN mỗi tuần',
+      audioUrl: null,
+      script:
+        'On a typical day, I start work at nine in the morning. I take a lunch break at ' +
+        'twelve thirty. I finish at five and go to an English class twice a week.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Work start time: _____ o’clock',
+          answer: ['nine', '9'],
+          ex: '“I start work at nine in the morning.” → 9 giờ.',
+        },
+        {
+          type: 'cloze',
+          q: 'Lunch break: _____',
+          answer: ['twelve thirty', 'twelve-thirty', '12:30', '12.30', '12 30', 'half past twelve'],
+          ex: '“… a lunch break at twelve thirty.” → 12:30.',
+        },
+        {
+          type: 'cloze',
+          q: 'English classes per week: _____',
+          answer: ['twice', 'two', '2'],
+          ex: '“… an English class twice a week.” → 2 lần.',
+        },
+      ],
+    },
+  },
+
+  // ───────────────────────── Tuần 3 · Buổi 7 (Day 21) ─────────────────────────
+  // Tổng hợp tuần — đọc bài nhìn lại tuần 3 + nghe hội thoại tổng kết (SỐ & CHI TIẾT).
+  '3:7': {
+    reading: {
+      title: 'My third week',
+      subtitle: 'Đọc đoạn nhìn lại tuần học thứ ba (92 từ) rồi trả lời câu hỏi',
+      // 92 từ — tổng hợp: present simple + tần suất + câu hỏi Part 1 + phát âm.
+      text:
+        'This was my third week of English, and it was about my daily life. At the start, ' +
+        'I could only say short sentences like "I study English." Now I can describe a ' +
+        'whole day using frequency words such as usually, often, and rarely. I also ' +
+        'learned to ask and answer simple questions in Speaking Part 1. My pronunciation ' +
+        'is still not perfect, especially the final sounds, but I practise every evening. ' +
+        'I am not fluent yet, but I can finally talk about myself for almost ninety ' +
+        'seconds without stopping.',
+      questions: [
+        {
+          q: 'What was the third week about?',
+          opts: ['Travel', 'Daily life', 'Business', 'History'],
+          correct: 1,
+          ex: '“… it was about my daily life.”',
+        },
+        {
+          q: 'What frequency words did the writer learn?',
+          opts: [
+            'always, never, soon',
+            'usually, often, rarely',
+            'here, there, now',
+            'first, next, finally',
+          ],
+          correct: 1,
+          ex: '“… using frequency words such as usually, often, and rarely.”',
+        },
+        {
+          q: 'What is still not perfect?',
+          opts: ['Grammar', 'Pronunciation, especially final sounds', 'Vocabulary', 'Reading'],
+          correct: 1,
+          ex: '“My pronunciation is still not perfect, especially the final sounds …”',
+        },
+        {
+          // Paraphrase: "I can finally talk about myself for almost ninety seconds without stopping."
+          q: 'What can the writer finally do at the end of the week?',
+          opts: [
+            'Write a long essay',
+            'Speak about themselves for about 90 seconds without stopping',
+            'Pass an exam easily',
+            'Teach other students',
+          ],
+          correct: 1,
+          ex: '“… I can finally talk about myself for almost ninety seconds without stopping.” → nói về bản thân ~90 giây liền mạch.',
+        },
+      ],
+    },
+
+    listening: {
+      title: 'End of week chat',
+      subtitle: 'Nghe hội thoại tổng kết — điền CON SỐ, hai câu sau chọn đáp án',
+      audioUrl: null,
+      script:
+        'Teacher: How many seconds can you speak about your day now? ' +
+        'Student: About ninety seconds without stopping. Teacher: That is great progress. ' +
+        'Do you feel more confident? Student: Yes, I do. Frequency words really helped me.',
+      questions: [
+        {
+          type: 'cloze',
+          q: 'Speaking time now: about _____ seconds',
+          answer: ['ninety', '90'],
+          ex: '“About ninety seconds without stopping.” → 90. Cẩn thận ninety (90) ≠ nineteen (19).',
+        },
+        {
+          q: 'What does the teacher think of the progress?',
+          opts: ['It is poor', 'It is great', 'It is too slow', 'It is enough'],
+          correct: 1,
+          ex: '“That is great progress.”',
+        },
+        {
+          q: 'What helped the student most?',
+          opts: ['Difficult words', 'Frequency words', 'Long speeches', 'Reading aloud'],
+          correct: 1,
+          ex: '“Frequency words really helped me.”',
+        },
+      ],
+    },
+  },
 }
 
 /** Lấy nguồn nhập (reading/listening) cho một buổi, hoặc null nếu chưa có.

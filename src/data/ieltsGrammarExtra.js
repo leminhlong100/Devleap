@@ -58,6 +58,29 @@ export const ieltsGrammarExtra = {
       { type: 'error', q: 'There is many students in my class.', answer: ['There are many students in my class.'], ex: '"many students" số nhiều → "There are".' },
     ],
   },
+  3: {
+    'Present Simple': [
+      // —— Lỗi #1 của người Việt: quên "s" với he/she/it, dùng don't thay doesn't,
+      // và đặt sai vị trí trạng từ tần suất. Đặt LÊN ĐẦU để được ưu tiên khi gộp. ——
+      { type: 'error', q: 'She study English after dinner.', answer: ['She studies English after dinner.'], ex: 'Chủ ngữ he/she/it → động từ thêm s/es: She studies English after dinner.' },
+      { type: 'error', q: "He don't like tea.", answer: ["He doesn't like tea.", 'He does not like tea.'], ex: 'he/she/it phủ định dùng doesn’t + V nguyên thể: He doesn’t like tea.' },
+      { type: 'error', q: 'I am go to school by bus.', answer: ['I go to school by bus.'], ex: 'Động từ hành động "go" không đi với "am": I go to school by bus.' },
+      { type: 'error', q: 'I go usually to school by bus.', answer: ['I usually go to school by bus.'], ex: 'Trạng từ tần suất đứng TRƯỚC động từ thường: I usually go to school by bus.' },
+      { type: 'cloze', q: 'My school _____ at seven a.m. (start)', answer: ['starts'], ex: 'Chủ ngữ số ít "My school" → starts.' },
+      { type: 'cloze', q: 'I _____ review vocabulary at night. (trạng từ tần suất: usually)', answer: ['usually'], ex: 'usually đứng trước động từ thường: I usually review vocabulary at night.' },
+      { type: 'cloze', q: 'Many students _____ nervous when they speak English. (be)', answer: ['are'], ex: 'Chủ ngữ số nhiều "Many students" → are.' },
+    ],
+    'Questions': [
+      // —— Lỗi #1: thiếu do/does trong câu hỏi, dùng do với "be", does + V-s. ——
+      { type: 'error', q: 'Where you live?', answer: ['Where do you live?'], ex: 'Câu hỏi thường cần do/does: Where do you live?' },
+      { type: 'error', q: 'Why you are sad?', answer: ['Why are you sad?'], ex: 'Với "be" thì đảo ngữ, KHÔNG thêm do: Why are you sad?' },
+      { type: 'error', q: 'What she likes?', answer: ['What does she like?'], ex: 'Chủ ngữ số ít → does + V nguyên thể: What does she like?' },
+      { type: 'error', q: 'Where does you live?', answer: ['Where do you live?'], ex: 'Với "you" dùng "do", không "does": Where do you live?' },
+      { type: 'cloze', q: '_____ do you usually do at weekends?', answer: ['What'], ex: 'Hỏi về hoạt động → What do you usually do at weekends?' },
+      { type: 'cloze', q: 'How often _____ you use social media?', answer: ['do'], ex: 'Câu hỏi với "you" → do: How often do you use social media?' },
+      { type: 'cloze', q: 'Where _____ your brother live? (do/does)', answer: ['does'], ex: 'Chủ ngữ số ít "your brother" → does.' },
+    ],
+  },
 }
 
 /** Lấy mảng bài tập biên soạn thêm cho một điểm ngữ pháp (theo tuần + tiêu đề). */
