@@ -21,7 +21,6 @@ onMounted(reloadList)
 
 // —— Trình soạn 1 bài ——
 const urlInput = ref('')
-const level = ref('A1')
 const generating = ref(false)
 const error = ref('')
 
@@ -56,7 +55,7 @@ async function generate() {
       videoId: data.videoId,
       title: data.title || `Video ${data.videoId}`,
       topic: data.author || '',
-      level: level.value,
+      level: 'A1',
       lang: 'en',
       sentences: data.sentences, // { ai, original }
     }
@@ -338,9 +337,6 @@ onBeforeUnmount(() => {
       placeholder="Dán link YouTube…"
       :disabled="generating"
     />
-    <select v-model="level" class="in level" :disabled="generating">
-      <option v-for="l in LEVELS" :key="l" :value="l">{{ l }}</option>
-    </select>
     <button class="btn" type="submit" :disabled="generating || !urlInput.trim()">
       {{ generating ? 'Đang xử lý…' : 'Tạo bài' }}
     </button>
@@ -512,9 +508,6 @@ onBeforeUnmount(() => {
 .url {
   flex: 1;
   min-width: 240px;
-}
-.level {
-  width: 110px;
 }
 .btn {
   font-size: 15px;
