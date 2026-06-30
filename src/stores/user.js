@@ -24,6 +24,25 @@ const XP_PER_WEEK = 150 // thưởng thêm khi xong trọn 1 tuần
 const XP_QUIZ_PASS = 100 // thưởng khi LẦN ĐẦU đạt một bài kiểm tra
 const PASS_PCT = 0.7 // ngưỡng đạt mặc định (70%)
 const STORAGE_KEY = 'devleap:user:v2'
+// Đánh dấu dữ liệu local đang thuộc về tài khoản nào (id user) — để phát hiện
+// khi đăng nhập một tài khoản KHÁC với chủ của dữ liệu local hiện tại và tránh
+// hợp nhất nhầm tiến độ giữa hai tài khoản. null/'guest' = chưa đăng nhập bao giờ.
+const OWNER_KEY = 'devleap:owner:v1'
+const readOwner = () => {
+  try {
+    return localStorage.getItem(OWNER_KEY) || null
+  } catch {
+    return null
+  }
+}
+const writeOwner = (id) => {
+  try {
+    if (id) localStorage.setItem(OWNER_KEY, id)
+    else localStorage.removeItem(OWNER_KEY)
+  } catch {
+    /* ignore */
+  }
+}
 // Tùy chọn hội thoại AI + từ đánh dấu sao: chỉ lưu LOCAL (không đồng bộ cloud để
 // khỏi phải thêm cột mới ở bảng `progress`).
 const CONVO_KEY = 'devleap:convo:v1'
@@ -558,6 +577,19 @@ export const useUserStore = defineStore('user', {
     async pullAndMerge(userId) {
       this.cloudUserId = userId
       if (!isCloudEnabled) return
+      // Nếu dữ liệu local đang thuộc về một tài khoản KHÁC (vd vừa đăng xuất A
+      // rồi đăng nhập B), KHÔNG hợp nhất: xóa sạch local trước khi kéo để tiến độ
+      // của tài khoản cũ không lẫn sang tài khoản mới. Chỉ merge khi chủ trước là
+      // khách (null) — đúng với tình huống "dùng thử rồi đăng nhập lần đầu".
+      const prevOwner = readOwner()
+      if (prevOwner && prevOwner !== userId) {
+        this.applySnapshot({})
+        try {
+          localStorage.removeItem(STORAGE_KEY)
+        } catch {
+          /* ignore */
+        }
+      }
       this.syncStatus = 'syncing'
       try {
         const { data, error } = await supabase
@@ -590,6 +622,9 @@ export const useUserStore = defineStore('user', {
           /* ignore */
         }
         await this.pushNow()
+        // Đánh dấu local hiện thuộc về tài khoản này (giữ qua cả khi đăng xuất,
+        // để lần sau đăng nhập tài khoản khác còn phát hiện được sự khác chủ).
+        writeOwner(userId)
       } catch {
         this.syncStatus = 'error'
       }

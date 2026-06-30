@@ -302,6 +302,55 @@ describe('user store — pullAndMerge (hợp nhất khách + cloud)', () => {
     expect(s.quizOf('java', 'week:2')).toMatchObject({ pct: 90, passed: true }) // chỉ ở local -> giữ
     expect(s.quizOf('java', 'final')).toMatchObject({ pct: 70, passed: true }) // chỉ ở remote -> nhận
   })
+
+  it('chuyển tài khoản: KHÔNG hợp nhất dữ liệu tài khoản cũ sang tài khoản mới', async () => {
+    const s = useUserStore()
+
+    // Đăng nhập tài khoản A: tạo dữ liệu rồi đẩy lên (đặt owner = user-A).
+    s.applySnapshot({ xp: 500, completed: { java: ['1:1', '1:2'], ielts: [] } })
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null })
+    await s.pullAndMerge('user-A')
+    expect(s.completed.java).toEqual(['1:1', '1:2'])
+
+    // Đăng xuất: detachCloud giữ dữ liệu A trong local (chế độ khách).
+    s.detachCloud()
+
+    // Đăng nhập tài khoản B (cloud của B chỉ có 1 ngày khác).
+    mockUpsert.mockClear()
+    mockMaybeSingle.mockResolvedValue({
+      data: { xp: 50, completed: { java: ['3:1'], ielts: [] } },
+      error: null,
+    })
+    await s.pullAndMerge('user-B')
+
+    // Chỉ còn dữ liệu của B — KHÔNG có ngày của A lẫn vào.
+    expect(s.completed.java).toEqual(['3:1'])
+    expect(s.xp).toBe(50)
+    // Bản đẩy lên cloud B cũng không chứa dữ liệu A.
+    const pushed = mockUpsert.mock.calls.at(-1)[0]
+    expect(pushed.completed.java).toEqual(['3:1'])
+  })
+
+  it('đăng nhập lại CÙNG tài khoản: vẫn hợp nhất tiến độ khách offline', async () => {
+    const s = useUserStore()
+
+    // Lần đầu đăng nhập A (đặt owner = user-A).
+    s.applySnapshot({ completed: { java: ['1:1'], ielts: [] } })
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null })
+    await s.pullAndMerge('user-A')
+
+    // Đăng xuất, học thêm offline rồi đăng nhập LẠI A.
+    s.detachCloud()
+    s.applySnapshot({ completed: { java: ['1:1', '2:1'], ielts: [] } })
+    mockMaybeSingle.mockResolvedValue({
+      data: { completed: { java: ['1:1'], ielts: [] } },
+      error: null,
+    })
+    await s.pullAndMerge('user-A')
+
+    // Cùng chủ -> hợp nhất, giữ tiến độ offline.
+    expect(s.completed.java.sort()).toEqual(['1:1', '2:1'])
+  })
 })
 
 describe('user store — reviewCard (Spaced Repetition)', () => {
