@@ -30,7 +30,9 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
     }
     rec = new SR()
     rec.lang = lang
-    rec.interimResults = false
+    // interimResults = true: nhận cả kết quả tạm (từng từ đang nói) để reset đồng
+    // hồ im lặng liên tục khi đọc chậm — không bị tự dừng giữa câu dài.
+    rec.interimResults = true
     rec.maxAlternatives = 1
     // continuous = true: không tự dừng khi người dùng ngắt nghỉ ngắn giữa câu.
     // Thay vào đó ta tự đếm im lặng (silenceMs) — nói xong nghỉ đủ lâu mới dừng,
@@ -54,11 +56,15 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
       }, ms)
     }
     rec.onresult = (e) => {
-      transcript = Array.from(e.results)
+      // Chỉ ghép các kết quả ĐÃ CHỐT (isFinal) vào transcript để chấm điểm;
+      // kết quả tạm vẫn dùng để reset đồng hồ im lặng (báo "còn đang nói").
+      const finalText = Array.from(e.results)
+        .filter((r) => r.isFinal)
         .map((r) => r[0]?.transcript || '')
         .join(' ')
         .trim()
-      armSilence() // có tiếng nói mới -> đặt lại đồng hồ im lặng
+      if (finalText) transcript = finalText
+      armSilence() // có tiếng nói (kể cả tạm) -> đặt lại đồng hồ im lặng
     }
     rec.onerror = (e) => {
       clearSilence()
