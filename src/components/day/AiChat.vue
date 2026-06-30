@@ -24,8 +24,8 @@ const user = useUserStore()
 
 // —— Danh sách phong cách lời phê (khớp PERSONAS ở backend _llm.js) ——
 const PERSONAS = [
-  { key: 'cotnha', label: '😜 Cợt nhả', desc: 'Hài hước, trêu nhẹ' },
-  { key: 'chuiboi', label: '🔥 Chửi bới', desc: 'Cà khịa cho vui' },
+  { key: 'cotnha', label: '😜 Cợt nhả', desc: 'Lầy lội, cà khịa hết cỡ' },
+  { key: 'chuiboi', label: '🔥 Chửi bới', desc: 'Chửi yêu, drama hết nấc' },
   { key: 'gaubong', label: '🧸 Gấu bông', desc: 'Ấm áp, động viên' },
   { key: 'nghiemtuc', label: '🎓 Nghiêm túc', desc: 'Giáo viên thẳng thắn' },
 ]
