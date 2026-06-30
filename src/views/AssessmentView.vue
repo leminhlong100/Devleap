@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getQuizSet } from '@/data/quizSets'
-import { computeJavaProgress } from '@/data/course'
+import { computeJavaProgress, javaWeekStructure } from '@/data/course'
 import { computeIeltsProgress } from '@/data/courseIelts'
 
 // Bài kiểm tra cuối tuần/cuối khóa. Route: /courses/:course/test/:scope
@@ -22,8 +22,20 @@ const courseDone = computed(() =>
     : computeJavaProgress(user.completed.java).allDone,
 )
 const finalLocked = computed(() => props.scope === 'final' && !courseDone.value)
+
+// Bài kiểm tra tuần chỉ mở khi đã hoàn thành tất cả các ngày trong tuần đó.
+const weekLocked = computed(() => {
+  if (props.scope === 'final' || props.course !== 'java') return false
+  const m = props.scope?.match(/^week-(\d+)$/)
+  if (!m) return false
+  const wk = javaWeekStructure.find((w) => w.num === Number(m[1]))
+  if (!wk) return false
+  const completed = user.completed.java || []
+  return !wk.dayNums.every((d) => completed.includes(`${wk.num}:${d}`))
+})
+
 watchEffect(() => {
-  if (finalLocked.value) {
+  if (finalLocked.value || weekLocked.value) {
     router.replace({ name: props.course === 'ielts' ? 'ielts' : 'java' })
   }
 })
@@ -39,7 +51,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
   <div class="container assess">
     <span class="back" @click="router.push({ name: courseRoute })">← Lộ trình {{ courseLabel }}</span>
 
-    <template v-if="set && !finalLocked">
+    <template v-if="set && !finalLocked && !weekLocked">
       <!-- HEADER -->
       <div class="head-card">
         <div class="head-glow"></div>

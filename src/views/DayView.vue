@@ -33,7 +33,6 @@ const agenda = computed(() => {
   const a = []
   if (d.value.contentHtml) a.push({ title: 'Lý thuyết cốt lõi', meta: 'Đọc & gõ tay' })
   if (d.value.code) a.push({ title: 'Code mẫu', meta: d.value.code.file })
-  if (d.value.exercises.length) a.push({ title: 'Bài tập thực hành', meta: `${d.value.exercises.length} bài` })
   if (d.value.questions.length) a.push({ title: 'Câu hỏi phỏng vấn', meta: `${d.value.questions.length} câu` })
   return a
 })
@@ -131,19 +130,6 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
               <CodeEditor :model-value="d.code.code" readonly class="code" />
             </div>
             <button class="ghost-btn" @click="goTool('playground')">💻 Mở trong Code Playground →</button>
-          </section>
-
-          <!-- EXERCISES -->
-          <section v-if="d.exercises.length" class="step-card">
-            <div class="step-head">
-              <div>
-                <div class="eyebrow">THỰC HÀNH</div>
-                <h2 class="step-title">✍️ Bài tập ({{ d.exercises.length }})</h2>
-              </div>
-            </div>
-            <ol class="ex-list">
-              <li v-for="(ex, i) in d.exercises" :key="i">{{ ex }}</li>
-            </ol>
           </section>
 
           <!-- INTERVIEW Q&A -->
