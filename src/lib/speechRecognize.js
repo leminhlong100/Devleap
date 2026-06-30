@@ -19,7 +19,7 @@ export function recognitionSupported() {
  * - silenceMs: thời gian im lặng (ms) trước khi tự dừng. Đặt continuous = true để
  *   không bị cắt ngay khi ngắt hơi giữa câu, rồi tự đếm im lặng dài hơn để dừng.
  */
-export function recognizeOnce({ lang = 'en-US', silenceMs = 2500, leadMs = 6000 } = {}) {
+export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 } = {}) {
   const SR = getSR()
   let rec = null
   let silenceTimer = null
