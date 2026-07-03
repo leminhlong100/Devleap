@@ -57,6 +57,33 @@ IELTS Task 1 và Speaking rất cần so sánh. Người học sơ cấp học t
 
 **Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
 
+### Superlatives, Passive & Noun Phrases — 3 mảnh cho Task 1
+
+IELTS Task 1 cần thêm ba mảnh nữa bên cạnh so sánh hơn: so sánh nhất để chỉ ra điểm cao/thấp nhất, câu bị động khi người nói không quan trọng bằng hành động, và cụm danh từ để diễn đạt gọn thay vì một câu dài.
+
+**Mẫu câu chính:** the + adjective-est / the most + adjective (superlative) | be + V3/V-ed (passive) | a/an + adjective + noun (noun phrase)
+
+**Câu đúng:**
+
+- Lan had the biggest increase among the three students.
+- This is the most convenient app I have ever used.
+- English is spoken in many countries.
+- The data was collected over a period of four weeks.
+- There was a sharp increase in the number of users.
+- Traffic is a serious problem in many big cities.
+
+**Lỗi thường gặp của người học Việt Nam:**
+
+| Sai | Đúng |
+|-----|------|
+| the most biggest | the biggest |
+| English speak in many countries | English is spoken in many countries |
+| a increase sharp | a sharp increase |
+
+**Bài tập ngắn:** Viết 3 câu dùng so sánh nhất, 3 câu dùng thể bị động và 5 cụm danh từ mô tả số liệu/vấn đề.
+
+**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+
 ## 🗂️ Phòng từ vựng
 
 ### Technology
@@ -137,6 +164,47 @@ Người học viết 6 câu:
 6. Overall, two students spent more time on English after four weeks.
 
 **Lưu ý:** Task 1 ưu tiên mô tả số liệu rõ, so sánh đúng và viết tổng quan đơn giản. Cảm xúc cá nhân thường làm bài lệch mục tiêu.
+
+## 🏋️ Ngân hàng luyện tập — câu mẫu Tuần 6
+
+> Đây đều là câu ĐÚNG để đọc to & shadowing (Day 36–37) và làm mẫu mô tả số liệu Task 1 (Day 39–41).
+> Mỗi câu đã tự kiểm: so sánh hơn/nhất dùng đúng dạng chưa? câu bị động chia "be" đúng thì chưa? cụm danh từ có tự nhiên không?
+
+*Comparatives — so sánh hơn:*
+
+1. My hometown is quieter than Ho Chi Minh City.
+2. Online classes are more flexible than traditional classes.
+3. This method is less stressful for beginners.
+4. Speaking is not as easy as reading for me.
+5. My phone is cheaper than yours, but it is slower.
+
+*Superlatives — so sánh nhất:*
+
+6. Lan had the biggest increase among the three students.
+7. This is the most convenient app I have ever used.
+8. Minh is the most hard-working student in the class.
+9. This chart shows the highest number in Week 4.
+
+*Passive — câu bị động cơ bản:*
+
+10. English is spoken in many countries.
+11. The data was collected over a period of four weeks.
+12. Smartphones are used by people of all ages.
+13. This report was written by a student last week.
+
+*Noun phrases — cụm danh từ số liệu/vấn đề:*
+
+14. There was a sharp increase in the number of users.
+15. Traffic is a serious problem in many big cities.
+16. The company reported a steady rise in online sales.
+17. Privacy is a growing concern for many app users.
+
+*Từ vựng Technology / Work and Money:*
+
+18. Many people use apps to learn vocabulary and track their progress.
+19. Young users should protect their personal information online.
+20. Many students work part-time to gain experience.
+21. Communication skills are important in almost every job.
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
