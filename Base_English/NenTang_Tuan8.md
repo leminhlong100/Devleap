@@ -2,6 +2,8 @@
 
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
+- **Mục tiêu tuần:** Em viết/nói có khung nhưng không máy móc, và nhìn thấy mình đã có nền để đi tiếp với IELTS.
+- **Mốc kiểm tra:** Nói được 2 phút với ghi chú (biết quay lại sau khi mắc lỗi) + hoàn thành mini-mock 90 phút.
 - **🌍 Mission tuần — "Trận chung kết":** 15 phút nói chuyện với người thật + nghe lại bản ghi "mốc 0" (Day 1) để tự thấy tiến bộ. Bằng chứng: ghi chú/ghi âm buổi nói, nộp ở Day 63.
 - **🗣️ Buổi nói người thật #4:** buổi cuối cùng của khóa — xem guide "Buổi nói người thật đầu tiên" (docs/BUOI_NOI_NGUOI_THAT.md).
 
@@ -83,6 +85,83 @@ Trong tuần này, người học có quyền đi chậm, lặp lại và dùng 
 Trong tuần này, người học có quyền đi chậm, lặp lại và dùng tiếng Việt để hiểu ý trước khi diễn đạt bằng tiếng Anh. Điều cần giữ là nhịp quay lại đều đặn trong cả tuần.
 
 **Lưu ý:** Đi chậm vẫn có giá trị nếu người học quay lại, sửa lỗi và dùng lại kiến thức.
+
+## 📖 Ngữ pháp trọng tâm
+
+### Modals — Should / Can
+
+Modals "should" và "can" giúp người học đưa ra lời khuyên và nói về khả năng mà không cần chia động từ phức tạp. Quy tắc quan trọng nhất: sau modal luôn là động từ nguyên mẫu, không "to", không thêm "-s".
+
+**Mẫu câu chính:** S + should/can + V (nguyên mẫu) …
+
+**Câu đúng:**
+
+- Students should review vocabulary every day.
+- Using English every day can have a positive impact.
+- You should not compare yourself too much.
+- Technology can help students learn more flexibly.
+
+**Lỗi thường gặp của người học Việt Nam:**
+
+| Câu sai | Câu đúng |
+| --- | --- |
+| Students should to review... | Students should review... |
+| She can speaks English well. | She can speak English well. |
+| It can has a big effect. | It can have a big effect. |
+
+**Bài tập ngắn:** Viết 5 câu lời khuyên (should) + 5 câu khả năng (can) về việc học tiếng Anh.
+
+**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+
+### Conditionals — Câu điều kiện loại 1
+
+Câu điều kiện loại 1 dùng để nói về một điều có khả năng xảy ra trong tương lai và kết quả của nó. Cấu trúc: mệnh đề "if" dùng thì hiện tại đơn, mệnh đề chính dùng "will + V".
+
+**Mẫu câu chính:** If + S + V (hiện tại đơn), S + will + V (nguyên mẫu) …
+
+**Câu đúng:**
+
+- If English becomes too stressful, students will lose interest.
+- If you practise every day, you will become more confident.
+- If she studies hard, she will pass the exam.
+- If students review regularly, they will remember more.
+
+**Lỗi thường gặp của người học Việt Nam:**
+
+| Câu sai | Câu đúng |
+| --- | --- |
+| If English will become too stressful, they lose interest. | If English becomes too stressful, they will lose interest. |
+| If she study hard, she will pass. | If she studies hard, she will pass. |
+| If I have free time, I will studying. | If I have free time, I will study. |
+
+**Bài tập ngắn:** Viết 6 câu điều kiện loại 1 về việc học tiếng Anh và ước mơ tương lai.
+
+**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
+
+### Sentence Variety — Đa dạng câu cho Task 2/Part 3
+
+Câu trả lời Speaking Part 3 và bài viết Task 2 sẽ nghe tự nhiên hơn khi người học nối ý bằng các từ nối (however, for example, in addition), tránh lặp "I think... I think..." và dùng đại từ thay cho danh từ đã nhắc.
+
+**Mẫu câu chính:** Ý 1; however/for example/in addition, ý 2 (dùng đại từ thay danh từ đã nhắc) …
+
+**Câu đúng:**
+
+- I think there are several reasons for this problem.
+- For example, students can practise speaking in pairs.
+- However, grammar is still important for accuracy.
+- This can also help shy students become more confident.
+
+**Lỗi thường gặp của người học Việt Nam:**
+
+| Câu sai | Câu đúng |
+| --- | --- |
+| I think English is hard. I think I need to practise. | I think English is hard, so I need to practise. |
+| The book it is useful. | The book is useful. |
+| Because English is important because it helps my job. | English is important because it helps my job. |
+
+**Bài tập ngắn:** Viết 1 đoạn 4 câu dùng ít nhất 2 từ nối (however/for example/in addition) và 1 đại từ thay thế.
+
+**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
 
 ## 🗂️ Phòng từ vựng
 
@@ -246,48 +325,82 @@ Bài mẫu ngắn:
 
 Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiêu là viết rõ ý, kiểm soát được câu và giữ được giọng tự nhiên.
 
-## 🏋️ Ngân hàng luyện tập — 40 Mini Speaking Challenges
+## 🛠️ Kỹ năng & Khung mẫu — 40 Mini Speaking Challenges
 
-1. Talk about your morning in 45 seconds.
-2. Describe your desk in 8 sentences.
-3. Explain why you want to learn English.
-4. Talk about one food you like.
-5. Describe your hometown.
-6. Talk about a teacher you remember.
-7. Explain one mistake you often make.
-8. Talk about your phone habits.
-9. Describe one photo in your gallery.
-10. Talk about a place where you feel relaxed.
-11. Compare studying alone and studying with friends.
-12. Talk about one useful app.
-13. Explain why students forget vocabulary.
-14. Tell a story about yesterday.
-15. Talk about your weekend plan.
-16. Describe a family member.
-17. Talk about a hobby you had as a child.
-18. Explain one good study habit.
-19. Talk about a time you felt nervous.
-20. Talk about a time you felt proud.
-21. Describe a café near your school.
-22. Talk about public transport in your city.
-23. Explain why sleep is important.
-24. Talk about music you like.
-25. Describe a small problem in your city.
-26. Talk about a festival in Vietnam.
-27. Explain why examples help writing.
-28. Talk about learning with pictures.
-29. Describe your ideal English class.
-30. Talk about how you review vocabulary.
-31. Explain why speaking is hard for beginners.
-32. Talk about a friend who helps you.
-33. Describe a simple chart about your study time.
-34. Talk about a skill you want to improve.
-35. Explain why confidence matters.
-36. Talk about one thing you learned this week.
-37. Describe a healthy routine.
-38. Talk about your favourite time of day.
-39. Explain how technology can distract students.
-40. Send a voice message to your future self.
+- Talk about your morning in 45 seconds.
+- Describe your desk in 8 sentences.
+- Explain why you want to learn English.
+- Talk about one food you like.
+- Describe your hometown.
+- Talk about a teacher you remember.
+- Explain one mistake you often make.
+- Talk about your phone habits.
+- Describe one photo in your gallery.
+- Talk about a place where you feel relaxed.
+- Compare studying alone and studying with friends.
+- Talk about one useful app.
+- Explain why students forget vocabulary.
+- Tell a story about yesterday.
+- Talk about your weekend plan.
+- Describe a family member.
+- Talk about a hobby you had as a child.
+- Explain one good study habit.
+- Talk about a time you felt nervous.
+- Talk about a time you felt proud.
+- Describe a café near your school.
+- Talk about public transport in your city.
+- Explain why sleep is important.
+- Talk about music you like.
+- Describe a small problem in your city.
+- Talk about a festival in Vietnam.
+- Explain why examples help writing.
+- Talk about learning with pictures.
+- Describe your ideal English class.
+- Talk about how you review vocabulary.
+- Explain why speaking is hard for beginners.
+- Talk about a friend who helps you.
+- Describe a simple chart about your study time.
+- Talk about a skill you want to improve.
+- Explain why confidence matters.
+- Talk about one thing you learned this week.
+- Describe a healthy routine.
+- Talk about your favourite time of day.
+- Explain how technology can distract students.
+- Send a voice message to your future self.
+
+## 🏋️ Ngân hàng luyện tập — câu mẫu Tuần 8
+
+> Đây đều là câu ĐÚNG để đọc to & shadowing. Đọc từng câu 2–3 lần, cố nói trôi chảy trước khi sang câu tiếp theo.
+
+*Modals — should/can:*
+
+1. Students should review vocabulary every day.
+2. It can have a positive impact on confidence.
+3. You should practise speaking a little every day.
+4. This method can help beginners feel more confident.
+5. Learners should keep an error notebook to track mistakes.
+
+*Conditionals — câu điều kiện loại 1:*
+
+6. If English becomes too stressful, they will lose interest.
+7. If students practise every day, they will improve quickly.
+8. If she studies hard, she will pass the exam.
+9. If I have free time tomorrow, I will review my notes.
+10. If you record your speaking, you will notice mistakes more easily.
+
+*Sentence Variety:*
+
+11. Many students find speaking difficult; however, regular practice can help.
+12. For example, students can join online classes or use dictionaries on their phones.
+13. In addition to grammar, learners should focus on real communication.
+14. Some students feel nervous, but they usually improve with more practice.
+15. My hometown is small. It is quiet and close to the sea.
+
+*Từ liên hệ IELTS:*
+
+16. One main reason is that students do not review vocabulary regularly.
+17. Using English every day can have a positive impact on confidence.
+18. A possible solution is to make learning more personal and visual.
 
 ## 📅 Lịch học 14 ngày (Daily Checklist)
 
@@ -296,6 +409,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 50 — Modals (should / can)
 - [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 7.
 - [ ] Học: should/can + động từ nguyên mẫu (không "to", không "-s"): "Students should review…", "It can have an impact".
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: 5 câu lời khuyên (should) + 5 câu khả năng (can); nhờ AI chữa.
 - [ ] Nói & Quiz: dùng cụm "lead to / a possible solution" khi nói với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): lỗi "should to / can has".
@@ -303,6 +417,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 51 — Câu điều kiện loại 1 (if + hiện tại, will + V)
 - [ ] Ôn (5'): đọc to 3 câu của Day 50.
 - [ ] Học: "If + present simple, … will + V" — "If English becomes too stressful, they will lose interest."
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: 6 câu điều kiện loại 1 về việc học + 1 đoạn 4 câu (2 điều kiện + 1 modal); nhờ AI chữa.
 - [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): lỗi "If … will become".
@@ -310,6 +425,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 52 — Từ vựng IELTS + mô hình nhớ "5 lần gặp"
 - [ ] Ôn (5'): nhớ-lại quy tắc điều kiện loại 1 bằng tiếng Việt.
 - [ ] Học: phòng "Từ liên hệ IELTS" + mô hình Meet → Understand → Copy → Change → Use.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Từ vựng: chọn 5 từ, làm đủ 5 bước cho mỗi từ; nghe 🔊, lưu Flashcard.
 - [ ] Viết & Nói: dùng 3 cụm trong câu nói/viết thật (AI chữa) + quiz từ vựng.
 - [ ] Sổ lỗi (5'): từ nào chưa qua bước "Use"?
@@ -317,6 +433,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 53 — Speaking Part 2: khung sườn truyện + 1 cue card
 - [ ] Ôn (5'): lật 5 từ Day 52.
 - [ ] Học: khung 7 bước Part 2 + đọc câu trả lời mẫu.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: chọn 1 cue card (trong 20), viết 7 gạch đầu dòng (không viết cả câu).
 - [ ] Nói: nói 90 giây theo 7 gạch đầu dòng với AI; dùng "emergency fillers"; ghi âm.
 - [ ] Sổ lỗi (5'): chỗ kẹt → câu nối nào cứu?
@@ -324,6 +441,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 54 — Speaking Part 3 + Writing Task 2 Lite (intro + 1 thân đoạn)
 - [ ] Ôn (5'): nghe lại bản ghi Part 2 Day 53, ghi 2 điểm sửa.
 - [ ] Học: khung Part 3 (General → Reason → Vietnam example → Soft conclusion) + đề Task 2 Lite mẫu.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: lập dàn ý (Opinion – Reason – Example – Balance) rồi viết intro + 1 thân đoạn; nhờ AI chữa.
 - [ ] Nói & Quiz: trả lời 2 câu Part 3 với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): câu chủ đề đã nêu rõ ý kiến chưa?
@@ -331,6 +449,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 55 — Ngày sản phẩm: Task 2 Lite hoàn chỉnh + nói 2 phút
 - [ ] Ôn (5'): xem nhanh sổ lỗi tuần.
 - [ ] Học: đọc bài mẫu Task 2 Lite; chọn 1 thử thách trong "40 Mini Speaking Challenges".
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết hoàn chỉnh Task 2 Lite (intro + 1 body), tự soát rồi nhờ AI chữa.
 - [ ] Sản phẩm: ghi âm 2 phút; mắc lỗi thì quay lại sửa rồi nói tiếp (đây là mốc kiểm tra).
 - [ ] Sổ lỗi (5'): 3 lỗi cần sửa trước mini-mock.
@@ -338,6 +457,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 56 — Ôn nhẹ phần output
 - [ ] Ôn (10'): đọc lại 3 bài viết tốt nhất tuần; nghe lại 2 bản ghi nói.
 - [ ] Học: chọn 5 câu mẫu hay nhất của mình để "shadow" lại.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Nói & Quiz: nói 1 cue card nữa với AI + quiz từ vựng.
 - [ ] Viết: sửa lại 1 đoạn cũ cho gọn và rõ hơn; nhờ AI chữa.
 - [ ] Sổ lỗi (5'): chọn 3 lỗi lặp để tập trung trong mini-mock.
@@ -345,12 +465,14 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 ### Day 57 — Mini-mock (1/7): ôn ngữ pháp toàn khóa qua sổ lỗi
 - [ ] Ôn (10'): đọc lại sổ lỗi cả 8 tuần, gom 10 lỗi hay gặp nhất.
 - [ ] Học: với mỗi lỗi, viết 1 câu đúng làm "câu chuẩn" để nhớ.
+- [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết 10 câu chuẩn đó; nhờ AI chữa.
 - [ ] Nói & Quiz: đọc to 10 câu chuẩn (ghi âm) + quiz từ vựng.
 - [ ] Sổ lỗi (5'): lỗi nào vẫn còn → cần luyện thêm.
 
 ### Day 58 — Mini-mock (2/7): Reading
 - [ ] Ôn (5'): nhớ-lại 4 bước đọc (Tuần 7).
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
 - [ ] Đọc: chọn 2 passage Tuần 7 chưa làm kỹ, trả lời câu hỏi, tính giờ.
 - [ ] Tự chấm: đếm đúng/sai; với câu sai, tìm bằng chứng trong bài.
 - [ ] Viết & Quiz: viết 1 câu tóm tắt cho mỗi passage; quiz từ vựng.
@@ -358,6 +480,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 
 ### Day 59 — Mini-mock (3/7): Listening
 - [ ] Ôn (5'): cặp số dễ nhầm (13/30…), spelling tên.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
 - [ ] Nghe: nghe lại 3 Script (Tuần 7) không nhìn transcript, trả lời.
 - [ ] Tự chấm: đọc transcript đối chiếu; shadow 1 script.
 - [ ] Viết & Quiz: ghi 5 cụm nghe được; quiz từ vựng.
@@ -365,6 +488,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 
 ### Day 60 — Mini-mock (4/7): Writing
 - [ ] Ôn (5'): mẫu câu Task 1 + khung T-S-E-F.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
 - [ ] Viết: 1 Task 1 Lite (mô tả số liệu) + 1 đoạn Task 2 Lite; canh giờ.
 - [ ] Tự soát: dùng bảng "Sửa lỗi Writing" rồi nhờ AI chữa.
 - [ ] Nói & Quiz: đọc to bài viết + quiz từ vựng.
@@ -372,12 +496,14 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 
 ### Day 61 — Mini-mock (5/7): Speaking
 - [ ] Ôn (5'): khung Part 2 (7 bước) + Part 3.
+- [ ] Luyện ngữ pháp: làm lại bài tập điểm đang ôn, đạt ≥70%.
 - [ ] Nói: 1 cue card Part 2 (2 phút) + 2 câu Part 3 với AI; ghi âm.
 - [ ] Tự chấm: nghe lại, đánh dấu chỗ ngập ngừng/lỗi lặp.
 - [ ] Viết & Quiz: ghi 5 câu muốn cải thiện; quiz từ vựng.
 - [ ] Sổ lỗi (5'): 3 điểm nói cần sửa.
 
 ### Day 62 — MINI-MOCK trọn gói (~90 phút)
+- [ ] Luyện ngữ pháp (~10'): làm nhanh bài ôn ngữ pháp, đạt ≥70%.
 - [ ] Listening (~15'): 3 script, không nhìn transcript.
 - [ ] Reading (~25'): 1 passage + 5 câu, tính giờ.
 - [ ] Writing (~30'): 1 Task 1 Lite + 1 đoạn Task 2 Lite; nhờ AI chữa.
@@ -385,6 +511,7 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 - [ ] Sổ lỗi (5'): tổng kết 5 lỗi lớn nhất của bài mock.
 
 ### Day 63 — Nhìn lại + tự chấm band readiness + Bài kiểm tra tuần
+- [ ] Luyện ngữ pháp (10'): làm bài tập tổng hợp ngữ pháp toàn khóa, đạt ≥70%.
 - [ ] 🗣️ Buổi nói người thật #4 (≥15 phút) — "Trận chung kết": luyện trước với AI, sau đó nói chuyện thật qua Tandem/HelloTalk/Discord/Free4Talk hoặc với bạn/đồng nghiệp.
 - [ ] 🌍 Mission tuần: nghe lại "bản ghi mốc 0" (Day 1) ngay sau buổi nói #4, ghi chú lại cảm nhận làm bằng chứng.
 - [ ] Tự chấm "band readiness": Chưa sẵn sàng (còn rơi rụng be/động từ, câu hay đứt) → Gần sẵn sàng ~3.5–4.0 (câu cơ bản đúng, nói 60–90s có khung) → Sẵn sàng vào IELTS ~4.0–4.5 (nói 2 phút có sườn, viết intro+body, đọc tìm được bằng chứng).

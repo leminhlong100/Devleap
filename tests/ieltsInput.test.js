@@ -35,9 +35,10 @@ describe('ieltsInput — nguồn nhập thật (reading + listening)', () => {
       if (entry.reading) {
         const r = entry.reading
         expect(r.text, `${key} reading thiếu text`).toBeTruthy()
+        // Độ khó tăng theo tuần: Tuần 1–2 ~60–80 từ, Tuần 3+ dài hơn tới ~95 từ.
         const wc = wordCount(r.text)
-        expect(wc, `${key} reading ${wc} từ — ngoài khoảng 60–80`).toBeGreaterThanOrEqual(60)
-        expect(wc).toBeLessThanOrEqual(80)
+        expect(wc, `${key} reading ${wc} từ — ngoài khoảng 60–95`).toBeGreaterThanOrEqual(60)
+        expect(wc).toBeLessThanOrEqual(95)
         expectValidQuestions(r.questions)
       }
       if (entry.listening) {
@@ -69,9 +70,10 @@ describe('getIeltsDay() gắn input của buổi', () => {
   })
 
   it('buổi chưa curate input -> reading/listening = null (không vỡ)', () => {
-    // Tuần 2+ chưa soạn nguồn nhập -> phải trả null an toàn, không ném lỗi.
-    const d = getIeltsDay(2, 1)
-    expect(d.reading).toBeNull()
-    expect(d.listening).toBeNull()
+    // Tất cả 8 tuần nền tảng đã soạn nguồn nhập; buổi ngoài phạm vi (vd tuần 9)
+    // vẫn phải trả null an toàn, không ném lỗi.
+    const d = getIeltsDay(9, 1)
+    expect(d).toBeNull()
+    expect(getIeltsInput(9, 1)).toBeNull()
   })
 })

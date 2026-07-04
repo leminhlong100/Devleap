@@ -79,13 +79,23 @@ describe('assignWeekGrammar() — gán ngữ pháp theo KẾ HOẠCH NGÀY, khô
     }
   })
 
-  it('Tuần 8 Track B (không có mục "Ngữ pháp"): không vỡ, các ngày không có ngữ pháp', () => {
+  it('Tuần 8 (mỗi track đều có mục "Ngữ pháp"): mỗi buổi đều có bài tập ngữ pháp', () => {
+    const week = getIeltsWeek(8)
+    expect(week.grammar.length).toBeGreaterThanOrEqual(2)
+    for (let n = 1; n <= week.days.length; n++) {
+      const d = getIeltsDay(8, n)
+      expect(d).toBeTruthy()
+      expect(d.grammar.length, `Tuần 8 buổi ${n} thiếu ngữ pháp`).toBeGreaterThan(0)
+    }
+  })
+
+  it('Tuần 8 Track B (IELTS Bridge, file gốc) cũng có mục "Ngữ pháp" — không vỡ khi đổi track', () => {
     const trackB = getIeltsWeeksData('B')
     const week = getIeltsWeek(8, trackB)
-    expect(week.grammar.length).toBe(0)
+    expect(week.grammar.length).toBeGreaterThanOrEqual(2)
     const d = getIeltsDay(8, 1, trackB)
     expect(d).toBeTruthy()
-    expect(d.grammar.length).toBe(0)
+    expect(d.grammar.length).toBeGreaterThan(0)
   })
 })
 

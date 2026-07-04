@@ -140,12 +140,12 @@ Mệnh đề quan hệ giúp người học diễn đạt rõ hơn mà không ph
 
 Nhiều bạn đọc IELTS như thế này:
 
-1. Gặp từ lạ.
-2. Hoảng.
-3. Dịch từng chữ.
-4. Quên câu trước.
-5. Mất thời gian.
-6. Chọn đại.
+- Gặp từ lạ.
+- Hoảng.
+- Dịch từng chữ.
+- Quên câu trước.
+- Mất thời gian.
+- Chọn đại.
 
 Mình cần một cách khác:
 
@@ -161,9 +161,9 @@ Người học chưa cần hiểu 100% văn bản mới có thể trả lời. R
 
 Use these passages in three rounds:
 
-1. Read for main idea.
-2. Answer questions using evidence.
-3. Collect 5 useful chunks.
+- Read for main idea.
+- Answer questions using evidence.
+- Collect 5 useful chunks.
 
 #### Passage 1 — The Study Corner
 
@@ -171,19 +171,19 @@ A study corner does not need to be large or expensive. For many students, a smal
 
 **Questions**
 
-1. What does a study corner not need to be?
-2. What matters most about a study place?
-3. Name two things students may use to decorate their study corner.
-4. Why should a study corner not be too crowded?
-5. What does 'these small visual reminders' refer to?
+- What does a study corner not need to be?
+- What matters most about a study place?
+- Name two things students may use to decorate their study corner.
+- Why should a study corner not be too crowded?
+- What does 'these small visual reminders' refer to?
 
 **Answer key**
 
-1. Large or expensive.
-2. It helps the learner focus.
-3. Pictures, sticky notes, or a simple calendar.
-4. Because students may get distracted.
-5. Pictures, sticky notes, or a simple calendar.
+- Large or expensive.
+- It helps the learner focus.
+- Pictures, sticky notes, or a simple calendar.
+- Because students may get distracted.
+- Pictures, sticky notes, or a simple calendar.
 
 #### Passage 2 — Learning Through Stories
 
@@ -191,19 +191,19 @@ Stories can make English easier to remember because they give words a situation.
 
 **Questions**
 
-1. Why can stories make English easier to remember?
-2. What does the text mean by 'a word in a list is often lonely'?
-3. Which example is used for the word 'nervous'?
-4. What can teachers use to recycle vocabulary?
-5. Is the passage mainly about grammar or vocabulary memory?
+- Why can stories make English easier to remember?
+- What does the text mean by 'a word in a list is often lonely'?
+- Which example is used for the word 'nervous'?
+- What can teachers use to recycle vocabulary?
+- Is the passage mainly about grammar or vocabulary memory?
 
 **Answer key**
 
-1. Because they give words a situation.
-2. The word has no context or connections.
-3. A student before a speaking test.
-4. Short stories, picture stories, or personal stories.
-5. Vocabulary memory.
+- Because they give words a situation.
+- The word has no context or connections.
+- A student before a speaking test.
+- Short stories, picture stories, or personal stories.
+- Vocabulary memory.
 
 #### Passage 3 — Phones and Attention
 
@@ -211,19 +211,19 @@ Mobile phones are useful tools for language learners. Students can watch short v
 
 **Questions**
 
-1. List two ways phones help language learners.
-2. What problem can phones cause?
-3. What simple rule do some students use?
-4. Why do students put the phone on airplane mode?
-5. Does the writer think phones are only bad?
+- List two ways phones help language learners.
+- What problem can phones cause?
+- What simple rule do some students use?
+- Why do students put the phone on airplane mode?
+- Does the writer think phones are only bad?
 
 **Answer key**
 
-1. Watch videos, check pronunciation, save words, practise listening.
-2. They can damage attention/cause distraction.
-3. Study first, scroll later.
-4. To reduce distractions and focus.
-5. No, phones are useful but can distract learners.
+- Watch videos, check pronunciation, save words, practise listening.
+- They can damage attention/cause distraction.
+- Study first, scroll later.
+- To reduce distractions and focus.
+- No, phones are useful but can distract learners.
 
 #### Passage 4 — A Gentle Classroom
 
@@ -231,19 +231,19 @@ A gentle classroom is not an easy classroom. Students still need to practise, ma
 
 **Questions**
 
-1. Is a gentle classroom the same as an easy classroom?
-2. How are mistakes treated in a gentle classroom?
-3. What incorrect sentence is given?
-4. What is the corrected sentence?
-5. Why is this kind of correction useful?
+- Is a gentle classroom the same as an easy classroom?
+- How are mistakes treated in a gentle classroom?
+- What incorrect sentence is given?
+- What is the corrected sentence?
+- Why is this kind of correction useful?
 
 **Answer key**
 
-1. No.
-2. As information, not shame.
-3. She go to school.
-4. She goes to school.
-5. It helps students understand the rule and feel safe to try again.
+- No.
+- As information, not shame.
+- She go to school.
+- She goes to school.
+- It helps students understand the rule and feel safe to try again.
 
 #### Passage 5 — The Power of Short Reviews
 
@@ -251,19 +251,19 @@ Many learners review only when they forget almost everything. This makes studyin
 
 **Questions**
 
-1. When do many learners review?
-2. What is a better method?
-3. How long can a useful review be?
-4. What should the student do before looking at notes?
-5. What is the key idea of the passage?
+- When do many learners review?
+- What is a better method?
+- How long can a useful review be?
+- What should the student do before looking at notes?
+- What is the key idea of the passage?
 
 **Answer key**
 
-1. Only when they forget almost everything.
-2. Review in short sessions before knowledge disappears completely.
-3. Even five minutes.
-4. Try to recall the phrases.
-5. Short retrieval reviews help memory.
+- Only when they forget almost everything.
+- Review in short sessions before knowledge disappears completely.
+- Even five minutes.
+- Try to recall the phrases.
+- Short retrieval reviews help memory.
 
 #### Passage 6 — Why Examples Matter
 
@@ -271,19 +271,19 @@ An idea becomes clearer when it has an example. In writing, many beginner studen
 
 **Questions**
 
-1. What happens when an idea has an example?
-2. What general sentence is mentioned?
-3. Give two examples of technology in education from the text.
-4. How do examples help the reader?
-5. Why do examples make a paragraph better?
+- What happens when an idea has an example?
+- What general sentence is mentioned?
+- Give two examples of technology in education from the text.
+- How do examples help the reader?
+- Why do examples make a paragraph better?
 
 **Answer key**
 
-1. It becomes clearer.
-2. Technology is useful for education.
-3. Watch science videos, join online classes, use dictionaries on phones.
-4. They help the reader see what the writer means.
-5. They make it more real and less memorised.
+- It becomes clearer.
+- Technology is useful for education.
+- Watch science videos, join online classes, use dictionaries on phones.
+- They help the reader see what the writer means.
+- They make it more real and less memorised.
 
 ### 10.3 IELTS Reading Bridge — Question types
 
@@ -326,11 +326,11 @@ Cover the options first. Read the question. Find evidence. Then compare options.
 
 Người học Listening sơ cấp cần đi qua năm tầng xử lý:
 
-1. **Âm:** nghe ra âm thanh trước khi cố dịch nghĩa.
-2. **Mặt chữ:** nối âm vừa nghe với dạng từ đã biết.
-3. **Cụm:** nhận ra cụm từ, không chỉ từng từ rời.
-4. **Ý:** hiểu thông tin chính trong ngữ cảnh.
-5. **Câu trả lời:** chuyển thông tin nghe được thành đáp án.
+- **Âm:** nghe ra âm thanh trước khi cố dịch nghĩa.
+- **Mặt chữ:** nối âm vừa nghe với dạng từ đã biết.
+- **Cụm:** nhận ra cụm từ, không chỉ từng từ rời.
+- **Ý:** hiểu thông tin chính trong ngữ cảnh.
+- **Câu trả lời:** chuyển thông tin nghe được thành đáp án.
 
 Nhiều bạn bị đứt ở chỗ Sound → Word. Nhìn thì biết comfortable, nghe thì không nhận ra. Nhìn thì biết worked, nghe không thấy /t/. Vì vậy, người học Listening sơ cấp cần transcript, đọc to, dictation ngắn và shadowing.
 
@@ -394,19 +394,19 @@ Hi, my name is Anna. I joined an English study club last month. We meet every We
 
 **Questions**
 
-1. When did Anna join the club?
-2. When do they meet?
-3. Where do they meet?
-4. How long does each meeting last?
-5. Why does Anna like the club?
+- When did Anna join the club?
+- When do they meet?
+- Where do they meet?
+- How long does each meeting last?
+- Why does Anna like the club?
 
 **Answer key**
 
-1. Last month.
-2. Every Wednesday at 5:30.
-3. In the school library.
-4. About one hour.
-5. Because it is friendly and not too stressful.
+- Last month.
+- Every Wednesday at 5:30.
+- In the school library.
+- About one hour.
+- Because it is friendly and not too stressful.
 
 #### Script 2 — Phone Problem
 
@@ -416,19 +416,19 @@ Tom wants to study English every night, but he often gets distracted by his phon
 
 **Questions**
 
-1. What does Tom want to do every night?
-2. What distracts him?
-3. What app does he open first?
-4. What does his teacher suggest?
-5. How long should he put the phone on airplane mode?
+- What does Tom want to do every night?
+- What distracts him?
+- What app does he open first?
+- What does his teacher suggest?
+- How long should he put the phone on airplane mode?
 
 **Answer key**
 
-1. Study English.
-2. His phone/messages/videos.
-3. A dictionary app.
-4. Put the phone on airplane mode and use a notebook.
-5. Twenty minutes.
+- Study English.
+- His phone/messages/videos.
+- A dictionary app.
+- Put the phone on airplane mode and use a notebook.
+- Twenty minutes.
 
 #### Script 3 — Healthy Habit
 
@@ -438,19 +438,53 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 
 **Questions**
 
-1. What did Mina use to do before exams?
-2. How did she feel the next morning?
-3. What did she change this year?
-4. What time does she go to bed before?
-5. What does she remember better now?
+- What did Mina use to do before exams?
+- How did she feel the next morning?
+- What did she change this year?
+- What time does she go to bed before?
+- What does she remember better now?
 
 **Answer key**
 
-1. Sleep/study very late.
-2. Tired.
-3. She studies for shorter periods, takes breaks, and sleeps earlier.
-4. Before eleven.
-5. Vocabulary.
+- Sleep/study very late.
+- Tired.
+- She studies for shorter periods, takes breaks, and sleeps earlier.
+- Before eleven.
+- Vocabulary.
+
+## 🏋️ Ngân hàng luyện tập — câu mẫu Tuần 7
+
+> Đây đều là câu ĐÚNG để đọc to & shadowing (Day 43–44) và làm mẫu cho Reading/Listening cả tuần.
+> Mỗi câu đã tự kiểm: mạo từ a/an/the có đúng chỗ chưa? giới từ có đi đúng cụm cố định chưa? mệnh đề quan hệ có lặp chủ ngữ thừa không?
+
+*Articles — mạo từ a/an/the:*
+
+1. I bought a book yesterday. The book is about habits.
+2. She wants to become a doctor.
+3. The café near my school is quiet.
+4. I need an umbrella.
+
+*Prepositions — giới từ theo cảnh sử dụng:*
+
+5. I am good at listening but weak in writing.
+6. She is interested in Korean music.
+7. The book is on the desk.
+8. I usually study at night.
+
+*Relative Clauses — mệnh đề quan hệ:*
+
+9. I like teachers who explain things clearly.
+10. This is a book that helped me build habits.
+11. I prefer videos which have subtitles.
+12. Students who review regularly remember more.
+
+*Environment — từ vựng môi trường:*
+
+13. People can protect the environment by reducing plastic waste.
+14. Air pollution is a serious problem in many large cities.
+15. Schools should teach students simple green habits.
+16. Many families are trying to save energy at home.
+17. We should use public transport more often to reduce pollution.
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
