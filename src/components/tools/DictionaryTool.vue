@@ -50,7 +50,7 @@ const results = computed(() => {
 
 <style scoped>
 .dict {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 36px;
@@ -71,7 +71,7 @@ const results = computed(() => {
 }
 .tool-sub {
   font-size: 14.5px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 5px;
 }
 .count {
@@ -104,7 +104,7 @@ const results = computed(() => {
 }
 .search input:focus {
   border-color: var(--purple);
-  background: #fff;
+  background: var(--surface);
 }
 .grid {
   display: grid;
@@ -120,7 +120,7 @@ const results = computed(() => {
 }
 .entry:hover {
   border-color: rgba(108, 92, 231, 0.25);
-  background: #fff;
+  background: var(--surface);
 }
 .entry-top {
   display: flex;

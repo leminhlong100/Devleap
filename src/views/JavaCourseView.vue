@@ -229,6 +229,9 @@ const finalLocked = computed(() => !prog.value.allDone)
   padding: 22px 34px;
   border-radius: 22px;
 }
+[data-theme='dark'] .goal {
+  background: var(--bg-warning);
+}
 .goal-icon {
   font-size: 38px;
 }
@@ -239,7 +242,7 @@ const finalLocked = computed(() => !prog.value.allDone)
 }
 .goal-sub {
   font-size: 13.5px;
-  color: #9a7a3a;
+  color: var(--amber-ink);
   font-weight: 600;
 }
 .final-btn {
@@ -258,7 +261,7 @@ const finalLocked = computed(() => !prog.value.allDone)
   transform: translateY(-2px);
 }
 .final-btn.locked {
-  background: #c9c4e0;
+  background: var(--disabled-bg);
   cursor: not-allowed;
 }
 .final-btn.locked:hover {
@@ -266,7 +269,7 @@ const finalLocked = computed(() => !prog.value.allDone)
 }
 .final-hint {
   font-size: 12.5px;
-  color: #9a7a3a;
+  color: var(--amber-ink);
   font-weight: 700;
 }
 .final-pct {

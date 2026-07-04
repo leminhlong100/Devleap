@@ -71,7 +71,7 @@ function play(slow) {
 
 <style scoped>
 .step-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 22px;
   padding: 26px 28px;
@@ -98,7 +98,7 @@ function play(slow) {
 }
 .wt-badge {
   background: rgba(0, 150, 106, 0.1);
-  color: #00966a;
+  color: var(--text-success);
   font-size: 12.5px;
   font-weight: 800;
   padding: 6px 12px;
@@ -112,7 +112,7 @@ function play(slow) {
   margin-top: 12px;
 }
 .quiz-intro.warn {
-  color: #d98300;
+  color: var(--text-warning);
 }
 .lc-player {
   display: flex;
@@ -134,8 +134,8 @@ function play(slow) {
   box-shadow: 0 8px 18px rgba(0, 214, 143, 0.22);
 }
 .lc-play.slow {
-  background: #fff;
-  color: #00966a;
+  background: var(--surface);
+  color: var(--text-success);
   box-shadow: none;
 }
 .lc-play:disabled {
@@ -166,13 +166,13 @@ function play(slow) {
   border: 1px solid rgba(0, 214, 143, 0.18);
   border-radius: 12px;
   padding: 4px 16px;
-  background: #fbfffd;
+  background: var(--surface-1);
 }
 .lc-script > summary {
   cursor: pointer;
   font-size: 13.5px;
   font-weight: 800;
-  color: #00966a;
+  color: var(--text-success);
   padding: 12px 0;
   list-style: none;
 }

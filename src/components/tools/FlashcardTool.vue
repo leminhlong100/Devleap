@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { previewInterval, intervalLabel, daysUntil } from '@/lib/srs'
 import { speak, canSpeak } from '@/lib/speak'
-import { vocabImageUrl } from '@/lib/vocabImage'
+import VocabIllustration from '@/components/common/VocabIllustration.vue'
 
 const speakable = canSpeak()
 function sayTerm() {
@@ -55,16 +55,6 @@ const hasCards = computed(() => cards.value.length > 0)
 const card = computed(() => cards.value[index.value])
 const total = computed(() => cards.value.length)
 
-// Ảnh minh họa mặt trước thẻ (nhớ lâu hơn). Trong lúc tải hiện spinner; ảnh chỉ
-// hiện khi đã tải xong nên không bao giờ thấy "ảnh thẻ cũ + chữ thẻ mới".
-const imgUrl = computed(() => (card.value && !isSentence.value ? vocabImageUrl(card.value.term) : ''))
-const imgOk = ref(true)
-const imgLoaded = ref(false)
-// Đổi thẻ -> ẩn ảnh cũ, hiện lại spinner, thử tải ảnh của thẻ mới.
-watch(() => card.value?.srsId, () => {
-  imgOk.value = true
-  imgLoaded.value = false
-})
 const dueTotal = computed(() => user.dueCount(cards.value.map((c) => c.srsId)))
 
 const cardSrs = computed(() => (card.value ? user.srsOf(card.value.srsId) : null))
@@ -152,20 +142,7 @@ function dotColor(i) {
             <span class="card-no">Thẻ {{ index + 1 }}/{{ total }}</span>
             <div class="fc-illo">
               <span v-if="isSentence" class="fc-illo-fallback">💬</span>
-              <template v-else>
-                <img
-                  v-if="imgUrl && imgOk"
-                  :src="imgUrl"
-                  :alt="card.term"
-                  class="fc-img"
-                  :class="{ shown: imgLoaded }"
-                  decoding="async"
-                  @load="imgLoaded = true"
-                  @error="imgOk = false"
-                />
-                <span v-if="imgOk && !imgLoaded" class="fc-spin"></span>
-                <span v-else-if="!imgOk" class="fc-illo-fallback">🗂️</span>
-              </template>
+              <VocabIllustration v-else :term="card.term" :size="150" show-spinner fallback-emoji="🗂️" />
             </div>
             <div class="term" :class="{ 'term-sentence': isSentence }">{{ card.term }}</div>
             <div v-if="card.ipa" class="ipa">{{ card.ipa }}</div>
@@ -223,7 +200,7 @@ function dotColor(i) {
 
 <style scoped>
 .card-tool {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 36px;
@@ -244,7 +221,7 @@ function dotColor(i) {
 }
 .empty-tool p {
   font-size: 15px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 10px;
   line-height: 1.6;
 }
@@ -263,7 +240,7 @@ function dotColor(i) {
 }
 .tool-sub {
   font-size: 14.5px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 5px;
 }
 .known {
@@ -362,31 +339,6 @@ function dotColor(i) {
   border: 3px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
 }
-.fc-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-.fc-img.shown {
-  opacity: 1;
-}
-.fc-spin {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
-  animation: fc-rot 0.7s linear infinite;
-}
-@keyframes fc-rot {
-  to {
-    transform: rotate(360deg);
-  }
-}
 .fc-illo-fallback {
   font-size: 56px;
 }
@@ -455,7 +407,7 @@ function dotColor(i) {
 }
 .back {
   transform: rotateY(180deg);
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--green);
   display: flex;
   flex-direction: column;
@@ -502,12 +454,12 @@ function dotColor(i) {
 .ex-text {
   font-size: 14.5px;
   line-height: 1.55;
-  color: #3a3a52;
+  color: var(--ink);
   font-style: italic;
 }
 .ctx-ex {
   border-left-color: var(--green);
-  background: #eafff6;
+  background: var(--bg-success);
 }
 .ctx-ex .ex-label {
   color: #00966a;
@@ -517,8 +469,8 @@ function dotColor(i) {
   margin: 14px auto 0;
   cursor: pointer;
   border: 1px solid rgba(255, 107, 107, 0.35);
-  background: #fff;
-  color: #d63b3b;
+  background: var(--surface);
+  color: var(--text-danger);
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 14px;
@@ -526,7 +478,7 @@ function dotColor(i) {
   transition: background 0.15s;
 }
 .remove-saved:hover {
-  background: #fff1f1;
+  background: var(--bg-danger);
 }
 .grade-label {
   margin-top: 20px;
@@ -550,7 +502,7 @@ function dotColor(i) {
   padding: 10px 6px;
   border-radius: 13px;
   border: 1.5px solid transparent;
-  background: #fff;
+  background: var(--surface);
   transition: all 0.15s;
 }
 .grade-btn:hover {
@@ -596,7 +548,7 @@ function dotColor(i) {
   height: 48px;
   border-radius: 14px;
   border: 1px solid rgba(108, 92, 231, 0.16);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   font-size: 20px;
   color: var(--purple);

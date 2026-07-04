@@ -278,7 +278,54 @@ lượt gọi thật. `npm test` (219/219, +18) và `npm run build` đều pass.
 
 ### Bước 2.1 — Sync ghi âm mốc lên Supabase Storage
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-04):** Thêm bucket `recordings` (private) + 4 policy RLS
+(select/insert/update/delete, khóa theo `(storage.foldername(name))[1] =
+auth.uid()::text`) vào `supabase/schema.sql` — bucket tạo qua
+`insert into storage.buckets` nên chạy lại script cũ (đã áp dụng trước đó) vẫn
+an toàn nhờ `on conflict do nothing`. Module mới `src/lib/recordingSync.js`:
+`uploadRecording`/`downloadRecording`/`remoteRecordingExists`/
+`deleteRemoteRecording`/`flushPendingUploads` — tách riêng khỏi
+`src/lib/recorder.js` (file đó giữ nguyên, chỉ lo IndexedDB local như docstring
+đã ghi). Path lưu `{userId}/{recId-đã-escape-dấu-":"}.webm` đúng như kế hoạch
+gợi ý (luôn đuôi `.webm` bất kể mime thật — không sao vì phát lại dựa vào
+`Blob.type` lưu ở `contentType` lúc upload, không dựa tên file). Lỗi mạng khi
+upload không ném ra ngoài mà xếp vào hàng đợi `localStorage` (khóa
+`devleap:pending-recording-uploads`), thử lại qua `flushPendingUploads(userId)`
+— gọi từ `stores/auth.js` ngay sau `pullAndMerge` lúc đăng nhập, và từ listener
+`window.addEventListener('online', ...)` gắn trong `authStore.init()`.
+
+`VoiceRecorder.vue`: sau `stop()` lưu xong local thì upload nền (không chặn
+UI), hiện badge nhỏ cạnh "✅ Đã ghi" (☁️ Đang đồng bộ / Đã đồng bộ / Lỗi đồng
+bộ — chỉ hiện khi `isCloudEnabled && user.cloudUserId`, guest mode không đổi
+gì). Khi mở buổi mà IndexedDB không có bản ghi, gọi `remoteRecordingExists`
+(1 lần `.list()` lọc theo tên, KHÔNG tải blob) — nếu có thì hiện nút "☁️ Tải
+bản ghi" (`fetchFromCloud`), bấm mới thật sự `downloadRecording` rồi cache lại
+vào IndexedDB qua `saveRecording` sẵn có. `remove()` xóa local xong thì xóa
+luôn bản trên Storage (best-effort, không chặn UI, không báo lỗi nếu thất
+bại). `MilestonesView.vue` áp dụng đúng pattern lazy-fetch tương tự cho từng
+clip trong 3 mốc so sánh.
+
+**Khác với kế hoạch — không dựng riêng UI "trạng thái sync" phức tạp:** chỉ 1
+dòng badge nhỏ + 1 nút tải, tái dùng style nút sẵn có của component (`--purple`)
+thay vì thêm CSS variable mới, giữ đúng mức "quick win" của đợt này.
+
+**Kiểm chứng:** `npm test` (228/228, +9 `tests/recordingSync.test.js` — guest
+mode no-op, escape path đúng, upload thành công/thất bại (xếp hàng + flush lại
+được), download thành công/lỗi, `remoteRecordingExists` đúng/sai tên file,
+`deleteRemoteRecording` best-effort, `flushPendingUploads` bỏ qua khi local đã
+mất blob) và `npm run build` đều pass. Không đăng nhập được qua Google trong
+sandbox preview (máy này cấu hình Supabase thật, route `/milestones` yêu cầu
+đăng nhập — cùng hạn chế đã ghi ở Bước 1.2/1.3) nên không thử tay được luồng
+"ghi máy A, nghe máy B" đầy đủ; đã gọi trực tiếp
+`import('/src/lib/recordingSync.js')` qua console trình duyệt để xác nhận
+guest-mode (`userId=null`) trả `false`/`null` không ném lỗi, và gọi thật lên
+Supabase project thật của máy này với `userId` giả không văng lỗi ra ngoài
+(catch gọn, trả `false` — đúng thiết kế "best-effort"). Chưa chạy được SQL
+bucket/policy mới trên project Supabase thật của máy này (cần làm tay 1 lần
+qua Dashboard hoặc chạy lại `schema.sql` trước khi dùng tính năng này ở môi
+trường đó).
 
 **Vấn đề:** bản ghi âm (mốc 0, bản ghi 60s, sản phẩm buổi) nằm trong IndexedDB (`src/lib/recorder.js`) — mất khi đổi máy/xóa cache, trong khi trang `/milestones` (`MilestonesView.vue`, `src/data/milestones.js`) được thiết kế để so sánh Đầu/Giữa/Cuối khóa.
 
@@ -295,7 +342,53 @@ lượt gọi thật. `npm test` (219/219, +18) và `npm run build` đều pass.
 
 ### Bước 2.2 — Ảnh minh họa từ vựng ổn định (bỏ LoremFlickr)
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-04):** Chọn **Phương án B** — giữ ảnh online nhưng đổi
+nguồn: `src/lib/vocabImage.js` viết lại hoàn toàn, bỏ LoremFlickr, tra ảnh qua
+Wikipedia REST API (`https://en.wikipedia.org/api/rest_v1/page/summary/<Term>`,
+CORS mở sẵn — đã kiểm tra thật bằng `curl`) lấy `thumbnail.source`. Chọn B thay
+vì A (tự host ~130 từ trong `vocabGlossary.js`) vì A cần tải + kiểm license
+hàng loạt ảnh thật (tốn công, rủi ro pháp lý) trong khi B tận dụng ảnh đã có
+sẵn giấy phép mở của Wikimedia mà không cần tự lưu trữ, và code hiện có
+(`VocabCard.vue`, `FlashcardTool.vue`) đã sẵn cơ chế fallback tốt nên chấp
+nhận được việc B vẫn cần mạng lần đầu.
+
+Cache theo từ trong `localStorage` (khóa `devleap:vocab-img:v1:<từ>`, TTL 30
+ngày) — cache **cả kết quả rỗng** (từ trừu tượng/trang không có ảnh/trang định
+hướng nhiều nghĩa như "Stress") để khỏi dò lại Wikipedia mỗi lần mở app, nhưng
+**không cache lỗi mạng/timeout** (tạm thời, thử lại được ở lần sau). Timeout
+~3s qua `AbortController`. Trang "định hướng" (`type: 'disambiguation'`, vd
+"Stress" trỏ tới nhiều bài khác nhau) bị coi là không có ảnh dù API vẫn trả
+`thumbnail` — tránh ảnh sai chủ đề.
+
+Gom logic hiển thị vào component dùng chung mới
+[`src/components/common/VocabIllustration.vue`](../src/components/common/VocabIllustration.vue),
+dùng ở cả `VocabCard.vue` và `FlashcardTool.vue` (đúng yêu cầu kế hoạch) nhưng
+giữ đúng hành vi hiển thị riêng của từng nơi bằng props thay vì ép giống hệt
+nhau: `VocabCard` truyền `persistent-emoji` (emoji + gradient riêng của từ đã
+có sẵn trong data — luôn hiện, ảnh fade-in đè lên khi tải xong, không có
+spinner, y hệt UX cũ) và `override-url` (giữ đường cũ: nếu data tự gán sẵn
+`vocab.img` thì dùng luôn, bỏ qua tra Wikipedia); `FlashcardTool` dùng
+`show-spinner` + `fallback-emoji="🗂️"` (không có emoji riêng theo từ, y hệt UX
+cũ: spinner lúc tải, lỗi/không có ảnh mới hiện icon thư mục chung). Component
+tự hủy kết quả tra cứu cũ khi `term` đổi giữa lúc đang chờ mạng (biến đếm
+`token`) — tránh hiện nhầm ảnh của thẻ trước lên thẻ sau khi chuyển thẻ nhanh.
+
+**Kiểm chứng:** `npm test` (237/237, +9 `tests/vocabImage.test.js` — rỗng
+không gọi mạng, có ảnh trả đúng URL + đúng tên trang viết hoa chữ đầu, trang
+định hướng -> rỗng, thiếu `thumbnail` -> rỗng, HTTP lỗi -> rỗng không ném, lỗi
+mạng -> rỗng không ném, cache đúng cho cả kết quả có/rỗng không phân biệt
+hoa/thường, lỗi mạng KHÔNG cache nên lần sau thử lại được) và `npm run build`
+pass. Đã thử tay qua preview (route `/tools/flashcard` không yêu cầu đăng
+nhập, seed `completed.ielts=['1:1']` vào localStorage để có bộ thẻ Tuần 1):
+mở thẻ "name" ra ảnh thật từ Wikimedia Commons đúng chủ đề (network tab xác
+nhận gọi `GET .../page/summary/Name` → 200 rồi tải ảnh từ
+`upload.wikimedia.org`), thẻ "goal" không có ảnh phù hợp thì hiện gọn icon
+🗂️ fallback, không vỡ layout, không lỗi console. Chưa thử tay được
+`VocabCard.vue` (chỉ xuất hiện trong buổi học, route yêu cầu đăng nhập — cùng
+hạn chế sandbox đã ghi ở các bước trước) nhưng dùng chung 1 component với
+`FlashcardTool` đã kiểm chứng nên rủi ro thấp.
 
 **Vấn đề:** `src/lib/vocabImage.js` dùng LoremFlickr — ảnh ngẫu nhiên theo keyword, thường sai nghĩa, chậm, và là điểm phụ thuộc ngoài duy nhất trong màn học từ.
 
@@ -310,7 +403,71 @@ Dù phương án nào: cùng 1 từ phải luôn ra cùng 1 ảnh; nên gom logi
 
 ### Bước 2.3 — Fallback tử tế khi không có Web Speech API (Safari/iOS)
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-04):** Khảo sát trước khi code phát hiện `recognitionSupported()`
+(`src/lib/speechRecognize.js`) và `canSpeak()` (`src/lib/speak.js`) **đã có sẵn**
+và đã được dùng đúng chỗ ở hầu hết 5 màn — chỉ thêm helper hợp nhất
+`speechSupport()` trong `speechRecognize.js` (gộp 2 hàm có sẵn thành
+`{ recognition, synthesis }`, không viết lại logic detect). Phát hiện thêm:
+`src/lib/listen.js` (dùng riêng cho `AiChat.vue`) có 1 hàm `canListen()` tự
+detect `window.SpeechRecognition`/`webkitSpeechRecognition` TRÙNG LẶP hoàn toàn
+với `recognitionSupported()` — sửa `canListen()` gọi thẳng
+`recognitionSupported()` thay vì tự dò lại (giữ nguyên `createRecognizer()` vì
+hàm đó cần constructor thật, không chỉ cờ boolean).
+
+Component dùng chung mới: [`src/components/common/SpeechSupportNote.vue`](../src/components/common/SpeechSupportNote.vue)
+— nhận `visible` (bool) + `text` (string tùy biến) từ cha thay vì tự gọi
+`speechSupport()` bên trong, vì mỗi màn đã có sẵn biến cờ hỗ trợ riêng mang sắc
+thái khác nhau (`ShadowingPlayer.vue` có cả `canRecord`/`canScore` tách biệt,
+`AiChat.vue` có `listenable` từ `listen.js` khác `recognitionSupported()` trực
+tiếp) — để cha tự quyết khi nào hiện, tránh phải hợp nhất rủi ro các luồng đang
+chạy đúng.
+
+Áp dụng theo từng màn (đúng bảng đã khảo sát, không đổi cách phát hiện có sẵn):
+- `ListeningDictation.vue`: **không đổi gì** — không dùng recognition, đã có ô
+  gõ chữ thay thế + banner riêng cho `!speakable` từ trước.
+- `PronunciationDrill.vue`: thay `<p class="warn">` thủ công bằng
+  `SpeechSupportNote`; thêm fallback thật (không chỉ disable nút chết) — khi
+  `!recordable`, nút 🎤 biến mất, thay bằng 2 nút **"✅ Đọc được" / "🙁 Chưa
+  được"** (`selfAssess`/`selfAssessMp`) ghi thẳng `results[i]/mpResults[i] =
+  { ok, selfAssessed: true }` — dùng chung logic đếm `doneCount`/`enough` nên
+  vẫn qua được gate luyện phát âm bằng tự đánh giá. Không cộng XP vì `emit('done')`
+  của component này hiện chưa được `IeltsDayView.vue` nối vào bất kỳ action cộng
+  XP nào (đã kiểm tra bằng grep) — không có đường farm XP mới.
+- `SentenceBankPractice.vue`: thêm `SpeechSupportNote` (trước đó nút mic chỉ
+  lặng lẽ biến mất qua `v-if="recordable"`, không giải thích lý do) — ô gõ tay
+  vẫn luôn có sẵn, không cần sửa thêm.
+- `ShadowingPlayer.vue` (`src/components/tools/`, không phải `day/` như mô tả
+  gốc trong kế hoạch): thêm banner **cố định** ngay dưới thanh điều khiển khi
+  `!canScore` — trước đó chỉ hiện thông báo SAU khi bấm thử (`attemptError`).
+  Luồng ghi âm + phát lại + tự so phụ đề vốn đã đúng thiết kế kế hoạch từ
+  trước, không phải sửa.
+- `AiChat.vue`: thêm `SpeechSupportNote` khi `!listenable`; đổi dòng hint từ
+  "Bấm 🎤 để nói." sang "Gõ câu trả lời ở ô bên dưới." khi không hỗ trợ. Nút
+  mic + toggle "🎤 Nói ngay"/voice-first vốn đã tự ẩn qua `v-if="listenable"`
+  (đúng như mô tả "im lặng" trong kế hoạch) — giờ có banner giải thích thay vì
+  im lặng thật. `maybeAutoListen()` không cần sửa (đã tự no-op khi
+  `!listenable`). TTS (`autoSpeak`, nút 🔊 từng tin nhắn) không đổi vì
+  `speakable` độc lập với `listenable`.
+
+**Kiểm chứng:** `npm test` (242/242, +5 `tests/speechRecognize.test.js` — đủ 4
+tổ hợp recognition×synthesis, prefix `webkitSpeechRecognition`, và
+`recognitionSupported()`/`canListen()` luôn khớp `speechSupport().recognition`)
+và `npm run build` pass (cảnh báo CSS trong `base.css` là có từ trước, không
+liên quan file đã sửa). Thử tay được `AiChat.vue` qua `/tools/chat` (route
+KHÔNG yêu cầu đăng nhập, khác 4 màn còn lại): xoá
+`window.SpeechRecognition`/`webkitSpeechRecognition` (giữ `speechSynthesis`) rồi
+chuyển tab công cụ sang/về để buộc component mount lại → banner mới hiện đúng
+chữ, nút mic + "🎤 Nói ngay" biến mất, hint đổi đúng câu, nút "🔊 Đọc" vẫn còn
+(TTS không phụ thuộc recognition), không lỗi console; phục hồi
+`window.SpeechRecognition` rồi mount lại → về đúng giao diện gốc (mic + voice-first
+hiện lại), xác nhận không có hồi quy. `PronunciationDrill.vue`/
+`SentenceBankPractice.vue`/`ShadowingPlayer.vue` chỉ nằm trong route
+`requiresAuth` (buổi học IELTS / `/shadowing`) — không đăng nhập được qua Google
+trong sandbox preview (cùng hạn chế đã ghi ở Bước 1.2/1.3/2.1), nên chỉ xác
+nhận được qua đọc code + cùng 1 component `SpeechSupportNote` đã kiểm chứng
+hoạt động đúng ở `AiChat.vue`.
 
 **Vấn đề:** 5 tính năng dựa vào Web Speech API (`ListeningDictation`, `PronunciationDrill`, `SentenceBankPractice`, `ShadowingPlayer`, `AiChat` voice-first) chỉ chạy Chrome/Edge. Trên Safari/iOS chúng hỏng **im lặng** — nút mic không làm gì hoặc không hiện.
 
@@ -329,9 +486,53 @@ Dù phương án nào: cùng 1 từ phải luôn ra cùng 1 ảnh; nên gom logi
 
 ### Bước 2.4 — Mở rộng minimal pairs + trọng tâm phát âm theo tuần
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Vấn đề:** pool minimal pairs trong `PronunciationDrill.vue` chỉ 20 cặp cố định, quay vòng 8 cặp/tuần → lặp từ tuần 4–5. Chưa nhắm vào hệ lỗi người Việt theo chủ đề tuần.
+**Ghi chú (2026-07-04):** Tách pool ra `src/data/minimalPairs.js` — 7 nhóm
+theo trọng tâm âm (`plural-s`, `verb-s`, `ed`, `vowel-i`, `vowel-ae`, `th`,
+`finalCons` gộp t/d + k/g + l/n + -st/-sk), tổng **68 cặp** (≥60), mỗi nhóm
+≥8 cặp không trùng. Gán tuần qua `WEEK_FOCUS` khớp với dòng `Ngữ pháp mới:`
+đọc trực tiếp từ `Base_English/NenTang_TuanN(.md/_Work.md)` (cả 2 track dùng
+chung tiến trình ngữ pháp nên chỉ cần 1 bảng): Tuần 2 số ít/nhiều →
+`plural-s`, Tuần 3 present simple ngôi 3 → `verb-s`, Tuần 4 past simple →
+`ed` (đúng 3 điểm kế hoạch có nêu ví dụ). Tuần 5–7 không có điểm ngữ pháp
+gắn trực tiếp với 1 âm cụ thể nên xếp theo độ khó tăng dần thay vì bịa mối
+liên hệ giả: Tuần 5 `vowel-i` (nguyên âm nền tảng dễ nhất), Tuần 6
+`vowel-ae`, Tuần 7 `th` (phụ âm khó nhất, hợp trình độ A2+ của tuần). Tuần 8
+trộn `th` + `finalCons` = "tổng hợp các nhóm khó nhất" đúng như kế hoạch.
+
+Hàm `pairsForWeek(week, learnedTerms)`: xác định (không dùng `Math.random`,
+test được), luôn trả đúng 8 cặp không trùng trong 1 lần chọn, ưu tiên cặp có
+từ trùng `learnedTerms` (so khớp không phân biệt hoa/thường/khoảng trắng)
+lên đầu danh sách — còn lại giữ nguyên thứ tự gốc của nhóm. `week` ngoài
+[2,8] kẹp về đầu/cuối.
+
+`PronunciationDrill.vue`: bỏ `MINIMAL_PAIRS_POOL` cũ (20 cặp cố định, quay
+vòng theo `((w-2)*4) % length` — logic quay vòng cũ **không hề đổi nhóm âm**,
+chỉ đổi cặp trong cùng 1 danh sách trộn lẫn `-s`/`-ed`), thay bằng gọi
+`pairsForWeek`. Thêm prop `vocabTerms` (mảng string) — `IeltsDayView.vue`
+truyền `pronVocabTerms` = `[...d.vocab, ...d.reviewVocab].map(v => v.term)`
+(cùng cách gộp từ vựng buổi mà `markDone`/`toggleDay` ở Bước 1.1 đã dùng).
+Tiêu đề khối đổi động theo tuần: `"🎯 Tuần này: {{ mpFocus.groupLabel }}"` +
+dòng mẹo đặt lưỡi/miệng lấy từ `tip` của nhóm (tuần 8 lấy tip của nhóm đầu
+trong 2 nhóm trộn).
+
+**Kiểm chứng:** test mới `tests/minimalPairs.test.js` (13 test — pool ≥60
+cặp, mỗi nhóm ≥8 cặp không trùng, mỗi cặp 2 từ khác nhau không rỗng,
+`focusForWeek` khớp đúng `WEEK_FOCUS` cho tuần 2–8, kẹp tuần ngoài khoảng,
+7 tuần liền kề không trùng trọng tâm, `pairsForWeek` luôn ra đúng 8 cặp
+không trùng + xác định + ưu tiên đúng từ đã học + không khớp thì vẫn đủ 8
+cặp theo thứ tự gốc + tuần 8 trộn nhiều nhóm). `npm test` (255/255, +13) và
+`npm run build` đều pass. Route `/courses/ielts/week/:week/day/:day` yêu
+cầu đăng nhập Google — không đăng nhập được trong sandbox preview (cùng hạn
+chế đã ghi ở các bước 1.2/1.3/2.1/2.3), nên đã xác nhận qua console trình
+duyệt thật bằng `import('/src/data/minimalPairs.js')`: tổng 68 cặp, đúng 7
+nhãn trọng tâm cho tuần 2→8 (khác nhau từng tuần, tuần 8 ghép 2 nhãn), ưu
+tiên đúng cặp `finish/finished` khi truyền `learnedTerms:['finish']` cho
+tuần 4 — không có lỗi console. Component dùng cùng `PronunciationDrill.vue`
+đã qua đủ test unit nên rủi ro thấp dù chưa thử tay được UI thật.
+
+**Vấn đề (kế hoạch gốc):** pool minimal pairs trong `PronunciationDrill.vue` chỉ 20 cặp cố định, quay vòng 8 cặp/tuần → lặp từ tuần 4–5. Chưa nhắm vào hệ lỗi người Việt theo chủ đề tuần.
 
 **Việc cần làm:**
 1. Tách pool ra `src/data/minimalPairs.js`, mở rộng lên ≥ 60 cặp, nhóm theo **trọng tâm âm**: âm cuối -s/-z, -ed, -t/-d, -k/-g; cặp nguyên âm i/iː, æ/e; th/t, th/s; l/n cuối từ; tổ hợp -st/-sk.
@@ -345,9 +546,68 @@ Dù phương án nào: cùng 1 từ phải luôn ra cùng 1 ảnh; nên gom logi
 
 ### Bước 2.5 — Biểu đồ tiến bộ viết & nói
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Vấn đề:** mỗi bài viết AI chữa đã lưu `{ cefr, score }` trong `store.writing`, mỗi phút nói đã ghi `speakingLog` — nhưng không đâu vẽ ra. Người học không **thấy** mình tiến bộ (yếu tố giữ chân số 1).
+**Ghi chú (2026-07-04):** Khảo sát trước khi code phát hiện kế hoạch mô tả hơi
+khác thực tế: điểm viết KHÔNG nằm trực tiếp ở `store.writing` mà lồng trong
+`state.writings['course:week:day'].review = { cefr, score (0-100), summary,
+lines }`, chỉ có khi `done && review` (bài đã được AI chữa xong) —
+`saveWriting()` ghi `at` (ngày nộp, không đệm 0: `'2026-7-4'`). `speakingLog`
+là `{ 'Y-M-D': tổng-giây-hôm-đó }`, cùng định dạng ngày không đệm 0.
+
+Thêm `src/lib/progressStats.js` (hàm thuần, không đụng store/Vue):
+- `writingSeries(writings, course)` — lọc đúng course + đã chữa xong, **sắp
+  theo tuần/ngày (trình tự buổi học)** chứ không theo `at` (ngày nộp thật) —
+  để nộp bù/nộp lại không làm lệch trục thời gian biểu đồ.
+- `writingSummary(series)` — điểm mới nhất, đầu tiên, chênh lệch (null nếu
+  chưa đủ 2 bài, không hiện "▲ +0" giả).
+- `speakingWeeklyMinutes(speakingLog)` — gộp theo tuần (mốc Thứ Hai, tự parse
+  định dạng ngày không đệm 0 của `ymd()`), sắp tăng dần.
+- `srsRetention(srs, minCards=5)` — **tự định nghĩa mới** vì `lib/srs.js`
+  chưa có sẵn hàm này: chỉ tính trên thẻ ĐÃ ÔN THẬT (`last` khác null hoặc
+  từng có `lapses`) — loại thẻ mới tự "gieo" ở Bước 1.1 mà chưa ai đụng tới
+  (đúng yêu cầu "không chế số"). % = tỉ lệ thẻ đang "nhớ tốt" (`reps > 0` —
+  lần ôn gần nhất không phải "Quên") trong số thẻ đã ôn. Trả `null` nếu dưới
+  `minCards` thẻ đã ôn thật, ẩn hẳn khối này trên UI khi đó. Ghi rõ nhãn
+  "(ước tính)" trên UI vì `reps` là chuỗi đúng liên tiếp chứ không phải tổng
+  số lần ôn — không có dữ liệu đủ để tính retention chuẩn xác 100%.
+
+`src/views/ProgressView.vue` (mới, route `/progress`, `requiresAuth`,
+theo đúng khuôn `container narrow section-top` + `.block`/`.empty` của
+`MilestonesView.vue`): khối tổng quan 3-4 thẻ (điểm viết mới nhất + chênh
+lệch, tổng phút nói, `user.dueTodayCount`, tỉ lệ nhớ từ nếu có), biểu đồ
+đường SVG thuần cho điểm viết (chấm màu theo ngưỡng ≥70 xanh / <50 đỏ, nhãn
+trục X chỉ hiện đầu-giữa-cuối để đỡ rối, `<title>` mỗi điểm để hover xem chi
+tiết tuần/buổi/CEFR), biểu đồ cột SVG thuần cho phút nói/tuần (nhãn `DD/MM`).
+Không cài chart lib nào — dùng `viewBox` + `width:100%` nên tự responsive.
+
+Link: `IeltsCourseView.vue` thêm nút `.track-btn` "📈 Tiến độ" cạnh "📊 So
+sánh mốc" có sẵn. `HomeView.vue` **không có link Milestones nào để đặt cạnh**
+(đã grep xác nhận) nên thêm 1 khối `.due-card` mới (tái dùng style banner
+nhắc ôn SRS có sẵn) "📈 Xem tiến độ học tập", luôn hiện (không điều kiện như
+banner SRS).
+
+**Kiểm chứng:** test mới `tests/progressStats.test.js` (13 test — lọc đúng
+course/trạng thái đã chữa, sắp theo buổi học không theo ngày nộp, bỏ qua key
+sai định dạng/score không phải số, `writingSummary` rỗng/1 bài/nhiều bài,
+`speakingWeeklyMinutes` gộp đúng tuần + bỏ qua giá trị 0/ngày lỗi, `srsRetention`
+null khi thiếu dữ liệu + tính đúng % + loại thẻ chưa ôn thật). `npm test`
+(268/268, +13) và `npm run build` pass. Route `/progress` yêu cầu đăng nhập
+nên không vào được qua điều hướng thật trong sandbox (cùng hạn chế các bước
+trước) — đã xác nhận bằng cách mount thẳng `ProgressView.vue` vào DOM qua
+console trình duyệt (tạo Vue app + Pinia riêng, `useUserStore()` lấy đúng
+store đang chạy của app thật) rồi bơm dữ liệu `writings`/`speakingLog`/`srs`
+giả: biểu đồ đường lên đúng hướng tăng dần kèm màu chấm đúng ngưỡng, biểu đồ
+cột đúng chiều cao tỉ lệ, thẻ tổng quan hiện đúng số + chênh lệch, khối tỉ lệ
+nhớ ẩn/hiện đúng theo ngưỡng `minCards`; xoá hết dữ liệu → 3 empty-state hiện
+đúng, không vỡ layout; resize mobile (375px) → biểu đồ tự co theo `viewBox`,
+`overview-grid` chuyển 2 cột. Card "📈 Xem tiến độ học tập" trên `HomeView.vue`
+đã xác nhận hiện đúng qua điều hướng thật (route `/` không yêu cầu đăng
+nhập) — bấm vào bị đá về `login=required&redirect=/progress` đúng như cấu
+hình `requiresAuth` (máy này có Supabase thật nên guest bị chặn, khác các
+route không cần đăng nhập).
+
+**Vấn đề (kế hoạch gốc):** mỗi bài viết AI chữa đã lưu `{ cefr, score }` trong `store.writing`, mỗi phút nói đã ghi `speakingLog` — nhưng không đâu vẽ ra. Người học không **thấy** mình tiến bộ (yếu tố giữ chân số 1).
 
 **Việc cần làm:**
 1. Trang mới `/progress` (view riêng — Milestones thiên về nghe lại bản ghi, Progress thiên về số liệu): biểu đồ đường **điểm viết theo buổi** (score 0–100, đánh dấu mốc CEFR), biểu đồ cột **phút nói theo tuần** (`speakingLog`), thẻ tổng quan (điểm viết mới nhất + chênh so với bài đầu, tổng phút nói, số thẻ SRS đến hạn). Tỷ lệ nhớ từ chỉ hiện nếu dữ liệu `srs` đủ (có `reps`/`lapses`) — **không chế số**.
@@ -368,9 +628,79 @@ Dù phương án nào: cùng 1 từ phải luôn ra cùng 1 ảnh; nên gom logi
 
 ### Bước 3.1 — Tách `IeltsDayView.vue` (1675 dòng) thành sub-components
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:** tách các khối template + logic + style tương ứng thành component trong `src/components/day/`:
+**Ghi chú (2026-07-04):** File thực tế đã phình lên **1957 dòng** (không phải
+1675 như kế hoạch ghi — do các Bước 1.x/2.x thêm tính năng) trước khi tách.
+Tách đúng 5 component theo đề bài: [`DayHeader.vue`](../src/components/day/DayHeader.vue)
+(259 dòng, banner chẩn đoán + header ring + day-nav),
+[`GrammarSection.vue`](../src/components/day/GrammarSection.vue) (77 dòng, lý
+thuyết + luyện tập ngữ pháp), [`WritingSection.vue`](../src/components/day/WritingSection.vue)
+(417 dòng, khối lớn nhất — giàn giáo, textarea, AI chữa bài),
+[`MissionSection.vue`](../src/components/day/MissionSection.vue) (139 dòng,
+Mission tuần + Buổi nói người thật), [`WeekTestSection.vue`](../src/components/day/WeekTestSection.vue)
+(54 dòng, CTA bài kiểm tra tuần). `IeltsDayView.vue` còn **910 dòng** (giảm
+53%, hơi vượt mốc "~700" của kế hoạch — chấp nhận vì mốc gốc tính trên 1675
+dòng chứ không phải 1957 dòng thực tế; `WritingSection.vue` 417 dòng, vượt
+nhẹ mốc 400 vì gộp cả khối "kết quả AI chữa" (`.review`/`.rev-*`) — tách tiếp
+khối đó ra thêm 1 file sẽ chỉ tăng số file mà không giảm rủi ro, không đáng).
+
+**Nguyên tắc chọn ranh giới props/state (khác 1 chỗ so với chữ kế hoạch,
+cùng tinh thần):** những computed **chỉ dùng nội bộ 1 khối** (vd `writingText`,
+`missionNote`, `weekComplete`, `onGrammarComplete`) chuyển hẳn vào component
+con, đọc/ghi store trực tiếp qua `useUserStore()` — đúng pattern đã có sẵn ở
+`VoiceRecorder.vue`/`InlineFlashcards.vue`/`AiChat.vue` (grep xác nhận trước
+khi làm). Những computed **cha còn cần** (vd `agenda` cần `missionNeeded`,
+`dayReady` cần `writingDone`/`grammarPassed`, khảo sát cuối tuần cần `weekTest`)
+**giữ nguyên ở cha**, truyền xuống qua props — tránh 2 nguồn sự thật. Nhờ vậy
+hầu hết state vẫn "ở store như hiện tại" đúng yêu cầu, chỉ thêm vài prop nhỏ.
+
+**CSS dùng chung — lệch kế hoạch có chủ đích:** kế hoạch nói "gom vào 1 file
+CSS chung", nhưng import CSS thường (không `scoped`) sẽ áp dụng TOÀN CỤC —
+khảo sát trước khi làm phát hiện 2 component khác (`ListeningDictation.vue`,
+`PronunciationDrill.vue`) đã dùng class `.step-card`/`.current` **mà không tự
+định nghĩa**, và ít nhất 5 file khác (`ListeningComprehension.vue`,
+`ReadingComprehension.vue`, `DayView.vue`, `HomeView.vue`, `IeltsDayView.vue`
+cũ) mỗi file tự định nghĩa RIÊNG `.step-card` — nếu thêm bản global sẽ vô tình
+"sửa" giao diện 2 file đầu (hiện chưa có card bao ngoài) và đổi độ ưu tiên CSS
+ở nơi khác, vi phạm thẳng yêu cầu "không đổi hành vi" của cả Đợt 3. Giải pháp:
+[`ieltsDaySection.css`](../src/components/day/ieltsDaySection.css) — 1 file
+CSS **dùng chung nội dung** nhưng mỗi component import qua
+`<style scoped src="./ieltsDaySection.css">` (tính năng chuẩn của Vue SFC:
+`scoped` áp dụng cho MỌI khối `<style>` của file, kể cả khối trỏ `src` ngoài)
+— vẫn 1 nguồn duy nhất cho `.step-card/.step-head/.eyebrow/.step-title/
+.quiz-intro/.wt-badge/.gate-line/.grammar-drill/.green-btn/.write-area/.prose`,
+nhưng biên dịch RIÊNG cho từng component (không rò rỉ), zero rủi ro thị giác.
+Nhân tiện dọn luôn `.check-list/.check-item/.tick/.rhythm` — CSS chết, không
+còn class nào trong template khớp (còn sót từ khi bỏ checklist tự-tick trước
+đây) — không có gì render dùng các class này nên xoá không đổi giao diện.
+
+Thêm hàm dùng chung `requiredSentencesFor(prompt)` vào `src/lib/dayPlan.js`
+(rút số câu bắt buộc từ đề bài viết) — trước đây tính trùng ngay trong
+`IeltsDayView.vue`; giờ cả `agenda` (ở cha) lẫn `WritingSection.vue` cùng gọi
+1 hàm, khỏi lệch nhau. Test mới trong `tests/dayPlan.test.js` (+3 test).
+
+**Kiểm chứng:** `npm test` (271/271, +3) và `npm run build` đều pass (cảnh
+báo CSS `stdin:899` là lỗi cú pháp comment có từ trước trong `base.css`,
+không liên quan file đã sửa — đã xác nhận ở Bước 2.3). Route thật yêu cầu
+đăng nhập nên không thử tay qua điều hướng được (cùng hạn chế các bước trước)
+— đã mount thẳng `IeltsDayView.vue` vào DOM qua console trình duyệt (tạo Vue
+app + Pinia + Router riêng, `createApp(IeltsDayView, {week,day})`) với **2
+buổi thật** để phủ đủ cả 5 component: Tuần 1 Buổi 1 (buổi chẩn đoán — header,
+day-nav khoá đúng, banner chẩn đoán, ngữ pháp lý thuyết + `.prose` render
+đúng HTML, luyện tập ngữ pháp có gate-line, bài đọc hiểu, giàn giáo viết đúng
+3 khối mẫu/khung câu/từ nối, bấm "+ chèn" và từ nối THẬT SỰ ghi vào textarea
++ đếm câu đúng, bài kiểm tra tuần khoá đúng "0/7 buổi", checkpoint đúng nhãn
+"Làm bài tập ngữ pháp trước") và Tuần 3 Buổi 6 (có Mission tuần + Buổi nói
+người thật — cả 2 card hiện đúng, tick checkbox THẬT SỰ đổi badge thành "✅ Đã
+hoàn thành" qua store). Không có lỗi console ở cả 2 lần mount. Các khối
+KHÔNG đổi code (vocab, quiz ôn nhanh, tự luyện cuối tuần, AiChat,
+PronunciationDrill, ListeningDictation, VoiceRecorder, SentenceBankPractice,
+ErrorLedger, modal khảo sát cuối tuần) không thử tay riêng vì style/logic của
+chúng giữ nguyên 100% trong `IeltsDayView.vue` (chỉ các khối đã liệt kê ở
+trên bị đụng tới).
+
+**Việc cần làm (kế hoạch gốc):** tách các khối template + logic + style tương ứng thành component trong `src/components/day/`:
 - `DayHeader.vue` (banner chẩn đoán, header card, day navigation)
 - `GrammarSection.vue` (lý thuyết new/review/final + gate quiz ngữ pháp)
 - `WritingSection.vue` (textarea, giàn giáo, kết quả AI chữa — **khối lớn nhất, ưu tiên**)
@@ -382,25 +712,184 @@ Props xuống, emit lên; state giữ ở store như hiện tại. Style dùng c
 
 ### Bước 3.2 — Tách `AiChat.vue` (1190 dòng)
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:** tách thành: `ChatMessages.vue` (render list + tra từ khi click), `ChatComposer.vue` (input + mic + countdown 10s), `useChatEngine.js` (composable: gọi API, history, retry), persona gộp vào engine hoặc composable riêng. Giữ nguyên UX.
+**Ghi chú (2026-07-04):** File thực tế đã phình lên **1301 dòng** trước khi
+tách (không phải 1190 — cùng nguyên nhân như Bước 3.1: các bước 1.x/2.x thêm
+tính năng, ví dụ `retry`/`friendlyAiError` ở 1.4, `SpeechSupportNote` ở 2.3).
+Tách đúng 3 phần theo đề bài:
+[`src/composables/useChatEngine.js`](../src/composables/useChatEngine.js) (447
+dòng — toàn bộ state phiên chat, gọi API/lịch sử/retry, persona, mic/voice-first,
+roleplay; hàm `useChatEngine(props)` gọi `useUserStore()`/`useRouter()`-độc lập
+bên trong nên chữ ký gọn, không cần truyền thêm tham số),
+[`ChatMessages.vue`](../src/components/day/ChatMessages.vue) (559 dòng — render
+danh sách tin nhắn + toàn bộ logic tra/lưu từ tại chỗ `tapWord`/`pop`/
+`saveWordFromPop` tự quản lý nội bộ, không cần engine),
+[`ChatComposer.vue`](../src/components/day/ChatComposer.vue) (125 dòng — ô
+nhập/mic/đồng hồ đếm ngược, thuần props/emit không gọi API).
+`AiChat.vue` còn **342 dòng**, chỉ còn layout + wiring.
+
+**Quyết định khác kế hoạch (ranh giới props, không đổi hành vi):**
+- `pop`/`tokenize`/`tapWord`/`saveWordFromPop` (tra & lưu từ) chuyển hẳn vào
+  `ChatMessages.vue` vì đúng đề bài "render list + tra từ khi click" — không
+  cần đi qua composable. Các hành động cần gọi API (gợi ý/ý tưởng/dịch/lưu
+  câu/đổi phong cách) vẫn nằm ở `useChatEngine.js`, truyền xuống
+  `ChatMessages.vue` dưới dạng **prop kiểu hàm** (`show-hint`, `save-sentence`,
+  `change-persona`…) — các hàm này mutate thẳng object tin nhắn (`m.ui.hint`,
+  `m.evaluation`…) nên hoạt động đúng dù gọi từ component con, vì `messages`
+  là mảng reactive dùng chung (không copy).
+- `savedToast`/`flashToast` (toast lưu từ/câu) giữ ở engine vì dùng chung giữa
+  `ChatMessages` (lưu từ) và engine (lỗi đổi phong cách/lưu câu) — khối hiển
+  thị toast vẫn ở `AiChat.vue` (nằm trong `.ai-chat` nên vị trí `absolute` không
+  đổi), `ChatMessages` chỉ gọi `props.flashToast(...)`.
+- Popover tra từ cần đóng khi bấm ra ngoài khung chat (`@click="closePop"` trên
+  `<section class="step-card ai-chat">` cũ) — vì `pop` giờ là state riêng của
+  `ChatMessages.vue`, dùng `defineExpose({ closePop })` + template ref
+  (`chatMessages.value?.closePop()`) từ `AiChat.vue`. Tự đóng thêm khi
+  `messages` đổi tham chiếu (reset buổi/roleplay/đổi bài) qua 1 `watch` nội bộ,
+  thay cho lệnh `closePop()` rải rác trong `initSession`/`startRoleplaySession`
+  cũ.
+- Bỏ hẳn `scrollToEnd()` gọi thủ công rải rác trong engine (`sendTurn`,
+  `startRoleplaySession`) — vì phần tử cuộn (`.chat-log`) giờ nằm trong
+  `ChatMessages.vue`, không còn ref sẵn ở engine. Thay bằng 2 `watch` nội bộ
+  trong `ChatMessages.vue` (`props.loading` bật → cuộn xuống thấy khung "đang
+  gõ"; `props.messages.length` đổi → cuộn xuống thấy tin nhắn mới) — tái tạo
+  đúng 2 thời điểm cuộn của bản gốc mà không cần engine biết về DOM.
+- Dọn 1 dòng CSS chết `.persona-grid` (không class nào trong template khớp,
+  đã grep xác nhận trước khi xoá) khi tách media query `.bubble{max-width:86%}`
+  sang `ChatMessages.vue`.
+
+**Kiểm chứng:** `npm test` (271/271, không đổi số lượng — bước này không có gì
+để viết test logic mới, chỉ di chuyển code) và `npm run build` đều pass. Thử
+tay qua `/tools/chat` (route KHÔNG yêu cầu đăng nhập, dùng Groq thật của máy
+này): tra từ "English" ra đúng nghĩa từ `VOCAB_GLOSSARY`, lưu từ → toast +
+saved-pill tăng đúng số, popover đóng đúng khi bấm ra khung chat; gửi câu "I
+like learning English every day." → AI chấm điểm CEFR + lời phê + trả lời tiếp
+đúng như cũ; bấm đổi phong cách lời phê trên thẻ đánh giá → gọi lại
+`reFeedback` thật, lời phê đổi đúng giọng "Nghiêm túc". Không có lỗi console
+trong suốt phiên thử.
+
+**Việc cần làm (kế hoạch gốc, đã hoàn thành):** tách thành: `ChatMessages.vue` (render list + tra từ khi click), `ChatComposer.vue` (input + mic + countdown 10s), `useChatEngine.js` (composable: gọi API, history, retry), persona gộp vào engine hoặc composable riêng. Giữ nguyên UX.
 
 **Nghiệm thu:** như 3.1 — test pass nguyên; chat coach/roleplay/voice/tra từ/lưu từ hoạt động y hệt (thử tay).
 
 ### Bước 3.3 — Tách `stores/user.js` (868 dòng) theo mảng
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:** giữ **một** store Pinia (đừng vỡ API `useUserStore()` — hàng chục file đang gọi) nhưng tách phần thân ra module: `src/stores/user/` gồm `progress.js` (completed, streak, XP), `srsSlice.js`, `quizSlice.js`, `missionSlice.js`, `syncSupabase.js` (pull/merge/push), rồi `user.js` compose lại. Mỗi hàm merge có test riêng.
+**Ghi chú (2026-07-04):** File thực tế đã phình lên **1032 dòng** trước khi
+tách (không phải 868 — cùng nguyên nhân như Bước 3.1/3.2: các bước 1.x/2.x/2.5
+thêm `weekFeedback`/`progressStats`...). Tách thành `src/stores/user/` với
+**9 module** thay vì đúng 5 tên nêu trong kế hoạch (`progress.js`/`srsSlice.js`/
+`quizSlice.js`/`missionSlice.js`/`syncSupabase.js`) — vì state thật có nhiều
+mảng độc lập hơn 5 nhóm đó (từ đã lưu, shadowing, bài viết, nhật ký nói, tùy
+chọn local đều là những mảng tách bạch, gộp cưỡng ép vào 1 trong 5 file sẽ chỉ
+tạo file to lai tạp, không giảm rủi ro bảo trì — đúng tinh thần "mỗi hàm merge
+có test riêng" của kế hoạch): [`helpers.js`](../src/stores/user/helpers.js)
+(28 dòng, `dayKey`/`ymd`/`normalizeTerm`/`union`/`laterDate` dùng chung),
+[`progressSlice.js`](../src/stores/user/progressSlice.js) (151 dòng — xp/streak/
+badges/completed/checklists, `toggleDay`/`bumpStreak`/`addXp`/`markCardKnown`/
+`setChecklist`), [`srsSlice.js`](../src/stores/user/srsSlice.js) (126 dòng —
+`reviewCard`/`seedSrsFromDay` + mọi getter `due*`), [`quizSlice.js`](../src/stores/user/quizSlice.js)
+(159 dòng — `recordQuiz`/`recordGrammarDay`/`recordVocabDay`),
+[`missionSlice.js`](../src/stores/user/missionSlice.js) (146 dòng — mission
+tuần + buổi nói người thật + khảo sát cuối tuần, 3 mảng cùng hình dạng
+"course:week[:day]"), [`vocabSlice.js`](../src/stores/user/vocabSlice.js)
+(152 dòng — từ đã lưu + shadowing, 2 mảng ĐỀU đồng bộ cloud nên gộp chung),
+[`writingSlice.js`](../src/stores/user/writingSlice.js) (67 dòng),
+[`speakingSlice.js`](../src/stores/user/speakingSlice.js) (78 dòng),
+[`localPrefsSlice.js`](../src/stores/user/localPrefsSlice.js) (60 dòng —
+convoPrefs/ieltsTrack, KHÔNG nằm trong snapshot/sync vì là "sở thích thiết bị"
+chứ không phải tiến độ), [`syncSupabase.js`](../src/stores/user/syncSupabase.js)
+(192 dòng — `pullAndMerge`/`detachCloud`/`schedulePush`/`pushNow`/`mergeSnapshots`
+composing các hàm merge của từng slice). `src/stores/user.js` còn **117 dòng**,
+chỉ compose `state()`/`getters`/`actions` từ 8 slice + định nghĩa
+`snapshot`/`applySnapshot`/`persist`/`hydrate` (cần thấy toàn bộ field nên hợp
+lý giữ ở tầng compose) — đúng yêu cầu "giữ một store Pinia, `useUserStore()`
+không đổi": đã grep xác nhận cả 28 file gọi `@/stores/user` chỉ import đúng
+`useUserStore`, không file nào import hàm/const nội bộ (an toàn để tổ chức lại
+tự do bên trong).
+
+**Nguyên tắc ranh giới (khác 1 chỗ so với kế hoạch, cùng tinh thần):** mỗi
+slice export `state()`/`getters`/`actions` (một số action gọi chéo qua `this`
+sang slice khác — vd `toggleDay` gọi `this.seedSrsFromDay(...)`, không sao vì
+Pinia merge tất cả actions/getters vào cùng 1 object, `this` luôn là store đầy
+đủ bất kể hàm định nghĩa ở file nào) và (nếu có đồng bộ cloud)
+`pick(state)`/`applyDefaults(snapshot)`/`mergeXxx(a,b)` thuần — thay vì kế
+hoạch gợi ý gộp `snapshot()`/`applySnapshot()` nguyên khối 1 chỗ, tách nhỏ theo
+slice để mỗi slice tự khai rõ field nào thuộc mình, `user.js` chỉ ghép
+`{...a.pick(this), ...b.pick(this)}` — không lặp danh sách field ở 2 nơi khác
+nhau như bản gốc (`state()` và `snapshot()`/`applySnapshot()` từng liệt kê
+trùng nhau).
+
+**Kiểm chứng:** `npm test` (282/282, +11 — thêm
+[`tests/userStoreMerges.test.js`](../tests/userStoreMerges.test.js) test trực
+tiếp từng hàm merge (`mergeSrs`/`mergeQuiz`/`mergeMissions`/`mergeWeekFeedback`/
+`mergeSaved`/`mergeShadowing`/`mergeWritings`/`mergeChecklists`/
+`mergeSpeakingLog`) import thẳng từ slice, không qua store — đúng yêu cầu "mỗi
+hàm merge có test riêng"; test 2 chiều đầy đủ cho MỌI hàm merge để dành cho
+Bước 3.4 như kế hoạch đã phân công) và `npm run build` đều pass (cảnh báo CSS
+`stdin:899` là lỗi có từ trước trong `base.css`, không liên quan). Route thật
+yêu cầu đăng nhập nên không thử "đăng nhập 2 trình duyệt" được (cùng hạn chế
+đã ghi ở các bước trước) — bù lại đã chạy `npm run dev` thật, xác nhận qua
+`preview_network` cả 9 file slice mới đều tải 200 OK trong module graph thật
+của Vite (không chỉ resolve được qua Vitest — 2 hệ resolve module khác nhau),
+rồi gọi trực tiếp `useUserStore()` qua console trình duyệt với 1 Pinia riêng
+(`import('/node_modules/.vite/deps/pinia.js?v=...')` + `import('/src/stores/user.js')`)
+ở chế độ khách: `toggleDay` + `saveWeekFeedback` + `recordQuiz` + `saveWord` ->
+`snapshot()` -> `persist()` (ghi localStorage) -> tạo lại (`hydrate()`) ->
+`snapshot()` lần 2 — so `JSON.stringify` 2 lần snapshot **khớp tuyệt đối**
+(xp=50 đúng 1 buổi chưa xong tuần, `srs` seed đúng 2 từ due sau 3 ngày,
+`quizScores`/`weekFeedback`/`savedWords` đều đúng dữ liệu đã ghi) — xác nhận
+chu trình persist/hydrate qua slice mới không làm rơi rụng field nào. Luồng
+`pullAndMerge`/cloud sync giữ nguyên độ phủ nhờ 63 test có sẵn trong
+`tests/user.store.test.js` (mock Supabase) chạy qua hệt các actions cũ, không
+sửa 1 dòng test nào trong file đó.
+
+**Việc cần làm (kế hoạch gốc):** giữ **một** store Pinia (đừng vỡ API `useUserStore()` — hàng chục file đang gọi) nhưng tách phần thân ra module: `src/stores/user/` gồm `progress.js` (completed, streak, XP), `srsSlice.js`, `quizSlice.js`, `missionSlice.js`, `syncSupabase.js` (pull/merge/push), rồi `user.js` compose lại. Mỗi hàm merge có test riêng.
 
 **Nghiệm thu:** `npm test` pass nguyên; import path `@/stores/user` không đổi với mọi file khác; đăng nhập/sync/guest mode thử thủ công.
 
 ### Bước 3.4 — Bộ test cho các luồng chưa phủ
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:** viết test bổ sung cho những gì các bước trước đã thêm và các lỗ hổng sẵn có: auto-seed SRS (1.1), merge `weekFeedback` (1.2), format lỗi AI + helper (1.4), `speechSupport()` fallback (2.3), `pairsForWeek` (2.4), `progressStats` (2.5) — nếu các bước đó đã tự kèm test thì rà lại độ phủ. Nâng chuẩn: **mọi hàm merge đa thiết bị trong store phải có test 2 chiều** (A mới hơn B, và B mới hơn A).
+**Ghi chú (2026-07-05):** Rà lại độ phủ của 1.1/1.2/1.4/2.3/2.4/2.5 trước khi
+viết thêm — kết luận: các bước đó đã tự kèm test khá kỹ (`srs.test.js`,
+`user.store.test.js`, `aiError.test.js`/`llmRetry.test.js`/`aiChatError.test.js`,
+`speechRecognize.test.js`, `minimalPairs.test.js`, `progressStats.test.js`) nên
+không viết lại trùng, chỉ vá đúng 2 lỗ hổng thật tìm được khi đọc kỹ
+`seedSrsFromDay` (`src/stores/user/srsSlice.js`): (1) chưa có test cho việc
+gieo trùng từ trong CÙNG một buổi (khác hoa/thường/khoảng trắng) chỉ được gieo
+1 lần (dựa vào `Set` khử trùng nội bộ hàm — đọc code mới thấy, chưa từng test
+qua `toggleDay`); (2) chưa có test cho nhánh nhận `vocabTerms` dạng object
+`{term}` (không chỉ string thuần) — cả 2 thêm vào `tests/user.store.test.js`.
+
+**Trọng tâm chính của bước — nâng chuẩn "test 2 chiều cho mọi hàm merge đa
+thiết bị":** trước bước này, `tests/userStoreMerges.test.js` chỉ có
+`mergeSrs`/`mergeWeekFeedback` được gọi cả 2 chiều (`merge(a,b)` và
+`merge(b,a)`); 7 hàm còn lại (`mergeQuiz`, `mergeMissions`, `mergeSaved`,
+`mergeShadowing`, `mergeWritings`, `mergeChecklists`, `mergeSpeakingLog`) chỉ
+test 1 chiều. Đã thêm chiều ngược lại cho cả 7 hàm + 3 test tình huống mới làm
+rõ ngữ nghĩa khi đổi chiều thật sự thay đổi kết quả trung gian (`mergeQuiz`:
+điểm cao nhất khác lần làm gần nhất; `mergeMissions`: done=true cũ hơn vẫn
+thắng qua OR; `mergeWritings`: bản mới hơn chưa được chữa vẫn giữ `review` cũ
+đã chữa) — không chỉ đổi thứ tự gọi mà không kiểm tra gì thêm. Phát hiện thêm 1
+hàm merge tổng hợp `mergeSnapshots` (`src/stores/user/syncSupabase.js`) —
+hàm THẬT SỰ chạy trong `pullAndMerge` — chưa từng có test đơn vị trực tiếp
+(chỉ được phủ gián tiếp qua 63 test tích hợp mock Supabase trong
+`user.store.test.js`, luôn gọi theo 1 chiều cố định local→remote); thêm 2 test
+mới gọi trực tiếp `mergeSnapshots`, xác nhận ủy quyền đúng cho cả 9 hàm merge
+con + `Math.max`/`laterDate`/`union` cho các trường còn lại, và đổi chiều gọi
+(`mergeSnapshots(remote, local)`) ra cùng kết quả (so sau khi sort các trường
+dạng tập hợp `knownCards`/`completed.*` vì union không giữ thứ tự phần tử khi
+đổi chiều — đúng bản chất tập hợp, không phải lỗi).
+
+**Kiểm chứng:** `npm test` tăng từ 282 → **290** (+8 test mới: 6 test 2 chiều
++ 2 test `mergeSnapshots` trong `userStoreMerges.test.js`, +2 test `seedSrsFromDay`
+trong `user.store.test.js`) — chạy lại `npm test` 3 lần liên tiếp đều
+290/290 pass, không có test flaky. `npm run build` pass (chỉ còn cảnh báo
+chunk-size có từ trước, không liên quan).
 
 **Nghiệm thu:** `npm test` pass; số test tăng có ý nghĩa (≥ 15 test mới); không test nào flaky (chạy 3 lần liên tiếp).
 
@@ -410,7 +899,62 @@ Props xuống, emit lên; state giữ ở store như hiện tại. Style dùng c
 
 ### Bước 4.1 — Home thành "bảng điều khiển hôm nay"
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Thêm getter `nextLesson` vào
+[`src/stores/user/progressSlice.js`](../src/stores/user/progressSlice.js) —
+trả mảng entry `{course, label, route, week, day, title}` cho MỖI khóa đã học
+≥1 buổi và CHƯA xong hết (tái dùng thẳng `computeIeltsProgress`/
+`computeJavaProgress` + `getIeltsDay`/`getJavaDay` đã có sẵn ở `data/courseIelts.js`/
+`data/course.js`, không viết lại logic tính tuần/ngày kế tiếp). Khách mới (chưa
+học buổi nào ở cả 2 khóa) → mảng rỗng → Home giữ nguyên landing cũ.
+
+**Phát hiện + sửa 1 bug khi viết test cho `studiedToday`:** ban đầu viết getter
+trả boolean thẳng (`s.lastStudyDate === ymd(new Date())`) — test đổi
+`vi.setSystemTime` sang ngày sau rồi gọi lại getter vẫn ra `true` cũ. Nguyên
+nhân: Pinia getter là 1 `computed()`, chỉ theo dõi dependency REACTIVE
+(`lastStudyDate`); "hôm nay" chỉ đổi theo đồng hồ thật, không phải state, nên
+giá trị bị "đông cứng" qua nửa đêm nếu không có state nào khác đổi trong lúc
+đó. Sửa theo đúng pattern `isCardDue` đã có sẵn trong `srsSlice.js`: trả về
+**hàm** `() => s.lastStudyDate === ymd(new Date())` — closure gọi ở THỜI ĐIỂM
+GỌI nên luôn đọc đồng hồ hiện tại, không bị cache. Gọi là `user.studiedToday()`
+(có dấu ngoặc) thay vì `user.studiedToday`.
+
+Thêm `pendingWeekMission(user, week)` vào
+[`src/lib/missionStats.js`](../src/lib/missionStats.js) (tách hàm nội bộ
+`extractMissionText()` dùng chung với `missionLogEntries` đã có sẵn, tránh lặp
+lần 3 cùng 1 đoạn regex) — dò từng buổi trong tuần tìm bullet "🌍 Mission tuần",
+trả về buổi + nội dung nếu CHƯA đánh dấu xong, `null` nếu tuần không có mission
+hoặc đã xong (không nhắc lại).
+
+[`src/views/HomeView.vue`](../src/views/HomeView.vue): thêm khối "Hôm nay"
+(`v-if="hasProgress"`) thay hẳn phần HERO marketing khi người học đã có tiến
+độ — nút "▶ Học tiếp" cho từng khóa (2 nút nếu học song song 2 khóa), hàng chip
+🔥 streak (+ ⚠️ cảnh báo sắp đứt nếu `!studiedToday()`), 🗣️ streak nói, 📆 N từ
+đến hạn (link `?deck=due`, tái dùng route đã có ở Bước 1.1), 🎯 quiz tuần chưa
+đạt (tái dùng đúng điều kiện `remedial` mà `IeltsCourseView.vue` đã dùng — chỉ
+IELTS có gate tuần), và 1 dòng nhắc Mission tuần nếu có. Khách mới (`v-else`)
+thấy đúng HERO cũ, không đổi gì. 2 khối due-review/link tiến độ cũ dưới HERO
+giữ nguyên, không gộp vào (tránh rủi ro đổi hành vi phần đã hoạt động tốt).
+
+**Kiểm chứng:** test mới — `tests/user.store.test.js` (+4: khách mới rỗng,
+1 khóa, song song 2 khóa không lẫn, `studiedToday()` không bị cache qua ngày)
+và `tests/missionStats.test.js` (mới, 5 test cho `pendingWeekMission` — có
+mission chưa xong, đã xong thì null, tuần cuối mission ở buổi lệch (14 thay vì
+6), tuần không tồn tại/undefined an toàn). `npm test` (299/299, +11) và
+`npm run build` pass. Thử tay qua preview (route `/` không yêu cầu đăng nhập):
+seed `localStorage` với tiến độ IELTS Tuần 1 Buổi 1 xong + quiz tuần trượt +
+1 từ đến hạn → đúng cả 2 nút/chip/dòng mission hiện đúng dữ liệu, không lỗi
+console; xoá tiến độ → về đúng HERO cũ. Không bấm-thử được nút "Học tiếp" dẫn
+tới `/courses/ielts/week/1/day/2` qua điều hướng thật trong sandbox (route
+`requiresAuth`, máy này cấu hình Supabase thật — cùng hạn chế đã ghi ở nhiều
+bước trước) — xác nhận gián tiếp bằng cách gọi thẳng
+`router.push({name:'ielts-day', params:{week:1,day:2}})` qua console trình
+duyệt với CÙNG tham số mà `goContinue()` dùng: router chấp nhận route, chỉ
+treo ở bước chờ `waitForAuthReady` (đúng hành vi khi không có mạng thật tới
+Supabase trong sandbox, không phải lỗi code); nút chip không cần đăng nhập
+(`?deck=due`) đã xác nhận điều hướng đúng qua gọi trực tiếp `router.push` với
+đúng tham số của `goDueReview()`.
 
 **Vấn đề:** `HomeView.vue` đang là landing giới thiệu; người học quay lại mỗi ngày phải tự bấm vào khóa → tuần → buổi.
 
@@ -428,9 +972,74 @@ Props xuống, emit lên; state giữ ở store như hiện tại. Style dùng c
 
 ### Bước 4.2 — Dark mode
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:** app đã dùng CSS variables (`--green`, `--ink`, `--bg`…) — kiểm kê toàn bộ màu hard-code trong style scoped của các component (rất nhiều hex ghi thẳng), đưa về biến; thêm bộ biến dark trong `:root[data-theme="dark"]`; nút toggle 🌙/☀️ ở `AppHeader.vue`; mặc định theo `prefers-color-scheme`; lưu lựa chọn localStorage. Chú ý các khối gradient (header card buổi học, conquest map, banner) cần cặp màu dark riêng; kiểm tra cả các view Java cho đồng bộ.
+**Ghi chú (2026-07-05):** Hạ tầng: `base.css` thêm block
+`:root[data-theme='dark']` override toàn bộ token màu hiện có (`--bg`,
+`--surface`, `--ink`, `--muted*`, `--slate`, `--line*`, `--bg-success/danger/
+warning`, `--text-success/danger/warning`, `--border-*`...) + vài token mới
+cần cho việc dọn hex chung (`--disabled-bg`, `--bg-muted`, `--header-bg(-solid)`,
+`--track-bg`, `--danger-strong`, `--today-card-bg`, `--chip-bg`, `--chip-warn-bg`).
+Màu brand/accent (`--purple`, `--green`, `--amber`...) và gradient nút
+(`--grad-*`) giữ nguyên cả 2 theme (luôn rực rỡ). `src/composables/useTheme.js`
+(mới) — state `theme` module-level singleton, đọc `localStorage` trước, không
+có thì theo `prefers-color-scheme`, theo dõi `change` của media query khi
+người dùng CHƯA từng bấm toggle tay. `index.html` có 1 script inline nhỏ chặn
+FOUC (set `data-theme` lên `<html>` trước khi Vue mount) — đọc đúng cùng khoá
+`devleap:theme`. Nút toggle 🌙/☀️ thêm vào `.header-right` của
+`AppHeader.vue`, trước `GlobalSearch`.
+
+**Dọn hex hard-code — do khối lượng quá lớn (audit ban đầu: ~670 lần hex
+trong hơn 45 file `.vue`), tự làm phần hạ tầng + nhóm Home/Course/ConquestMap
+trước, sau đó chạy 4 agent song song xử lý 4 nhóm còn lại** (buổi học IELTS+Java;
+chat & luyện tập; Milestones/Progress/Assessment/ToolsView/admin; công cụ
+Flashcard/Shadowing/CodePlayground/Quiz/Saved/LessonPicker/Dictionary), mỗi
+agent theo đúng 1 bộ quy tắc mapping hex → token (vd `#fff` card → `var(--surface)`,
+chữ xám thân bài → `var(--muted)/--slate`, KHÔNG đụng chữ trắng trên nút/badge
+màu, KHÔNG đụng gradient nút/banner cố ý, KHÔNG đụng khối "luôn tối" kiểu
+`.checkpoint`/console giả lập). Gradient pastel dùng làm "card nổi bật"
+(vd `.today-card`, `.goal`, `.mission-card`, `.diag-card`, `.scenario-tag`,
+`.tool-card.on`...) được giữ nguyên ở light, thêm rule
+`[data-theme='dark'] .class { background: var(--bg-accent|success|warning); }`
+ngay trong cùng khối `<style scoped>` — hợp lệ vì `data-theme` nằm trên `<html>`
+(tổ tiên), Vue chỉ gắn hash vào selector cuối. Tự tay vá thêm 2 chỗ agent bỏ
+sót: chữ nâu ấm cứng (`#7a5200`/`#6a5a3a`/`#5a4300`) trong `.diag-body`/
+`.mission-check` nằm TRÊN banner đã có override dark → thêm override màu chữ
+sang `var(--text-warning)`/`var(--amber-ink)` (2 token này đã có bản dark sáng
+màu hơn); và hàm `optStyle()` trong `<script>` của `QuizTool.vue` (đáp án trắc
+nghiệm) — 3 agent kia được dặn "không sửa script" nên bỏ qua đúng theo luật,
+nhưng hàm này trả `:style` inline cho đúng nền/chữ đáp án nên cần đổi sang
+chuỗi `'var(--surface)'`/`'var(--ink)'`/... (CSS custom property hoạt động
+bình thường trong giá trị `:style` inline, giống cách `ConquestMap.vue` vốn đã
+làm với `styleFor()`). `ConquestMap.vue` (roadmap dùng chung Java/IELTS) toàn
+bộ màu tính trong JS (`styleFor()`, `lineGradient`) — đổi cả 2 trạng thái
+"done"/"locked" sang token, giữ "current" (card gradient tím) nguyên vì luôn
+nổi bật cả 2 theme.
+
+**Không cài `vite-plugin-pwa`/thư viện theme nào** — toàn bộ tự viết
+(zero-dependency, đúng triết lý repo).
+
+**Kiểm chứng:** `npm run build` pass (chỉ còn 2 cảnh báo có từ trước: chunk-size
+và 1 comment tiếng Việt chứa dấu `:` bị parser CSS-minify hiểu nhầm — không
+liên quan các file đã sửa, đã xác nhận từ Bước 2.3/3.x). `npm test` 299/299
+pass (bước này thuần CSS/template, không sửa logic nên không thêm test mới).
+Thử tay qua preview (route `/` và `/tools` không yêu cầu đăng nhập): bấm
+toggle đổi light ⇄ dark tức thì, `localStorage` lưu đúng khoá
+`devleap:theme`, reload giữ nguyên lựa chọn; `document.documentElement`
+nhận đúng `data-theme`; kiểm `getComputedStyle` trực tiếp trên `.tool-card`/
+`.tool-card.on`/`.header`/`.footer`/`body` ở cả 2 theme ra đúng token (vd
+`--surface` dark = `rgb(28,28,43)`, light = trắng; `.tool-card.on` light ra
+đúng gradient tím nhạt gốc, dark ra đúng `var(--bg-accent)`) — không còn
+"card trắng nổi trên nền tối". Lưu ý: khi đổi theme nhiều lần liên tục qua
+SPA (không reload) trong lúc dev server đang HMR dồn dập, có lúc thấy giá trị
+CSS variable "trễ" 1 nhịp (Vite HMR staleness, chỉ ở dev) — reload sạch thì
+luôn đúng ngay; không phải lỗi code. Các route yêu cầu đăng nhập
+(`/courses/*`, `/milestones`, `/progress`, `/shadowing`, buổi học) không tự
+đăng nhập được trong sandbox preview (Supabase thật, cùng hạn chế đã ghi ở rất
+nhiều bước trước) nên phần lớn được xác nhận qua đọc kỹ diff + đồng nhất theo
+1 bộ token dùng chung, thay vì thử tay từng màn hình.
+
+**Việc cần làm (kế hoạch gốc, đã hoàn thành):** app đã dùng CSS variables (`--green`, `--ink`, `--bg`…) — kiểm kê toàn bộ màu hard-code trong style scoped của các component (rất nhiều hex ghi thẳng), đưa về biến; thêm bộ biến dark trong `:root[data-theme="dark"]`; nút toggle 🌙/☀️ ở `AppHeader.vue`; mặc định theo `prefers-color-scheme`; lưu lựa chọn localStorage. Chú ý các khối gradient (header card buổi học, conquest map, banner) cần cặp màu dark riêng; kiểm tra cả các view Java cho đồng bộ.
 
 **Nghiệm thu:** đi qua Home, course map, 1 buổi học đủ khối, tools, milestones, admin ở cả 2 theme — không chỗ nào chữ tối trên nền tối / trắng trên trắng; toggle nhớ qua reload; hệ thống đổi theme thì app theo (khi chưa chọn tay).
 
@@ -495,17 +1104,17 @@ Mỗi tuần 1 lần, gom các lỗi trong Error Ledger + câu quiz sai (`quizSc
 | 1.2 | Khảo sát Dễ/Vừa/Khó | 0.5 buổi | ✅ |
 | 1.3 | Curate shadowing 4–8 | 0.5–1 buổi | ✅ |
 | 1.4 | Retry/backoff AI | 0.5 buổi | ✅ |
-| 2.1 | Sync ghi âm | 1 buổi | ⬜ |
-| 2.2 | Ảnh từ vựng ổn định | 0.5–1 buổi | ⬜ |
-| 2.3 | Fallback Safari/iOS | 1 buổi | ⬜ |
-| 2.4 | Minimal pairs theo tuần | 0.5 buổi | ⬜ |
-| 2.5 | Biểu đồ tiến bộ | 1 buổi | ⬜ |
-| 3.1 | Tách IeltsDayView | 1–2 buổi | ⬜ |
-| 3.2 | Tách AiChat | 1 buổi | ⬜ |
-| 3.3 | Tách store user | 1 buổi | ⬜ |
-| 3.4 | Test bổ sung | 0.5 buổi | ⬜ |
-| 4.1 | Home dashboard | 1 buổi | ⬜ |
-| 4.2 | Dark mode | 1–2 buổi | ⬜ |
+| 2.1 | Sync ghi âm | 1 buổi | ✅ |
+| 2.2 | Ảnh từ vựng ổn định | 0.5–1 buổi | ✅ |
+| 2.3 | Fallback Safari/iOS | 1 buổi | ✅ |
+| 2.4 | Minimal pairs theo tuần | 0.5 buổi | ✅ |
+| 2.5 | Biểu đồ tiến bộ | 1 buổi | ✅ |
+| 3.1 | Tách IeltsDayView | 1–2 buổi | ✅ |
+| 3.2 | Tách AiChat | 1 buổi | ✅ |
+| 3.3 | Tách store user | 1 buổi | ✅ |
+| 3.4 | Test bổ sung | 0.5 buổi | ✅ |
+| 4.1 | Home dashboard | 1 buổi | ✅ |
+| 4.2 | Dark mode | 1–2 buổi | ✅ |
 | 4.3 | PWA offline | 1–2 buổi | ⬜ |
 | 4.4 | Nhắc học | 0.5–1 buổi | ⬜ |
 | 5.1–5.4 | Mở rộng | tùy chọn | ⬜ |

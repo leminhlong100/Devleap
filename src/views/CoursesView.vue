@@ -105,7 +105,7 @@ function open(c) {
 }
 .sub {
   font-size: 18px;
-  color: #7a7a92;
+  color: var(--muted);
   margin-top: 12px;
 }
 .filters {
@@ -120,8 +120,8 @@ function open(c) {
   border-radius: 99px;
   font-size: 14px;
   font-weight: 700;
-  color: #6a6a82;
-  background: #fff;
+  color: var(--slate);
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.12);
   cursor: pointer;
   transition: all 0.15s;
@@ -140,7 +140,7 @@ function open(c) {
   gap: 24px;
 }
 .course-card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid var(--line-soft);
@@ -209,7 +209,7 @@ function open(c) {
   margin-top: 16px;
   flex-wrap: wrap;
   font-size: 13px;
-  color: #6a6a82;
+  color: var(--slate);
   font-weight: 600;
 }
 .progress-wrap {
@@ -229,7 +229,7 @@ function open(c) {
 .track {
   height: 8px;
   border-radius: 99px;
-  background: #ececf5;
+  background: var(--track-bg);
 }
 .fill {
   height: 100%;
@@ -258,7 +258,7 @@ function open(c) {
   color: var(--muted-2);
   padding: 13px;
   border-radius: 13px;
-  background: #fafafe;
+  background: var(--surface-1);
 }
 .add-card {
   border: 2px dashed rgba(108, 92, 231, 0.22);
@@ -285,7 +285,7 @@ function open(c) {
 .add-card h3 {
   font-size: 17px;
   font-weight: 800;
-  color: #6a6a82;
+  color: var(--slate);
   margin-top: 16px;
 }
 .add-card p {

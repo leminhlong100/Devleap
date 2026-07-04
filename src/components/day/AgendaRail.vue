@@ -40,7 +40,7 @@ function dotStyle(item, i, len) {
 .rail {
   position: sticky;
   top: 90px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 22px;
   padding: 24px 22px;

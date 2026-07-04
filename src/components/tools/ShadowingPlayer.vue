@@ -5,6 +5,7 @@ import { recognitionSupported, recognizeOnce } from '@/lib/speechRecognize'
 import { scoreTranscript, scoreVerdict } from '@/lib/pronounceScore'
 import { fetchSentenceIpa } from '@/lib/ipa'
 import { useUserStore } from '@/stores/user'
+import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 
 // Một clip = { videoId, title, level, topic, sentences } với sentences là:
 //  - mảng [{id,text,start,end}] (clip gợi ý có sẵn), HOẶC
@@ -495,6 +496,11 @@ onBeforeUnmount(() => {
             <button class="sh-ctrl chip" :class="{ on: ipaOn }" title="Phiên âm IPA" @click="ipaOn = !ipaOn">IPA</button>
           </div>
 
+          <SpeechSupportNote
+            :visible="!canScore"
+            text="Trình duyệt này không chấm điểm giọng nói được (cần Chrome/Edge) — vẫn nghe + đọc theo + ghi âm lại nghe được bình thường, chỉ tự so với phụ đề thay vì máy chấm."
+          />
+
           <!-- Câu đang luyện: chữ lớn + IPA dưới từng từ -->
           <div class="sh-current">
             <template v-if="activeSentence">
@@ -611,7 +617,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .sh-player {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 24px;
   padding: 24px;
@@ -691,7 +697,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(108, 92, 231, 0.12);
   border-radius: 18px;
   padding: 14px 16px;
-  background: #fbfaff;
+  background: var(--surface-1);
 }
 .sh-panel-top {
   display: flex;
@@ -707,7 +713,7 @@ onBeforeUnmount(() => {
 }
 .sh-seg {
   display: inline-flex;
-  background: #efeafc;
+  background: var(--track-bg);
   border-radius: 10px;
   padding: 3px;
 }
@@ -722,7 +728,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .sh-seg-btn.on {
-  background: #fff;
+  background: var(--surface);
   color: var(--purple);
   box-shadow: 0 2px 6px rgba(108, 92, 231, 0.18);
 }
@@ -739,7 +745,7 @@ onBeforeUnmount(() => {
   height: 40px;
   padding: 0 12px;
   border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 15px;
   font-weight: 700;
@@ -784,7 +790,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 5px;
   border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
@@ -810,7 +816,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 4px;
   padding: 6px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(108, 92, 231, 0.18);
@@ -818,7 +824,7 @@ onBeforeUnmount(() => {
 }
 .sh-rate {
   border: none;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
@@ -840,7 +846,7 @@ onBeforeUnmount(() => {
   position: relative;
   margin-top: 14px;
   padding: 18px 16px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 14px;
   min-height: 72px;
@@ -893,7 +899,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .sh-mic:hover {
-  background: #fff;
+  background: var(--surface);
 }
 .sh-mic.listening {
   background: var(--purple);
@@ -963,10 +969,10 @@ onBeforeUnmount(() => {
 .sh-word {
   font-size: 14.5px;
   font-weight: 600;
-  color: #1f7a52;
+  color: var(--text-success);
 }
 .sh-word.miss {
-  color: #d6512b;
+  color: var(--danger-strong);
   text-decoration: line-through;
   opacity: 0.75;
 }
@@ -985,7 +991,7 @@ onBeforeUnmount(() => {
   margin-top: 10px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #d6512b;
+  color: var(--danger-strong);
   background: rgba(214, 81, 43, 0.08);
   border: 1px solid rgba(214, 81, 43, 0.22);
   padding: 9px 12px;
@@ -1003,9 +1009,15 @@ onBeforeUnmount(() => {
   border-radius: 14px;
   background: linear-gradient(135deg, #f5f3ff, #fff);
 }
+[data-theme='dark'] .sh-clip-sum {
+  background: var(--bg-accent);
+}
 .sh-clip-sum.passed {
   border-color: rgba(0, 214, 143, 0.4);
   background: linear-gradient(135deg, #eafff6, #fff);
+}
+[data-theme='dark'] .sh-clip-sum.passed {
+  background: var(--bg-success);
 }
 .sh-sum-score {
   display: flex;
@@ -1035,7 +1047,7 @@ onBeforeUnmount(() => {
 .sh-sum-bar {
   height: 8px;
   border-radius: 99px;
-  background: #ececf5;
+  background: var(--track-bg);
   overflow: hidden;
 }
 .sh-sum-fill {
@@ -1060,7 +1072,7 @@ onBeforeUnmount(() => {
   padding: 6px 13px;
   border-radius: 99px;
   color: var(--muted-2);
-  background: #efeff7;
+  background: var(--chip-bg);
 }
 .sh-sum-badge.done {
   color: #fff;
@@ -1097,7 +1109,7 @@ onBeforeUnmount(() => {
 }
 .sh-tool-btn {
   border: 1px solid rgba(108, 92, 231, 0.2);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 12.5px;
   font-weight: 700;
@@ -1140,17 +1152,20 @@ onBeforeUnmount(() => {
   padding: 11px 12px;
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   transition: all 0.12s;
 }
 .sh-row-btn:hover {
   border-color: rgba(108, 92, 231, 0.3);
-  background: #fbfaff;
+  background: var(--surface-1);
 }
 .sh-row.active .sh-row-btn {
   border-color: var(--purple);
   background: linear-gradient(135deg, #f5f3ff, #fff);
+}
+[data-theme='dark'] .sh-row.active .sh-row-btn {
+  background: var(--bg-accent);
 }
 .sh-badge {
   flex: none;
@@ -1163,7 +1178,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 800;
   color: var(--muted-2);
-  background: #f0eef9;
+  background: var(--chip-bg);
 }
 .sh-badge.done {
   color: #fff;
@@ -1179,7 +1194,7 @@ onBeforeUnmount(() => {
 .sh-text {
   font-size: 14.5px;
   line-height: 1.5;
-  color: #2f2f47;
+  color: var(--ink);
 }
 .sh-row.active .sh-text {
   font-weight: 700;
@@ -1208,7 +1223,7 @@ onBeforeUnmount(() => {
   padding: 11px 12px;
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
 }
 .sh-edit-text {
   width: 100%;

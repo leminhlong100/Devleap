@@ -90,7 +90,7 @@ function reset() {
 
 <style scoped>
 .pg {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 32px;
@@ -111,7 +111,7 @@ function reset() {
 }
 .tool-sub {
   font-size: 14.5px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 5px;
 }
 .task-tag {
@@ -228,9 +228,9 @@ function reset() {
 }
 .reset {
   border: 1px solid rgba(108, 92, 231, 0.2);
-  color: #6a6a82;
+  color: var(--slate);
   padding: 13px 22px;
-  background: #fff;
+  background: var(--surface);
 }
 .reset:hover {
   background: var(--purple-soft);

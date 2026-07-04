@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
 import { javaStages } from '@/data/courses'
+import { pendingWeekMission } from '@/lib/missionStats'
 
 const router = useRouter()
 const user = useUserStore()
@@ -24,12 +25,69 @@ const continueLabel = computed(() =>
 function openFeatured() {
   router.push({ name: 'java-day', params: prog.value.continue })
 }
+
+// —— Home = "bảng điều khiển hôm nay" khi đã có tiến độ (không phải khách mới) ——
+const hasProgress = computed(() => user.completed.java.length > 0 || user.completed.ielts.length > 0)
+const streakAtRisk = computed(() => user.streak > 0 && !user.studiedToday())
+
+// Bài kiểm tra tuần IELTS đang học chưa đạt (chỉ IELTS có gate theo tuần).
+const ieltsContinue = computed(() => user.nextLesson.find((n) => n.course === 'ielts') || null)
+const remedial = computed(() => {
+  if (!ieltsContinue.value) return null
+  const q = user.quizOf('ielts', `week:${ieltsContinue.value.week}`)
+  return q && !q.passed && q.wrong?.length ? { week: ieltsContinue.value.week } : null
+})
+const pendingMission = computed(() =>
+  ieltsContinue.value ? pendingWeekMission(user, ieltsContinue.value.week) : null,
+)
+
+function goContinue(n) {
+  router.push({ name: n.route, params: { week: n.week, day: n.day } })
+}
+function goDueReview() {
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })
+}
+function goRemedial() {
+  if (remedial.value) router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${remedial.value.week}` } })
+}
 </script>
 
 <template>
   <div>
-    <!-- HERO -->
-    <section class="hero container">
+    <!-- HÔM NAY (bảng điều khiển cho người đã có tiến độ) -->
+    <section v-if="hasProgress" class="container today-wrap">
+      <div class="today-card">
+        <h2 class="today-title">👋 Chào bạn quay lại!</h2>
+
+        <div v-if="user.nextLesson.length" class="today-continues">
+          <button
+            v-for="n in user.nextLesson"
+            :key="n.course"
+            class="continue-btn"
+            @click="goContinue(n)"
+          >
+            <span class="continue-course">{{ n.label }}</span>
+            <span>▶ Học tiếp: Tuần {{ n.week }} · Buổi {{ n.day }}<template v-if="n.title"> — {{ n.title }}</template></span>
+          </button>
+        </div>
+        <p v-else class="today-alldone">🎉 Bạn đã hoàn thành mọi khóa học đang theo — quá đỉnh!</p>
+
+        <div class="today-chips">
+          <span class="chip">🔥 Streak {{ user.streak }} ngày</span>
+          <span v-if="streakAtRisk" class="chip chip-warn">⚠️ Sắp đứt streak — học 1 buổi trước 24h nữa</span>
+          <span v-if="user.speakingStreak > 0" class="chip">🗣️ Nói {{ user.speakingStreak }} ngày liền</span>
+          <span v-if="user.dueTodayCount > 0" class="chip chip-link" @click="goDueReview">📆 {{ user.dueTodayCount }} từ đến hạn</span>
+          <span v-if="remedial" class="chip chip-warn chip-link" @click="goRemedial">🎯 Quiz Tuần {{ remedial.week }} chưa đạt</span>
+        </div>
+
+        <p v-if="pendingMission" class="today-mission">
+          🌍 Mission Tuần {{ pendingMission.week }} chưa làm: {{ pendingMission.text }}
+        </p>
+      </div>
+    </section>
+
+    <!-- HERO (khách mới / chưa có tiến độ) -->
+    <section v-else class="hero container">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="hero-grid">
@@ -79,6 +137,18 @@ function openFeatured() {
         <div class="due-text">
           <b>Hôm nay có {{ user.dueTodayCount }} từ đến hạn ôn</b>
           <span>Ôn nhanh vài phút để khỏi quên nhé</span>
+        </div>
+        <span class="due-arrow">→</span>
+      </div>
+    </section>
+
+    <!-- LỐI TẮT XEM TIẾN ĐỘ HỌC TẬP -->
+    <section class="container due-wrap">
+      <div class="due-card" @click="router.push({ name: 'progress' })">
+        <span class="due-emoji">📈</span>
+        <div class="due-text">
+          <b>Xem tiến độ học tập</b>
+          <span>Điểm viết, phút luyện nói và từ đến hạn ôn — tất cả trong 1 trang</span>
         </div>
         <span class="due-arrow">→</span>
       </div>
@@ -189,7 +259,7 @@ function openFeatured() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.16);
   padding: 7px 14px;
   border-radius: 99px;
@@ -246,7 +316,7 @@ function openFeatured() {
   border: 1px solid rgba(108, 92, 231, 0.2);
   color: var(--purple);
   padding: 15px 24px;
-  background: #fff;
+  background: var(--surface);
 }
 .btn-ghost:hover {
   background: var(--purple-soft);
@@ -270,7 +340,7 @@ function openFeatured() {
 }
 .sep {
   width: 1px;
-  background: #e6e6f0;
+  background: var(--line);
 }
 
 /* mascot card */
@@ -290,7 +360,7 @@ function openFeatured() {
 }
 .float-tag {
   position: absolute;
-  background: #fff;
+  background: var(--surface);
   padding: 10px 15px;
   border-radius: 15px;
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
@@ -318,6 +388,95 @@ function openFeatured() {
   animation: floaty2 4.5s ease-in-out infinite 0.3s;
 }
 
+/* "Hôm nay" — bảng điều khiển cho người đã có tiến độ */
+.today-wrap {
+  padding-top: 40px;
+}
+.today-card {
+  background: var(--today-card-bg);
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 24px;
+  padding: 28px 30px;
+}
+.today-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin: 0 0 18px;
+}
+.today-continues {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.continue-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: var(--grad-purple);
+  box-shadow: 0 12px 26px rgba(108, 92, 231, 0.28);
+  transition: transform 0.15s;
+}
+.continue-btn:hover {
+  transform: translateY(-2px);
+}
+.continue-course {
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+.today-alldone {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+.today-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 99px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.chip-warn {
+  border-color: rgba(230, 126, 34, 0.3);
+  color: var(--amber-ink);
+  background: var(--chip-warn-bg);
+}
+.chip-link {
+  cursor: pointer;
+}
+.chip-link:hover {
+  transform: translateY(-1px);
+}
+.today-mission {
+  margin: 16px 0 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--slate);
+}
+
 /* nhắc ôn từ đến hạn */
 .due-wrap {
   padding-top: 6px;
@@ -327,7 +486,7 @@ function openFeatured() {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(135deg, #f5f3ff, #eef6ff);
+  background: var(--today-card-bg);
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 18px;
   padding: 16px 22px;
@@ -380,7 +539,7 @@ function openFeatured() {
 }
 .section-sub {
   font-size: 17px;
-  color: #7a7a92;
+  color: var(--muted);
   margin-top: 10px;
 }
 
@@ -391,7 +550,7 @@ function openFeatured() {
   gap: 20px;
 }
 .feature-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line-soft);
   border-radius: 22px;
   padding: 26px 22px;
@@ -568,7 +727,7 @@ function openFeatured() {
   background: linear-gradient(90deg, #00d68f, #7ef0c4);
 }
 .feat-right {
-  background: #fff;
+  background: var(--surface);
   padding: 42px 40px;
   display: flex;
   flex-direction: column;

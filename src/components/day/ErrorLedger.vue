@@ -170,7 +170,7 @@ function removeManual(i) {
   border: 1px solid var(--line, rgba(108, 92, 231, 0.1));
   border-radius: 12px;
   padding: 13px 15px;
-  background: #fff;
+  background: var(--surface);
 }
 .el-drill.correct {
   border-color: rgba(0, 214, 143, 0.4);
@@ -182,7 +182,7 @@ function removeManual(i) {
 }
 .el-wrong {
   font-size: 14px;
-  color: #c0392b;
+  color: var(--text-danger);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -192,7 +192,7 @@ function removeManual(i) {
   font-size: 11px;
   font-weight: 800;
   background: rgba(255, 107, 107, 0.12);
-  color: #c0392b;
+  color: var(--text-danger);
   padding: 2px 8px;
   border-radius: 99px;
   white-space: nowrap;
@@ -209,7 +209,7 @@ function removeManual(i) {
   font-size: 14.5px;
   font-family: inherit;
   color: var(--ink, #1e1e2e);
-  background: #fff;
+  background: var(--surface);
   outline: none;
 }
 .el-fix-input:focus {
@@ -217,7 +217,7 @@ function removeManual(i) {
 }
 .el-fix-input.correct {
   border-color: rgba(0, 214, 143, 0.5);
-  color: #00966a;
+  color: var(--text-success);
   font-weight: 600;
 }
 .el-fix-input.wrong {
@@ -246,14 +246,14 @@ function removeManual(i) {
   flex-wrap: wrap;
 }
 .el-fb.ok {
-  color: #00966a;
+  color: var(--text-success);
   font-weight: 600;
 }
 .el-fb.wrong {
-  color: #c0392b;
+  color: var(--text-danger);
 }
 .el-fb.reveal {
-  color: #9a6a00;
+  color: var(--text-warning);
 }
 .el-link-btn {
   border: none;
@@ -277,7 +277,7 @@ function removeManual(i) {
   margin-top: 14px;
   font-size: 13.5px;
   color: var(--muted, #76768e);
-  background: #f1f1f6;
+  background: var(--bg-muted);
   border-radius: 12px;
   padding: 14px 16px;
   line-height: 1.6;
@@ -285,7 +285,7 @@ function removeManual(i) {
 .el-summary {
   margin-top: 14px;
   font-size: 14px;
-  color: #00966a;
+  color: var(--text-success);
   background: rgba(0, 214, 143, 0.08);
   border-radius: 12px;
   padding: 12px 15px;
@@ -317,7 +317,7 @@ function removeManual(i) {
   border-radius: 8px;
   padding: 7px 11px;
   font-size: 13.5px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink, #1e1e2e);
   outline: none;
   font-family: inherit;
@@ -332,11 +332,11 @@ function removeManual(i) {
   background: none;
   border: none;
   cursor: pointer;
-  color: #b6b6c6;
+  color: var(--muted-3, #b6b6c6);
   font-size: 14px;
   padding: 6px;
 }
 .el-del:hover {
-  color: #c0392b;
+  color: var(--text-danger);
 }
 </style>

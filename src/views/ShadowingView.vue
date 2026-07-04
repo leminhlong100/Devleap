@@ -265,7 +265,7 @@ function pickFeatured(id) {
 }
 .sub {
   font-size: 17px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 12px;
   line-height: 1.6;
 }
@@ -282,7 +282,7 @@ function pickFeatured(id) {
   padding: 13px 16px;
   border: 1.5px solid rgba(108, 92, 231, 0.2);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   transition: border-color 0.15s;
 }
@@ -310,7 +310,7 @@ function pickFeatured(id) {
   margin: 0 auto 8px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #d6512b;
+  color: var(--danger-strong);
   background: rgba(214, 81, 43, 0.08);
   border: 1px solid rgba(214, 81, 43, 0.25);
   padding: 10px 14px;
@@ -351,7 +351,7 @@ function pickFeatured(id) {
   flex-wrap: wrap;
   margin: 28px 0 18px;
   padding: 12px 14px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 16px;
 }
@@ -362,7 +362,7 @@ function pickFeatured(id) {
   padding: 9px 14px;
   border: 1.5px solid rgba(108, 92, 231, 0.18);
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   min-width: 170px;
 }
@@ -381,8 +381,8 @@ function pickFeatured(id) {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #5a5a72;
-  background: #f4f3fb;
+  color: var(--slate);
+  background: var(--chip-bg);
   border: 1.5px solid transparent;
   padding: 7px 13px;
   border-radius: 99px;
@@ -390,7 +390,7 @@ function pickFeatured(id) {
   transition: all 0.15s;
 }
 .lv-chip:hover {
-  background: #ecebf7;
+  background: var(--track-bg);
 }
 .lv-chip .dot {
   width: 8px;
@@ -409,7 +409,7 @@ function pickFeatured(id) {
 }
 .lv-chip.on {
   border-color: currentColor;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 2px 10px rgba(108, 92, 231, 0.1);
 }
 .lv-chip:first-child.on {
@@ -427,7 +427,7 @@ function pickFeatured(id) {
   position: relative;
   text-align: left;
   padding: 0;
-  background: #fff;
+  background: var(--surface);
   border: 1.5px solid rgba(108, 92, 231, 0.1);
   border-radius: 18px;
   overflow: hidden;
@@ -542,7 +542,7 @@ function pickFeatured(id) {
 }
 .status.new {
   color: var(--muted-2);
-  background: #f1f0f9;
+  background: var(--chip-bg);
 }
 .empty {
   text-align: center;

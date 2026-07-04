@@ -207,7 +207,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
 .goals-label {
   font-size: 13px;
   font-weight: 800;
-  color: var(--muted-2, #7a7a92);
+  color: var(--muted-2);
   margin-bottom: 10px;
 }
 .goals-chips {
@@ -216,18 +216,18 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
   gap: 8px;
 }
 .goal-chip {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.16);
   border-radius: 99px;
   padding: 7px 14px;
   font-size: 13px;
   font-weight: 700;
-  color: #5a5a72;
+  color: var(--slate);
 }
 .remedial {
   max-width: 680px;
   margin: 24px auto 0;
-  background: #fff8ec;
+  background: var(--chip-warn-bg);
   border: 1px solid rgba(255, 176, 32, 0.3);
   border-radius: 20px;
   padding: 22px 26px;
@@ -247,7 +247,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
 }
 .remedial-head p {
   font-size: 13.5px;
-  color: #7a7a92;
+  color: var(--muted-2);
   margin-top: 4px;
 }
 .remedial-item {
@@ -258,16 +258,16 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
 .remedial-q {
   font-size: 14.5px;
   font-weight: 700;
-  color: var(--ink, #2a2a3c);
+  color: var(--ink);
 }
 .remedial-a {
   font-size: 13.5px;
-  color: #00966a;
+  color: var(--text-success);
   margin-top: 6px;
 }
 .remedial-ex {
   font-size: 13px;
-  color: #7a7a92;
+  color: var(--muted-2);
   margin-top: 4px;
 }
 .empty {
@@ -279,7 +279,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
   font-weight: 800;
 }
 .empty p {
-  color: #7a7a92;
+  color: var(--muted-2);
   margin-top: 8px;
 }
 .green-btn {

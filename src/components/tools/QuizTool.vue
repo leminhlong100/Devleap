@@ -165,10 +165,10 @@ function checkOrder() {
   }
 }
 function optStyle(i) {
-  if (selected.value === null) return { bg: '#fff', color: '#3a3a52', border: 'rgba(108,92,231,.16)', mark: String.fromCharCode(65 + i) }
-  if (i === current.value.correct) return { bg: 'rgba(0,214,143,.1)', border: '#00D68F', color: '#00A86F', mark: '✓' }
-  if (i === selected.value) return { bg: 'rgba(255,90,90,.08)', border: '#FF6B6B', color: '#E04848', mark: '✕' }
-  return { bg: '#fff', color: '#a0a0b4', border: 'rgba(108,92,231,.08)', mark: String.fromCharCode(65 + i) }
+  if (selected.value === null) return { bg: 'var(--surface)', color: 'var(--ink)', border: 'rgba(108,92,231,.16)', mark: String.fromCharCode(65 + i) }
+  if (i === current.value.correct) return { bg: 'var(--bg-success)', border: '#00D68F', color: 'var(--text-success)', mark: '✓' }
+  if (i === selected.value) return { bg: 'var(--bg-danger)', border: '#FF6B6B', color: 'var(--text-danger)', mark: '✕' }
+  return { bg: 'var(--surface)', color: 'var(--muted-2)', border: 'rgba(108,92,231,.08)', mark: String.fromCharCode(65 + i) }
 }
 function next() {
   if (isLast.value) {
@@ -327,7 +327,7 @@ watch(() => props.questions, restart, { immediate: true })
 
 <style scoped>
 .quiz {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 36px;
@@ -359,7 +359,7 @@ watch(() => props.questions, restart, { immediate: true })
 }
 .result p {
   font-size: 16px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 8px;
 }
 .result p b {
@@ -436,7 +436,7 @@ watch(() => props.questions, restart, { immediate: true })
 .track {
   height: 7px;
   border-radius: 99px;
-  background: #ececf5;
+  background: var(--track-bg);
   margin-bottom: 24px;
 }
 .fill {
@@ -534,7 +534,7 @@ watch(() => props.questions, restart, { immediate: true })
 }
 .chip {
   border: 1.5px solid rgba(108, 92, 231, 0.22);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 15px;
   font-weight: 700;
@@ -558,7 +558,7 @@ watch(() => props.questions, restart, { immediate: true })
 .question .wrong {
   text-decoration: line-through;
   text-decoration-color: rgba(255, 107, 107, 0.6);
-  color: #6a6a82;
+  color: var(--slate);
 }
 .answer-input {
   width: 100%;
@@ -569,7 +569,7 @@ watch(() => props.questions, restart, { immediate: true })
   font-size: 16px;
   font-weight: 600;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface);
   outline: none;
   transition: border-color 0.15s;
 }
@@ -620,7 +620,7 @@ watch(() => props.questions, restart, { immediate: true })
   padding: 13px 16px;
   font-size: 14px;
   line-height: 1.55;
-  color: #3a3a52;
+  color: var(--ink);
 }
 .next {
   border: none;

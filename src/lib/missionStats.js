@@ -1,6 +1,13 @@
 import { ieltsWeekStructure, getIeltsDay } from '@/data/courseIelts'
 import { MISSION_BADGES } from '@/data/badges'
 
+/** Nội dung Mission tuần của một ngày lấy từ checklist (bullet "🌍 Mission tuần…: …"), null nếu ngày không có. */
+function extractMissionText(checklist) {
+  const item = (checklist || []).find((c) => /🌍|mission\s*tuần/i.test(c))
+  if (!item) return null
+  return item.replace(/^.*?mission\s*tuần[^:]*:\s*/i, '').replace(/^🌍\s*/, '').trim() || item
+}
+
 /**
  * Duyệt toàn bộ 8 tuần IELTS để tính số liệu "real-life": Mission tuần đã xong,
  * số buổi nói người thật đã tick, và Mission Tuần 6 (email thật) đã xong chưa.
@@ -38,10 +45,27 @@ export function missionLogEntries(user) {
       const m = user.missionOf('ielts', wk.num, n)
       if (!m || (!m.note && !m.done)) continue
       const d = getIeltsDay(wk.num, n)
-      const item = (d?.checklist || []).find((c) => /🌍|mission\s*tuần/i.test(c)) || ''
-      const text = item.replace(/^.*?mission\s*tuần[^:]*:\s*/i, '').replace(/^🌍\s*/, '').trim() || item
+      const text = extractMissionText(d?.checklist) || ''
       out.push({ week: wk.num, day: n, text, note: m.note || '', done: !!m.done, at: m.at || '' })
     }
   }
   return out.sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+}
+
+/**
+ * Mission tuần của tuần đang học (nếu tuần đó có bullet "🌍 Mission tuần" và
+ * CHƯA đánh dấu xong) — dùng để nhắc 1 dòng ở Home dashboard. `null` nếu tuần
+ * không có mission hoặc đã hoàn thành rồi (không cần nhắc lại).
+ */
+export function pendingWeekMission(user, week) {
+  const wk = ieltsWeekStructure.find((w) => w.num === Number(week))
+  if (!wk) return null
+  for (const n of wk.dayNums) {
+    const d = getIeltsDay(wk.num, n)
+    const text = extractMissionText(d?.checklist)
+    if (!text) continue
+    if (user.missionDone('ielts', wk.num, n)) return null
+    return { week: wk.num, day: n, text }
+  }
+  return null
 }

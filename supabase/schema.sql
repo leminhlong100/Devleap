@@ -144,6 +144,38 @@ create policy "clips_delete_admin"
   on public.shadowing_clips for delete
   using (public.is_admin());
 
+-- ============================================================================
+-- Storage: bucket ghi âm mốc (VoiceRecorder / MilestonesView) — sync đa thiết bị
+-- Đường dẫn mỗi file: recordings/{user_id}/{recId-đã-escape}.webm
+-- ============================================================================
+
+insert into storage.buckets (id, name, public)
+values ('recordings', 'recordings', false)
+on conflict (id) do nothing;
+
+-- Mỗi user chỉ đọc/ghi/xóa được file nằm trong thư mục con tên chính user_id
+-- của mình (thư mục đầu tiên trong path — storage.foldername tách theo '/').
+drop policy if exists "recordings_select_own" on storage.objects;
+create policy "recordings_select_own"
+  on storage.objects for select
+  using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "recordings_insert_own" on storage.objects;
+create policy "recordings_insert_own"
+  on storage.objects for insert
+  with check (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "recordings_update_own" on storage.objects;
+create policy "recordings_update_own"
+  on storage.objects for update
+  using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "recordings_delete_own" on storage.objects;
+create policy "recordings_delete_own"
+  on storage.objects for delete
+  using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+
 -- ----------------------------------------------------------------------------
 -- Thêm admin đầu tiên (chạy 1 lần, đổi email cho đúng tài khoản của bạn):
 --

@@ -2,6 +2,8 @@
 import { ref, computed, watch } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
 import { recognizeOnce, recognitionSupported } from '@/lib/speechRecognize'
+import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
+import { pairsForWeek } from '@/data/minimalPairs'
 
 const props = defineProps({
   // [{ term, ipa }] — từ vựng + cụm của buổi để luyện phát âm
@@ -9,43 +11,19 @@ const props = defineProps({
   tip: { type: String, default: 'Chú ý phát âm rõ ÂM CUỐI (liked /t/, books /s/) và trọng âm của từ.' },
   // Tuần hiện tại — dùng để chọn 8 cặp tối thiểu luyện âm cuối (mở từ Tuần 2).
   week: { type: [Number, String], default: 0 },
+  // Từ vựng đã học trong tuần — ưu tiên chọn cặp tối thiểu chứa từ này.
+  vocabTerms: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['done'])
 
-// —— Cặp tối thiểu (minimal pairs) — chấm âm cuối TIN ĐƯỢC ——
+// —— Cặp tối thiểu (minimal pairs) — chấm âm cuối/âm khó TIN ĐƯỢC ——
 // Web Speech API tự "sửa" âm cuối khi chấm 1 từ đơn (đọc "book" vẫn ra "book"
 // dù thiếu "-s"), nên điểm ở trên không đo được âm cuối/ngữ điệu thật. Nhưng khi
-// đối chiếu với TỪ THỨ HAI khác chỉ ở âm cuối, nếu đọc thiếu "-s/-ed" thì máy sẽ
-// nhận ra thành từ KHÁC (book thay vì books) — nhờ vậy phân biệt được 2 từ khác
-// nhau là cách chấm âm cuối đáng tin cậy hơn.
-const MINIMAL_PAIRS_POOL = [
-  ['like', 'liked'],
-  ['work', 'works'],
-  ['book', 'books'],
-  ['play', 'played'],
-  ['watch', 'watched'],
-  ['need', 'needs'],
-  ['want', 'wanted'],
-  ['study', 'studies'],
-  ['help', 'helped'],
-  ['ask', 'asked'],
-  ['look', 'looks'],
-  ['walk', 'walked'],
-  ['live', 'lives'],
-  ['use', 'used'],
-  ['start', 'started'],
-  ['finish', 'finished'],
-  ['friend', 'friends'],
-  ['idea', 'ideas'],
-  ['plan', 'plans'],
-  ['visit', 'visited'],
-]
-// Mỗi tuần lấy 8 cặp liên tiếp từ pool (vòng quanh), đổi tuần thì đổi bộ cặp.
-const minimalPairs = computed(() => {
-  const w = Math.max(2, Number(props.week) || 2)
-  const start = ((w - 2) * 4) % MINIMAL_PAIRS_POOL.length
-  return Array.from({ length: 8 }, (_, i) => MINIMAL_PAIRS_POOL[(start + i) % MINIMAL_PAIRS_POOL.length])
-})
+// đối chiếu với TỪ THỨ HAI khác chỉ ở âm cuối/âm khó, nếu đọc sai thì máy sẽ
+// nhận ra thành từ KHÁC — nhờ vậy phân biệt được 2 từ khác nhau là cách chấm
+// đáng tin cậy hơn. Nhóm + phân bổ theo tuần: src/data/minimalPairs.js.
+const mpFocus = computed(() => pairsForWeek(props.week, props.vocabTerms))
+const minimalPairs = computed(() => mpFocus.value.pairs)
 const mpTarget = ref([]) // index (0|1) trong cặp — từ người học cần đọc
 const mpResults = ref([]) // null | { heard, ok, confused }
 watch(
@@ -126,6 +104,15 @@ async function tryPronounce(i) {
   }
 }
 
+// Không có SpeechRecognition (Safari/iOS): không chấm máy được, cho tự đánh
+// giá "Đọc được / Chưa được" thay vì khoá chết cả phần luyện phát âm.
+function selfAssess(i, ok) {
+  results.value[i] = { heard: '(tự đánh giá)', ok, selfAssessed: true }
+}
+function selfAssessMp(i, ok) {
+  mpResults.value[i] = { heard: '(tự đánh giá)', ok, selfAssessed: true, confused: false }
+}
+
 const doneCount = computed(() => results.value.filter((r) => r && r.ok).length)
 const enough = computed(() => list.value.length > 0 && doneCount.value >= Math.ceil(list.value.length * 0.6))
 const isDone = ref(false)
@@ -145,7 +132,10 @@ function markDone() {
       <span class="wt-badge" :class="{ ok: enough }">{{ doneCount }}/{{ list.length }}</span>
     </div>
     <p class="quiz-intro">Bấm 🔊 nghe mẫu, rồi bấm 🎤 và đọc to. Hệ thống chấm xem em nói có trúng không. <b>{{ tip }}</b></p>
-    <p v-if="!recordable" class="quiz-intro warn">⚠️ Trình duyệt chưa hỗ trợ nhận diện giọng nói — vẫn có thể nghe mẫu để luyện.</p>
+    <SpeechSupportNote
+      :visible="!recordable"
+      text="Trình duyệt chưa hỗ trợ nhận diện giọng nói — hãy dùng Chrome/Edge để máy tự chấm. Ở đây em vẫn nghe mẫu rồi tự đánh giá bằng 2 nút bên dưới."
+    />
     <p v-if="err" class="quiz-intro warn">⚠️ {{ err }}</p>
 
     <div class="pd-grid">
@@ -155,17 +145,23 @@ function markDone() {
         <div class="pd-actions">
           <button class="pd-btn" @click="play(it.term)" :disabled="!speakable" aria-label="Nghe mẫu">🔊</button>
           <button
+            v-if="recordable"
             class="pd-btn mic"
             :class="{ rec: busyIndex === i }"
             @click="tryPronounce(i)"
-            :disabled="!recordable || (busyIndex >= 0 && busyIndex !== i)"
+            :disabled="busyIndex >= 0 && busyIndex !== i"
             aria-label="Đọc to"
           >
             {{ busyIndex === i ? '● Đang nghe…' : '🎤 Đọc' }}
           </button>
+          <template v-else>
+            <button class="pd-btn self-ok" @click="selfAssess(i, true)" aria-label="Đọc được">✅ Đọc được</button>
+            <button class="pd-btn self-bad" @click="selfAssess(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
+          </template>
         </div>
         <div v-if="results[i]" class="pd-feedback">
           <span v-if="results[i].ok" class="pd-ok">✓ Tốt!</span>
+          <span v-else-if="results[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
           <span v-else class="pd-bad">✕ Nghe ra: “{{ results[i].heard }}”</span>
         </div>
       </div>
@@ -176,15 +172,19 @@ function markDone() {
     </button>
     <div v-else class="gate-line ok">✅ Đã hoàn thành phần luyện phát âm.</div>
 
-    <!-- CẶP TỐI THIỂU — chấm âm cuối tin được (phân biệt 2 từ khác nhau) -->
+    <!-- CẶP TỐI THIỂU — chấm âm khó tin được (phân biệt 2 từ khác nhau) -->
     <div v-if="Number(week) >= 2" class="pd-mp">
       <div class="step-head">
         <div>
-          <div class="eyebrow">CẶP TỐI THIỂU · PHÂN BIỆT ÂM CUỐI</div>
-          <h2 class="step-title">🎯 like / liked, book / books…</h2>
+          <div class="eyebrow">CẶP TỐI THIỂU · {{ mpFocus.groupLabel.toUpperCase() }}</div>
+          <h2 class="step-title">🎯 Tuần này: {{ mpFocus.groupLabel }}</h2>
         </div>
       </div>
-      <p class="quiz-intro">Bấm 🔊 nghe từ CẦN đọc, rồi bấm 🎤 đọc đúng từ đó (không phải từ còn lại trong cặp). Đây là cách chấm âm cuối <b>tin được</b> — thiếu "-s/-ed" máy sẽ nghe ra thành từ khác ngay.</p>
+      <p class="quiz-intro">Bấm 🔊 nghe từ CẦN đọc, rồi bấm 🎤 đọc đúng từ đó (không phải từ còn lại trong cặp). <b>{{ mpFocus.tip }}</b></p>
+      <SpeechSupportNote
+        :visible="!recordable"
+        text="Không có mic chấm điểm — nghe kỹ 2 từ khác nhau ở đâu rồi tự đánh giá xem mình phát âm đúng chưa."
+      />
       <p v-if="mpErr" class="quiz-intro warn">⚠️ {{ mpErr }}</p>
 
       <div class="pd-grid">
@@ -199,18 +199,24 @@ function markDone() {
           <div class="pd-actions">
             <button class="pd-btn" @click="playMinimalTarget(i)" :disabled="!speakable" aria-label="Nghe mẫu">🔊</button>
             <button
+              v-if="recordable"
               class="pd-btn mic"
               :class="{ rec: mpBusy === i }"
               @click="tryMinimalPair(i)"
-              :disabled="!recordable || (mpBusy >= 0 && mpBusy !== i)"
+              :disabled="mpBusy >= 0 && mpBusy !== i"
               aria-label="Đọc to"
             >
               {{ mpBusy === i ? '● Đang nghe…' : '🎤 Đọc' }}
             </button>
+            <template v-else>
+              <button class="pd-btn self-ok" @click="selfAssessMp(i, true)" aria-label="Đọc được">✅ Đọc được</button>
+              <button class="pd-btn self-bad" @click="selfAssessMp(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
+            </template>
           </div>
           <div v-if="mpResults[i]" class="pd-feedback">
             <span v-if="mpResults[i].ok" class="pd-ok">✓ Đúng!</span>
             <span v-else-if="mpResults[i].confused" class="pd-bad">✕ Nghe ra “{{ pair[1 - mpTarget[i]] }}” — chú ý âm cuối!</span>
+            <span v-else-if="mpResults[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
             <span v-else class="pd-bad">✕ Nghe ra: “{{ mpResults[i].heard }}”</span>
           </div>
         </div>
@@ -276,6 +282,19 @@ function markDone() {
   background: var(--bg-danger);
   border-color: var(--border-danger);
   color: var(--text-danger);
+}
+.pd-btn.self-ok,
+.pd-btn.self-bad {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+.pd-btn.self-ok:hover {
+  background: var(--bg-success);
+  border-color: var(--border-success);
+}
+.pd-btn.self-bad:hover {
+  background: var(--bg-danger);
+  border-color: var(--border-danger);
 }
 .pd-feedback {
   margin-top: 8px;

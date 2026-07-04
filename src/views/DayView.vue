@@ -355,8 +355,8 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 }
 .day-chip {
   border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
-  color: #6a6a82;
+  background: var(--surface);
+  color: var(--slate);
   font-size: 13px;
   font-weight: 700;
   padding: 9px 15px;
@@ -408,7 +408,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 
 /* step cards */
 .step-card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 22px;
   padding: 26px 28px;
   border: 1px solid rgba(108, 92, 231, 0.1);
@@ -450,7 +450,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   color: var(--purple);
   padding: 11px 18px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   transition: background 0.15s;
 }
 .ghost-btn:hover {
@@ -461,7 +461,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 .prose {
   font-size: 15px;
   line-height: 1.72;
-  color: #4a4a62;
+  color: var(--slate);
   margin-top: 14px;
 }
 .prose :deep(p) {
@@ -614,7 +614,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 .ex-list li {
   font-size: 14.5px;
   line-height: 1.6;
-  color: #4a4a62;
+  color: var(--slate);
   margin-top: 9px;
 }
 .ex-list li::marker {
@@ -633,7 +633,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   border: 1px solid rgba(108, 92, 231, 0.14);
   border-radius: 14px;
   padding: 4px 16px;
-  background: #fafafe;
+  background: var(--surface-1);
 }
 .qa summary {
   display: flex;
@@ -682,7 +682,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 
 /* resources strip */
 .foot-strip {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 18px;
   padding: 18px 22px;
@@ -692,7 +692,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 }
 .foot-row {
   font-size: 13.5px;
-  color: #4a4a62;
+  color: var(--slate);
   line-height: 1.5;
 }
 .foot-row b {
@@ -774,7 +774,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   transform: translateY(-2px);
 }
 .green-btn.locked {
-  background: #c4d8cf;
+  background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -784,7 +784,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 .wt-lock-hint {
   font-size: 12.5px;
   font-weight: 700;
-  color: #8a8aa0;
+  color: var(--muted-2);
   margin-top: 10px;
 }
 

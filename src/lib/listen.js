@@ -3,6 +3,8 @@
  * duyệt (Chrome/Edge), miễn phí, không cần API ngoài. Dùng để học viên "nói"
  * tiếng Anh thay vì gõ, luyện phát âm + phản xạ giao tiếp.
  */
+import { recognitionSupported } from './speechRecognize'
+
 function getCtor() {
   if (typeof window === 'undefined') return null
   return window.SpeechRecognition || window.webkitSpeechRecognition || null
@@ -10,7 +12,7 @@ function getCtor() {
 
 /** Trình duyệt có hỗ trợ nhận diện giọng nói không? */
 export function canListen() {
-  return !!getCtor()
+  return recognitionSupported()
 }
 
 /**

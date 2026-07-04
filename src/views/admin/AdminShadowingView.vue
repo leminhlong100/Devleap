@@ -511,7 +511,7 @@ onBeforeUnmount(() => {
   padding: 11px 14px;
   border: 1.5px solid rgba(108, 92, 231, 0.2);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
 }
 .in:focus {
@@ -537,7 +537,7 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 .btn.ghost {
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   border: 1.5px solid rgba(108, 92, 231, 0.2);
   padding: 10px 18px;
@@ -550,18 +550,18 @@ onBeforeUnmount(() => {
   border-radius: 12px;
 }
 .err {
-  color: #d6512b;
+  color: var(--text-danger);
   background: rgba(214, 81, 43, 0.08);
   border: 1px solid rgba(214, 81, 43, 0.25);
 }
 .ok {
-  color: #00a86f;
+  color: var(--text-success);
   background: rgba(0, 168, 111, 0.08);
   border: 1px solid rgba(0, 168, 111, 0.25);
 }
 .editor {
   margin-top: 24px;
-  background: #fff;
+  background: var(--surface);
   border: 1.5px solid rgba(108, 92, 231, 0.12);
   border-radius: 18px;
   padding: 20px;
@@ -596,7 +596,7 @@ onBeforeUnmount(() => {
 .vid {
   font-size: 13px;
   padding: 11px 12px;
-  background: #f4f3fb;
+  background: var(--chip-bg);
   border-radius: 10px;
   color: var(--muted);
 }
@@ -675,7 +675,7 @@ onBeforeUnmount(() => {
   min-width: 38px;
   height: 38px;
   border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
@@ -691,7 +691,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   gap: 4px;
   margin-left: auto;
-  background: #efeafc;
+  background: var(--chip-bg);
   padding: 3px;
   border-radius: 10px;
 }
@@ -706,7 +706,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .rate.on {
-  background: #fff;
+  background: var(--surface);
   color: var(--purple);
   box-shadow: 0 2px 6px rgba(108, 92, 231, 0.18);
 }
@@ -746,11 +746,14 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(108, 92, 231, 0.14);
   border-radius: 14px;
   padding: 10px 12px;
-  background: #fbfaff;
+  background: var(--surface-1);
 }
 .row.active {
   border-color: var(--purple);
   background: linear-gradient(135deg, #f5f3ff, #fff);
+}
+[data-theme='dark'] .row.active {
+  background: var(--bg-accent);
 }
 .row-bar {
   display: flex;
@@ -768,7 +771,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 800;
   color: var(--muted-2);
-  background: #f0eef9;
+  background: var(--chip-bg);
   border-radius: 50%;
 }
 .spacer {
@@ -781,7 +784,7 @@ onBeforeUnmount(() => {
 }
 .mini {
   border: 1px solid rgba(108, 92, 231, 0.2);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 11.5px;
   font-weight: 700;
@@ -810,7 +813,7 @@ onBeforeUnmount(() => {
 }
 .op {
   border: 1px solid rgba(108, 92, 231, 0.22);
-  background: #fff;
+  background: var(--surface);
   color: var(--purple);
   font-size: 12px;
   font-weight: 700;
@@ -826,7 +829,7 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 .op.del {
-  color: #d6512b;
+  color: var(--text-danger);
   border-color: rgba(214, 81, 43, 0.3);
 }
 .op.del:hover {
@@ -898,7 +901,7 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 .link.del {
-  color: #d6512b;
+  color: var(--text-danger);
 }
 @media (max-width: 700px) {
   .meta-grid {

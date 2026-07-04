@@ -63,7 +63,7 @@ async function signIn() {
   position: relative;
   width: 100%;
   max-width: 420px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   padding: 34px 30px 26px;
   text-align: center;

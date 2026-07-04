@@ -65,7 +65,7 @@ const route = useRoute()
   border-radius: 11px;
   font-size: 15px;
   font-weight: 600;
-  color: #5a5a72;
+  color: var(--slate);
   transition: all 0.15s;
 }
 .admin-nav-link:hover {

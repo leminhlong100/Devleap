@@ -2,6 +2,7 @@
  * Bọc Web Speech API (SpeechRecognition) để nhận dạng MỘT lần nói.
  * Chỉ chạy trên trình duyệt hỗ trợ (Chrome/Edge); Firefox/Safari cũ thì không.
  */
+import { canSpeak } from './speak'
 
 function getSR() {
   if (typeof window === 'undefined') return null
@@ -10,6 +11,15 @@ function getSR() {
 
 export function recognitionSupported() {
   return !!getSR()
+}
+
+/**
+ * Trạng thái hỗ trợ Web Speech API của trình duyệt — tách riêng recognition
+ * (nghe thành chữ, KHÔNG có trên Safari/iOS) và synthesis (đọc to, Safari/iOS
+ * vẫn có) vì 2 khả năng độc lập nhau, không suy ra được cái này từ cái kia.
+ */
+export function speechSupport() {
+  return { recognition: recognitionSupported(), synthesis: canSpeak() }
 }
 
 /**

@@ -118,7 +118,7 @@ function studyFlashcards() {
 
 <style scoped>
 .saved {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 36px;
@@ -139,7 +139,7 @@ function studyFlashcards() {
 }
 .tool-sub {
   font-size: 14.5px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 5px;
 }
 .study-btn {
@@ -182,7 +182,7 @@ function studyFlashcards() {
 }
 .search input:focus {
   border-color: var(--purple);
-  background: #fff;
+  background: var(--surface);
 }
 .group {
   margin-bottom: 26px;
@@ -220,7 +220,7 @@ function studyFlashcards() {
 }
 .entry:hover {
   border-color: rgba(108, 92, 231, 0.25);
-  background: #fff;
+  background: var(--surface);
 }
 .entry-top {
   display: flex;
@@ -253,7 +253,7 @@ function studyFlashcards() {
   background: rgba(108, 92, 231, 0.2);
 }
 .mini.danger:hover {
-  background: #fff1f1;
+  background: var(--bg-danger);
 }
 .ipa {
   font-size: 13px;

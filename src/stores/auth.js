@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { supabase, isCloudEnabled } from '@/lib/supabase'
 import { useUserStore } from '@/stores/user'
+import { flushPendingUploads } from '@/lib/recordingSync'
 
 /**
  * Phiên đăng nhập (Supabase Auth + Google OAuth).
@@ -38,6 +39,13 @@ export const useAuthStore = defineStore('auth', {
       supabase.auth.onAuthStateChange((_event, session) => {
         this.onSession(session)
       })
+
+      // Ghi âm lỡ upload lỗi (offline) lúc trước — thử lại khi có mạng.
+      if (typeof window !== 'undefined') {
+        window.addEventListener('online', () => {
+          if (this.user) flushPendingUploads(this.user.id)
+        })
+      }
     },
 
     /** Đồng bộ trạng thái store theo session hiện tại. */
@@ -53,6 +61,7 @@ export const useAuthStore = defineStore('auth', {
         }
         await user.pullAndMerge(u.id)
         await this.refreshAdmin(u.id)
+        flushPendingUploads(u.id)
       } else {
         this.user = null
         this.isAdmin = false

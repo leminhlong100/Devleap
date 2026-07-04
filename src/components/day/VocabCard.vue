@@ -1,7 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
-import { vocabImageUrl } from '@/lib/vocabImage'
+import VocabIllustration from '@/components/common/VocabIllustration.vue'
 
 const props = defineProps({
   vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exVi, img}
@@ -10,12 +10,6 @@ const props = defineProps({
 const illoBg = computed(() => `linear-gradient(135deg,${props.vocab.g1},${props.vocab.g2})`)
 const parts = computed(() => (props.vocab.ex || '').split('{w}'))
 const speakable = canSpeak()
-
-// Ảnh minh họa cho từ (nhớ lâu hơn). Trong lúc tải hiện emoji + gradient làm nền,
-// ảnh tải xong mới hiện đè lên (fade-in). Lỗi tải -> giữ nguyên emoji.
-const imgUrl = computed(() => props.vocab.img || vocabImageUrl(props.vocab.term))
-const imgOk = ref(true)
-const loaded = ref(false)
 
 function sayTerm() {
   speak(props.vocab.term)
@@ -30,18 +24,13 @@ function sayExample() {
 <template>
   <div class="vcard">
     <div class="vtop">
-      <div class="illo" :style="{ background: illoBg }">
-        <span class="illo-emoji">{{ vocab.illo }}</span>
-        <img
-          v-if="imgUrl && imgOk"
-          :src="imgUrl"
-          :alt="vocab.term"
-          class="illo-img"
-          :class="{ shown: loaded }"
-          loading="lazy"
-          decoding="async"
-          @load="loaded = true"
-          @error="imgOk = false"
+      <div class="illo">
+        <VocabIllustration
+          :term="vocab.term"
+          :size="112"
+          :background="illoBg"
+          :persistent-emoji="vocab.illo"
+          :override-url="vocab.img"
         />
       </div>
       <div class="vmeta">
@@ -66,7 +55,7 @@ function sayExample() {
 
 <style scoped>
 .vcard {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.12);
   border-radius: 16px;
   overflow: hidden;
@@ -78,34 +67,12 @@ function sayExample() {
   padding: 14px 16px;
 }
 .illo {
-  position: relative;
   width: 112px;
   height: 112px;
   border-radius: 14px;
   flex: none;
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-}
-.illo-emoji {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  line-height: 1;
-}
-.illo-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-.illo-img.shown {
-  opacity: 1;
 }
 .vmeta {
   flex: 1;
@@ -169,7 +136,7 @@ function sayExample() {
   margin-top: 7px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #00a86f;
+  color: var(--green-2);
   background: rgba(0, 214, 143, 0.1);
   padding: 3px 9px;
   border-radius: 8px;

@@ -279,7 +279,7 @@ function backToDay() {
 }
 .sub {
   font-size: 17px;
-  color: #7a7a92;
+  color: var(--muted-2);
   margin-top: 12px;
 }
 .ctx-banner {
@@ -299,7 +299,13 @@ function backToDay() {
   border-color: rgba(0, 214, 143, 0.25);
 }
 .saved-banner .ctx-eyebrow {
-  color: #00966a;
+  color: var(--text-success);
+}
+[data-theme='dark'] .ctx-banner {
+  background: var(--bg-accent);
+}
+[data-theme='dark'] .saved-banner {
+  background: var(--bg-success);
 }
 .ctx-info {
   display: flex;
@@ -341,8 +347,8 @@ function backToDay() {
 }
 .ctx-exit {
   border: 1px solid rgba(108, 92, 231, 0.2);
-  color: #6a6a82;
-  background: #fff;
+  color: var(--slate);
+  background: var(--surface);
 }
 .ctx-note {
   text-align: center;
@@ -361,7 +367,7 @@ function backToDay() {
   scroll-margin-top: 84px;
 }
 .tool-card {
-  background: #fff;
+  background: var(--surface);
   border: 1.5px solid rgba(108, 92, 231, 0.1);
   border-radius: 20px;
   padding: 22px 20px;
@@ -378,6 +384,9 @@ function backToDay() {
 }
 .tool-card.on h3 {
   color: var(--purple);
+}
+[data-theme='dark'] .tool-card.on {
+  background: var(--bg-accent);
 }
 .open-tag {
   position: absolute;

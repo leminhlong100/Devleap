@@ -80,6 +80,7 @@ function chooseTrack(track) {
             🎯 IELTS Bridge
           </button>
           <button class="track-btn" @click="router.push({ name: 'milestones' })">📊 So sánh mốc</button>
+          <button class="track-btn" @click="router.push({ name: 'progress' })">📈 Tiến độ</button>
         </div>
         <div class="banner-head">
           <div class="banner-text">
@@ -150,9 +151,9 @@ function chooseTrack(track) {
           <div class="band-chart">
             <div v-for="b in bandLadder" :key="b.band" class="band-col">
               <div class="band-flag">{{ b.target ? '🎯' : '' }}</div>
-              <div class="band-bar" :style="{ height: b.pct + '%', background: b.target ? 'linear-gradient(180deg,#00D68F,#00a86f)' : '#E6E6F0' }"></div>
-              <div class="band-num" :style="{ color: b.target ? '#00A86F' : '#6a6a82', fontWeight: b.target ? 800 : 700 }">{{ b.band }}</div>
-              <div class="band-label" :style="{ color: b.target ? '#00A86F' : '#9a9ab0' }">{{ b.label }}</div>
+              <div class="band-bar" :style="{ height: b.pct + '%', background: b.target ? 'linear-gradient(180deg,#00D68F,#00a86f)' : 'var(--bg-muted)' }"></div>
+              <div class="band-num" :style="{ color: b.target ? '#00A86F' : 'var(--muted)', fontWeight: b.target ? 800 : 700 }">{{ b.band }}</div>
+              <div class="band-label" :style="{ color: b.target ? '#00A86F' : 'var(--muted-2)' }">{{ b.label }}</div>
             </div>
           </div>
         </div>
@@ -370,7 +371,7 @@ function chooseTrack(track) {
 }
 .sh-sub {
   font-size: 15.5px;
-  color: #7a7a92;
+  color: var(--muted);
   margin-top: 8px;
 }
 .explain-grid {
@@ -379,7 +380,7 @@ function chooseTrack(track) {
   gap: 18px;
 }
 .explain-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line-soft);
   border-radius: 20px;
   padding: 24px 20px;
@@ -422,7 +423,7 @@ function chooseTrack(track) {
   align-items: stretch;
 }
 .skills-box {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line-soft);
   border-radius: 24px;
   padding: 26px 26px 28px;
@@ -549,6 +550,9 @@ function chooseTrack(track) {
   padding: 22px 34px;
   border-radius: 22px;
 }
+[data-theme='dark'] .goal {
+  background: var(--bg-success);
+}
 .goal-icon {
   font-size: 38px;
 }
@@ -559,7 +563,7 @@ function chooseTrack(track) {
 }
 .goal-sub {
   font-size: 13.5px;
-  color: #3a8a66;
+  color: var(--text-success);
   font-weight: 600;
 }
 .final-btn {
@@ -578,7 +582,7 @@ function chooseTrack(track) {
   transform: translateY(-2px);
 }
 .final-btn.locked {
-  background: #b5d8c9;
+  background: var(--disabled-bg);
   cursor: not-allowed;
 }
 .final-btn.locked:hover {
@@ -586,7 +590,7 @@ function chooseTrack(track) {
 }
 .final-hint {
   font-size: 12.5px;
-  color: #3a8a66;
+  color: var(--text-success);
   font-weight: 700;
 }
 .final-pct {

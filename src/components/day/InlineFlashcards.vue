@@ -189,7 +189,7 @@ function grade(g) {
 .ifc2-say {
   margin-top: 6px;
   border: 1px solid var(--border-strong, rgba(108, 92, 231, 0.22));
-  background: #fff;
+  background: var(--surface);
   border-radius: 99px;
   padding: 6px 16px;
   font-size: 13px;
@@ -226,7 +226,7 @@ function grade(g) {
   align-items: center;
   gap: 3px;
   border: 1.5px solid var(--border, rgba(108, 92, 231, 0.1));
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 11px 8px;
   font-size: 14px;

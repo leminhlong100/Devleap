@@ -39,7 +39,7 @@ import { adminModules } from './adminModules'
 }
 .card {
   display: block;
-  background: #fff;
+  background: var(--surface);
   border: 1.5px solid rgba(108, 92, 231, 0.1);
   border-radius: 18px;
   padding: 22px;

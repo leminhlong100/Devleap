@@ -26,11 +26,11 @@ function styleFor(w) {
       badge: '✓ Hoàn thành',
       badgeBg: 'rgba(0,214,143,.14)',
       badgeColor: '#00A86F',
-      cardBg: '#fff',
+      cardBg: 'var(--surface)',
       cardBorder: 'rgba(0,214,143,.3)',
       cardShadow: '0 8px 22px rgba(0,214,143,.1)',
-      titleColor: '#1E1E2E',
-      subColor: '#76768e',
+      titleColor: 'var(--ink)',
+      subColor: 'var(--muted)',
       nodeBg: 'linear-gradient(135deg,#00D68F,#00a86f)',
       nodeIcon: '✓',
       nodeShadow: '0 8px 20px rgba(0,214,143,.4)',
@@ -43,7 +43,7 @@ function styleFor(w) {
       accent: '#c9c2f5',
       badge: props.theme === 'green' ? '▶ Bắt đầu' : '▶ Đang học',
       badgeBg: props.theme === 'green' ? 'rgba(255,255,255,.2)' : 'rgba(108,92,231,.14)',
-      badgeColor: props.theme === 'green' ? '#fff' : '#6C5CE7',
+      badgeColor: props.theme === 'green' ? '#fff' : 'var(--purple)',
       cardBg: 'linear-gradient(135deg,#6C5CE7,#4b3bc4)',
       cardBorder: 'transparent',
       cardShadow: '0 14px 34px rgba(108,92,231,.35)',
@@ -57,16 +57,16 @@ function styleFor(w) {
     }
   }
   return {
-    accent: '#b0b0c4',
+    accent: 'var(--muted-3)',
     badge: '🔒 Khóa',
-    badgeBg: '#EDEDF4',
-    badgeColor: '#9a9ab0',
-    cardBg: '#FBFBFE',
+    badgeBg: 'var(--bg-muted)',
+    badgeColor: 'var(--muted-2)',
+    cardBg: 'var(--surface-1)',
     cardBorder: 'rgba(108,92,231,.08)',
     cardShadow: 'none',
-    titleColor: '#9a9ab0',
-    subColor: '#b6b6c6',
-    nodeBg: '#E6E6F0',
+    titleColor: 'var(--muted-2)',
+    subColor: 'var(--muted-3)',
+    nodeBg: 'var(--bg-muted)',
     nodeIcon: '🔒',
     nodeShadow: 'none',
     nodeAnim: 'none',
@@ -186,7 +186,7 @@ function onNode(w, clickable) {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.14);
   box-shadow: 0 8px 22px rgba(108, 92, 231, 0.1);
   padding: 9px 18px;
@@ -205,7 +205,7 @@ function onNode(w, clickable) {
   font-size: 16px;
 }
 .stage-range {
-  color: #b0b0c4;
+  color: var(--muted-3);
   font-weight: 600;
 }
 .row {

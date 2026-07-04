@@ -1,0 +1,186 @@
+/* Style dùng chung giữa các "khối" (section) của buổi học IELTS — tách khỏi
+   IeltsDayView.vue (Bước 3.1) để không lặp lại giữa view và các component con
+   (DayHeader/GrammarSection/WritingSection/MissionSection/WeekTestSection).
+   Import qua `<style scoped src="./ieltsDaySection.css">` — mỗi file import vẫn
+   được Vue biên dịch scoped RIÊNG cho chính nó (không rò rỉ sang component khác). */
+
+.step-card {
+  background: var(--surface);
+  border: 1px solid rgba(108, 92, 231, 0.1);
+  border-radius: 22px;
+  padding: 26px 28px;
+  box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
+}
+.step-card.current {
+  border: 2px solid var(--green);
+  box-shadow: 0 18px 44px rgba(0, 214, 143, 0.16);
+}
+.step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eyebrow {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--muted-2);
+}
+.eyebrow.green {
+  color: #00a86f;
+}
+.step-title {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin-top: 5px;
+}
+.quiz-intro {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.wt-badge {
+  background: rgba(0, 150, 106, 0.1);
+  color: #00966a;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.wt-badge.ok {
+  background: rgba(0, 214, 143, 0.16);
+  color: #00a86f;
+}
+.gate-line {
+  margin-top: 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+  background: var(--bg-muted);
+  border-radius: 12px;
+  padding: 11px 15px;
+}
+.gate-line.ok {
+  color: #00966a;
+  background: rgba(0, 214, 143, 0.1);
+}
+.grammar-drill {
+  margin-top: 18px;
+  background: var(--bg);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.green-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  padding: 13px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00d68f, #00a86f);
+  box-shadow: 0 12px 26px rgba(0, 214, 143, 0.3);
+  white-space: nowrap;
+  transition: transform 0.18s;
+}
+.green-btn:hover {
+  transform: translateY(-2px);
+}
+.green-btn.locked {
+  background: var(--disabled-bg);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.green-btn.locked:hover {
+  transform: none;
+}
+.write-area {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0, 214, 143, 0.25);
+  font-size: 15px;
+  line-height: 1.6;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.write-area:focus {
+  border-color: var(--green);
+}
+.write-area[readonly] {
+  background: rgba(0, 214, 143, 0.05);
+  border-color: rgba(0, 214, 143, 0.3);
+}
+
+/* prose (v-html của lý thuyết ngữ pháp / bài giảng / kịch bản) */
+.prose {
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--slate);
+  margin-top: 12px;
+}
+.prose :deep(p) {
+  margin-top: 12px;
+}
+.prose :deep(p:first-child) {
+  margin-top: 0;
+}
+.prose :deep(b),
+.prose :deep(strong) {
+  color: var(--ink);
+}
+.prose :deep(ul),
+.prose :deep(ol) {
+  margin-top: 12px;
+  padding-left: 22px;
+}
+.prose :deep(li) {
+  margin-top: 6px;
+}
+.prose :deep(code) {
+  background: rgba(0, 214, 143, 0.1);
+  color: #00966a;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+.prose :deep(table) {
+  /* Bảng rộng tự cuộn ngang thay vì tràn trang trên mobile. */
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 13.5px;
+}
+.prose :deep(th),
+.prose :deep(td) {
+  border: 1px solid rgba(0, 214, 143, 0.18);
+  padding: 8px 11px;
+  text-align: left;
+}
+.prose :deep(th) {
+  background: var(--bg-success);
+  font-weight: 800;
+  color: var(--ink);
+}
+.prose :deep(blockquote) {
+  border-left: 3px solid var(--green);
+  padding-left: 14px;
+  color: var(--muted);
+  margin-top: 12px;
+}

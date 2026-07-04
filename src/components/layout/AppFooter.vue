@@ -20,8 +20,8 @@ const links = ['Về chúng tôi', 'Cộng đồng', 'Liên hệ']
 
 <style scoped>
 .footer {
-  background: #fff;
-  border-top: 1px solid rgba(108, 92, 231, 0.08);
+  background: var(--surface);
+  border-top: 1px solid var(--line-soft);
   margin-top: auto;
 }
 .footer-inner {

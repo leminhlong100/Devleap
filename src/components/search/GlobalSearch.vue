@@ -210,7 +210,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
   align-items: center;
   gap: 9px;
   border: 1px solid rgba(108, 92, 231, 0.16);
-  background: #fff;
+  background: var(--surface);
   color: var(--muted, #76768e);
   font: inherit;
   font-size: 14px;
@@ -236,7 +236,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 .kbd {
   font: 600 11px var(--mono, monospace);
   color: var(--muted-2, #9a9ab0);
-  background: #f1f0fb;
+  background: var(--chip-bg);
   border: 1px solid rgba(108, 92, 231, 0.14);
   border-radius: 6px;
   padding: 2px 6px;
@@ -287,7 +287,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 }
 .pal-esc {
   border: 1px solid var(--line, rgba(108, 92, 231, 0.12));
-  background: #f1f0fb;
+  background: var(--chip-bg);
   color: var(--muted, #76768e);
   font: 600 12px var(--mono, monospace);
   padding: 4px 8px;
@@ -399,7 +399,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 }
 .tag.count {
   color: var(--muted, #76768e);
-  background: #f1f0fb;
+  background: var(--chip-bg);
 }
 
 .empty,
@@ -446,7 +446,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 }
 .pal-foot kbd {
   font: 600 11px var(--mono, monospace);
-  background: #f1f0fb;
+  background: var(--chip-bg);
   border: 1px solid rgba(108, 92, 231, 0.14);
   border-radius: 5px;
   padding: 1px 5px;

@@ -2,6 +2,11 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
 import { startRecording, saveRecording, loadRecording, deleteRecording, recordingSupported } from '@/lib/recorder'
+import { uploadRecording, downloadRecording, deleteRemoteRecording, remoteRecordingExists } from '@/lib/recordingSync'
+import { isCloudEnabled } from '@/lib/supabase'
+import { useUserStore } from '@/stores/user'
+
+const user = useUserStore()
 
 const props = defineProps({
   // Khóa lưu trữ bản ghi, vd "ielts:1:1" — mỗi buổi một bản riêng.
@@ -22,6 +27,9 @@ const audioUrl = ref('') // object URL của bản ghi để phát lại
 const hasSaved = ref(false)
 const busy = ref(false) // đang dừng & lưu
 const err = ref('')
+const syncState = ref('idle') // 'idle' | 'syncing' | 'synced' | 'error' — chỉ có ý nghĩa khi đã đăng nhập
+const remoteAvailable = ref(false) // có bản trên cloud nhưng máy này chưa có, chờ bấm tải
+const fetching = ref(false) // đang tải bản từ cloud về
 
 let handle = null // handle ghi âm đang chạy
 let timer = null
@@ -32,6 +40,7 @@ const mmss = computed(() => {
   const s = elapsed.value % 60
   return `${m}:${String(s).padStart(2, '0')}`
 })
+const canSync = computed(() => isCloudEnabled && !!user.cloudUserId)
 
 function revoke() {
   if (audioUrl.value) {
@@ -51,15 +60,42 @@ watch(
     revoke()
     hasSaved.value = false
     elapsed.value = 0
+    syncState.value = 'idle'
+    remoteAvailable.value = false
     if (!id) return
     const blob = await loadRecording(id)
     if (blob) {
       showBlob(blob)
       hasSaved.value = true
+      return
+    }
+    // Máy này chưa có — hỏi cloud xem có bản đã ghi ở máy khác không (lazy, chưa tải).
+    if (canSync.value) {
+      remoteAvailable.value = await remoteRecordingExists(user.cloudUserId, id)
     }
   },
   { immediate: true },
 )
+
+/** Tải bản ghi đã có trên cloud về (bấm tay) rồi cache lại vào IndexedDB máy này. */
+async function fetchFromCloud() {
+  if (!canSync.value || fetching.value) return
+  fetching.value = true
+  try {
+    const blob = await downloadRecording(user.cloudUserId, props.recId)
+    if (blob) {
+      await saveRecording(props.recId, blob)
+      showBlob(blob)
+      hasSaved.value = true
+      remoteAvailable.value = false
+      syncState.value = 'synced'
+    } else {
+      err.value = 'Không tải được bản ghi từ cloud — thử lại sau.'
+    }
+  } finally {
+    fetching.value = false
+  }
+}
 
 async function start() {
   if (!supported || recording.value || busy.value) return
@@ -86,7 +122,13 @@ async function stop() {
     showBlob(blob)
     await saveRecording(props.recId, blob)
     hasSaved.value = true
+    remoteAvailable.value = false
     emit('saved')
+    if (canSync.value) {
+      syncState.value = 'syncing'
+      const ok = await uploadRecording(user.cloudUserId, props.recId, blob)
+      syncState.value = ok ? 'synced' : 'error'
+    }
   } catch {
     err.value = 'Lưu bản ghi thất bại — thử ghi lại nhé.'
   } finally {
@@ -97,8 +139,10 @@ async function stop() {
 async function remove() {
   if (recording.value) return
   await deleteRecording(props.recId)
+  if (canSync.value) deleteRemoteRecording(user.cloudUserId, props.recId)
   revoke()
   hasSaved.value = false
+  syncState.value = 'idle'
   elapsed.value = 0
 }
 
@@ -122,6 +166,9 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
         <h2 class="vr-title">🎙️ {{ label }}</h2>
       </div>
       <span class="vr-badge" :class="{ ok: hasSaved }">{{ hasSaved ? '✅ Đã ghi' : 'Chưa ghi' }}</span>
+      <span v-if="canSync && syncState === 'syncing'" class="vr-cloud">☁️ Đang đồng bộ…</span>
+      <span v-else-if="canSync && syncState === 'synced'" class="vr-cloud ok">☁️ Đã đồng bộ</span>
+      <span v-else-if="canSync && syncState === 'error'" class="vr-cloud warn">☁️ Lỗi đồng bộ — thử ghi lại để gửi lại</span>
     </div>
     <p class="vr-intro">
       Đọc to và ghi âm giọng của em. Bản ghi được giữ lại trên máy này để
@@ -130,6 +177,12 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 
     <p v-if="!supported" class="vr-intro warn">⚠️ Trình duyệt chưa hỗ trợ ghi âm — hãy dùng Chrome/Edge để làm phần này.</p>
     <p v-if="err" class="vr-intro warn">⚠️ {{ err }}</p>
+
+    <!-- Có bản ghi trên cloud nhưng máy này chưa có -->
+    <div v-if="remoteAvailable && !hasSaved" class="vr-remote">
+      <span>☁️ Em đã ghi buổi này trên máy khác — tải về để nghe lại ở đây.</span>
+      <button class="vr-fetch" :disabled="fetching" @click="fetchFromCloud">{{ fetching ? 'Đang tải…' : 'Tải bản ghi' }}</button>
+    </div>
 
     <!-- Câu gợi ý để đọc -->
     <div v-if="suggest.length" class="vr-suggest">
@@ -159,7 +212,7 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 
 <style scoped>
 .vr {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 22px;
   padding: 26px 28px;
@@ -183,7 +236,7 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   color: var(--muted-2);
 }
 .vr-eyebrow.green {
-  color: #00a86f;
+  color: var(--green-2);
 }
 .vr-title {
   font-size: 21px;
@@ -193,7 +246,7 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 }
 .vr-badge {
   background: rgba(0, 150, 106, 0.1);
-  color: #00966a;
+  color: var(--text-success);
   font-size: 12.5px;
   font-weight: 800;
   padding: 6px 12px;
@@ -202,7 +255,7 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 }
 .vr-badge.ok {
   background: rgba(0, 214, 143, 0.16);
-  color: #00a86f;
+  color: var(--green-2);
 }
 .vr-intro {
   font-size: 14.5px;
@@ -211,8 +264,47 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   margin-top: 12px;
 }
 .vr-intro.warn {
-  color: #e04848;
+  color: var(--text-danger);
   font-weight: 600;
+}
+.vr-cloud {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-2);
+}
+.vr-cloud.ok {
+  color: var(--text-success);
+}
+.vr-cloud.warn {
+  color: var(--text-danger);
+}
+.vr-remote {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(108, 92, 231, 0.06);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.vr-fetch {
+  border: none;
+  background: var(--purple, #6c5ce7);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.vr-fetch:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .vr-suggest {
   margin-top: 16px;
@@ -238,12 +330,12 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 .vr-suggest li {
   font-size: 14.5px;
   line-height: 1.5;
-  color: #4a4a62;
+  color: var(--ink-2);
   cursor: pointer;
   padding: 7px 11px;
   border-radius: 10px;
   border: 1px solid rgba(108, 92, 231, 0.08);
-  background: #fff;
+  background: var(--surface);
   transition: border-color 0.15s;
 }
 .vr-suggest li:hover {
@@ -279,7 +371,7 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   box-shadow: 0 12px 26px rgba(0, 214, 143, 0.3);
 }
 .vr-rec:disabled {
-  background: #c4d8cf;
+  background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -313,8 +405,8 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
 }
 .vr-del {
   border: 1px solid rgba(255, 107, 107, 0.4);
-  background: #fff;
-  color: #e04848;
+  background: var(--surface);
+  color: var(--text-danger);
   border-radius: 10px;
   padding: 9px 12px;
   font-size: 15px;
@@ -331,11 +423,11 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   padding: 11px 15px;
 }
 .vr-foot.ok {
-  color: #00966a;
+  color: var(--text-success);
   background: rgba(0, 214, 143, 0.1);
 }
 .vr-foot.rec {
-  color: #e04848;
+  color: var(--text-danger);
   background: rgba(255, 107, 107, 0.08);
 }
 </style>

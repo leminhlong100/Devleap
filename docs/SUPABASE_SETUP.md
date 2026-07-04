@@ -19,6 +19,13 @@ Toàn bộ phần code đã có sẵn — bạn chỉ cần tạo project Supaba
 2. Dán toàn bộ nội dung file [`supabase/schema.sql`](../supabase/schema.sql) → **Run**.
 3. Kiểm tra **Table Editor**: có bảng `progress`, và ở tab **Authentication → Policies**
    bảng `progress` có 3 policy (select/insert/update "own").
+4. Kiểm tra **Storage**: có bucket `recordings` (private) — script đã tự tạo bucket
+   và 4 policy (select/insert/update/delete, mỗi user chỉ đụng được thư mục
+   `recordings/<user_id>/...` của chính mình) dùng để đồng bộ bản ghi âm mốc
+   (`VoiceRecorder.vue`, trang `/milestones`) giữa nhiều thiết bị. Nếu project
+   Supabase chặn tạo bucket qua SQL (một số plan cũ), tạo tay: **Storage → New
+   bucket** → tên `recordings`, để **Private**, rồi chạy lại riêng phần policy
+   trong `schema.sql`.
 
 ## 3. Bật đăng nhập Google
 

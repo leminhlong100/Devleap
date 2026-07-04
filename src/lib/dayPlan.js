@@ -48,3 +48,12 @@ export function planFromChecklist(checklist = []) {
     realTalk: has(/🗣️|buổi nói người thật/),
   }
 }
+
+/**
+ * Số câu bắt buộc rút ra từ đề bài viết (vd "Viết 10 câu" -> 10), kẹp 3..20.
+ * Dùng chung giữa IeltsDayView.vue (agenda) và WritingSection.vue để không lệch nhau.
+ */
+export function requiredSentencesFor(prompt) {
+  const m = /(\d+)\s*câu/i.exec(prompt || '')
+  return m ? Math.min(Math.max(Number(m[1]), 3), 20) : 3
+}

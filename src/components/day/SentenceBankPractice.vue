@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { recognizeOnce, recognitionSupported } from '@/lib/speechRecognize'
 import { correctWriting } from '@/lib/aiChat'
 import { friendlyAiError } from '@/lib/aiError'
+import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 
 const props = defineProps({
   prompts: { type: Array, default: () => [] }, // câu mở đầu: "I usually…"
@@ -85,6 +86,10 @@ const isDone = ref(false)
     <p class="quiz-intro">
       Viết tiếp mỗi câu cho ĐÚNG VỚI EM (gõ hoặc bấm 🎤 để nói). Xong bấm <b>Nhờ AI chữa</b> để được sửa từng câu + chấm trình độ.
     </p>
+    <SpeechSupportNote
+      :visible="!recordable"
+      text="Trình duyệt chưa hỗ trợ nói-thành-chữ — không sao, cứ gõ tay vào ô bên dưới."
+    />
 
     <div class="sb-list">
       <div v-for="(s, i) in starters" :key="i" class="sb-row">

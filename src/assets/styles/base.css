@@ -73,6 +73,71 @@
   --border-danger: rgba(255, 107, 107, 0.4);
   --bg-warning: rgba(255, 176, 32, 0.14);
   --text-warning: #b5790b;
+
+  /* Misc dùng bởi class toàn cục (.green-btn.locked, .gate-line) */
+  --disabled-bg: #c4d8cf;
+  --bg-muted: #f1f1f6;
+
+  /* Header/track/danger — dùng ở AppHeader.vue và các thanh tiến trình nhỏ */
+  --header-bg: rgba(247, 248, 252, 0.82);
+  --header-bg-solid: rgba(247, 248, 252, 0.98);
+  --track-bg: #ececf5;
+  --danger-strong: #d6512b;
+
+  /* Card gradient nhạt (Home "Hôm nay"/nhắc ôn, chip cảnh báo) */
+  --today-card-bg: linear-gradient(135deg, #f5f3ff, #eef6ff);
+  --chip-warn-bg: #fff7ec;
+  --chip-bg: #f1f0fb;
+}
+
+/* ============================================================
+   Dark mode — override token, giữ nguyên tên biến để mọi nơi
+   đã dùng var(--...) tự đổi màu. Đặt trên <html data-theme="dark">
+   (xem src/composables/useTheme.js).
+   ============================================================ */
+:root[data-theme='dark'] {
+  --bg: #12121c;
+  --surface: #1c1c2b;
+  --ink: #f2f2fa;
+  --ink-2: #e3e0f7;
+
+  --purple-soft: rgba(108, 92, 231, 0.18);
+
+  --muted: #b7b7d4;
+  --muted-2: #9494b3;
+  --muted-3: #6f6f8f;
+  --slate: #c7c7e0;
+
+  --line: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.08);
+
+  --surface-1: #232336;
+  --bg-accent: rgba(108, 92, 231, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-accent: rgba(139, 124, 240, 0.45);
+  --fill-accent: #8b7cf0;
+
+  --bg-success: rgba(0, 214, 143, 0.18);
+  --text-success: #5eeab3;
+  --border-success: rgba(0, 214, 143, 0.4);
+  --bg-danger: rgba(255, 107, 107, 0.16);
+  --text-danger: #ff8f8f;
+  --border-danger: rgba(255, 107, 107, 0.45);
+  --bg-warning: rgba(255, 176, 32, 0.16);
+  --text-warning: #ffcf7a;
+  --amber-ink: #ffd27a;
+
+  --disabled-bg: rgba(255, 255, 255, 0.12);
+  --bg-muted: rgba(255, 255, 255, 0.06);
+
+  --header-bg: rgba(18, 18, 28, 0.82);
+  --header-bg-solid: rgba(18, 18, 28, 0.98);
+  --track-bg: rgba(255, 255, 255, 0.12);
+  --danger-strong: #ff8f6b;
+
+  --today-card-bg: linear-gradient(135deg, rgba(108, 92, 231, 0.18), rgba(0, 184, 217, 0.12));
+  --chip-warn-bg: rgba(255, 176, 32, 0.16);
+  --chip-bg: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -215,7 +280,7 @@ svg {
   text-transform: uppercase;
 }
 .eyebrow.green {
-  color: #00a86f;
+  color: var(--green-2);
 }
 .step-title {
   font-size: 21px;
@@ -224,8 +289,8 @@ svg {
   margin-top: 5px;
 }
 .wt-badge {
-  background: rgba(0, 150, 106, 0.1);
-  color: #00966a;
+  background: var(--bg-success);
+  color: var(--text-success);
   font-size: 12.5px;
   font-weight: 800;
   padding: 6px 12px;
@@ -233,8 +298,8 @@ svg {
   white-space: nowrap;
 }
 .wt-badge.ok {
-  background: rgba(0, 214, 143, 0.16);
-  color: #00a86f;
+  background: var(--bg-success);
+  color: var(--green-2);
 }
 .quiz-intro {
   font-size: 14.5px;
@@ -253,7 +318,7 @@ svg {
   cursor: pointer;
   font-size: 15px;
   font-weight: 800;
-  color: #fff;
+  color: var(--on-accent);
   padding: 13px 24px;
   border-radius: 14px;
   background: linear-gradient(135deg, #00d68f, #00a86f);
@@ -265,7 +330,7 @@ svg {
   transform: translateY(-2px);
 }
 .green-btn.locked {
-  background: #c4d8cf;
+  background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -278,25 +343,25 @@ svg {
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
-  color: #00966a;
+  color: var(--text-success);
   padding: 11px 18px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   transition: background 0.15s;
 }
 .ghost-btn:hover {
-  background: #e6fbf2;
+  background: var(--bg-success);
 }
 .gate-line {
   margin-top: 16px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #8a8aa0;
-  background: #f1f1f6;
+  color: var(--muted);
+  background: var(--bg-muted);
   border-radius: 12px;
   padding: 11px 15px;
 }
 .gate-line.ok {
-  color: #00966a;
-  background: rgba(0, 214, 143, 0.1);
+  color: var(--text-success);
+  background: var(--bg-success);
 }

@@ -185,6 +185,19 @@ describe('user store — seedSrsFromDay (tự động gieo SRS khi hoàn thành 
     s.toggleDay('ielts', 1, 1) // bỏ đánh dấu
     expect(s.isDone('ielts', 1, 1)).toBe(false)
   })
+
+  it('từ trùng nhau trong cùng buổi (khác hoa/thường/khoảng trắng) chỉ gieo 1 lần', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name', ' name ', 'NAME'])
+    expect(Object.keys(s.srs)).toEqual(['ielts:name'])
+  })
+
+  it('nhận vocabTerms dạng object {term} (không chỉ string thuần)', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, [{ term: 'Goal' }, 'Age'])
+    expect(s.srsOf('ielts:goal')).toMatchObject({ reps: 0 })
+    expect(s.srsOf('ielts:age')).toMatchObject({ reps: 0 })
+  })
 })
 
 describe('user store — dueTodayCount / dueWords', () => {
@@ -210,6 +223,48 @@ describe('user store — dueTodayCount / dueWords', () => {
     s.srs['ielts:name'] = { ease: 2.5, interval: 3, reps: 0, lapses: 0, due: '2026-06-20', last: null }
     expect(s.dueTodayCount).toBe(1)
     expect(s.dueWords[0]).toMatchObject({ term: 'name', vi: 'tên' })
+  })
+})
+
+describe('user store — nextLesson / studiedToday (Bước 4.1: Home dashboard)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 5, 21, 9, 0, 0)) // 2026-06-21
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('khách mới (chưa học buổi nào): nextLesson rỗng, studiedToday() false', () => {
+    const s = useUserStore()
+    expect(s.nextLesson).toEqual([])
+    expect(s.studiedToday()).toBe(false)
+  })
+
+  it('học 1 buổi IELTS: nextLesson chỉ có IELTS, chỉ đúng khóa đó, đến buổi kế tiếp CHƯA xong', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name'])
+    expect(s.nextLesson).toHaveLength(1)
+    expect(s.nextLesson[0]).toMatchObject({ course: 'ielts', route: 'ielts-day', week: 1, day: 2 })
+    expect(s.nextLesson[0].title).toBeTruthy() // có tiêu đề buổi thật, không rỗng
+    expect(s.studiedToday()).toBe(true)
+  })
+
+  it('học song song cả 2 khóa: nextLesson liệt kê đủ cả 2, không lẫn khóa', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name'])
+    s.toggleDay('java', 1, 1)
+    expect(s.nextLesson.map((n) => n.course).sort()).toEqual(['ielts', 'java'])
+    const java = s.nextLesson.find((n) => n.course === 'java')
+    expect(java).toMatchObject({ route: 'java-day', week: 1, day: 2 })
+  })
+
+  it('studiedToday() quay lại false vào ngày sau (không tính lại buổi hôm qua, không bị cache theo giờ đồng hồ)', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name'])
+    expect(s.studiedToday()).toBe(true)
+    vi.setSystemTime(new Date(2026, 5, 22, 9, 0, 0)) // hôm sau
+    expect(s.studiedToday()).toBe(false)
   })
 })
 

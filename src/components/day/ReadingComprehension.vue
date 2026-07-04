@@ -46,7 +46,7 @@ function readAloud() {
 
 <style scoped>
 .step-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 22px;
   padding: 26px 28px;
@@ -73,7 +73,7 @@ function readAloud() {
 }
 .wt-badge {
   background: rgba(0, 150, 106, 0.1);
-  color: #00966a;
+  color: var(--text-success);
   font-size: 12.5px;
   font-weight: 800;
   padding: 6px 12px;
@@ -92,8 +92,8 @@ function readAloud() {
 }
 .rc-listen {
   border: 1px solid rgba(0, 214, 143, 0.35);
-  background: #fff;
-  color: #00966a;
+  background: var(--surface);
+  color: var(--text-success);
   border-radius: 99px;
   padding: 5px 13px;
   font-size: 12.5px;

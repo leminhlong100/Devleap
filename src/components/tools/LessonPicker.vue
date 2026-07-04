@@ -154,7 +154,7 @@ function pickSaved() {
 
 <style scoped>
 .picker {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
   padding: 32px;
@@ -170,7 +170,7 @@ function pickSaved() {
 }
 .psub {
   font-size: 14.5px;
-  color: #7a7a92;
+  color: var(--slate);
   margin-top: 6px;
 }
 .saved-entry {
@@ -186,6 +186,9 @@ function pickSaved() {
   padding: 16px 18px;
   margin-bottom: 22px;
   transition: all 0.15s;
+}
+[data-theme='dark'] .saved-entry {
+  background: var(--bg-success);
 }
 .saved-entry:hover {
   transform: translateY(-2px);
@@ -208,13 +211,13 @@ function pickSaved() {
 }
 .se-sub {
   font-size: 12.5px;
-  color: #00966a;
+  color: var(--text-success);
   font-weight: 600;
   margin-top: 2px;
 }
 .se-go {
   font-size: 20px;
-  color: #00966a;
+  color: var(--text-success);
   font-weight: 800;
   flex: none;
 }

@@ -6,7 +6,9 @@ import { useUserStore } from '@/stores/user'
 import { useAuthStore } from '@/stores/auth'
 import MascotLogo from '@/components/common/MascotLogo.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
+import { useTheme } from '@/composables/useTheme'
 
+const { theme, toggleTheme } = useTheme()
 const route = useRoute()
 const user = useUserStore()
 const auth = useAuthStore()
@@ -75,6 +77,15 @@ async function signOut() {
       </nav>
 
       <div class="header-right">
+        <button
+          class="theme-toggle"
+          type="button"
+          :aria-label="theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+          :title="theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+          @click="toggleTheme"
+        >
+          {{ theme === 'dark' ? '☀️' : '🌙' }}
+        </button>
         <GlobalSearch />
 
         <!-- Tiến độ/gamification chỉ hiện khi đã đăng nhập thành công -->
@@ -146,9 +157,9 @@ async function signOut() {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(247, 248, 252, 0.82);
+  background: var(--header-bg);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+  border-bottom: 1px solid var(--line);
 }
 .header-inner {
   max-width: var(--container);
@@ -186,8 +197,8 @@ async function signOut() {
   width: 40px;
   height: 40px;
   padding: 0 9px;
-  border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   border-radius: 11px;
   cursor: pointer;
   flex: none;
@@ -214,12 +225,12 @@ async function signOut() {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  color: #5a5a72;
+  color: var(--slate);
   white-space: nowrap;
   transition: all 0.15s;
 }
 .nav-link:hover {
-  background: rgba(108, 92, 231, 0.06);
+  background: var(--line-soft);
 }
 .nav-link.active {
   color: var(--purple);
@@ -246,12 +257,30 @@ async function signOut() {
 .streak-icon {
   font-size: 16px;
 }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 11px;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  flex: none;
+  transition: background 0.15s;
+}
+.theme-toggle:hover {
+  background: var(--purple-soft);
+}
 .xp-chip {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fff;
-  border: 1px solid rgba(108, 92, 231, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 6px 7px 6px 14px;
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(108, 92, 231, 0.07);
@@ -280,7 +309,7 @@ async function signOut() {
   width: 96px;
   height: 6px;
   border-radius: 99px;
-  background: #ececf5;
+  background: var(--track-bg);
   overflow: hidden;
 }
 .xp-fill {
@@ -294,8 +323,8 @@ async function signOut() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(108, 92, 231, 0.18);
-  background: #fff;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
@@ -360,8 +389,8 @@ async function signOut() {
   z-index: 60;
 }
 .menu-card {
-  background: #fff;
-  border: 1px solid rgba(108, 92, 231, 0.12);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(108, 92, 231, 0.18);
   padding: 14px 16px;
@@ -402,13 +431,13 @@ async function signOut() {
   font-size: 11.5px;
   font-weight: 700;
   margin-top: 8px;
-  color: #00a86f;
+  color: var(--text-success);
 }
 .menu-sync.syncing {
   color: var(--purple);
 }
 .menu-sync.error {
-  color: #d6512b;
+  color: var(--danger-strong);
 }
 .menu-admin {
   display: block;
@@ -430,7 +459,7 @@ async function signOut() {
   width: 100%;
   border: 1px solid rgba(214, 81, 43, 0.25);
   background: rgba(214, 81, 43, 0.06);
-  color: #d6512b;
+  color: var(--danger-strong);
   font-size: 13px;
   font-weight: 700;
   padding: 9px;
@@ -471,9 +500,9 @@ async function signOut() {
     gap: 4px;
     margin-left: 0;
     padding: 10px 18px 16px;
-    background: rgba(247, 248, 252, 0.98);
+    background: var(--header-bg-solid);
     backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(108, 92, 231, 0.12);
+    border-bottom: 1px solid var(--border);
     box-shadow: 0 16px 32px rgba(108, 92, 231, 0.12);
   }
   .nav.open {

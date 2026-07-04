@@ -1,38 +1,77 @@
 /**
- * Sinh URL ảnh minh họa cho một từ vựng (giúp nhớ lâu nhờ hình ảnh).
+ * Tra ảnh minh họa cho một từ vựng qua Wikipedia REST API (thumbnail trang tóm
+ * tắt tiếng Anh) — thay cho LoremFlickr cũ (ảnh stock ngẫu nhiên theo keyword,
+ * hay sai nghĩa). Ảnh Wikipedia gắn với đúng khái niệm của từ khi có, và với từ
+ * trừu tượng/không có ảnh thì trả '' để component tự lùi về emoji minh họa.
  *
- * Dùng LoremFlickr — dịch vụ ảnh stock theo từ khóa, KHÔNG cần API key, hợp với
- * deploy tĩnh (Netlify). Mỗi từ "khóa" vào một ảnh cố định (tham số `lock` = băm
- * của từ) để lần học nào cũng thấy đúng một ảnh — ảnh ổn định làm điểm neo trí nhớ.
- *
- * Nếu ảnh không tải được (offline / dịch vụ lỗi), component tự lùi về emoji minh họa.
+ * Cùng 1 từ luôn tra ra cùng 1 kết quả nhờ cache localStorage (kể cả kết quả
+ * "không có ảnh" — tránh dò lại Wikipedia mỗi lần mở app cho các từ trừu tượng).
+ * Lỗi mạng/timeout KHÔNG được cache (tạm thời, có thể mạng ổn lại ở lần sau).
  */
+const CACHE_PREFIX = 'devleap:vocab-img:v1:'
+const TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 ngày
+const TIMEOUT_MS = 3000
 
-// Băm chuỗi đơn giản, ổn định (không phụ thuộc Math.random) -> chọn ảnh cố định.
-function hashCode(str) {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(h, 31) + str.charCodeAt(i)) | 0
+function cacheKey(term) {
+  return CACHE_PREFIX + String(term).trim().toLowerCase()
+}
+
+function readCache(term) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(cacheKey(term)))
+    if (!raw || typeof raw.ts !== 'number') return undefined
+    if (Date.now() - raw.ts > TTL_MS) return undefined
+    return raw.url || ''
+  } catch {
+    return undefined
   }
-  return Math.abs(h)
+}
+
+function writeCache(term, url) {
+  try {
+    localStorage.setItem(cacheKey(term), JSON.stringify({ url: url || '', ts: Date.now() }))
+  } catch {
+    /* ignore */
+  }
+}
+
+// Wikipedia viết hoa chữ đầu tên trang tóm tắt tiếng Anh; khoảng trắng nối bằng "_".
+function wikiTitle(term) {
+  const t = String(term).trim()
+  if (!t) return ''
+  return (t[0].toUpperCase() + t.slice(1)).replace(/\s+/g, '_')
 }
 
 /**
- * @param {string} term  từ tiếng Anh (vd "computer", "stress")
- * @param {number} size  cạnh ảnh vuông (px)
- * @returns {string} URL ảnh, hoặc '' nếu không có từ
+ * @param {string} term  từ tiếng Anh (vd "computer", "confidence")
+ * @returns {Promise<string>} URL ảnh, hoặc '' nếu không có / lỗi / timeout ~3s.
  */
-export function vocabImageUrl(term, size = 400) {
+export async function fetchVocabImage(term) {
   if (!term) return ''
-  const t = String(term).trim().toLowerCase()
-  // Chỉ giữ chữ cái + khoảng trắng, rồi nối nhiều từ bằng dấu phẩy (cú pháp keyword của LoremFlickr).
-  const keywords = t
-    .replace(/[^a-z\s]/g, '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .join(',')
-  if (!keywords) return ''
-  const lock = (hashCode(t) % 99999) + 1
-  return `https://loremflickr.com/${size}/${size}/${encodeURIComponent(keywords)}?lock=${lock}`
+  const cached = readCache(term)
+  if (cached !== undefined) return cached
+
+  const title = wikiTitle(term)
+  if (!title) return ''
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+  const timer = controller ? setTimeout(() => controller.abort(), TIMEOUT_MS) : null
+  try {
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, {
+      signal: controller?.signal,
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) {
+      writeCache(term, '')
+      return ''
+    }
+    const data = await res.json()
+    // Trang định hướng (nhiều nghĩa, vd "Stress") không có ảnh đáng tin -> coi như rỗng.
+    const url = data?.type === 'disambiguation' ? '' : data?.thumbnail?.source || ''
+    writeCache(term, url)
+    return url
+  } catch {
+    return ''
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 }

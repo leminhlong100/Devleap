@@ -1,12 +1,10 @@
 <script setup>
-import { ref, computed, reactive, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { coachTurn, roleplayTurn, reFeedback, getHint, getIdea, translateWord, translateToVi } from '@/lib/aiChat'
-import { friendlyAiError } from '@/lib/aiError'
-import { speak, canSpeak } from '@/lib/speak'
-import { canListen, createRecognizer } from '@/lib/listen'
-import { cardsFromTerms } from '@/data/tools'
-import { VOCAB_GLOSSARY } from '@/data/vocabGlossary'
+import { useChatEngine, PERSONAS } from '@/composables/useChatEngine'
+import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
+import ChatMessages from './ChatMessages.vue'
+import ChatComposer from './ChatComposer.vue'
 import { useUserStore } from '@/stores/user'
 
 /**
@@ -14,6 +12,10 @@ import { useUserStore } from '@/stores/user'
  * Mỗi lượt người học gửi đi, AI vừa CHẤM câu (sửa lỗi + điểm CEFR + lời phê theo
  * phong cách hài hước) vừa NÓI TIẾP (kèm gợi ý từ nên dùng). Có nghe/nói, tra từ
  * tại chỗ, lưu/đánh dấu sao từ, và chọn phong cách lời phê.
+ *
+ * Logic phiên chat + gọi API nằm ở useChatEngine.js; render danh sách tin nhắn
+ * + tra/lưu từ ở ChatMessages.vue; ô nhập/mic ở ChatComposer.vue. File này chỉ
+ * còn lo layout + wiring.
  */
 const props = defineProps({
   // { title, week, weekTitle, vocab: string[], grammar: string[] }
@@ -22,466 +24,49 @@ const props = defineProps({
 
 const router = useRouter()
 const user = useUserStore()
+const chatMessages = ref(null)
 
-// —— Danh sách phong cách lời phê (khớp PERSONAS ở backend _llm.js) ——
-const PERSONAS = [
-  { key: 'cotnha', label: '😜 Cợt nhả', desc: 'Lầy lội, cà khịa hết cỡ' },
-  { key: 'chuiboi', label: '🔥 Chửi bới', desc: 'Chửi yêu, drama hết nấc' },
-  { key: 'gaubong', label: '🧸 Gấu bông', desc: 'Ấm áp, động viên' },
-  { key: 'nghiemtuc', label: '🎓 Nghiêm túc', desc: 'Giáo viên thẳng thắn' },
-]
-
-// —— "Tình huống bất ngờ" (Surprise mode) — mở khóa từ Tuần 4 ——
-// AI đóng vai 1 kịch bản ngẫu nhiên, chủ động đổi đề tài giữa chừng, người học
-// không biết trước câu hỏi kế tiếp (xem netlify/functions/_llm.js buildRoleplayPrompt).
-const ROLEPLAY_UNLOCK_WEEK = 4
-const SCENARIOS = [
-  {
-    key: 'customer',
-    label: '😠 Khách hàng khó tính',
-    brief: 'You are a demanding, impatient customer complaining about a product or service the learner is helping with. Stay in character.',
-  },
-  {
-    key: 'stranger',
-    label: '🏃 Người hỏi đường vội',
-    brief: 'You are a stranger in a hurry asking the learner for directions or quick help, then suddenly need something different than what you first asked.',
-  },
-  {
-    key: 'coworker',
-    label: '🧐 Đồng nghiệp hỏi vặn',
-    brief: 'You are a skeptical coworker checking on the status of a work task, pushing back with follow-up questions and doubts.',
-  },
-  {
-    key: 'interviewer',
-    label: '🎙️ Người phỏng vấn',
-    brief: 'You are a job interviewer asking the learner unexpected follow-up questions about their experience and skills.',
-  },
-]
-// —— Trạng thái phiên ——
-const messages = ref([]) // xem mô hình bên dưới
-const input = ref('')
-const loading = ref(false)
-const error = ref('')
-const retry = ref(null) // hàm thử lại lượt vừa lỗi, null khi không có gì để thử lại
-const autoSpeak = ref(true)
-const listening = ref(false)
-const scroller = ref(null)
-const savedToast = ref('')
-let toastTimer = null
-
-// —— Voice-first: mặc định tự bật mic sau mỗi lượt AI, đếm ngược 10s để ép phản
-// xạ (không kịp soạn câu trước trong đầu). Gõ chữ vẫn dùng được — chỉ là fallback.
-const ANSWER_SECONDS = 10
-const voiceFirst = ref(true)
-const answerTimer = ref(0)
-let answerTimerId = null
-
-function clearAnswerTimer() {
-  if (answerTimerId) {
-    clearInterval(answerTimerId)
-    answerTimerId = null
-  }
-  answerTimer.value = 0
-}
-
-// Phong cách lời phê — nhớ lần chọn gần nhất (lưu local).
-const persona = ref(user.convoPrefs.persona || 'cotnha')
-function setPersona(key) {
-  persona.value = key
-  user.setConvoPrefs({ persona: key })
-}
-
-const speakable = canSpeak()
-const listenable = canListen()
-let recognizer = null
-let micStartedAt = 0 // mốc thời gian mic bật — đo số giây đã NÓI để tính streak nói
-
-// Bộ từ của bài (để gợi ý người học dùng trong câu trả lời).
-const vocab = computed(() => (props.context?.vocab || []).filter(Boolean))
-
-// —— Tình huống bất ngờ (Surprise mode) ——
-const unlockedRoleplay = computed(() => Number(props.context?.week || 0) >= ROLEPLAY_UNLOCK_WEEK)
-const roleplayOn = ref(false)
-const currentScenario = ref(null)
-
-// Ngữ cảnh gửi lên backend.
-const chatContext = computed(() => ({
-  title: props.context?.title,
-  week: props.context?.week,
-  weekTitle: props.context?.weekTitle,
-  grammar: props.context?.grammar || [],
-  vocab: vocab.value,
-  exam: props.context?.exam || 'none',
-  suggestWords: true,
-  scenario: roleplayOn.value ? currentScenario.value?.brief : undefined,
-}))
-
-// Câu mở đầu tĩnh (không tốn quota) — chỉ dùng cho chế độ luyện thường.
-const opener = computed(() => {
-  const topic = props.context?.title ? props.context.title : 'today’s topic'
-  return `Hi there! 👋 Let's practise English about ${topic}. Tell me about your day or ask me anything to get started.`
-})
-
-// Vào chat ngay: hiện câu mở đầu + gợi ý vài từ của bài (không còn màn thiết lập).
-function initSession() {
-  messages.value = [
-    { role: 'assistant', message: opener.value, suggestedWords: vocab.value.slice(0, 3), ui: reactive({}) },
-  ]
-  input.value = ''
-  error.value = ''
-  closePop()
-}
-
-// Surprise mode: KHÔNG hiện câu mở đầu tĩnh — để AI tự mở màn trong vai diễn
-// (gọi ngay 1 lượt roleplay với lịch sử rỗng, giống quy tắc "evaluation: null"
-// của coach khi người học chưa viết gì).
-async function startRoleplaySession() {
-  currentScenario.value = currentScenario.value || SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
-  messages.value = []
-  input.value = ''
-  error.value = ''
-  retry.value = null
-  closePop()
-  loading.value = true
-  try {
-    const { next } = await roleplayTurn({ messages: [], context: chatContext.value, persona: persona.value })
-    messages.value.push({
-      role: 'assistant',
-      message: next?.message || '…',
-      suggestedWords: Array.isArray(next?.suggestedWords) ? next.suggestedWords.slice(0, 3) : [],
-      ui: reactive({}),
-    })
-    if (autoSpeak.value) speak(next?.message || '')
-    maybeAutoListen()
-  } catch (e) {
-    error.value = friendlyAiError(e).message
-    retry.value = () => {
-      roleplayOn.value = true
-      startRoleplaySession()
-    }
-    roleplayOn.value = false
-  } finally {
-    loading.value = false
-    scrollToEnd()
-  }
-}
-
-function toggleRoleplay() {
-  if (!unlockedRoleplay.value) return
-  roleplayOn.value = !roleplayOn.value
-  if (roleplayOn.value) startRoleplaySession()
-  else initSession()
-}
-
-onMounted(initSession)
-onUnmounted(clearAnswerTimer)
-
-async function scrollToEnd() {
-  await nextTick()
-  if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight
-}
-
-// Lịch sử gọn để gửi backend: assistant -> message, user -> text.
-function historyFor(upto = messages.value.length) {
-  return messages.value.slice(0, upto).map((m) =>
-    m.role === 'assistant' ? { role: 'assistant', text: m.message } : { role: 'user', text: m.text },
-  )
-}
-
-async function send() {
-  const text = input.value.trim()
-  if (!text || loading.value) return
-  clearAnswerTimer()
-  error.value = ''
-  retry.value = null
-  const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
-  messages.value.push(userEntry)
-  input.value = ''
-  await sendTurn(userEntry)
-}
-
-// Tách riêng để "Thử lại" gọi lại đúng lượt vừa lỗi mà KHÔNG đẩy thêm bong bóng
-// chat mới hay mất câu người học vừa gõ (câu đã nằm sẵn trong userEntry).
-async function sendTurn(userEntry) {
-  loading.value = true
-  scrollToEnd()
-  try {
-    const turn = roleplayOn.value ? roleplayTurn : coachTurn
-    const { evaluation, next } = await turn({
-      messages: historyFor(),
-      context: chatContext.value,
-      persona: persona.value,
-    })
-    userEntry.evaluation = evaluation || null
-    userEntry.evaluating = false
-    const aiEntry = {
-      role: 'assistant',
-      message: next?.message || '…',
-      suggestedWords: Array.isArray(next?.suggestedWords) ? next.suggestedWords.slice(0, 3) : [],
-      ui: reactive({}),
-    }
-    messages.value.push(aiEntry)
-    if (autoSpeak.value) speak(aiEntry.message)
-    maybeAutoListen()
-    error.value = ''
-    retry.value = null
-  } catch (e) {
-    userEntry.evaluating = false
-    error.value = friendlyAiError(e).message
-    retry.value = () => sendTurn(userEntry)
-  } finally {
-    loading.value = false
-    scrollToEnd()
-  }
-}
-
-// —— Đổi phong cách lời phê & chấm lại tại chỗ ——
-async function changePersona(userEntry, key) {
-  if (userEntry.reEvaluating || userEntry.persona === key) {
-    persona.value = key
-    user.setConvoPrefs({ persona: key })
-    return
-  }
-  persona.value = key
-  user.setConvoPrefs({ persona: key })
-  const idx = messages.value.indexOf(userEntry)
-  if (idx === -1) return
-  userEntry.reEvaluating = true
-  try {
-    const evaluation = await reFeedback({
-      messages: historyFor(idx + 1),
-      context: chatContext.value,
-      persona: key,
-    })
-    if (evaluation) userEntry.evaluation = evaluation
-    userEntry.persona = key
-  } catch (e) {
-    flashToast('⚠️ ' + friendlyAiError(e).message)
-  } finally {
-    userEntry.reEvaluating = false
-  }
-}
-
-// —— Nút trợ giúp dưới mỗi lượt của AI ——
-async function showHint(m) {
-  if (m.ui.hint || m.ui.hintLoading) {
-    m.ui.showHint = !m.ui.showHint
-    return
-  }
-  m.ui.hintLoading = true
-  try {
-    m.ui.hint = await getHint(m.message, chatContext.value)
-    m.ui.showHint = true
-  } catch (e) {
-    m.ui.hint = friendlyAiError(e).message
-    m.ui.showHint = true
-  } finally {
-    m.ui.hintLoading = false
-  }
-}
-async function showIdea(m) {
-  if (m.ui.idea || m.ui.ideaLoading) {
-    m.ui.showIdea = !m.ui.showIdea
-    return
-  }
-  m.ui.ideaLoading = true
-  try {
-    m.ui.idea = await getIdea(m.message, chatContext.value)
-    m.ui.showIdea = true
-  } catch (e) {
-    m.ui.idea = friendlyAiError(e).message
-    m.ui.showIdea = true
-  } finally {
-    m.ui.ideaLoading = false
-  }
-}
-async function showTranslation(m) {
-  if (m.ui.vi || m.ui.viLoading) {
-    m.ui.showVi = !m.ui.showVi
-    return
-  }
-  m.ui.viLoading = true
-  try {
-    m.ui.vi = await translateToVi(m.message)
-    m.ui.showVi = true
-  } catch (e) {
-    m.ui.vi = friendlyAiError(e).message
-    m.ui.showVi = true
-  } finally {
-    m.ui.viLoading = false
-  }
-}
-
-function replay(text) {
-  speak(text)
-}
-
-function useIdeaAsAnswer(text) {
-  input.value = text
-}
-
-// —— Tra/lưu/đánh dấu sao TỪ tại chỗ ——
-const pop = reactive({ open: false, word: '', vi: '', ipa: '', loading: false, x: 0, y: 0 })
-
-// Tách văn bản thành token: số lẻ là "từ" bấm được.
-function tokenize(text) {
-  return (text || '')
-    .split(/([A-Za-z][A-Za-z'’-]*)/)
-    .map((t, i) => ({ t, word: i % 2 === 1 && t.length >= 2 }))
-}
-
-async function tapWord(word, ev) {
-  const w = String(word).trim()
-  if (!w || w.length < 2) return
-  pop.open = true
-  pop.word = w
-  pop.x = Math.min(ev.clientX, window.innerWidth - 230)
-  pop.y = ev.clientY + 14
-  const g = VOCAB_GLOSSARY[w.toLowerCase()]
-  if (g) {
-    pop.vi = g.vi || ''
-    pop.ipa = g.ipa || ''
-    pop.loading = false
-    return
-  }
-  pop.vi = ''
-  pop.ipa = ''
-  pop.loading = true
-  try {
-    pop.vi = await translateWord(w)
-  } catch {
-    pop.vi = '(không dịch được)'
-  } finally {
-    pop.loading = false
-  }
-}
-function closePop() {
-  pop.open = false
-}
-
-function flashToast(msg) {
-  savedToast.value = msg
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => (savedToast.value = ''), 1800)
-}
-
-// Lưu từ trong popover vào danh sách flashcard (kèm nghĩa đã có).
-function saveWordFromPop() {
-  const w = pop.word.toLowerCase()
-  if (user.isWordSaved(w)) {
-    user.removeSavedWord(w)
-    flashToast(`Đã bỏ “${w}”`)
-    return
-  }
-  const card = cardsFromTerms([w], 'saved')[0]
-  user.saveWord({ ...card, vi: card.vi || pop.vi, ipa: card.ipa || pop.ipa })
-  flashToast(`✓ Đã lưu “${w}”`)
-}
-// Lưu cả câu (dịch sang tiếng Việt làm mặt sau flashcard).
-const savingSentence = ref('')
-async function saveSentence(text) {
-  const s = String(text || '').trim()
-  if (!s) return
-  if (user.isWordSaved(s)) {
-    user.removeSavedWord(s)
-    flashToast('Đã bỏ câu')
-    return
-  }
-  if (savingSentence.value) return
-  savingSentence.value = s
-  try {
-    const vi = await translateToVi(s)
-    const base = cardsFromTerms([s], 'saved')[0]
-    user.saveWord({ ...base, vi, cat: 'Câu', kind: 'sentence' })
-    flashToast('✓ Đã lưu câu')
-  } catch {
-    flashToast('⚠️ Không dịch được, thử lại nhé')
-  } finally {
-    savingSentence.value = ''
-  }
-}
+const {
+  messages,
+  input,
+  loading,
+  error,
+  retry,
+  autoSpeak,
+  listening,
+  savedToast,
+  voiceFirst,
+  answerTimer,
+  persona,
+  setPersona,
+  speakable,
+  listenable,
+  unlockedRoleplay,
+  roleplayOn,
+  currentScenario,
+  toggleRoleplay,
+  send,
+  changePersona,
+  showHint,
+  showIdea,
+  showTranslation,
+  replay,
+  useIdeaAsAnswer,
+  flashToast,
+  savingSentence,
+  saveSentence,
+  toggleMic,
+  toggleVoiceFirst,
+  reset,
+} = useChatEngine(props)
 
 function openSavedDeck() {
   router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'saved' } })
 }
 
-function toggleMic() {
-  if (!listenable) return
-  if (listening.value) {
-    clearAnswerTimer()
-    recognizer?.stop()
-    return
-  }
-  recognizer = createRecognizer({
-    lang: 'en-US',
-    onResult: ({ final, interim }) => {
-      input.value = final || interim
-    },
-    onError: (err) => {
-      clearAnswerTimer()
-      error.value =
-        err === 'not-allowed'
-          ? 'Trình duyệt chưa cho phép dùng micro. Hãy bật quyền micro rồi thử lại.'
-          : `Không nghe được (${err}).`
-      listening.value = false
-    },
-    onEnd: (finalText) => {
-      clearAnswerTimer()
-      listening.value = false
-      if (micStartedAt) user.logSpeakingSeconds((Date.now() - micStartedAt) / 1000)
-      micStartedAt = 0
-      if (finalText) send()
-    },
-  })
-  if (!recognizer) return
-  error.value = ''
-  listening.value = true
-  micStartedAt = Date.now()
-  recognizer.start()
+function closePop() {
+  chatMessages.value?.closePop()
 }
-
-// Sau mỗi lượt AI, tự bật mic + đếm ngược 10s (voice-first). Người học vẫn có
-// thể tắt mic giữa chừng hoặc gõ chữ — đây chỉ là mặc định để ép phản xạ nói ngay.
-function maybeAutoListen() {
-  if (!voiceFirst.value || !listenable || listening.value) return
-  toggleMic()
-  if (!listening.value) return
-  answerTimer.value = ANSWER_SECONDS
-  answerTimerId = setInterval(() => {
-    answerTimer.value -= 1
-    if (answerTimer.value <= 0) {
-      clearAnswerTimer()
-      if (listening.value) recognizer?.stop()
-    }
-  }, 1000)
-}
-
-function toggleVoiceFirst() {
-  voiceFirst.value = !voiceFirst.value
-  if (!voiceFirst.value) {
-    clearAnswerTimer()
-    if (listening.value) recognizer?.stop()
-  }
-}
-
-function reset() {
-  if (roleplayOn.value) {
-    startRoleplaySession()
-  } else {
-    initSession()
-    maybeAutoListen()
-  }
-}
-
-// Đổi bài học thì làm mới phiên (tắt luôn Surprise mode — kịch bản cũ không còn hợp).
-watch(
-  () => props.context?.title,
-  () => {
-    roleplayOn.value = false
-    currentScenario.value = null
-    initSession()
-  },
-)
 </script>
 
 <template>
@@ -541,139 +126,45 @@ watch(
 
     <!-- ———————————— HỘI THOẠI ———————————— -->
     <button v-if="user.savedCount" class="saved-pill" @click.stop="openSavedDeck">
-        📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
-      </button>
-      <p class="hint">Chạm vào <b>từ</b> để tra nghĩa / lưu. Bấm 🎤 để nói.</p>
+      📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
+    </button>
+    <p class="hint">Chạm vào <b>từ</b> để tra nghĩa / lưu. {{ listenable ? 'Bấm 🎤 để nói.' : 'Gõ câu trả lời ở ô bên dưới.' }}</p>
+    <SpeechSupportNote
+      :visible="!listenable"
+      text="Trình duyệt này chưa hỗ trợ nói chuyện bằng giọng nói — hãy dùng Chrome/Edge trên máy tính hoặc Android nếu muốn luyện nói. Ở đây em vẫn gõ chữ để trò chuyện với AI bình thường."
+    />
 
-      <div ref="scroller" class="chat-log">
-        <template v-for="(m, i) in messages" :key="i">
-          <!-- Lượt của AI -->
-          <div v-if="m.role === 'assistant'" class="msg ai">
-            <div class="avatar">🤖</div>
-            <div class="bubble">
-              <div class="prose-words">
-                <template v-for="(tok, ti) in tokenize(m.message)" :key="ti">
-                  <button
-                    v-if="tok.word"
-                    class="wordchip"
-                    :class="{ saved: user.isWordSaved(tok.t) }"
-                    @click.stop="tapWord(tok.t, $event)"
-                  >{{ tok.t }}</button><span v-else>{{ tok.t }}</span>
-                </template>
-                <button v-if="speakable" class="speak-mini" title="Nghe lại" @click.stop="replay(m.message)">🔊</button>
-              </div>
+    <ChatMessages
+      ref="chatMessages"
+      :messages="messages"
+      :speakable="speakable"
+      :persona="persona"
+      :saving-sentence="savingSentence"
+      :loading="loading"
+      :show-hint="showHint"
+      :show-idea="showIdea"
+      :show-translation="showTranslation"
+      :replay="replay"
+      :use-idea-as-answer="useIdeaAsAnswer"
+      :save-sentence="saveSentence"
+      :change-persona="changePersona"
+      :flash-toast="flashToast"
+    />
 
-              <!-- Gợi ý từ nên dùng -->
-              <div v-if="m.suggestedWords && m.suggestedWords.length" class="suggest">
-                <span class="suggest-label">Hãy thử dùng các từ:</span>
-                <span v-for="w in m.suggestedWords" :key="w" class="suggest-chip">{{ w }}</span>
-              </div>
-
-              <!-- Nút trợ giúp -->
-              <div class="turn-actions">
-                <button class="ta" @click.stop="showHint(m)">{{ m.ui.hintLoading ? '⏳' : '💡' }} Xem gợi ý</button>
-                <button class="ta" @click.stop="showIdea(m)">{{ m.ui.ideaLoading ? '⏳' : '🤔' }} Bí ý tưởng?</button>
-                <button class="ta" @click.stop="showTranslation(m)">{{ m.ui.viLoading ? '⏳' : '🌐' }} Dịch câu hỏi?</button>
-                <button class="ta" :class="{ saved: user.isWordSaved(m.message) }" :disabled="savingSentence === m.message" @click.stop="saveSentence(m.message)">
-                  {{ savingSentence === m.message ? '⏳' : user.isWordSaved(m.message) ? '✓' : '💾' }} Lưu câu
-                </button>
-              </div>
-              <p v-if="m.ui.showHint" class="aux hint-box">💡 {{ m.ui.hint }}</p>
-              <div v-if="m.ui.showIdea" class="aux idea-box">
-                🤔 <i>{{ m.ui.idea }}</i>
-                <button class="use-idea" @click.stop="useIdeaAsAnswer(m.ui.idea)">Dùng câu này →</button>
-              </div>
-              <p v-if="m.ui.showVi" class="aux vi-box">🌐 {{ m.ui.vi }}</p>
-            </div>
-          </div>
-
-          <!-- Lượt của người học + thẻ đánh giá -->
-          <div v-else class="user-turn">
-            <div class="msg me">
-              <div class="avatar">🧑</div>
-              <div class="bubble">{{ m.text }}</div>
-            </div>
-
-            <div v-if="m.evaluating" class="eval-card loading">⏳ Đang chấm câu…</div>
-
-            <div v-else-if="m.evaluation" class="eval-card">
-              <div class="eval-row">
-                <span class="eval-tag ok">✅ Câu đúng</span>
-                <span class="eval-corrected">{{ m.evaluation.corrected }}</span>
-              </div>
-              <div class="eval-row score-row">
-                <span class="eval-tag score">🎯 {{ m.evaluation.cefr }}</span>
-                <div class="persona-pills">
-                  <button
-                    v-for="p in PERSONAS"
-                    :key="p.key"
-                    class="ppill"
-                    :class="{ on: (m.persona || persona) === p.key }"
-                    :disabled="m.reEvaluating"
-                    :title="p.desc"
-                    @click.stop="changePersona(m, p.key)"
-                  >{{ p.label }}</button>
-                </div>
-              </div>
-              <ul class="eval-feedback" :class="{ dim: m.reEvaluating }">
-                <li v-for="(line, fi) in m.evaluation.feedback" :key="fi">{{ line }}</li>
-              </ul>
-              <div class="eval-reco">
-                <span class="reco-label">💡 Gợi ý trả lời:</span>
-                <span class="reco-text">{{ m.evaluation.recommended }}</span>
-                <button v-if="speakable" class="speak-mini" title="Nghe" @click.stop="replay(m.evaluation.recommended)">🔊</button>
-                <div v-if="m.evaluation.recommendedVi" class="reco-vi">{{ m.evaluation.recommendedVi }}</div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <div v-if="loading" class="msg ai">
-          <div class="avatar">🤖</div>
-          <div class="bubble typing"><span></span><span></span><span></span></div>
-        </div>
-      </div>
-
-      <div v-if="error" class="chat-error-box">
-        <p class="chat-error">⚠️ {{ error }}</p>
-        <button v-if="retry" type="button" class="chat-retry-btn" @click="retry?.()">🔄 Thử lại</button>
-      </div>
-
-      <div v-if="answerTimer > 0" class="answer-timer">⏱ Còn {{ answerTimer }}s — cứ nói tự nhiên, đừng soạn câu trước!</div>
-
-      <form class="composer" @submit.prevent="send">
-        <button
-          v-if="listenable"
-          type="button"
-          class="mic-btn"
-          :class="{ live: listening }"
-          :title="listening ? 'Đang nghe… bấm để dừng' : 'Bấm để nói'"
-          @click.stop="toggleMic"
-        >
-          {{ listening ? '⏹️' : '🎤' }}
-        </button>
-        <input
-          v-model="input"
-          type="text"
-          class="composer-input"
-          :placeholder="listening ? 'Đang nghe bạn nói…' : 'Nhập câu tiếng Anh của bạn…'"
-          :disabled="loading"
-          @click.stop
-        />
-        <button type="submit" class="send-btn" :disabled="loading || !input.trim()">Gửi →</button>
-      </form>
-
-    <!-- Popover tra từ -->
-    <div v-if="pop.open" class="word-pop" :style="{ left: pop.x + 'px', top: pop.y + 'px' }" @click.stop>
-      <div class="wp-head">
-        <b>{{ pop.word }}</b>
-        <span v-if="pop.ipa" class="wp-ipa">{{ pop.ipa }}</span>
-      </div>
-      <div class="wp-vi">{{ pop.loading ? 'Đang dịch…' : pop.vi || '(chưa có nghĩa)' }}</div>
-      <div class="wp-actions">
-        <button @click.stop="saveWordFromPop">{{ user.isWordSaved(pop.word) ? '✓ Đã lưu' : '💾 Lưu từ' }}</button>
-      </div>
+    <div v-if="error" class="chat-error-box">
+      <p class="chat-error">⚠️ {{ error }}</p>
+      <button v-if="retry" type="button" class="chat-retry-btn" @click="retry?.()">🔄 Thử lại</button>
     </div>
+
+    <ChatComposer
+      v-model="input"
+      :loading="loading"
+      :listening="listening"
+      :listenable="listenable"
+      :answer-timer="answerTimer"
+      @submit="send"
+      @toggle-mic="toggleMic"
+    />
 
     <Transition name="toast">
       <div v-if="savedToast" class="save-toast">{{ savedToast }}</div>
@@ -686,7 +177,7 @@ watch(
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #fff;
+  background: var(--surface);
   border-radius: 22px;
   padding: 26px 28px;
   border: 1px solid rgba(108, 92, 231, 0.1);
@@ -699,8 +190,8 @@ watch(
 }
 .tool-toggle {
   border: 1px solid rgba(0, 214, 143, 0.3);
-  background: #fff;
-  color: #00966a;
+  background: var(--surface);
+  color: var(--text-success);
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 12px;
@@ -721,7 +212,7 @@ watch(
   cursor: not-allowed;
 }
 .tool-toggle.locked:hover {
-  background: #fff;
+  background: var(--surface);
 }
 
 /* —— Nhãn kịch bản Surprise mode —— */
@@ -737,6 +228,10 @@ watch(
   padding: 9px 13px;
   border-radius: 12px;
 }
+[data-theme='dark'] .scenario-tag {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
 
 /* —— Thanh chọn phong cách lời phê —— */
 .persona-bar {
@@ -749,14 +244,14 @@ watch(
 .persona-bar-label {
   font-size: 12.5px;
   font-weight: 800;
-  color: #3a3a52;
+  color: var(--ink-2);
   margin-right: 2px;
 }
 .pchip {
   font-size: 12.5px;
   font-weight: 700;
   color: #6c5ce7;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.25);
   border-radius: 999px;
   padding: 5px 11px;
@@ -792,330 +287,36 @@ watch(
   margin-top: 10px;
 }
 
-/* —— Log hội thoại —— */
-.chat-log {
-  margin-top: 14px;
+.chat-error-box {
+  margin-top: 12px;
+  background: var(--bg-danger);
+  border: 1px solid var(--border-danger);
+  border-radius: 12px;
+  padding: 10px 14px;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 460px;
-  overflow-y: auto;
-  padding: 6px 4px 2px;
-}
-.msg {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-}
-.msg.me {
-  flex-direction: row-reverse;
-}
-.avatar {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 17px;
-  background: #e6fbf2;
-}
-.msg.me .avatar {
-  background: #ede9fe;
-}
-.bubble {
-  position: relative;
-  max-width: 82%;
-  font-size: 14.5px;
-  line-height: 1.7;
-  padding: 11px 15px;
-  border-radius: 16px;
-  background: #f3f4f8;
-  color: #3a3a52;
-  word-wrap: break-word;
-}
-.msg.me .bubble {
-  background: linear-gradient(135deg, #00d68f, #00a86f);
-  color: #fff;
-  border-bottom-right-radius: 5px;
-}
-.msg.ai .bubble {
-  border-bottom-left-radius: 5px;
-}
-.wordchip {
-  font: inherit;
-  color: inherit;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0 1px;
-  border-radius: 5px;
-  border-bottom: 1.5px dotted rgba(108, 92, 231, 0.4);
-  transition: background 0.12s;
-}
-.wordchip:hover {
-  background: rgba(108, 92, 231, 0.16);
-}
-.wordchip.saved {
-  background: rgba(0, 168, 111, 0.16);
-  border-bottom-color: transparent;
-}
-.wordchip.starred {
-  background: rgba(255, 193, 7, 0.25);
-  border-bottom-color: transparent;
-}
-.speak-mini {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 13px;
-  margin-left: 4px;
-  opacity: 0.6;
-  padding: 0;
-}
-.speak-mini:hover {
-  opacity: 1;
-}
-
-/* Gợi ý từ */
-.suggest {
-  margin-top: 9px;
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-}
-.suggest-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-}
-.suggest-chip {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #00805a;
-  background: #e6fbf2;
-  border: 1px solid rgba(0, 214, 143, 0.3);
-  border-radius: 999px;
-  padding: 2px 10px;
-}
-
-/* Nút trợ giúp dưới lượt AI */
-.turn-actions {
-  margin-top: 9px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.ta {
-  font-size: 12px;
-  font-weight: 700;
-  color: #6c5ce7;
-  background: rgba(108, 92, 231, 0.08);
-  border: 1px solid rgba(108, 92, 231, 0.2);
-  border-radius: 999px;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-.ta:hover {
-  background: rgba(108, 92, 231, 0.16);
-}
-.ta.saved {
-  background: #6c5ce7;
-  border-color: transparent;
-  color: #fff;
-}
-.aux {
-  margin-top: 8px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  border-radius: 10px;
-  padding: 9px 12px;
-}
-.hint-box {
-  background: #fff8e6;
-  border: 1px solid #ffe2a8;
-  color: #8a6d1b;
-}
-.idea-box {
-  background: #eef6ff;
-  border: 1px solid #c9e0ff;
-  color: #1c4f8a;
-}
-.use-idea {
-  margin-left: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  border: none;
-  background: #1c4f8a;
-  color: #fff;
-  border-radius: 8px;
-  padding: 3px 9px;
-  cursor: pointer;
-}
-.vi-box {
-  background: #f3f4f8;
-  border: 1px solid rgba(108, 92, 231, 0.15);
-  color: #3a3a52;
-}
-
-/* Thẻ đánh giá */
-.user-turn {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.eval-card {
-  align-self: flex-end;
-  max-width: 88%;
-  background: #fbfbfe;
-  border: 1px solid rgba(108, 92, 231, 0.18);
-  border-radius: 16px;
-  padding: 13px 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.06);
-}
-.eval-card.loading {
-  color: var(--muted);
-  font-size: 13.5px;
-}
-.eval-row {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  flex-wrap: wrap;
-}
-.eval-tag {
-  flex: none;
-  font-size: 11.5px;
-  font-weight: 800;
-  border-radius: 999px;
-  padding: 2px 9px;
-}
-.eval-tag.ok {
-  background: #e6fbf2;
-  color: #00805a;
-}
-.eval-tag.score {
-  background: #ede9fe;
-  color: #6c5ce7;
-}
-.eval-corrected {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f1f33;
-}
-.score-row {
   justify-content: space-between;
-  align-items: center;
-}
-.persona-pills {
-  display: flex;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 4px;
 }
-.ppill {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6c5ce7;
-  background: #fff;
-  border: 1px solid rgba(108, 92, 231, 0.25);
-  border-radius: 999px;
-  padding: 2px 8px;
-  cursor: pointer;
+.chat-error {
+  color: var(--text-danger);
+  font-size: 13.5px;
 }
-.ppill.on {
-  background: #6c5ce7;
-  border-color: transparent;
+.chat-retry-btn {
+  flex-shrink: 0;
+  background: var(--danger-strong);
   color: #fff;
-}
-.ppill:disabled {
-  opacity: 0.5;
-  cursor: progress;
-}
-.eval-feedback {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 13.8px;
-  line-height: 1.7;
-  color: #3a3a52;
-}
-.eval-feedback.dim {
-  opacity: 0.5;
-}
-.eval-reco {
-  background: #f5f3ff;
-  border-radius: 11px;
-  padding: 9px 12px;
-  font-size: 13.8px;
-  line-height: 1.6;
-}
-.reco-label {
-  font-weight: 800;
-  color: #6c5ce7;
-  margin-right: 5px;
-}
-.reco-text {
-  color: #1f1f33;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
   font-weight: 600;
-}
-.reco-vi {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 12.8px;
-}
-
-/* Popover tra từ */
-.word-pop {
-  position: fixed;
-  z-index: 30;
-  width: 210px;
-  background: #fff;
-  border: 1px solid rgba(108, 92, 231, 0.2);
-  border-radius: 14px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
-  padding: 11px 13px;
-}
-.wp-head {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-}
-.wp-head b {
-  font-size: 15px;
-  color: #1f1f33;
-}
-.wp-ipa {
-  font-size: 12px;
-  color: var(--muted);
-}
-.wp-vi {
-  margin-top: 4px;
-  font-size: 14px;
-  color: #00805a;
-  font-weight: 600;
-}
-.wp-actions {
-  margin-top: 9px;
-  display: flex;
-  gap: 7px;
-}
-.wp-actions button {
-  flex: 1;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(108, 92, 231, 0.25);
-  background: #fff;
-  color: #6c5ce7;
-  border-radius: 9px;
-  padding: 6px;
   cursor: pointer;
 }
-.wp-actions button:hover {
-  background: #f5f3ff;
+.chat-retry-btn:hover {
+  background: var(--danger-strong);
+  filter: brightness(0.9);
 }
 
 /* Toast */
@@ -1142,154 +343,5 @@ watch(
 .toast-leave-to {
   opacity: 0;
   transform: translate(-50%, 8px);
-}
-
-/* typing indicator */
-.typing {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.typing span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #b5b8c5;
-  animation: blink 1.2s infinite ease-in-out both;
-}
-.typing span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.typing span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-@keyframes blink {
-  0%, 80%, 100% {
-    opacity: 0.3;
-  }
-  40% {
-    opacity: 1;
-  }
-}
-
-.chat-error-box {
-  margin-top: 12px;
-  background: #fff3f3;
-  border: 1px solid #ffd5d5;
-  border-radius: 12px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.chat-error {
-  color: #c0392b;
-  font-size: 13.5px;
-}
-.chat-retry-btn {
-  flex-shrink: 0;
-  background: #c0392b;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.chat-retry-btn:hover {
-  background: #a53125;
-}
-
-.answer-timer {
-  margin-top: 12px;
-  font-size: 12.5px;
-  font-weight: 800;
-  color: #c0392b;
-  background: rgba(255, 90, 90, 0.08);
-  border: 1px solid rgba(255, 107, 107, 0.25);
-  border-radius: 999px;
-  padding: 6px 13px;
-  display: inline-flex;
-  align-self: flex-start;
-}
-.composer {
-  margin-top: 16px;
-  display: flex;
-  gap: 9px;
-  align-items: center;
-}
-.mic-btn {
-  flex: none;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 214, 143, 0.3);
-  background: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.mic-btn:hover {
-  background: #e6fbf2;
-}
-.mic-btn.live {
-  background: #ffe5e5;
-  border-color: #ff6b6b;
-  animation: pulse 1.1s infinite;
-}
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(255, 107, 107, 0);
-  }
-}
-.composer-input {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid rgba(108, 92, 231, 0.18);
-  border-radius: 14px;
-  padding: 13px 16px;
-  font-size: 14.5px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.composer-input:focus {
-  border-color: var(--green);
-}
-.send-btn {
-  flex: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14.5px;
-  font-weight: 800;
-  color: #fff;
-  padding: 13px 20px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #00d68f, #00a86f);
-  box-shadow: 0 10px 22px rgba(0, 214, 143, 0.28);
-  transition: transform 0.15s;
-}
-.send-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-.send-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-@media (max-width: 560px) {
-  .bubble {
-    max-width: 86%;
-  }
-  .persona-grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
