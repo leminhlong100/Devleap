@@ -1,0 +1,6114 @@
+[
+  {
+    "videoId": "I_tRSrPru94",
+    "title": "How to introduce yourself: Easy English Conversations 💬 Episode 1",
+    "level": "A2",
+    "topic": "Giao tiếp cơ bản",
+    "lang": "en",
+    "week": 4,
+    "sentenceCount": 58,
+    "cleanup": "ai",
+    "sentences": {
+      "ai": [
+        {
+          "id": 1,
+          "text": "Easy English conversations.",
+          "start": 2.8,
+          "end": 4.8
+        },
+        {
+          "id": 2,
+          "text": "Hello, what's your name?",
+          "start": 6.8,
+          "end": 8.43
+        },
+        {
+          "id": 3,
+          "text": "Hi, I'm Tim.",
+          "start": 9.47,
+          "end": 10.72
+        },
+        {
+          "id": 4,
+          "text": "What's your name?",
+          "start": 12.67,
+          "end": 14.17
+        },
+        {
+          "id": 5,
+          "text": "Hello, I'm Sian.",
+          "start": 14.17,
+          "end": 15.67
+        },
+        {
+          "id": 6,
+          "text": "What's your name?",
+          "start": 15.67,
+          "end": 17.17
+        },
+        {
+          "id": 7,
+          "text": "My name's Tim.",
+          "start": 17.17,
+          "end": 18.67
+        },
+        {
+          "id": 8,
+          "text": "It's nice to meet you.",
+          "start": 18.67,
+          "end": 20.93
+        },
+        {
+          "id": 9,
+          "text": "Lovely to meet you too.",
+          "start": 20.93,
+          "end": 23.19
+        },
+        {
+          "id": 10,
+          "text": "Hello, how's it going?",
+          "start": 23.19,
+          "end": 25
+        },
+        {
+          "id": 11,
+          "text": "Hi.",
+          "start": 25,
+          "end": 25.45
+        },
+        {
+          "id": 12,
+          "text": "Hey.",
+          "start": 25.45,
+          "end": 25.98
+        },
+        {
+          "id": 13,
+          "text": "What are your names?",
+          "start": 25.98,
+          "end": 28.12
+        },
+        {
+          "id": 14,
+          "text": "I'm Tim.",
+          "start": 28.12,
+          "end": 29.18
+        },
+        {
+          "id": 15,
+          "text": "And I'm Sian.",
+          "start": 29.18,
+          "end": 30.78
+        },
+        {
+          "id": 16,
+          "text": "What's your name?",
+          "start": 30.78,
+          "end": 32.38
+        },
+        {
+          "id": 17,
+          "text": "My name's Georgie.",
+          "start": 32.38,
+          "end": 33.36
+        },
+        {
+          "id": 18,
+          "text": "Nice to meet you.",
+          "start": 33.36,
+          "end": 34.67
+        },
+        {
+          "id": 19,
+          "text": "Yeah, great to meet you too.",
+          "start": 34.67,
+          "end": 36.64
+        },
+        {
+          "id": 20,
+          "text": "Hello!",
+          "start": 38.31,
+          "end": 38.9
+        },
+        {
+          "id": 21,
+          "text": "Hiya.",
+          "start": 38.9,
+          "end": 39.49
+        },
+        {
+          "id": 22,
+          "text": "Hey.",
+          "start": 39.49,
+          "end": 40.08
+        },
+        {
+          "id": 23,
+          "text": "Hi.",
+          "start": 40.08,
+          "end": 40.68
+        },
+        {
+          "id": 24,
+          "text": "What's your name?",
+          "start": 40.68,
+          "end": 42.45
+        },
+        {
+          "id": 25,
+          "text": "I'm Buli.",
+          "start": 43.39,
+          "end": 44.31
+        },
+        {
+          "id": 26,
+          "text": "What's your name?",
+          "start": 44.31,
+          "end": 45.7
+        },
+        {
+          "id": 27,
+          "text": "I'm Georgie.",
+          "start": 45.7,
+          "end": 46.62
+        },
+        {
+          "id": 28,
+          "text": "Nice to meet you, Georgie!",
+          "start": 47.5,
+          "end": 49.18
+        },
+        {
+          "id": 29,
+          "text": "Where are they from?",
+          "start": 53.55,
+          "end": 55.43
+        },
+        {
+          "id": 30,
+          "text": "I'm from...",
+          "start": 55.43,
+          "end": 56.37
+        },
+        {
+          "id": 31,
+          "text": "And where do they live?",
+          "start": 56.37,
+          "end": 58.73
+        },
+        {
+          "id": 32,
+          "text": "I live...",
+          "start": 58.73,
+          "end": 59.67
+        },
+        {
+          "id": 33,
+          "text": "Find out in the next video!",
+          "start": 59.88,
+          "end": 61.65
+        },
+        {
+          "id": 34,
+          "text": "What's his name?",
+          "start": 65.63,
+          "end": 66.89
+        },
+        {
+          "id": 35,
+          "text": "His name's Tim.",
+          "start": 66.89,
+          "end": 68.16
+        },
+        {
+          "id": 36,
+          "text": "Lovely to meet you, Tim.",
+          "start": 68.16,
+          "end": 70.26
+        },
+        {
+          "id": 37,
+          "text": "Now, what's her name?",
+          "start": 70.99,
+          "end": 72.89
+        },
+        {
+          "id": 38,
+          "text": "Her name's Sian.",
+          "start": 72.89,
+          "end": 74.32
+        },
+        {
+          "id": 39,
+          "text": "Oh, she's Sian.",
+          "start": 75.16,
+          "end": 76.49
+        },
+        {
+          "id": 40,
+          "text": "Hello, Sian.",
+          "start": 76.49,
+          "end": 77.38
+        },
+        {
+          "id": 41,
+          "text": "Hello.",
+          "start": 77.38,
+          "end": 77.83
+        },
+        {
+          "id": 42,
+          "text": "Nice to meet you.",
+          "start": 77.83,
+          "end": 79.61
+        },
+        {
+          "id": 43,
+          "text": "Great to meet you too.",
+          "start": 79.61,
+          "end": 81.83
+        },
+        {
+          "id": 44,
+          "text": "So, I'm Buli, her name's Sian, her name's Georgie, And his name's Tim.",
+          "start": 81.83,
+          "end": 91.38
+        },
+        {
+          "id": 45,
+          "text": "That's right.",
+          "start": 91.38,
+          "end": 92.47
+        },
+        {
+          "id": 46,
+          "text": "Oh, hello!",
+          "start": 92.47,
+          "end": 93.56
+        },
+        {
+          "id": 47,
+          "text": "What's your name?",
+          "start": 93.56,
+          "end": 95.19
+        },
+        {
+          "id": 48,
+          "text": "I'm Sian.",
+          "start": 99.61,
+          "end": 100.41
+        },
+        {
+          "id": 49,
+          "text": "Nice to meet you.",
+          "start": 100.41,
+          "end": 102.01
+        },
+        {
+          "id": 50,
+          "text": "Her name's Georgie.",
+          "start": 107.69,
+          "end": 109.69
+        },
+        {
+          "id": 51,
+          "text": "His name's Tim.",
+          "start": 112.52,
+          "end": 114.77
+        },
+        {
+          "id": 52,
+          "text": "But what's his name?",
+          "start": 115.87,
+          "end": 117.72
+        },
+        {
+          "id": 53,
+          "text": "That's right.",
+          "start": 123.74,
+          "end": 125.07
+        },
+        {
+          "id": 54,
+          "text": "Bye, Buli!",
+          "start": 127.1,
+          "end": 129.09
+        },
+        {
+          "id": 55,
+          "text": "Goodbye!",
+          "start": 129.09,
+          "end": 130.08
+        },
+        {
+          "id": 56,
+          "text": "Bye!",
+          "start": 130.08,
+          "end": 131.08
+        },
+        {
+          "id": 57,
+          "text": "Bye!",
+          "start": 131.08,
+          "end": 132.07
+        },
+        {
+          "id": 58,
+          "text": "Oh, bye!",
+          "start": 134,
+          "end": 136.46
+        }
+      ],
+      "original": [
+        {
+          "id": 1,
+          "text": "Easy English Conversations.",
+          "start": 2.8,
+          "end": 4.8
+        },
+        {
+          "id": 2,
+          "text": "Hello, what's your name?",
+          "start": 6.8,
+          "end": 8.43
+        },
+        {
+          "id": 3,
+          "text": "Hi, I'm Tim.",
+          "start": 9.47,
+          "end": 10.72
+        },
+        {
+          "id": 4,
+          "text": "What's your name? Hello, I'm Sian. What's your name? My name's Tim.",
+          "start": 12.67,
+          "end": 18.67
+        },
+        {
+          "id": 5,
+          "text": "It's nice to meet you. Lovely to meet you too. Hello, how's it going? Hi.",
+          "start": 18.67,
+          "end": 25.45
+        },
+        {
+          "id": 6,
+          "text": "Hey. What are your names? I'm Tim. And I'm Sian. What's your name?",
+          "start": 25.45,
+          "end": 32.38
+        },
+        {
+          "id": 7,
+          "text": "My name's Georgie. Nice to meet you. Yeah, great to meet you too.",
+          "start": 32.38,
+          "end": 36.64
+        },
+        {
+          "id": 8,
+          "text": "Hello! Hiya. Hey. Hi. What's your name?",
+          "start": 38.31,
+          "end": 42.45
+        },
+        {
+          "id": 9,
+          "text": "I'm Buli. What's your name? I'm Georgie.",
+          "start": 43.39,
+          "end": 46.62
+        },
+        {
+          "id": 10,
+          "text": "Nice to meet you, Georgie!",
+          "start": 47.5,
+          "end": 49.18
+        },
+        {
+          "id": 11,
+          "text": "Where are they from? I'm from... And where do they live? I live...",
+          "start": 53.55,
+          "end": 59.67
+        },
+        {
+          "id": 12,
+          "text": "Find out in the next video!",
+          "start": 59.88,
+          "end": 61.65
+        },
+        {
+          "id": 13,
+          "text": "What's his name? His name's Tim. Lovely to meet you, Tim.",
+          "start": 65.63,
+          "end": 70.26
+        },
+        {
+          "id": 14,
+          "text": "Now, what's her name? Her name's Sian.",
+          "start": 70.99,
+          "end": 74.32
+        },
+        {
+          "id": 15,
+          "text": "Oh, she's Sian. Hello, Sian. Hello. Nice to meet you. Great to meet you too.",
+          "start": 75.16,
+          "end": 81.83
+        },
+        {
+          "id": 16,
+          "text": "So, I'm Buli, her name's Sian, her name's Georgie,",
+          "start": 81.83,
+          "end": 88.87
+        },
+        {
+          "id": 17,
+          "text": "And his name's Tim. That's right. Oh, hello! What's your name?",
+          "start": 89.2,
+          "end": 95.19
+        },
+        {
+          "id": 18,
+          "text": "I'm Sian. Nice to meet you.",
+          "start": 99.61,
+          "end": 102.01
+        },
+        {
+          "id": 19,
+          "text": "Her name's Georgie.",
+          "start": 107.69,
+          "end": 109.69
+        },
+        {
+          "id": 20,
+          "text": "His name's Tim.",
+          "start": 112.52,
+          "end": 114.77
+        },
+        {
+          "id": 21,
+          "text": "But what's his name?",
+          "start": 115.87,
+          "end": 117.72
+        },
+        {
+          "id": 22,
+          "text": "That's right.",
+          "start": 123.74,
+          "end": 125.07
+        },
+        {
+          "id": 23,
+          "text": "Bye, Buli! Goodbye! Bye! Bye!",
+          "start": 127.1,
+          "end": 132.07
+        },
+        {
+          "id": 24,
+          "text": "Oh, bye!",
+          "start": 134,
+          "end": 136.46
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "aiUGN3TDvw4",
+    "title": "How to talk about activities: Easy English Conversations 💬 Episode 6",
+    "level": "A2",
+    "topic": "Giao tiếp cơ bản",
+    "lang": "en",
+    "week": 4,
+    "sentenceCount": 53,
+    "cleanup": "ai",
+    "sentences": {
+      "ai": [
+        {
+          "id": 1,
+          "text": "Easy English conversations.",
+          "start": 3.44,
+          "end": 5.88
+        },
+        {
+          "id": 2,
+          "text": "What are you doing?",
+          "start": 7.36,
+          "end": 8.92
+        },
+        {
+          "id": 3,
+          "text": "Hello, Buli!",
+          "start": 12.08,
+          "end": 13.38
+        },
+        {
+          "id": 4,
+          "text": "Hi, Tim!",
+          "start": 13.38,
+          "end": 14.68
+        },
+        {
+          "id": 5,
+          "text": "What are you doing?",
+          "start": 15.84,
+          "end": 18.54
+        },
+        {
+          "id": 6,
+          "text": "I'm exercising.",
+          "start": 18.54,
+          "end": 19.9
+        },
+        {
+          "id": 7,
+          "text": "Hi, Sian!",
+          "start": 19.9,
+          "end": 21.25
+        },
+        {
+          "id": 8,
+          "text": "Hi, Buli.",
+          "start": 21.25,
+          "end": 22.6
+        },
+        {
+          "id": 9,
+          "text": "What are you doing?",
+          "start": 22.72,
+          "end": 25.37
+        },
+        {
+          "id": 10,
+          "text": "I'm eating breakfast.",
+          "start": 25.37,
+          "end": 27.35
+        },
+        {
+          "id": 11,
+          "text": "Hi, Georgie!",
+          "start": 27.35,
+          "end": 28.68
+        },
+        {
+          "id": 12,
+          "text": "Hi, Sian.",
+          "start": 28.68,
+          "end": 30
+        },
+        {
+          "id": 13,
+          "text": "What are you doing?",
+          "start": 30.12,
+          "end": 31.55
+        },
+        {
+          "id": 14,
+          "text": "I'm going to work.",
+          "start": 31.55,
+          "end": 32.98
+        },
+        {
+          "id": 15,
+          "text": "What are you doing, Tim?",
+          "start": 32.98,
+          "end": 34.76
+        },
+        {
+          "id": 16,
+          "text": "I'm cooking.",
+          "start": 35.96,
+          "end": 37.36
+        },
+        {
+          "id": 17,
+          "text": "What are you doing now, Buli?",
+          "start": 39.96,
+          "end": 42.28
+        },
+        {
+          "id": 18,
+          "text": "I'm reading a book.",
+          "start": 42.28,
+          "end": 43.83
+        },
+        {
+          "id": 19,
+          "text": "What are you doing, Sian?",
+          "start": 43.83,
+          "end": 45.76
+        },
+        {
+          "id": 20,
+          "text": "I'm snowboarding.",
+          "start": 45.88,
+          "end": 47.28
+        },
+        {
+          "id": 21,
+          "text": "What are you doing, Georgie?",
+          "start": 48.32,
+          "end": 50.04
+        },
+        {
+          "id": 22,
+          "text": "I'm studying Spanish.",
+          "start": 50.76,
+          "end": 52.3
+        },
+        {
+          "id": 23,
+          "text": "What are you doing?",
+          "start": 52.3,
+          "end": 54.36
+        },
+        {
+          "id": 24,
+          "text": "I'm studying English.",
+          "start": 61.12,
+          "end": 63.08
+        },
+        {
+          "id": 25,
+          "text": "What are you doing now?",
+          "start": 64.76,
+          "end": 66.4
+        },
+        {
+          "id": 26,
+          "text": "I'm reading a book.",
+          "start": 72.24,
+          "end": 73.56
+        },
+        {
+          "id": 27,
+          "text": "Great!",
+          "start": 75.08,
+          "end": 76.24
+        },
+        {
+          "id": 28,
+          "text": "Learn what we like.",
+          "start": 80.2,
+          "end": 82.21
+        },
+        {
+          "id": 29,
+          "text": "I like...",
+          "start": 82.21,
+          "end": 83.22
+        },
+        {
+          "id": 30,
+          "text": "and don't like.",
+          "start": 83.22,
+          "end": 84.73
+        },
+        {
+          "id": 31,
+          "text": "I don't like...",
+          "start": 84.73,
+          "end": 86.24
+        },
+        {
+          "id": 32,
+          "text": "In the next video.",
+          "start": 86.36,
+          "end": 88
+        },
+        {
+          "id": 33,
+          "text": "Hmm...",
+          "start": 91.64,
+          "end": 92.26
+        },
+        {
+          "id": 34,
+          "text": "what is Tim doing?",
+          "start": 92.26,
+          "end": 94.72
+        },
+        {
+          "id": 35,
+          "text": "He's watching TV.",
+          "start": 95.72,
+          "end": 97.92
+        },
+        {
+          "id": 36,
+          "text": "What is Buli doing?",
+          "start": 97.92,
+          "end": 100.86
+        },
+        {
+          "id": 37,
+          "text": "He's playing video games.",
+          "start": 100.86,
+          "end": 103.8
+        },
+        {
+          "id": 38,
+          "text": "What is Georgie doing?",
+          "start": 103.92,
+          "end": 107.16
+        },
+        {
+          "id": 39,
+          "text": "She's sleeping.",
+          "start": 109.16,
+          "end": 110.7
+        },
+        {
+          "id": 40,
+          "text": "What's Sian doing?",
+          "start": 110.7,
+          "end": 113
+        },
+        {
+          "id": 41,
+          "text": "She's listening to music.",
+          "start": 116.04,
+          "end": 117.86
+        },
+        {
+          "id": 42,
+          "text": "What are you doing?",
+          "start": 117.86,
+          "end": 119.68
+        },
+        {
+          "id": 43,
+          "text": "I'm watching TV.",
+          "start": 125.96,
+          "end": 127.88
+        },
+        {
+          "id": 44,
+          "text": "What's Tim doing?",
+          "start": 129.52,
+          "end": 131.12
+        },
+        {
+          "id": 45,
+          "text": "He's cooking.",
+          "start": 135.4,
+          "end": 137
+        },
+        {
+          "id": 46,
+          "text": "Well done!",
+          "start": 137,
+          "end": 138.6
+        },
+        {
+          "id": 47,
+          "text": "What is Georgie doing?",
+          "start": 138.6,
+          "end": 141.8
+        },
+        {
+          "id": 48,
+          "text": "She's eating lunch.",
+          "start": 146.12,
+          "end": 148
+        },
+        {
+          "id": 49,
+          "text": "That's right!",
+          "start": 148,
+          "end": 149.26
+        },
+        {
+          "id": 50,
+          "text": "What is Tim doing now?",
+          "start": 149.26,
+          "end": 152.4
+        },
+        {
+          "id": 51,
+          "text": "Write a comment.",
+          "start": 155.52,
+          "end": 156.98
+        },
+        {
+          "id": 52,
+          "text": "And see you in the next video.",
+          "start": 156.98,
+          "end": 160.39
+        },
+        {
+          "id": 53,
+          "text": "Bye!",
+          "start": 160.39,
+          "end": 160.88
+        }
+      ],
+      "original": [
+        {
+          "id": 1,
+          "text": "Easy English Conversations.",
+          "start": 3.44,
+          "end": 5.88
+        },
+        {
+          "id": 2,
+          "text": "What are you doing?",
+          "start": 7.36,
+          "end": 8.92
+        },
+        {
+          "id": 3,
+          "text": "Hello, Buli! Hi, Tim!",
+          "start": 12.08,
+          "end": 14.68
+        },
+        {
+          "id": 4,
+          "text": "What are you doing? I'm exercising. Hi, Sian! Hi, Buli.",
+          "start": 15.84,
+          "end": 22.6
+        },
+        {
+          "id": 5,
+          "text": "What are you doing? I'm eating breakfast. Hi, Georgie! Hi, Sian.",
+          "start": 22.72,
+          "end": 30
+        },
+        {
+          "id": 6,
+          "text": "What are you doing? I'm going to work. What are you doing, Tim?",
+          "start": 30.12,
+          "end": 34.76
+        },
+        {
+          "id": 7,
+          "text": "I'm cooking.",
+          "start": 35.96,
+          "end": 37.36
+        },
+        {
+          "id": 8,
+          "text": "What are you doing now, Buli? I'm reading a book. What are you doing, Sian?",
+          "start": 39.96,
+          "end": 45.76
+        },
+        {
+          "id": 9,
+          "text": "I'm snowboarding.",
+          "start": 45.88,
+          "end": 47.28
+        },
+        {
+          "id": 10,
+          "text": "What are you doing, Georgie?",
+          "start": 48.32,
+          "end": 50.04
+        },
+        {
+          "id": 11,
+          "text": "I'm studying Spanish. What are you doing?",
+          "start": 50.76,
+          "end": 54.36
+        },
+        {
+          "id": 12,
+          "text": "I'm studying English.",
+          "start": 61.12,
+          "end": 63.08
+        },
+        {
+          "id": 13,
+          "text": "What are you doing now?",
+          "start": 64.76,
+          "end": 66.4
+        },
+        {
+          "id": 14,
+          "text": "I'm reading a book.",
+          "start": 72.24,
+          "end": 73.56
+        },
+        {
+          "id": 15,
+          "text": "Great!",
+          "start": 75.08,
+          "end": 76.24
+        },
+        {
+          "id": 16,
+          "text": "Learn what we like. I like... And don't like. I don't like...",
+          "start": 80.2,
+          "end": 86.24
+        },
+        {
+          "id": 17,
+          "text": "In the next video.",
+          "start": 86.36,
+          "end": 88
+        },
+        {
+          "id": 18,
+          "text": "Hmm... What is Tim doing?",
+          "start": 91.64,
+          "end": 94.72
+        },
+        {
+          "id": 19,
+          "text": "He's watching TV. What is Buli doing? He's playing video games.",
+          "start": 95.72,
+          "end": 103.8
+        },
+        {
+          "id": 20,
+          "text": "What is Georgie doing?",
+          "start": 103.92,
+          "end": 107.16
+        },
+        {
+          "id": 21,
+          "text": "She's sleeping. What's Sian doing?",
+          "start": 109.16,
+          "end": 113
+        },
+        {
+          "id": 22,
+          "text": "She's listening to music. What are you doing?",
+          "start": 116.04,
+          "end": 119.68
+        },
+        {
+          "id": 23,
+          "text": "I'm watching TV.",
+          "start": 125.96,
+          "end": 127.88
+        },
+        {
+          "id": 24,
+          "text": "What's Tim doing?",
+          "start": 129.52,
+          "end": 131.12
+        },
+        {
+          "id": 25,
+          "text": "He's cooking. Well done! What is Georgie doing?",
+          "start": 135.4,
+          "end": 141.8
+        },
+        {
+          "id": 26,
+          "text": "She's eating lunch. That's right! What is Tim doing now?",
+          "start": 146.12,
+          "end": 152.4
+        },
+        {
+          "id": 27,
+          "text": "Write a comment. And see you in the next video. Bye!",
+          "start": 155.52,
+          "end": 160.88
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "OsW5sV3GMDM",
+    "title": "Present Simple and Present Continuous: The Grammar Gameshow Episode 1",
+    "level": "A2-B1",
+    "topic": "Ngữ pháp",
+    "lang": "en",
+    "week": 4,
+    "sentenceCount": 54,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 2,
+          "text": "And, of course, let’s not forget Leslie, our all-knowing voice in the sky Hello, everyone!",
+          "start": 16.32,
+          "end": 22.54
+        },
+        {
+          "id": 3,
+          "text": "Tonight we’re going to ask three questions about… The present simple and present continuous tenses",
+          "start": 23.2,
+          "end": 30.2
+        },
+        {
+          "id": 4,
+          "text": "OK! Now, let’s meet our contestants! Hi, everyone. I’m Sarah!",
+          "start": 30.68,
+          "end": 36.86
+        },
+        {
+          "id": 5,
+          "text": "Contestant number 2? Hi, Will. I'm Jim! Let’s get going",
+          "start": 37.04,
+          "end": 41.08
+        },
+        {
+          "id": 6,
+          "text": "And don’t forget, you can play along at home too",
+          "start": 41.08,
+          "end": 44.48
+        },
+        {
+          "id": 7,
+          "text": "Our first round is a quick-fire round so get those fingers on those buzzers",
+          "start": 45.08,
+          "end": 51.12
+        },
+        {
+          "id": 8,
+          "text": "I’m going to show you a sentence and I want to know",
+          "start": 51.38,
+          "end": 54.62
+        },
+        {
+          "id": 9,
+          "text": "If it’s in the present simple tense or the present continuous tense",
+          "start": 54.62,
+          "end": 60.56
+        },
+        {
+          "id": 10,
+          "text": "One point for every correct answer Ready? Let's go! ‘I never work very hard’",
+          "start": 60.56,
+          "end": 67.48
+        },
+        {
+          "id": 11,
+          "text": "Present simple! Correct! ‘I’m sitting at home.’",
+          "start": 70.06,
+          "end": 74.36
+        },
+        {
+          "id": 12,
+          "text": "Present continuous! Correct!",
+          "start": 76.24,
+          "end": 78.88
+        },
+        {
+          "id": 13,
+          "text": "‘Are you having dinner?’",
+          "start": 80.32,
+          "end": 82.18
+        },
+        {
+          "id": 14,
+          "text": "Present continuous! Correct! ‘He doesn’t know.’",
+          "start": 83.96,
+          "end": 89
+        },
+        {
+          "id": 15,
+          "text": "Present simple! Correct! ‘Do you live here?’",
+          "start": 90.94,
+          "end": 95.36
+        },
+        {
+          "id": 16,
+          "text": "Present simple! Correct! ‘She isn’t coming home today.’",
+          "start": 97.1,
+          "end": 102.84
+        },
+        {
+          "id": 17,
+          "text": "Present continuous! Correct!",
+          "start": 105.04,
+          "end": 107.42
+        },
+        {
+          "id": 18,
+          "text": "Tell them Leslie! Well done! The present simple is used for habits, permanent situations and truth",
+          "start": 108.68,
+          "end": 115.42
+        },
+        {
+          "id": 19,
+          "text": "And is formed using an –s on the verb in the third person affirmative,",
+          "start": 115.74,
+          "end": 119.92
+        },
+        {
+          "id": 20,
+          "text": "And do or does in questions and negatives The present continuous talks about",
+          "start": 119.92,
+          "end": 125.98
+        },
+        {
+          "id": 21,
+          "text": "Actions happening now or around now and is formed with be + ing",
+          "start": 125.98,
+          "end": 131.24
+        },
+        {
+          "id": 22,
+          "text": "Good work. Let’s count out the points! That’s one for you and one for you,",
+          "start": 131.7,
+          "end": 137.6
+        },
+        {
+          "id": 23,
+          "text": "And two for you and one, two for you and three for you",
+          "start": 137.6,
+          "end": 142.44
+        },
+        {
+          "id": 24,
+          "text": "And one, two, three for you So... Sarah has three and Jim has six",
+          "start": 142.48,
+          "end": 148.44
+        },
+        {
+          "id": 25,
+          "text": "But…",
+          "start": 152.42,
+          "end": 153.22
+        },
+        {
+          "id": 26,
+          "text": "Let’s move on to our second round True or false? Both the present continuous and",
+          "start": 154.18,
+          "end": 161.76
+        },
+        {
+          "id": 27,
+          "text": "The present simple can be used to talk about the future",
+          "start": 161.76,
+          "end": 165.44
+        },
+        {
+          "id": 28,
+          "text": "False! Only the present continuous can be used for the future For example,",
+          "start": 168.36,
+          "end": 173.9
+        },
+        {
+          "id": 29,
+          "text": "'I’m playing tennis tomorrow.' Leslie? Sorry, not quite right!",
+          "start": 173.9,
+          "end": 179.92
+        },
+        {
+          "id": 30,
+          "text": "Jim, would you like to give it a try? She said false and was wrong, so…",
+          "start": 180.24,
+          "end": 185.9
+        },
+        {
+          "id": 31,
+          "text": "Errrrr…….True? Leslie? That’s right! The present continuous can be used for",
+          "start": 185.9,
+          "end": 192.28
+        },
+        {
+          "id": 32,
+          "text": "Future arrangements, such as ‘I'm having dinner tomorrow.’",
+          "start": 192.28,
+          "end": 195.68
+        },
+        {
+          "id": 33,
+          "text": "But the present simple can also be used for the future for timetabled events,",
+          "start": 195.98,
+          "end": 200.12
+        },
+        {
+          "id": 34,
+          "text": "Such as aeroplanes For example, ‘My flight leaves at 6.30 tomorrow.’",
+          "start": 200.28,
+          "end": 205.54
+        },
+        {
+          "id": 35,
+          "text": "Good job Jim! Have 30 points! 30 points!",
+          "start": 206.4,
+          "end": 210.62
+        },
+        {
+          "id": 36,
+          "text": "What?",
+          "start": 212.54,
+          "end": 213.04
+        },
+        {
+          "id": 37,
+          "text": "OK. It’s time for our final question. Fingers on the buzzers.",
+          "start": 214.12,
+          "end": 218.4
+        },
+        {
+          "id": 38,
+          "text": "When can the present simple be used with a present continuous meaning?",
+          "start": 218.98,
+          "end": 224.12
+        },
+        {
+          "id": 39,
+          "text": "Sorry, I got overexcited! I know, I know! When you use a state verb! Leslie?",
+          "start": 226.5,
+          "end": 233.1
+        },
+        {
+          "id": 40,
+          "text": "Well done, Sarah. State verbs - for example, need - cannot be used continuously",
+          "start": 233.32,
+          "end": 239.18
+        },
+        {
+          "id": 41,
+          "text": "You cannot say 'I am needing...', but only 'I need...'",
+          "start": 239.42,
+          "end": 242.98
+        },
+        {
+          "id": 42,
+          "text": "– even if we mean right now. Well done Sarah! Good answer.",
+          "start": 243.22,
+          "end": 248.62
+        },
+        {
+          "id": 43,
+          "text": "You can have one point! Oh come on…. how about two? Alright, two then,",
+          "start": 248.62,
+          "end": 255.08
+        },
+        {
+          "id": 44,
+          "text": "But no ice cream. Well, that brings us to the end of today’s Grammar Gameshow",
+          "start": 255.12,
+          "end": 260.96
+        },
+        {
+          "id": 45,
+          "text": "Let’s count out the points And the winner is…. Sarah with 31 points",
+          "start": 261.16,
+          "end": 267.42
+        },
+        {
+          "id": 46,
+          "text": "Well done! Here’s what you’ve won! I've won a holiday!",
+          "start": 267.64,
+          "end": 272.42
+        },
+        {
+          "id": 47,
+          "text": "No, no! You've won a picture of a holiday",
+          "start": 273.5,
+          "end": 276.9
+        },
+        {
+          "id": 48,
+          "text": "But I went there last year and it was lovely",
+          "start": 276.9,
+          "end": 282.02
+        },
+        {
+          "id": 49,
+          "text": "And how did you do at home? We’ll see you again next week,",
+          "start": 284.08,
+          "end": 287.7
+        },
+        {
+          "id": 50,
+          "text": "Where you can play for an even bigger prize And Jim?",
+          "start": 287.7,
+          "end": 291.22
+        },
+        {
+          "id": 51,
+          "text": "You tried hard, but lost. How do you feel? Well... not too bad to be honest…",
+          "start": 292.28,
+          "end": 298.04
+        },
+        {
+          "id": 52,
+          "text": "Release the dogs!",
+          "start": 299.5,
+          "end": 300.98
+        },
+        {
+          "id": 53,
+          "text": "It looks like we’ll need another contestant! Thanks for joining us Say goodbye, Leslie",
+          "start": 301.8,
+          "end": 308.14
+        },
+        {
+          "id": 54,
+          "text": "Goodbye Leslie",
+          "start": 308.28,
+          "end": 309.68
+        },
+        {
+          "id": 55,
+          "text": "See you next time",
+          "start": 312.2,
+          "end": 313.64
+        }
+      ],
+      "original": [
+        {
+          "id": 2,
+          "text": "And, of course, let’s not forget Leslie, our all-knowing voice in the sky Hello, everyone!",
+          "start": 16.32,
+          "end": 22.54
+        },
+        {
+          "id": 3,
+          "text": "Tonight we’re going to ask three questions about… The present simple and present continuous tenses",
+          "start": 23.2,
+          "end": 30.2
+        },
+        {
+          "id": 4,
+          "text": "OK! Now, let’s meet our contestants! Hi, everyone. I’m Sarah!",
+          "start": 30.68,
+          "end": 36.86
+        },
+        {
+          "id": 5,
+          "text": "Contestant number 2? Hi, Will. I'm Jim! Let’s get going",
+          "start": 37.04,
+          "end": 41.08
+        },
+        {
+          "id": 6,
+          "text": "And don’t forget, you can play along at home too",
+          "start": 41.08,
+          "end": 44.48
+        },
+        {
+          "id": 7,
+          "text": "Our first round is a quick-fire round so get those fingers on those buzzers",
+          "start": 45.08,
+          "end": 51.12
+        },
+        {
+          "id": 8,
+          "text": "I’m going to show you a sentence and I want to know",
+          "start": 51.38,
+          "end": 54.62
+        },
+        {
+          "id": 9,
+          "text": "If it’s in the present simple tense or the present continuous tense",
+          "start": 54.62,
+          "end": 60.56
+        },
+        {
+          "id": 10,
+          "text": "One point for every correct answer Ready? Let's go! ‘I never work very hard’",
+          "start": 60.56,
+          "end": 67.48
+        },
+        {
+          "id": 11,
+          "text": "Present simple! Correct! ‘I’m sitting at home.’",
+          "start": 70.06,
+          "end": 74.36
+        },
+        {
+          "id": 12,
+          "text": "Present continuous! Correct!",
+          "start": 76.24,
+          "end": 78.88
+        },
+        {
+          "id": 13,
+          "text": "‘Are you having dinner?’",
+          "start": 80.32,
+          "end": 82.18
+        },
+        {
+          "id": 14,
+          "text": "Present continuous! Correct! ‘He doesn’t know.’",
+          "start": 83.96,
+          "end": 89
+        },
+        {
+          "id": 15,
+          "text": "Present simple! Correct! ‘Do you live here?’",
+          "start": 90.94,
+          "end": 95.36
+        },
+        {
+          "id": 16,
+          "text": "Present simple! Correct! ‘She isn’t coming home today.’",
+          "start": 97.1,
+          "end": 102.84
+        },
+        {
+          "id": 17,
+          "text": "Present continuous! Correct!",
+          "start": 105.04,
+          "end": 107.42
+        },
+        {
+          "id": 18,
+          "text": "Tell them Leslie! Well done! The present simple is used for habits, permanent situations and truth",
+          "start": 108.68,
+          "end": 115.42
+        },
+        {
+          "id": 19,
+          "text": "And is formed using an –s on the verb in the third person affirmative,",
+          "start": 115.74,
+          "end": 119.92
+        },
+        {
+          "id": 20,
+          "text": "And do or does in questions and negatives The present continuous talks about",
+          "start": 119.92,
+          "end": 125.98
+        },
+        {
+          "id": 21,
+          "text": "Actions happening now or around now and is formed with be + ing",
+          "start": 125.98,
+          "end": 131.24
+        },
+        {
+          "id": 22,
+          "text": "Good work. Let’s count out the points! That’s one for you and one for you,",
+          "start": 131.7,
+          "end": 137.6
+        },
+        {
+          "id": 23,
+          "text": "And two for you and one, two for you and three for you",
+          "start": 137.6,
+          "end": 142.44
+        },
+        {
+          "id": 24,
+          "text": "And one, two, three for you So... Sarah has three and Jim has six",
+          "start": 142.48,
+          "end": 148.44
+        },
+        {
+          "id": 25,
+          "text": "But…",
+          "start": 152.42,
+          "end": 153.22
+        },
+        {
+          "id": 26,
+          "text": "Let’s move on to our second round True or false? Both the present continuous and",
+          "start": 154.18,
+          "end": 161.76
+        },
+        {
+          "id": 27,
+          "text": "The present simple can be used to talk about the future",
+          "start": 161.76,
+          "end": 165.44
+        },
+        {
+          "id": 28,
+          "text": "False! Only the present continuous can be used for the future For example,",
+          "start": 168.36,
+          "end": 173.9
+        },
+        {
+          "id": 29,
+          "text": "'I’m playing tennis tomorrow.' Leslie? Sorry, not quite right!",
+          "start": 173.9,
+          "end": 179.92
+        },
+        {
+          "id": 30,
+          "text": "Jim, would you like to give it a try? She said false and was wrong, so…",
+          "start": 180.24,
+          "end": 185.9
+        },
+        {
+          "id": 31,
+          "text": "Errrrr…….True? Leslie? That’s right! The present continuous can be used for",
+          "start": 185.9,
+          "end": 192.28
+        },
+        {
+          "id": 32,
+          "text": "Future arrangements, such as ‘I'm having dinner tomorrow.’",
+          "start": 192.28,
+          "end": 195.68
+        },
+        {
+          "id": 33,
+          "text": "But the present simple can also be used for the future for timetabled events,",
+          "start": 195.98,
+          "end": 200.12
+        },
+        {
+          "id": 34,
+          "text": "Such as aeroplanes For example, ‘My flight leaves at 6.30 tomorrow.’",
+          "start": 200.28,
+          "end": 205.54
+        },
+        {
+          "id": 35,
+          "text": "Good job Jim! Have 30 points! 30 points!",
+          "start": 206.4,
+          "end": 210.62
+        },
+        {
+          "id": 36,
+          "text": "What?",
+          "start": 212.54,
+          "end": 213.04
+        },
+        {
+          "id": 37,
+          "text": "OK. It’s time for our final question. Fingers on the buzzers.",
+          "start": 214.12,
+          "end": 218.4
+        },
+        {
+          "id": 38,
+          "text": "When can the present simple be used with a present continuous meaning?",
+          "start": 218.98,
+          "end": 224.12
+        },
+        {
+          "id": 39,
+          "text": "Sorry, I got overexcited! I know, I know! When you use a state verb! Leslie?",
+          "start": 226.5,
+          "end": 233.1
+        },
+        {
+          "id": 40,
+          "text": "Well done, Sarah. State verbs - for example, need - cannot be used continuously",
+          "start": 233.32,
+          "end": 239.18
+        },
+        {
+          "id": 41,
+          "text": "You cannot say 'I am needing...', but only 'I need...'",
+          "start": 239.42,
+          "end": 242.98
+        },
+        {
+          "id": 42,
+          "text": "– even if we mean right now. Well done Sarah! Good answer.",
+          "start": 243.22,
+          "end": 248.62
+        },
+        {
+          "id": 43,
+          "text": "You can have one point! Oh come on…. how about two? Alright, two then,",
+          "start": 248.62,
+          "end": 255.08
+        },
+        {
+          "id": 44,
+          "text": "But no ice cream. Well, that brings us to the end of today’s Grammar Gameshow",
+          "start": 255.12,
+          "end": 260.96
+        },
+        {
+          "id": 45,
+          "text": "Let’s count out the points And the winner is…. Sarah with 31 points",
+          "start": 261.16,
+          "end": 267.42
+        },
+        {
+          "id": 46,
+          "text": "Well done! Here’s what you’ve won! I've won a holiday!",
+          "start": 267.64,
+          "end": 272.42
+        },
+        {
+          "id": 47,
+          "text": "No, no! You've won a picture of a holiday",
+          "start": 273.5,
+          "end": 276.9
+        },
+        {
+          "id": 48,
+          "text": "But I went there last year and it was lovely",
+          "start": 276.9,
+          "end": 282.02
+        },
+        {
+          "id": 49,
+          "text": "And how did you do at home? We’ll see you again next week,",
+          "start": 284.08,
+          "end": 287.7
+        },
+        {
+          "id": 50,
+          "text": "Where you can play for an even bigger prize And Jim?",
+          "start": 287.7,
+          "end": 291.22
+        },
+        {
+          "id": 51,
+          "text": "You tried hard, but lost. How do you feel? Well... not too bad to be honest…",
+          "start": 292.28,
+          "end": 298.04
+        },
+        {
+          "id": 52,
+          "text": "Release the dogs!",
+          "start": 299.5,
+          "end": 300.98
+        },
+        {
+          "id": 53,
+          "text": "It looks like we’ll need another contestant! Thanks for joining us Say goodbye, Leslie",
+          "start": 301.8,
+          "end": 308.14
+        },
+        {
+          "id": 54,
+          "text": "Goodbye Leslie",
+          "start": 308.28,
+          "end": 309.68
+        },
+        {
+          "id": 55,
+          "text": "See you next time",
+          "start": 312.2,
+          "end": 313.64
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "9ifQ3xRz4hM",
+    "title": "Learning multiple languages ⏲️ 6 Minute English",
+    "level": "B1",
+    "topic": "Học tập",
+    "lang": "en",
+    "week": 5,
+    "sentenceCount": 61,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 4,
+          "text": "What it's like to learn multiple languages, and she's here to tell us more about it.",
+          "start": 20,
+          "end": 24.83
+        },
+        {
+          "id": 5,
+          "text": "Welcome to 6 Minute English. Thank you so much for having me.",
+          "start": 24.83,
+          "end": 28.03
+        },
+        {
+          "id": 6,
+          "text": "And it's great to have you here.",
+          "start": 28.03,
+          "end": 29.8
+        },
+        {
+          "id": 7,
+          "text": "Now in this programme we help you improve your English.",
+          "start": 29.8,
+          "end": 32.88
+        },
+        {
+          "id": 8,
+          "text": "And maybe English is the first language you have ever tried to learn.",
+          "start": 32.88,
+          "end": 37.28
+        },
+        {
+          "id": 9,
+          "text": "Or maybe you know a lot of languages.",
+          "start": 37.28,
+          "end": 39.97
+        },
+        {
+          "id": 10,
+          "text": "Well, someone who knows multiple languages is called a polyglot. Neil, are you a polyglot?",
+          "start": 39.97,
+          "end": 46.4
+        },
+        {
+          "id": 11,
+          "text": "I speak a little bit of a few languages, but I couldn't say that I'm a polyglot.",
+          "start": 46.4,
+          "end": 51.6
+        },
+        {
+          "id": 12,
+          "text": "How about you? I am a polyglot. Wow, I feel really impressed and a bit intimidated!",
+          "start": 51.6,
+          "end": 59.32
+        },
+        {
+          "id": 13,
+          "text": "And now, Hannah, we always start our programme off with a question. So, here it goes.",
+          "start": 59.32,
+          "end": 64.47
+        },
+        {
+          "id": 14,
+          "text": "Which country has the most official languages recognised by their government?",
+          "start": 64.47,
+          "end": 69.33
+        },
+        {
+          "id": 15,
+          "text": "So is it a) Zimbabwe, b) Switzerland, or c) Bolivia? I would guess Zimbabwe.",
+          "start": 69.33,
+          "end": 76.42
+        },
+        {
+          "id": 16,
+          "text": "Well, we'll find out the answer at the end of the programme.",
+          "start": 76.43,
+          "end": 79.43
+        },
+        {
+          "id": 17,
+          "text": "Now, Hannah, you've been finding out about some of the benefits of being a polyglot.",
+          "start": 79.43,
+          "end": 84.53
+        },
+        {
+          "id": 18,
+          "text": "Yes, Neil, there's been lots of research",
+          "start": 84.53,
+          "end": 87.18
+        },
+        {
+          "id": 19,
+          "text": "About how knowing more than one language can change your brain.",
+          "start": 87.18,
+          "end": 91.38
+        },
+        {
+          "id": 20,
+          "text": "And this might have some health benefits, too.",
+          "start": 91.38,
+          "end": 94.1
+        },
+        {
+          "id": 21,
+          "text": "At What in the World we spoke to Professor Frederique Liegeois",
+          "start": 94.1,
+          "end": 97.5
+        },
+        {
+          "id": 22,
+          "text": "Who's a cognitive neuroscientist at University College London.",
+          "start": 97.5,
+          "end": 102.47
+        },
+        {
+          "id": 23,
+          "text": "Babies, even before they speak, have to tune in",
+          "start": 102.47,
+          "end": 104.98
+        },
+        {
+          "id": 24,
+          "text": "To the languages around them to make sense out of what people say to them.",
+          "start": 104.98,
+          "end": 108.73
+        },
+        {
+          "id": 25,
+          "text": "And then when children start to speak several languages, they have to focus",
+          "start": 108.73,
+          "end": 113.18
+        },
+        {
+          "id": 26,
+          "text": "On one language and ignore another one where they're speaking.",
+          "start": 113.18,
+          "end": 116.1
+        },
+        {
+          "id": 27,
+          "text": "They also have to be able to switch from one language to the other,",
+          "start": 116.1,
+          "end": 119.38
+        },
+        {
+          "id": 28,
+          "text": "Depending on who they're speaking to. Later on in age",
+          "start": 119.38,
+          "end": 123.08
+        },
+        {
+          "id": 29,
+          "text": "When adults have dementia, they seem to show symptoms",
+          "start": 123.08,
+          "end": 126.4
+        },
+        {
+          "id": 30,
+          "text": "Later when they're bilinguals as opposed to monolinguals. We think that juggling several languages has helped",
+          "start": 126.4,
+          "end": 132.72
+        },
+        {
+          "id": 31,
+          "text": "Them really boost this brain efficiency, which is a great advantage. It's like a brain workout.",
+          "start": 132.72,
+          "end": 139.17
+        },
+        {
+          "id": 32,
+          "text": "Frederique explains that babies who grow up learning",
+          "start": 139.17,
+          "end": 141.83
+        },
+        {
+          "id": 33,
+          "text": "More than one language have to tune into the languages around them.",
+          "start": 141.83,
+          "end": 146.32
+        },
+        {
+          "id": 34,
+          "text": "They have to listen to each language. Over time, they become good at switching languages",
+          "start": 146.32,
+          "end": 151.43
+        },
+        {
+          "id": 35,
+          "text": "And ignoring the ones they don't need in a conversation.",
+          "start": 151.43,
+          "end": 154.92
+        },
+        {
+          "id": 36,
+          "text": "Scientists think that juggling several languages is good for you.",
+          "start": 154.92,
+          "end": 159.48
+        },
+        {
+          "id": 37,
+          "text": "If you juggle several things, that means you deal with all of them",
+          "start": 159.48,
+          "end": 162.83
+        },
+        {
+          "id": 38,
+          "text": "At the same time. Frederique describes being a polyglot as a brain workout.",
+          "start": 162.83,
+          "end": 168.68
+        },
+        {
+          "id": 39,
+          "text": "This means it's exercise for your brain that can make it stronger.",
+          "start": 168.68,
+          "end": 172.88
+        },
+        {
+          "id": 40,
+          "text": "Now, Hannah, I don't know about you. When I was younger",
+          "start": 172.88,
+          "end": 176.08
+        },
+        {
+          "id": 41,
+          "text": "And languages just seemed like another subject at school,",
+          "start": 176.08,
+          "end": 180.18
+        },
+        {
+          "id": 42,
+          "text": "I didn't really care so much. But when I worked abroad later in life,",
+          "start": 180.18,
+          "end": 184.53
+        },
+        {
+          "id": 43,
+          "text": "I was much more motivated and found it easier. How about you? Quite the opposite actually.",
+          "start": 184.53,
+          "end": 190.5
+        },
+        {
+          "id": 44,
+          "text": "I did find it easier to learn languages at school and university,",
+          "start": 190.5,
+          "end": 194.93
+        },
+        {
+          "id": 45,
+          "text": "But I didn't have to learn these languages out of necessity.",
+          "start": 194.93,
+          "end": 199.02
+        },
+        {
+          "id": 46,
+          "text": "But my colleague Victoria Uwonkunda, she's a presenter and a journalist",
+          "start": 199.02,
+          "end": 203.47
+        },
+        {
+          "id": 47,
+          "text": "On the BBC World Service, she did. She speaks five languages and she understands eight.",
+          "start": 203.47,
+          "end": 210.02
+        },
+        {
+          "id": 48,
+          "text": "And she learnt those languages because her family moved from Rwanda",
+          "start": 210.02,
+          "end": 214.3
+        },
+        {
+          "id": 49,
+          "text": "To Kenya and then to Norway when she was a teenager.",
+          "start": 214.3,
+          "end": 217.82
+        },
+        {
+          "id": 50,
+          "text": "Victoria says she was able to pick up Norwegian quite easily.",
+          "start": 217.82,
+          "end": 222.13
+        },
+        {
+          "id": 51,
+          "text": "If you pick up a skill, it means you learn it, usually by being",
+          "start": 222.13,
+          "end": 225.87
+        },
+        {
+          "id": 52,
+          "text": "In the environment where that thing happens rather than being taught.",
+          "start": 225.87,
+          "end": 230.1
+        },
+        {
+          "id": 53,
+          "text": "But Victoria's parents found it much harder to learn Norwegian.",
+          "start": 230.1,
+          "end": 234.53
+        },
+        {
+          "id": 54,
+          "text": "Let's hear what Vic said on the What in the World podcast.",
+          "start": 234.53,
+          "end": 238.33
+        },
+        {
+          "id": 55,
+          "text": "First of all, you're having them coming into a new culture completely",
+          "start": 238.33,
+          "end": 242.55
+        },
+        {
+          "id": 56,
+          "text": "From everything they've ever known. The language is new.",
+          "start": 242.55,
+          "end": 246.23
+        },
+        {
+          "id": 57,
+          "text": "These are people in their 50s, you know, but they soldiered on.",
+          "start": 246.23,
+          "end": 249.92
+        },
+        {
+          "id": 58,
+          "text": "Because if you want to work, if you want to live there, you have to learn.",
+          "start": 249.92,
+          "end": 253.38
+        },
+        {
+          "id": 59,
+          "text": "And they did. It wasn't easy.",
+          "start": 253.38,
+          "end": 255.32
+        },
+        {
+          "id": 60,
+          "text": "But I think also with us kids, we picked it up quite quickly.",
+          "start": 255.32,
+          "end": 258.83
+        },
+        {
+          "id": 61,
+          "text": "So if they were making a mistake, we were also helping them along the way.",
+          "start": 258.83,
+          "end": 262.35
+        },
+        {
+          "id": 62,
+          "text": "So it's kind of a way of paying back.",
+          "start": 262.35,
+          "end": 264.43
+        },
+        {
+          "id": 63,
+          "text": "You helped us get to this, you know, to keep our mother tongue and here",
+          "start": 264.43,
+          "end": 267.58
+        },
+        {
+          "id": 64,
+          "text": "We are going to help you.",
+          "start": 267.58,
+          "end": 269.07
+        }
+      ],
+      "original": [
+        {
+          "id": 4,
+          "text": "What it's like to learn multiple languages, and she's here to tell us more about it.",
+          "start": 20,
+          "end": 24.83
+        },
+        {
+          "id": 5,
+          "text": "Welcome to 6 Minute English. Thank you so much for having me.",
+          "start": 24.83,
+          "end": 28.03
+        },
+        {
+          "id": 6,
+          "text": "And it's great to have you here.",
+          "start": 28.03,
+          "end": 29.8
+        },
+        {
+          "id": 7,
+          "text": "Now in this programme we help you improve your English.",
+          "start": 29.8,
+          "end": 32.88
+        },
+        {
+          "id": 8,
+          "text": "And maybe English is the first language you have ever tried to learn.",
+          "start": 32.88,
+          "end": 37.28
+        },
+        {
+          "id": 9,
+          "text": "Or maybe you know a lot of languages.",
+          "start": 37.28,
+          "end": 39.97
+        },
+        {
+          "id": 10,
+          "text": "Well, someone who knows multiple languages is called a polyglot. Neil, are you a polyglot?",
+          "start": 39.97,
+          "end": 46.4
+        },
+        {
+          "id": 11,
+          "text": "I speak a little bit of a few languages, but I couldn't say that I'm a polyglot.",
+          "start": 46.4,
+          "end": 51.6
+        },
+        {
+          "id": 12,
+          "text": "How about you? I am a polyglot. Wow, I feel really impressed and a bit intimidated!",
+          "start": 51.6,
+          "end": 59.32
+        },
+        {
+          "id": 13,
+          "text": "And now, Hannah, we always start our programme off with a question. So, here it goes.",
+          "start": 59.32,
+          "end": 64.47
+        },
+        {
+          "id": 14,
+          "text": "Which country has the most official languages recognised by their government?",
+          "start": 64.47,
+          "end": 69.33
+        },
+        {
+          "id": 15,
+          "text": "So is it a) Zimbabwe, b) Switzerland, or c) Bolivia? I would guess Zimbabwe.",
+          "start": 69.33,
+          "end": 76.42
+        },
+        {
+          "id": 16,
+          "text": "Well, we'll find out the answer at the end of the programme.",
+          "start": 76.43,
+          "end": 79.43
+        },
+        {
+          "id": 17,
+          "text": "Now, Hannah, you've been finding out about some of the benefits of being a polyglot.",
+          "start": 79.43,
+          "end": 84.53
+        },
+        {
+          "id": 18,
+          "text": "Yes, Neil, there's been lots of research",
+          "start": 84.53,
+          "end": 87.18
+        },
+        {
+          "id": 19,
+          "text": "About how knowing more than one language can change your brain.",
+          "start": 87.18,
+          "end": 91.38
+        },
+        {
+          "id": 20,
+          "text": "And this might have some health benefits, too.",
+          "start": 91.38,
+          "end": 94.1
+        },
+        {
+          "id": 21,
+          "text": "At What in the World we spoke to Professor Frederique Liegeois",
+          "start": 94.1,
+          "end": 97.5
+        },
+        {
+          "id": 22,
+          "text": "Who's a cognitive neuroscientist at University College London.",
+          "start": 97.5,
+          "end": 102.47
+        },
+        {
+          "id": 23,
+          "text": "Babies, even before they speak, have to tune in",
+          "start": 102.47,
+          "end": 104.98
+        },
+        {
+          "id": 24,
+          "text": "To the languages around them to make sense out of what people say to them.",
+          "start": 104.98,
+          "end": 108.73
+        },
+        {
+          "id": 25,
+          "text": "And then when children start to speak several languages, they have to focus",
+          "start": 108.73,
+          "end": 113.18
+        },
+        {
+          "id": 26,
+          "text": "On one language and ignore another one where they're speaking.",
+          "start": 113.18,
+          "end": 116.1
+        },
+        {
+          "id": 27,
+          "text": "They also have to be able to switch from one language to the other,",
+          "start": 116.1,
+          "end": 119.38
+        },
+        {
+          "id": 28,
+          "text": "Depending on who they're speaking to. Later on in age",
+          "start": 119.38,
+          "end": 123.08
+        },
+        {
+          "id": 29,
+          "text": "When adults have dementia, they seem to show symptoms",
+          "start": 123.08,
+          "end": 126.4
+        },
+        {
+          "id": 30,
+          "text": "Later when they're bilinguals as opposed to monolinguals. We think that juggling several languages has helped",
+          "start": 126.4,
+          "end": 132.72
+        },
+        {
+          "id": 31,
+          "text": "Them really boost this brain efficiency, which is a great advantage. It's like a brain workout.",
+          "start": 132.72,
+          "end": 139.17
+        },
+        {
+          "id": 32,
+          "text": "Frederique explains that babies who grow up learning",
+          "start": 139.17,
+          "end": 141.83
+        },
+        {
+          "id": 33,
+          "text": "More than one language have to tune into the languages around them.",
+          "start": 141.83,
+          "end": 146.32
+        },
+        {
+          "id": 34,
+          "text": "They have to listen to each language. Over time, they become good at switching languages",
+          "start": 146.32,
+          "end": 151.43
+        },
+        {
+          "id": 35,
+          "text": "And ignoring the ones they don't need in a conversation.",
+          "start": 151.43,
+          "end": 154.92
+        },
+        {
+          "id": 36,
+          "text": "Scientists think that juggling several languages is good for you.",
+          "start": 154.92,
+          "end": 159.48
+        },
+        {
+          "id": 37,
+          "text": "If you juggle several things, that means you deal with all of them",
+          "start": 159.48,
+          "end": 162.83
+        },
+        {
+          "id": 38,
+          "text": "At the same time. Frederique describes being a polyglot as a brain workout.",
+          "start": 162.83,
+          "end": 168.68
+        },
+        {
+          "id": 39,
+          "text": "This means it's exercise for your brain that can make it stronger.",
+          "start": 168.68,
+          "end": 172.88
+        },
+        {
+          "id": 40,
+          "text": "Now, Hannah, I don't know about you. When I was younger",
+          "start": 172.88,
+          "end": 176.08
+        },
+        {
+          "id": 41,
+          "text": "And languages just seemed like another subject at school,",
+          "start": 176.08,
+          "end": 180.18
+        },
+        {
+          "id": 42,
+          "text": "I didn't really care so much. But when I worked abroad later in life,",
+          "start": 180.18,
+          "end": 184.53
+        },
+        {
+          "id": 43,
+          "text": "I was much more motivated and found it easier. How about you? Quite the opposite actually.",
+          "start": 184.53,
+          "end": 190.5
+        },
+        {
+          "id": 44,
+          "text": "I did find it easier to learn languages at school and university,",
+          "start": 190.5,
+          "end": 194.93
+        },
+        {
+          "id": 45,
+          "text": "But I didn't have to learn these languages out of necessity.",
+          "start": 194.93,
+          "end": 199.02
+        },
+        {
+          "id": 46,
+          "text": "But my colleague Victoria Uwonkunda, she's a presenter and a journalist",
+          "start": 199.02,
+          "end": 203.47
+        },
+        {
+          "id": 47,
+          "text": "On the BBC World Service, she did. She speaks five languages and she understands eight.",
+          "start": 203.47,
+          "end": 210.02
+        },
+        {
+          "id": 48,
+          "text": "And she learnt those languages because her family moved from Rwanda",
+          "start": 210.02,
+          "end": 214.3
+        },
+        {
+          "id": 49,
+          "text": "To Kenya and then to Norway when she was a teenager.",
+          "start": 214.3,
+          "end": 217.82
+        },
+        {
+          "id": 50,
+          "text": "Victoria says she was able to pick up Norwegian quite easily.",
+          "start": 217.82,
+          "end": 222.13
+        },
+        {
+          "id": 51,
+          "text": "If you pick up a skill, it means you learn it, usually by being",
+          "start": 222.13,
+          "end": 225.87
+        },
+        {
+          "id": 52,
+          "text": "In the environment where that thing happens rather than being taught.",
+          "start": 225.87,
+          "end": 230.1
+        },
+        {
+          "id": 53,
+          "text": "But Victoria's parents found it much harder to learn Norwegian.",
+          "start": 230.1,
+          "end": 234.53
+        },
+        {
+          "id": 54,
+          "text": "Let's hear what Vic said on the What in the World podcast.",
+          "start": 234.53,
+          "end": 238.33
+        },
+        {
+          "id": 55,
+          "text": "First of all, you're having them coming into a new culture completely",
+          "start": 238.33,
+          "end": 242.55
+        },
+        {
+          "id": 56,
+          "text": "From everything they've ever known. The language is new.",
+          "start": 242.55,
+          "end": 246.23
+        },
+        {
+          "id": 57,
+          "text": "These are people in their 50s, you know, but they soldiered on.",
+          "start": 246.23,
+          "end": 249.92
+        },
+        {
+          "id": 58,
+          "text": "Because if you want to work, if you want to live there, you have to learn.",
+          "start": 249.92,
+          "end": 253.38
+        },
+        {
+          "id": 59,
+          "text": "And they did. It wasn't easy.",
+          "start": 253.38,
+          "end": 255.32
+        },
+        {
+          "id": 60,
+          "text": "But I think also with us kids, we picked it up quite quickly.",
+          "start": 255.32,
+          "end": 258.83
+        },
+        {
+          "id": 61,
+          "text": "So if they were making a mistake, we were also helping them along the way.",
+          "start": 258.83,
+          "end": 262.35
+        },
+        {
+          "id": 62,
+          "text": "So it's kind of a way of paying back.",
+          "start": 262.35,
+          "end": 264.43
+        },
+        {
+          "id": 63,
+          "text": "You helped us get to this, you know, to keep our mother tongue and here",
+          "start": 264.43,
+          "end": 267.58
+        },
+        {
+          "id": 64,
+          "text": "We are going to help you.",
+          "start": 267.58,
+          "end": 269.07
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "h_pvijqmolQ",
+    "title": "Why read books, not screens? ⏲️ 6 Minute English",
+    "level": "B1",
+    "topic": "Đọc sách",
+    "lang": "en",
+    "week": 5,
+    "sentenceCount": 53,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 2,
+          "text": "For me, there's nothing like reading a book –",
+          "start": 13.04,
+          "end": 15.92
+        },
+        {
+          "id": 3,
+          "text": "I love turning the pages and the smell of the paper.",
+          "start": 15.92,
+          "end": 19.88
+        },
+        {
+          "id": 4,
+          "text": "But nowadays, the fact is that much of the time we read",
+          "start": 19.88,
+          "end": 23.4
+        },
+        {
+          "id": 5,
+          "text": "From electronic screens, not paper. Yes, like Georgie, I love books.",
+          "start": 23.4,
+          "end": 29.16
+        },
+        {
+          "id": 6,
+          "text": "I also find that too much screen time hurts my eyes.",
+          "start": 29.16,
+          "end": 32.56
+        },
+        {
+          "id": 7,
+          "text": "But the availability of digital information means that I end up reading from screens most days.",
+          "start": 32.56,
+          "end": 39.28
+        },
+        {
+          "id": 8,
+          "text": "So, apart from sore eyes, is this a problem?",
+          "start": 39.28,
+          "end": 42.92
+        },
+        {
+          "id": 9,
+          "text": "Is reading from screens harmless, or could it be damaging us in some way,",
+          "start": 42.92,
+          "end": 47.48
+        },
+        {
+          "id": 10,
+          "text": "Such as reducing our attention span – the length of time",
+          "start": 47.48,
+          "end": 51.08
+        },
+        {
+          "id": 11,
+          "text": "That someone can keep concentrated on what they are doing?",
+          "start": 51.08,
+          "end": 54.44
+        },
+        {
+          "id": 12,
+          "text": "That's what we'll be discussing in this program,",
+          "start": 54.44,
+          "end": 57.04
+        },
+        {
+          "id": 13,
+          "text": "And of course, we'll be learning some useful new vocabulary too.",
+          "start": 57.04,
+          "end": 60.68
+        },
+        {
+          "id": 14,
+          "text": "Great. But first, it's time for my question. Whether you prefer paper",
+          "start": 60.68,
+          "end": 66.28
+        },
+        {
+          "id": 15,
+          "text": "Or screens, as humans we're now reading more words than ever before.",
+          "start": 66.28,
+          "end": 71.8
+        },
+        {
+          "id": 16,
+          "text": "So how many words does the average person read a day? Is it a) 50,000 words?",
+          "start": 71.8,
+          "end": 81.6
+        },
+        {
+          "id": 17,
+          "text": "B) 100,000 words? or, c) 200,000 words?",
+          "start": 81.6,
+          "end": 88.32
+        },
+        {
+          "id": 18,
+          "text": "I'll guess it's 50,000 words a day.",
+          "start": 88.32,
+          "end": 91.32
+        },
+        {
+          "id": 19,
+          "text": "OK, Georgie, we'll find out the correct answer later in the programme.",
+          "start": 91.32,
+          "end": 95.96
+        },
+        {
+          "id": 20,
+          "text": "Of course, there's little doubt that any kind of reading is good for you.",
+          "start": 95.96,
+          "end": 100.48
+        },
+        {
+          "id": 21,
+          "text": "Here's Cressida Cowell, author of the 'How to Train",
+          "start": 100.48,
+          "end": 103.8
+        },
+        {
+          "id": 22,
+          "text": "Your Dragon' children's books, speaking with BBC Ideas.",
+          "start": 103.8,
+          "end": 108.04
+        },
+        {
+          "id": 23,
+          "text": "Reading brings three magical powers – creativity, intelligence and empathy.",
+          "start": 108.04,
+          "end": 115.68
+        },
+        {
+          "id": 24,
+          "text": "Reading for the joy of it is one of the two key factors in",
+          "start": 115.68,
+          "end": 118.2
+        },
+        {
+          "id": 25,
+          "text": "A kid's later economic success.",
+          "start": 118.2,
+          "end": 120.16
+        },
+        {
+          "id": 26,
+          "text": "You're more likely to not be in prison, to vote, to own your own home.",
+          "start": 120.16,
+          "end": 125.16
+        },
+        {
+          "id": 27,
+          "text": "All of these advantages and benefits happen as a result of literacy.",
+          "start": 125.16,
+          "end": 129.6
+        },
+        {
+          "id": 28,
+          "text": "Cressida talks about the importance of reading for the joy of it.",
+          "start": 129.6,
+          "end": 133.48
+        },
+        {
+          "id": 29,
+          "text": "When you do an activity for the joy of it,",
+          "start": 133.48,
+          "end": 136.12
+        },
+        {
+          "id": 30,
+          "text": "You do it simply for the pleasure of doing it,",
+          "start": 136.12,
+          "end": 138.96
+        },
+        {
+          "id": 31,
+          "text": "Rather than as a way to gain something else.",
+          "start": 138.96,
+          "end": 142.24
+        },
+        {
+          "id": 32,
+          "text": "Cressida lists the many benefits of reading for children, including economic success in later life.",
+          "start": 142.24,
+          "end": 148.48
+        },
+        {
+          "id": 33,
+          "text": "But many of these benefits depend on a state known as 'deep reading',",
+          "start": 148.48,
+          "end": 154.28
+        },
+        {
+          "id": 34,
+          "text": "Analysing a text to understand its deeper meaning. And in test after test, researchers have shown",
+          "start": 154.28,
+          "end": 161.12
+        },
+        {
+          "id": 35,
+          "text": "That 'deep reading' skills develop better when kids read from books.",
+          "start": 161.12,
+          "end": 166.44
+        },
+        {
+          "id": 36,
+          "text": "Professor Maryanne Wolf is a teacher, and advocate for children's literacy around the world.",
+          "start": 166.44,
+          "end": 171.92
+        },
+        {
+          "id": 37,
+          "text": "Here, she explains more about 'deep reading' to BBC Ideas.",
+          "start": 171.92,
+          "end": 176.2
+        },
+        {
+          "id": 38,
+          "text": "When we read at a surface level, we're just getting the information.",
+          "start": 176.2,
+          "end": 180.52
+        },
+        {
+          "id": 39,
+          "text": "When we read deeply, we use much more of our cerebral cortex.",
+          "start": 180.52,
+          "end": 186.48
+        },
+        {
+          "id": 40,
+          "text": "Deep reading means that we make analogies,",
+          "start": 186.48,
+          "end": 189.52
+        },
+        {
+          "id": 41,
+          "text": "We make inferences, which allows us to be truly critical, analytic, empathic human beings.",
+          "start": 189.52,
+          "end": 199
+        },
+        {
+          "id": 42,
+          "text": "The reality is, it's not what, or how much, we read, but how we read,",
+          "start": 199,
+          "end": 203.92
+        },
+        {
+          "id": 43,
+          "text": "That's really important. The very volume is having negative effects",
+          "start": 203.92,
+          "end": 209.48
+        },
+        {
+          "id": 44,
+          "text": "Because to absorb that much, there's a propensity towards skimming.",
+          "start": 209.48,
+          "end": 214.28
+        },
+        {
+          "id": 45,
+          "text": "Professor Wolf's research shows that reading from screens encourages reading",
+          "start": 214.28,
+          "end": 219.04
+        },
+        {
+          "id": 46,
+          "text": "At the surface level, quickly and superficially looking at what can be easily understood.",
+          "start": 219.04,
+          "end": 225.16
+        },
+        {
+          "id": 47,
+          "text": "Reading books, on the other hand, activates different areas of the brain,",
+          "start": 225.16,
+          "end": 229.52
+        },
+        {
+          "id": 48,
+          "text": "Allowing a reader to develop positive traits like empathy,",
+          "start": 229.52,
+          "end": 232.92
+        },
+        {
+          "id": 49,
+          "text": "And to understand the deeper level of a book, including analogies and inferences.",
+          "start": 232.92,
+          "end": 238.44
+        },
+        {
+          "id": 50,
+          "text": "An analogy is a comparison between things that have similar features.",
+          "start": 238.44,
+          "end": 243.16
+        },
+        {
+          "id": 51,
+          "text": "For example, you might talk about the human heart using the analogy of a pump.",
+          "start": 243.16,
+          "end": 248.72
+        },
+        {
+          "id": 52,
+          "text": "An inference is a guess, opinion,",
+          "start": 248.72,
+          "end": 250.6
+        },
+        {
+          "id": 53,
+          "text": "Or conclusion that you make based on the information you already have.",
+          "start": 250.6,
+          "end": 254.84
+        },
+        {
+          "id": 54,
+          "text": "For example, seeing smoke in the distance, you would make an inference that there's fire.",
+          "start": 254.84,
+          "end": 259.96
+        }
+      ],
+      "original": [
+        {
+          "id": 2,
+          "text": "For me, there's nothing like reading a book –",
+          "start": 13.04,
+          "end": 15.92
+        },
+        {
+          "id": 3,
+          "text": "I love turning the pages and the smell of the paper.",
+          "start": 15.92,
+          "end": 19.88
+        },
+        {
+          "id": 4,
+          "text": "But nowadays, the fact is that much of the time we read",
+          "start": 19.88,
+          "end": 23.4
+        },
+        {
+          "id": 5,
+          "text": "From electronic screens, not paper. Yes, like Georgie, I love books.",
+          "start": 23.4,
+          "end": 29.16
+        },
+        {
+          "id": 6,
+          "text": "I also find that too much screen time hurts my eyes.",
+          "start": 29.16,
+          "end": 32.56
+        },
+        {
+          "id": 7,
+          "text": "But the availability of digital information means that I end up reading from screens most days.",
+          "start": 32.56,
+          "end": 39.28
+        },
+        {
+          "id": 8,
+          "text": "So, apart from sore eyes, is this a problem?",
+          "start": 39.28,
+          "end": 42.92
+        },
+        {
+          "id": 9,
+          "text": "Is reading from screens harmless, or could it be damaging us in some way,",
+          "start": 42.92,
+          "end": 47.48
+        },
+        {
+          "id": 10,
+          "text": "Such as reducing our attention span – the length of time",
+          "start": 47.48,
+          "end": 51.08
+        },
+        {
+          "id": 11,
+          "text": "That someone can keep concentrated on what they are doing?",
+          "start": 51.08,
+          "end": 54.44
+        },
+        {
+          "id": 12,
+          "text": "That's what we'll be discussing in this program,",
+          "start": 54.44,
+          "end": 57.04
+        },
+        {
+          "id": 13,
+          "text": "And of course, we'll be learning some useful new vocabulary too.",
+          "start": 57.04,
+          "end": 60.68
+        },
+        {
+          "id": 14,
+          "text": "Great. But first, it's time for my question. Whether you prefer paper",
+          "start": 60.68,
+          "end": 66.28
+        },
+        {
+          "id": 15,
+          "text": "Or screens, as humans we're now reading more words than ever before.",
+          "start": 66.28,
+          "end": 71.8
+        },
+        {
+          "id": 16,
+          "text": "So how many words does the average person read a day? Is it a) 50,000 words?",
+          "start": 71.8,
+          "end": 81.6
+        },
+        {
+          "id": 17,
+          "text": "B) 100,000 words? or, c) 200,000 words?",
+          "start": 81.6,
+          "end": 88.32
+        },
+        {
+          "id": 18,
+          "text": "I'll guess it's 50,000 words a day.",
+          "start": 88.32,
+          "end": 91.32
+        },
+        {
+          "id": 19,
+          "text": "OK, Georgie, we'll find out the correct answer later in the programme.",
+          "start": 91.32,
+          "end": 95.96
+        },
+        {
+          "id": 20,
+          "text": "Of course, there's little doubt that any kind of reading is good for you.",
+          "start": 95.96,
+          "end": 100.48
+        },
+        {
+          "id": 21,
+          "text": "Here's Cressida Cowell, author of the 'How to Train",
+          "start": 100.48,
+          "end": 103.8
+        },
+        {
+          "id": 22,
+          "text": "Your Dragon' children's books, speaking with BBC Ideas.",
+          "start": 103.8,
+          "end": 108.04
+        },
+        {
+          "id": 23,
+          "text": "Reading brings three magical powers – creativity, intelligence and empathy.",
+          "start": 108.04,
+          "end": 115.68
+        },
+        {
+          "id": 24,
+          "text": "Reading for the joy of it is one of the two key factors in",
+          "start": 115.68,
+          "end": 118.2
+        },
+        {
+          "id": 25,
+          "text": "A kid's later economic success.",
+          "start": 118.2,
+          "end": 120.16
+        },
+        {
+          "id": 26,
+          "text": "You're more likely to not be in prison, to vote, to own your own home.",
+          "start": 120.16,
+          "end": 125.16
+        },
+        {
+          "id": 27,
+          "text": "All of these advantages and benefits happen as a result of literacy.",
+          "start": 125.16,
+          "end": 129.6
+        },
+        {
+          "id": 28,
+          "text": "Cressida talks about the importance of reading for the joy of it.",
+          "start": 129.6,
+          "end": 133.48
+        },
+        {
+          "id": 29,
+          "text": "When you do an activity for the joy of it,",
+          "start": 133.48,
+          "end": 136.12
+        },
+        {
+          "id": 30,
+          "text": "You do it simply for the pleasure of doing it,",
+          "start": 136.12,
+          "end": 138.96
+        },
+        {
+          "id": 31,
+          "text": "Rather than as a way to gain something else.",
+          "start": 138.96,
+          "end": 142.24
+        },
+        {
+          "id": 32,
+          "text": "Cressida lists the many benefits of reading for children, including economic success in later life.",
+          "start": 142.24,
+          "end": 148.48
+        },
+        {
+          "id": 33,
+          "text": "But many of these benefits depend on a state known as 'deep reading',",
+          "start": 148.48,
+          "end": 154.28
+        },
+        {
+          "id": 34,
+          "text": "Analysing a text to understand its deeper meaning. And in test after test, researchers have shown",
+          "start": 154.28,
+          "end": 161.12
+        },
+        {
+          "id": 35,
+          "text": "That 'deep reading' skills develop better when kids read from books.",
+          "start": 161.12,
+          "end": 166.44
+        },
+        {
+          "id": 36,
+          "text": "Professor Maryanne Wolf is a teacher, and advocate for children's literacy around the world.",
+          "start": 166.44,
+          "end": 171.92
+        },
+        {
+          "id": 37,
+          "text": "Here, she explains more about 'deep reading' to BBC Ideas.",
+          "start": 171.92,
+          "end": 176.2
+        },
+        {
+          "id": 38,
+          "text": "When we read at a surface level, we're just getting the information.",
+          "start": 176.2,
+          "end": 180.52
+        },
+        {
+          "id": 39,
+          "text": "When we read deeply, we use much more of our cerebral cortex.",
+          "start": 180.52,
+          "end": 186.48
+        },
+        {
+          "id": 40,
+          "text": "Deep reading means that we make analogies,",
+          "start": 186.48,
+          "end": 189.52
+        },
+        {
+          "id": 41,
+          "text": "We make inferences, which allows us to be truly critical, analytic, empathic human beings.",
+          "start": 189.52,
+          "end": 199
+        },
+        {
+          "id": 42,
+          "text": "The reality is, it's not what, or how much, we read, but how we read,",
+          "start": 199,
+          "end": 203.92
+        },
+        {
+          "id": 43,
+          "text": "That's really important. The very volume is having negative effects",
+          "start": 203.92,
+          "end": 209.48
+        },
+        {
+          "id": 44,
+          "text": "Because to absorb that much, there's a propensity towards skimming.",
+          "start": 209.48,
+          "end": 214.28
+        },
+        {
+          "id": 45,
+          "text": "Professor Wolf's research shows that reading from screens encourages reading",
+          "start": 214.28,
+          "end": 219.04
+        },
+        {
+          "id": 46,
+          "text": "At the surface level, quickly and superficially looking at what can be easily understood.",
+          "start": 219.04,
+          "end": 225.16
+        },
+        {
+          "id": 47,
+          "text": "Reading books, on the other hand, activates different areas of the brain,",
+          "start": 225.16,
+          "end": 229.52
+        },
+        {
+          "id": 48,
+          "text": "Allowing a reader to develop positive traits like empathy,",
+          "start": 229.52,
+          "end": 232.92
+        },
+        {
+          "id": 49,
+          "text": "And to understand the deeper level of a book, including analogies and inferences.",
+          "start": 232.92,
+          "end": 238.44
+        },
+        {
+          "id": 50,
+          "text": "An analogy is a comparison between things that have similar features.",
+          "start": 238.44,
+          "end": 243.16
+        },
+        {
+          "id": 51,
+          "text": "For example, you might talk about the human heart using the analogy of a pump.",
+          "start": 243.16,
+          "end": 248.72
+        },
+        {
+          "id": 52,
+          "text": "An inference is a guess, opinion,",
+          "start": 248.72,
+          "end": 250.6
+        },
+        {
+          "id": 53,
+          "text": "Or conclusion that you make based on the information you already have.",
+          "start": 250.6,
+          "end": 254.84
+        },
+        {
+          "id": 54,
+          "text": "For example, seeing smoke in the distance, you would make an inference that there's fire.",
+          "start": 254.84,
+          "end": 259.96
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "QdE63sYqwd8",
+    "title": "Why are we all so stressed? ⏲️ 6 Minute English",
+    "level": "B1-B2",
+    "topic": "Cuộc sống",
+    "lang": "en",
+    "week": 6,
+    "sentenceCount": 56,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 3,
+          "text": "It's no wonder that modern life is stressful. What makes you stress, Neil? Oh, good question.",
+          "start": 19.08,
+          "end": 25.04
+        },
+        {
+          "id": 4,
+          "text": "I think not having enough time to do something, that really makes me stressed out.",
+          "start": 25.04,
+          "end": 30.8
+        },
+        {
+          "id": 5,
+          "text": "How about you? Um, when I'm trying to do something that I've never tried before",
+          "start": 30.8,
+          "end": 36.48
+        },
+        {
+          "id": 6,
+          "text": "And I'm not very good at it, that makes me feel really stressed.",
+          "start": 36.48,
+          "end": 40.44
+        },
+        {
+          "id": 7,
+          "text": "I find that stressful too. And how do you cope with stressful situations, Neil?",
+          "start": 40.44,
+          "end": 45.96
+        },
+        {
+          "id": 8,
+          "text": "Well, I try to slow down, uh, pause, take a breath and think",
+          "start": 45.96,
+          "end": 52.24
+        },
+        {
+          "id": 9,
+          "text": "'at some point, probably later today, everything will be okay again.' How about you? Yeah, same.",
+          "start": 52.24,
+          "end": 58.48
+        },
+        {
+          "id": 10,
+          "text": "But in my mind, I'm telling myself that 'I will be better at what I'm doing.",
+          "start": 58.48,
+          "end": 63.16
+        },
+        {
+          "id": 11,
+          "text": "I just need to practice more.'",
+          "start": 63.16,
+          "end": 64.8
+        },
+        {
+          "id": 12,
+          "text": "Hmm. Many young people who feel stressed about the modern world",
+          "start": 64.8,
+          "end": 69.08
+        },
+        {
+          "id": 13,
+          "text": "Use the word overwhelm to describe their feelings.",
+          "start": 69.08,
+          "end": 72.08
+        },
+        {
+          "id": 14,
+          "text": "And overwhelm was also the topic of a recent BBC World Service programme,",
+          "start": 72.08,
+          "end": 76.72
+        },
+        {
+          "id": 15,
+          "text": "What in the World. Here's Iqra Farooq and Claudia Hammond.",
+          "start": 76.72,
+          "end": 81.04
+        },
+        {
+          "id": 16,
+          "text": "So overwhelm is an emotional state where you are struggling",
+          "start": 81.04,
+          "end": 84.52
+        },
+        {
+          "id": 17,
+          "text": "With your current situation. So, you might feel overloaded,",
+          "start": 84.52,
+          "end": 87.32
+        },
+        {
+          "id": 18,
+          "text": "You might feel you can't cope and that might be a temporary thing hopefully.",
+          "start": 87.32,
+          "end": 91.16
+        },
+        {
+          "id": 19,
+          "text": "But if it's not in the longer term,",
+          "start": 91.16,
+          "end": 93.04
+        },
+        {
+          "id": 20,
+          "text": "If that becomes more of a kind of chronic kind of stress,",
+          "start": 93.04,
+          "end": 95.76
+        },
+        {
+          "id": 21,
+          "text": "Then that that might lead to burnout in the end.",
+          "start": 95.76,
+          "end": 98.76
+        },
+        {
+          "id": 22,
+          "text": "Feeling overwhelmed and unable to cope with life",
+          "start": 98.76,
+          "end": 101.8
+        },
+        {
+          "id": 23,
+          "text": "Can become chronic, meaning that it lasts for a long time.",
+          "start": 101.8,
+          "end": 105.96
+        },
+        {
+          "id": 24,
+          "text": "Overwhelm can lead to burnout, mental or physical exhaustion caused by working too hard.",
+          "start": 105.96,
+          "end": 111.92
+        },
+        {
+          "id": 25,
+          "text": "So how can we manage the stress in our lives and feel happier and healthier?",
+          "start": 111.92,
+          "end": 116.48
+        },
+        {
+          "id": 26,
+          "text": "That's what we'll be discussing in this episode, along with some useful new words and phrases.",
+          "start": 116.48,
+          "end": 121.68
+        },
+        {
+          "id": 27,
+          "text": "You'll find all the vocabulary from this episode on our website bbclearningenglish.com.",
+          "start": 121.68,
+          "end": 127.24
+        },
+        {
+          "id": 28,
+          "text": "But before we start, I have a question for you, Neil.",
+          "start": 127.24,
+          "end": 130.92
+        },
+        {
+          "id": 29,
+          "text": "One simple way of combating stress is taking time to rest.",
+          "start": 130.92,
+          "end": 135.12
+        },
+        {
+          "id": 30,
+          "text": "So, according to research conducted by BBC presenter and psychologist Claudia Hammond,",
+          "start": 135.12,
+          "end": 140.96
+        },
+        {
+          "id": 31,
+          "text": "Which activity is thought to be the most restful? Is it a) reading for pleasure,",
+          "start": 140.96,
+          "end": 147.52
+        },
+        {
+          "id": 32,
+          "text": "B) walking in nature, or c) listening to music? Well, I think they're all quite relaxing,",
+          "start": 147.52,
+          "end": 154.8
+        },
+        {
+          "id": 33,
+          "text": "But I'm going to guess b) walking in nature. I'm surprised, Neil!",
+          "start": 154.8,
+          "end": 159.28
+        },
+        {
+          "id": 34,
+          "text": "I know you love music. And we'll find out the answer later.",
+          "start": 159.28,
+          "end": 163.16
+        },
+        {
+          "id": 35,
+          "text": "One of the most stressful things facing many young people is exams.",
+          "start": 163.16,
+          "end": 167.72
+        },
+        {
+          "id": 36,
+          "text": "Here, Claudia Hammond offers some advice for managing exam stress to BBC World Service's",
+          "start": 167.72,
+          "end": 173.68
+        },
+        {
+          "id": 37,
+          "text": "What in the World: ... particularly in the exam itself,",
+          "start": 173.68,
+          "end": 176.32
+        },
+        {
+          "id": 38,
+          "text": "If you feel stressed, then just knowing that you well may well perform better",
+          "start": 176.32,
+          "end": 181.52
+        },
+        {
+          "id": 39,
+          "text": "While you're stressed that this... it concentrates the mind, it sharpens",
+          "start": 181.52,
+          "end": 185.72
+        },
+        {
+          "id": 40,
+          "text": "And your nerves sharpen your thinking and allow you to really do your best.",
+          "start": 185.72,
+          "end": 189.68
+        },
+        {
+          "id": 41,
+          "text": "It's normal to feel nerves before an exam.",
+          "start": 189.68,
+          "end": 192.72
+        },
+        {
+          "id": 42,
+          "text": "Nerves is an informal word for worry or anxiety, but according to Claudia.,",
+          "start": 192.72,
+          "end": 197.8
+        },
+        {
+          "id": 43,
+          "text": "Nerves aren't necessarily bad. Yes, nerves can help concentrate the mind.",
+          "start": 197.8,
+          "end": 203.36
+        },
+        {
+          "id": 44,
+          "text": "The phrase concentrate or sharpen the mind means to think more clearly",
+          "start": 203.36,
+          "end": 207.6
+        },
+        {
+          "id": 45,
+          "text": "About something like an actor or an athlete feeling nerves",
+          "start": 207.6,
+          "end": 211.48
+        },
+        {
+          "id": 46,
+          "text": "Before a big performance can help them do their best.",
+          "start": 211.48,
+          "end": 214.8
+        },
+        {
+          "id": 47,
+          "text": "Claudia recommends other ways to reduce stress as well.",
+          "start": 214.8,
+          "end": 218.36
+        },
+        {
+          "id": 48,
+          "text": "These include slowing down and accepting that it's okay to be good enough,",
+          "start": 218.36,
+          "end": 223.32
+        },
+        {
+          "id": 49,
+          "text": "Rather than always trying for perfection.",
+          "start": 223.32,
+          "end": 226.28
+        },
+        {
+          "id": 50,
+          "text": "Here, she shares more tips with Iqra Farooq of BBC World Service's What in the World:",
+          "start": 226.28,
+          "end": 232.36
+        },
+        {
+          "id": 51,
+          "text": "I guess there's no one-size-fits-all as well when it comes to this.",
+          "start": 232.36,
+          "end": 236.12
+        },
+        {
+          "id": 52,
+          "text": "So, if someone's listening and thinking, I want some top tips",
+          "start": 236.12,
+          "end": 239.84
+        },
+        {
+          "id": 53,
+          "text": "On just feeling overwhelmed generally in my life, what would you say to them?",
+          "start": 239.84,
+          "end": 242.96
+        },
+        {
+          "id": 54,
+          "text": "So, first I would say except that your to-do-list is never going to end,",
+          "start": 242.96,
+          "end": 246.76
+        },
+        {
+          "id": 55,
+          "text": "It's always going to be there. So, even I know that might sound defeatist,",
+          "start": 246.76,
+          "end": 249.72
+        },
+        {
+          "id": 56,
+          "text": "But even if you get to the end of it today,",
+          "start": 249.72,
+          "end": 251.6
+        },
+        {
+          "id": 57,
+          "text": "Tomorrow there will be something else on it. And that's just life,",
+          "start": 251.6,
+          "end": 254.2
+        },
+        {
+          "id": 58,
+          "text": "And that is just signs of a busy life. There are many ways to combat stress,",
+          "start": 254.2,
+          "end": 259
+        }
+      ],
+      "original": [
+        {
+          "id": 3,
+          "text": "It's no wonder that modern life is stressful. What makes you stress, Neil? Oh, good question.",
+          "start": 19.08,
+          "end": 25.04
+        },
+        {
+          "id": 4,
+          "text": "I think not having enough time to do something, that really makes me stressed out.",
+          "start": 25.04,
+          "end": 30.8
+        },
+        {
+          "id": 5,
+          "text": "How about you? Um, when I'm trying to do something that I've never tried before",
+          "start": 30.8,
+          "end": 36.48
+        },
+        {
+          "id": 6,
+          "text": "And I'm not very good at it, that makes me feel really stressed.",
+          "start": 36.48,
+          "end": 40.44
+        },
+        {
+          "id": 7,
+          "text": "I find that stressful too. And how do you cope with stressful situations, Neil?",
+          "start": 40.44,
+          "end": 45.96
+        },
+        {
+          "id": 8,
+          "text": "Well, I try to slow down, uh, pause, take a breath and think",
+          "start": 45.96,
+          "end": 52.24
+        },
+        {
+          "id": 9,
+          "text": "'at some point, probably later today, everything will be okay again.' How about you? Yeah, same.",
+          "start": 52.24,
+          "end": 58.48
+        },
+        {
+          "id": 10,
+          "text": "But in my mind, I'm telling myself that 'I will be better at what I'm doing.",
+          "start": 58.48,
+          "end": 63.16
+        },
+        {
+          "id": 11,
+          "text": "I just need to practice more.'",
+          "start": 63.16,
+          "end": 64.8
+        },
+        {
+          "id": 12,
+          "text": "Hmm. Many young people who feel stressed about the modern world",
+          "start": 64.8,
+          "end": 69.08
+        },
+        {
+          "id": 13,
+          "text": "Use the word overwhelm to describe their feelings.",
+          "start": 69.08,
+          "end": 72.08
+        },
+        {
+          "id": 14,
+          "text": "And overwhelm was also the topic of a recent BBC World Service programme,",
+          "start": 72.08,
+          "end": 76.72
+        },
+        {
+          "id": 15,
+          "text": "What in the World. Here's Iqra Farooq and Claudia Hammond.",
+          "start": 76.72,
+          "end": 81.04
+        },
+        {
+          "id": 16,
+          "text": "So overwhelm is an emotional state where you are struggling",
+          "start": 81.04,
+          "end": 84.52
+        },
+        {
+          "id": 17,
+          "text": "With your current situation. So, you might feel overloaded,",
+          "start": 84.52,
+          "end": 87.32
+        },
+        {
+          "id": 18,
+          "text": "You might feel you can't cope and that might be a temporary thing hopefully.",
+          "start": 87.32,
+          "end": 91.16
+        },
+        {
+          "id": 19,
+          "text": "But if it's not in the longer term,",
+          "start": 91.16,
+          "end": 93.04
+        },
+        {
+          "id": 20,
+          "text": "If that becomes more of a kind of chronic kind of stress,",
+          "start": 93.04,
+          "end": 95.76
+        },
+        {
+          "id": 21,
+          "text": "Then that that might lead to burnout in the end.",
+          "start": 95.76,
+          "end": 98.76
+        },
+        {
+          "id": 22,
+          "text": "Feeling overwhelmed and unable to cope with life",
+          "start": 98.76,
+          "end": 101.8
+        },
+        {
+          "id": 23,
+          "text": "Can become chronic, meaning that it lasts for a long time.",
+          "start": 101.8,
+          "end": 105.96
+        },
+        {
+          "id": 24,
+          "text": "Overwhelm can lead to burnout, mental or physical exhaustion caused by working too hard.",
+          "start": 105.96,
+          "end": 111.92
+        },
+        {
+          "id": 25,
+          "text": "So how can we manage the stress in our lives and feel happier and healthier?",
+          "start": 111.92,
+          "end": 116.48
+        },
+        {
+          "id": 26,
+          "text": "That's what we'll be discussing in this episode, along with some useful new words and phrases.",
+          "start": 116.48,
+          "end": 121.68
+        },
+        {
+          "id": 27,
+          "text": "You'll find all the vocabulary from this episode on our website bbclearningenglish.com.",
+          "start": 121.68,
+          "end": 127.24
+        },
+        {
+          "id": 28,
+          "text": "But before we start, I have a question for you, Neil.",
+          "start": 127.24,
+          "end": 130.92
+        },
+        {
+          "id": 29,
+          "text": "One simple way of combating stress is taking time to rest.",
+          "start": 130.92,
+          "end": 135.12
+        },
+        {
+          "id": 30,
+          "text": "So, according to research conducted by BBC presenter and psychologist Claudia Hammond,",
+          "start": 135.12,
+          "end": 140.96
+        },
+        {
+          "id": 31,
+          "text": "Which activity is thought to be the most restful? Is it a) reading for pleasure,",
+          "start": 140.96,
+          "end": 147.52
+        },
+        {
+          "id": 32,
+          "text": "B) walking in nature, or c) listening to music? Well, I think they're all quite relaxing,",
+          "start": 147.52,
+          "end": 154.8
+        },
+        {
+          "id": 33,
+          "text": "But I'm going to guess b) walking in nature. I'm surprised, Neil!",
+          "start": 154.8,
+          "end": 159.28
+        },
+        {
+          "id": 34,
+          "text": "I know you love music. And we'll find out the answer later.",
+          "start": 159.28,
+          "end": 163.16
+        },
+        {
+          "id": 35,
+          "text": "One of the most stressful things facing many young people is exams.",
+          "start": 163.16,
+          "end": 167.72
+        },
+        {
+          "id": 36,
+          "text": "Here, Claudia Hammond offers some advice for managing exam stress to BBC World Service's",
+          "start": 167.72,
+          "end": 173.68
+        },
+        {
+          "id": 37,
+          "text": "What in the World: ... particularly in the exam itself,",
+          "start": 173.68,
+          "end": 176.32
+        },
+        {
+          "id": 38,
+          "text": "If you feel stressed, then just knowing that you well may well perform better",
+          "start": 176.32,
+          "end": 181.52
+        },
+        {
+          "id": 39,
+          "text": "While you're stressed that this... it concentrates the mind, it sharpens",
+          "start": 181.52,
+          "end": 185.72
+        },
+        {
+          "id": 40,
+          "text": "And your nerves sharpen your thinking and allow you to really do your best.",
+          "start": 185.72,
+          "end": 189.68
+        },
+        {
+          "id": 41,
+          "text": "It's normal to feel nerves before an exam.",
+          "start": 189.68,
+          "end": 192.72
+        },
+        {
+          "id": 42,
+          "text": "Nerves is an informal word for worry or anxiety, but according to Claudia.,",
+          "start": 192.72,
+          "end": 197.8
+        },
+        {
+          "id": 43,
+          "text": "Nerves aren't necessarily bad. Yes, nerves can help concentrate the mind.",
+          "start": 197.8,
+          "end": 203.36
+        },
+        {
+          "id": 44,
+          "text": "The phrase concentrate or sharpen the mind means to think more clearly",
+          "start": 203.36,
+          "end": 207.6
+        },
+        {
+          "id": 45,
+          "text": "About something like an actor or an athlete feeling nerves",
+          "start": 207.6,
+          "end": 211.48
+        },
+        {
+          "id": 46,
+          "text": "Before a big performance can help them do their best.",
+          "start": 211.48,
+          "end": 214.8
+        },
+        {
+          "id": 47,
+          "text": "Claudia recommends other ways to reduce stress as well.",
+          "start": 214.8,
+          "end": 218.36
+        },
+        {
+          "id": 48,
+          "text": "These include slowing down and accepting that it's okay to be good enough,",
+          "start": 218.36,
+          "end": 223.32
+        },
+        {
+          "id": 49,
+          "text": "Rather than always trying for perfection.",
+          "start": 223.32,
+          "end": 226.28
+        },
+        {
+          "id": 50,
+          "text": "Here, she shares more tips with Iqra Farooq of BBC World Service's What in the World:",
+          "start": 226.28,
+          "end": 232.36
+        },
+        {
+          "id": 51,
+          "text": "I guess there's no one-size-fits-all as well when it comes to this.",
+          "start": 232.36,
+          "end": 236.12
+        },
+        {
+          "id": 52,
+          "text": "So, if someone's listening and thinking, I want some top tips",
+          "start": 236.12,
+          "end": 239.84
+        },
+        {
+          "id": 53,
+          "text": "On just feeling overwhelmed generally in my life, what would you say to them?",
+          "start": 239.84,
+          "end": 242.96
+        },
+        {
+          "id": 54,
+          "text": "So, first I would say except that your to-do-list is never going to end,",
+          "start": 242.96,
+          "end": 246.76
+        },
+        {
+          "id": 55,
+          "text": "It's always going to be there. So, even I know that might sound defeatist,",
+          "start": 246.76,
+          "end": 249.72
+        },
+        {
+          "id": 56,
+          "text": "But even if you get to the end of it today,",
+          "start": 249.72,
+          "end": 251.6
+        },
+        {
+          "id": 57,
+          "text": "Tomorrow there will be something else on it. And that's just life,",
+          "start": 251.6,
+          "end": 254.2
+        },
+        {
+          "id": 58,
+          "text": "And that is just signs of a busy life. There are many ways to combat stress,",
+          "start": 254.2,
+          "end": 259
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "fEacJtQbTko",
+    "title": "Asking FRIENDS in BRIGHTON How They Met | Easy English 182",
+    "level": "B1-B2",
+    "topic": "Tình bạn",
+    "lang": "en",
+    "week": 7,
+    "sentenceCount": 33,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 24,
+          "text": "Did you two first meet uh we met at aex where we work together as Veterinary",
+          "start": 85.64,
+          "end": 91.08
+        },
+        {
+          "id": 25,
+          "text": "Nurses oh really yeah that's great um we",
+          "start": 91.08,
+          "end": 94.56
+        },
+        {
+          "id": 26,
+          "text": "Met in secondary school and we've been",
+          "start": 94.56,
+          "end": 98.12
+        },
+        {
+          "id": 27,
+          "text": "In the same like chter since we about 11 or",
+          "start": 98.12,
+          "end": 102.48
+        },
+        {
+          "id": 28,
+          "text": "12 and over time we sort of just got",
+          "start": 102.48,
+          "end": 105.68
+        },
+        {
+          "id": 29,
+          "text": "Closer and had like mutual friends so yeah that kind of brought you together",
+          "start": 105.68,
+          "end": 111.08
+        },
+        {
+          "id": 30,
+          "text": "The mutual friends yeah we're a brother and sister so we met when you were born",
+          "start": 111.08,
+          "end": 115.88
+        },
+        {
+          "id": 31,
+          "text": "Yeah could you tell me uh how you both",
+          "start": 115.88,
+          "end": 119
+        },
+        {
+          "id": 32,
+          "text": "Met okay you go go okay well Sue and I",
+          "start": 119,
+          "end": 122.6
+        },
+        {
+          "id": 33,
+          "text": "Both play tennis and we met on a tennis",
+          "start": 122.6,
+          "end": 127.84
+        },
+        {
+          "id": 34,
+          "text": "Court you go first oh okay we met um at",
+          "start": 127.84,
+          "end": 132.76
+        },
+        {
+          "id": 35,
+          "text": "A clinic that we were both working at in Brighton okay and so are you both",
+          "start": 132.76,
+          "end": 138.24
+        },
+        {
+          "id": 36,
+          "text": "Medically trained people what do you say",
+          "start": 138.24,
+          "end": 141.12
+        },
+        {
+          "id": 37,
+          "text": "Clinic therapeutic trtic yes we are",
+          "start": 141.12,
+          "end": 144.24
+        },
+        {
+          "id": 38,
+          "text": "Therapists well I'm a psychotherapist",
+          "start": 144.24,
+          "end": 147.96
+        },
+        {
+          "id": 39,
+          "text": "You I'm a retired counselor okay well we were working a long time",
+          "start": 147.96,
+          "end": 152.68
+        },
+        {
+          "id": 40,
+          "text": "Ago at the serpentine Gallery in Kensington Gardens and there were a lots of gallery",
+          "start": 152.68,
+          "end": 158.44
+        },
+        {
+          "id": 41,
+          "text": "Assistants there and we were just Gallery assistants sort of first first",
+          "start": 158.44,
+          "end": 161.44
+        },
+        {
+          "id": 42,
+          "text": "Job after leaving College really um so we met at work actually didn't we yeah",
+          "start": 161.44,
+          "end": 167
+        },
+        {
+          "id": 43,
+          "text": "Yeah we were both working at a pet shop",
+          "start": 167,
+          "end": 169.08
+        },
+        {
+          "id": 44,
+          "text": "And oh really yeah that's how we met yeah me and the Pet Shop there and",
+          "start": 169.08,
+          "end": 173.28
+        },
+        {
+          "id": 45,
+          "text": "Lara's a grma oh so this is my dad",
+          "start": 173.28,
+          "end": 178.16
+        },
+        {
+          "id": 46,
+          "text": "Um what would you like to say say about",
+          "start": 178.16,
+          "end": 180.68
+        },
+        {
+          "id": 47,
+          "text": "Yourself and this is one of my daughters",
+          "start": 180.68,
+          "end": 182.96
+        },
+        {
+          "id": 48,
+          "text": "I've got two very nice and could I ask would you to consider yourself friends",
+          "start": 182.96,
+          "end": 188.6
+        },
+        {
+          "id": 49,
+          "text": "Oh definitely yes yeah while we're on C yes then the next question would be at",
+          "start": 188.6,
+          "end": 193.64
+        },
+        {
+          "id": 50,
+          "text": "What point did you two become friends do you think um pretty soon I thought you",
+          "start": 193.64,
+          "end": 199.4
+        },
+        {
+          "id": 51,
+          "text": "Were pretty cool and what's the age what's the age difference seven years",
+          "start": 199.4,
+          "end": 203.36
+        },
+        {
+          "id": 52,
+          "text": "Years okay yeah okay when did you realize your friends with your daughter",
+          "start": 203.36,
+          "end": 206.48
+        },
+        {
+          "id": 53,
+          "text": "When did you realize you're friends with your",
+          "start": 206.48,
+          "end": 208.56
+        },
+        {
+          "id": 54,
+          "text": "Dad uh uh it took a little while but um",
+          "start": 208.56,
+          "end": 212.36
+        },
+        {
+          "id": 55,
+          "text": "We went away for a little while and it's",
+          "start": 212.36,
+          "end": 214.04
+        },
+        {
+          "id": 56,
+          "text": "Come back yeah so that was nice yeah so",
+          "start": 214.04,
+          "end": 217.08
+        }
+      ],
+      "original": [
+        {
+          "id": 24,
+          "text": "Did you two first meet uh we met at aex where we work together as Veterinary",
+          "start": 85.64,
+          "end": 91.08
+        },
+        {
+          "id": 25,
+          "text": "Nurses oh really yeah that's great um we",
+          "start": 91.08,
+          "end": 94.56
+        },
+        {
+          "id": 26,
+          "text": "Met in secondary school and we've been",
+          "start": 94.56,
+          "end": 98.12
+        },
+        {
+          "id": 27,
+          "text": "In the same like chter since we about 11 or",
+          "start": 98.12,
+          "end": 102.48
+        },
+        {
+          "id": 28,
+          "text": "12 and over time we sort of just got",
+          "start": 102.48,
+          "end": 105.68
+        },
+        {
+          "id": 29,
+          "text": "Closer and had like mutual friends so yeah that kind of brought you together",
+          "start": 105.68,
+          "end": 111.08
+        },
+        {
+          "id": 30,
+          "text": "The mutual friends yeah we're a brother and sister so we met when you were born",
+          "start": 111.08,
+          "end": 115.88
+        },
+        {
+          "id": 31,
+          "text": "Yeah could you tell me uh how you both",
+          "start": 115.88,
+          "end": 119
+        },
+        {
+          "id": 32,
+          "text": "Met okay you go go okay well Sue and I",
+          "start": 119,
+          "end": 122.6
+        },
+        {
+          "id": 33,
+          "text": "Both play tennis and we met on a tennis",
+          "start": 122.6,
+          "end": 127.84
+        },
+        {
+          "id": 34,
+          "text": "Court you go first oh okay we met um at",
+          "start": 127.84,
+          "end": 132.76
+        },
+        {
+          "id": 35,
+          "text": "A clinic that we were both working at in Brighton okay and so are you both",
+          "start": 132.76,
+          "end": 138.24
+        },
+        {
+          "id": 36,
+          "text": "Medically trained people what do you say",
+          "start": 138.24,
+          "end": 141.12
+        },
+        {
+          "id": 37,
+          "text": "Clinic therapeutic trtic yes we are",
+          "start": 141.12,
+          "end": 144.24
+        },
+        {
+          "id": 38,
+          "text": "Therapists well I'm a psychotherapist",
+          "start": 144.24,
+          "end": 147.96
+        },
+        {
+          "id": 39,
+          "text": "You I'm a retired counselor okay well we were working a long time",
+          "start": 147.96,
+          "end": 152.68
+        },
+        {
+          "id": 40,
+          "text": "Ago at the serpentine Gallery in Kensington Gardens and there were a lots of gallery",
+          "start": 152.68,
+          "end": 158.44
+        },
+        {
+          "id": 41,
+          "text": "Assistants there and we were just Gallery assistants sort of first first",
+          "start": 158.44,
+          "end": 161.44
+        },
+        {
+          "id": 42,
+          "text": "Job after leaving College really um so we met at work actually didn't we yeah",
+          "start": 161.44,
+          "end": 167
+        },
+        {
+          "id": 43,
+          "text": "Yeah we were both working at a pet shop",
+          "start": 167,
+          "end": 169.08
+        },
+        {
+          "id": 44,
+          "text": "And oh really yeah that's how we met yeah me and the Pet Shop there and",
+          "start": 169.08,
+          "end": 173.28
+        },
+        {
+          "id": 45,
+          "text": "Lara's a grma oh so this is my dad",
+          "start": 173.28,
+          "end": 178.16
+        },
+        {
+          "id": 46,
+          "text": "Um what would you like to say say about",
+          "start": 178.16,
+          "end": 180.68
+        },
+        {
+          "id": 47,
+          "text": "Yourself and this is one of my daughters",
+          "start": 180.68,
+          "end": 182.96
+        },
+        {
+          "id": 48,
+          "text": "I've got two very nice and could I ask would you to consider yourself friends",
+          "start": 182.96,
+          "end": 188.6
+        },
+        {
+          "id": 49,
+          "text": "Oh definitely yes yeah while we're on C yes then the next question would be at",
+          "start": 188.6,
+          "end": 193.64
+        },
+        {
+          "id": 50,
+          "text": "What point did you two become friends do you think um pretty soon I thought you",
+          "start": 193.64,
+          "end": 199.4
+        },
+        {
+          "id": 51,
+          "text": "Were pretty cool and what's the age what's the age difference seven years",
+          "start": 199.4,
+          "end": 203.36
+        },
+        {
+          "id": 52,
+          "text": "Years okay yeah okay when did you realize your friends with your daughter",
+          "start": 203.36,
+          "end": 206.48
+        },
+        {
+          "id": 53,
+          "text": "When did you realize you're friends with your",
+          "start": 206.48,
+          "end": 208.56
+        },
+        {
+          "id": 54,
+          "text": "Dad uh uh it took a little while but um",
+          "start": 208.56,
+          "end": 212.36
+        },
+        {
+          "id": 55,
+          "text": "We went away for a little while and it's",
+          "start": 212.36,
+          "end": 214.04
+        },
+        {
+          "id": 56,
+          "text": "Come back yeah so that was nice yeah so",
+          "start": 214.04,
+          "end": 217.08
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "lBNM6aKwPl0",
+    "title": "Indians Try Their Best American Accent | Street Interview",
+    "level": "B1-B2",
+    "topic": "Giọng nói & accent",
+    "lang": "en",
+    "week": 7,
+    "sentenceCount": 51,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 11,
+          "text": "Question for today is when you speak English uh which accent do you use",
+          "start": 42.8,
+          "end": 48.4
+        },
+        {
+          "id": 12,
+          "text": "Indian accent normal Indian accent the best accent yeah Indian accent I mean",
+          "start": 48.4,
+          "end": 54
+        },
+        {
+          "id": 13,
+          "text": "That's what we learned you know like you live in India you know everyone around",
+          "start": 54,
+          "end": 57.44
+        },
+        {
+          "id": 14,
+          "text": "You speaks in an Indian accent so but I",
+          "start": 57.44,
+          "end": 59.96
+        },
+        {
+          "id": 15,
+          "text": "Will say you know like uh because we're so exposed to Western culture we do kind",
+          "start": 59.96,
+          "end": 64.88
+        },
+        {
+          "id": 16,
+          "text": "Of like assimilate maybe like a western",
+          "start": 64.88,
+          "end": 68.12
+        },
+        {
+          "id": 17,
+          "text": "Tone to our speaking like subconsciously",
+          "start": 68.12,
+          "end": 71.44
+        },
+        {
+          "id": 18,
+          "text": "So of all the English accents which one",
+          "start": 71.44,
+          "end": 74.2
+        },
+        {
+          "id": 19,
+          "text": "Do you find the sounds best which of the",
+          "start": 74.2,
+          "end": 77.88
+        },
+        {
+          "id": 20,
+          "text": "Accents all of the accents I mean Indian because it's easier to understand yeah",
+          "start": 77.88,
+          "end": 82.72
+        },
+        {
+          "id": 21,
+          "text": "Sounds the best I love uh British accent",
+          "start": 82.72,
+          "end": 86.96
+        },
+        {
+          "id": 22,
+          "text": "I love a more but Australian also it looks fun to hear a Australian accent a",
+          "start": 86.96,
+          "end": 90.68
+        },
+        {
+          "id": 23,
+          "text": "Lot American yes but British is much more like on the top Tire yeah yeah I'm",
+          "start": 90.68,
+          "end": 96.56
+        },
+        {
+          "id": 24,
+          "text": "More for the British and also I really like the Irish accent and like I like",
+          "start": 96.56,
+          "end": 101.68
+        },
+        {
+          "id": 25,
+          "text": "The more thicker accents compared to the US accent and everything yeah yeah",
+          "start": 101.68,
+          "end": 106.8
+        },
+        {
+          "id": 26,
+          "text": "What's the difference is the Indian accent too different from the American",
+          "start": 106.8,
+          "end": 112.16
+        },
+        {
+          "id": 27,
+          "text": "One a bit I think the nuances are quite quite different like compared there's a",
+          "start": 112.16,
+          "end": 117.52
+        },
+        {
+          "id": 28,
+          "text": "Different flow and a rhythm to it like the way the speak",
+          "start": 117.52,
+          "end": 120.44
+        },
+        {
+          "id": 29,
+          "text": "So yeah ours is more neutral it's more",
+          "start": 120.44,
+          "end": 123.64
+        },
+        {
+          "id": 30,
+          "text": "Bland I I personally feel that but I'm not sure what people think about it yeah",
+          "start": 123.64,
+          "end": 129.52
+        },
+        {
+          "id": 31,
+          "text": "Yeah but then faking I don't think I can",
+          "start": 129.52,
+          "end": 131.56
+        },
+        {
+          "id": 32,
+          "text": "Do that I even though I worked in a call",
+          "start": 131.56,
+          "end": 133.64
+        },
+        {
+          "id": 33,
+          "text": "Center briefly and I try to speak in an American accent like but I it didn't",
+          "start": 133.64,
+          "end": 138
+        },
+        {
+          "id": 34,
+          "text": "Really work out for me so today we want",
+          "start": 138,
+          "end": 139.8
+        },
+        {
+          "id": 35,
+          "text": "To do an experiment in how an Indian can",
+          "start": 139.8,
+          "end": 143.68
+        },
+        {
+          "id": 36,
+          "text": "Imitate an American accent are you ready oh my",
+          "start": 143.68,
+          "end": 148.48
+        },
+        {
+          "id": 37,
+          "text": "God I'm become death that's more British",
+          "start": 148.48,
+          "end": 152.12
+        },
+        {
+          "id": 38,
+          "text": "Wait uh that was amazing I become death",
+          "start": 152.12,
+          "end": 156.4
+        },
+        {
+          "id": 39,
+          "text": "The destroyer of w no that's British I I",
+          "start": 156.4,
+          "end": 158.76
+        },
+        {
+          "id": 40,
+          "text": "Can't do an American I don't know what what is an American accent I don't know",
+          "start": 158.76,
+          "end": 162.88
+        },
+        {
+          "id": 41,
+          "text": "I can do I can do a Taylor Swift Bridge",
+          "start": 162.88,
+          "end": 165.2
+        },
+        {
+          "id": 42,
+          "text": "Please please yes oh okay you think I",
+          "start": 165.2,
+          "end": 169.76
+        },
+        {
+          "id": 43,
+          "text": "Didn't see you there were flashing lights at least I had de see to keep my",
+          "start": 169.76,
+          "end": 173.4
+        },
+        {
+          "id": 44,
+          "text": "Nights out of side only Rumors by my hips and thighs and my whisper size a",
+          "start": 173.4,
+          "end": 177.2
+        },
+        {
+          "id": 45,
+          "text": "Lord I think about jumping off of very T some things just",
+          "start": 177.2,
+          "end": 182.24
+        },
+        {
+          "id": 46,
+          "text": "To see you come running and say the one thing I've been wanting but",
+          "start": 182.24,
+          "end": 187.72
+        },
+        {
+          "id": 47,
+          "text": "No yeah so this line is basically from",
+          "start": 187.72,
+          "end": 191.04
+        },
+        {
+          "id": 48,
+          "text": "Pulp Fiction and uh Samuel Jackson is",
+          "start": 191.04,
+          "end": 194.44
+        },
+        {
+          "id": 49,
+          "text": "The guy who says these lines here English [ __ ] do you speak it",
+          "start": 194.44,
+          "end": 199.84
+        },
+        {
+          "id": 50,
+          "text": "That's that's all I can I don't know if",
+          "start": 199.84,
+          "end": 201.72
+        },
+        {
+          "id": 51,
+          "text": "I did it well on a scale of 1 to 10 how",
+          "start": 201.72,
+          "end": 203.8
+        },
+        {
+          "id": 52,
+          "text": "Much would you give yourself for this accent I'll give me myself a solid zero",
+          "start": 203.8,
+          "end": 209.04
+        },
+        {
+          "id": 53,
+          "text": "Yeah what is your impression overall impression of American accent I think",
+          "start": 209.04,
+          "end": 214.08
+        },
+        {
+          "id": 54,
+          "text": "It's more open it's more out there that's the kind of feel I get within",
+          "start": 214.08,
+          "end": 217.8
+        },
+        {
+          "id": 55,
+          "text": "American accent yeah it's not that reserved or like they're quite open",
+          "start": 217.8,
+          "end": 222.28
+        },
+        {
+          "id": 56,
+          "text": "They're quite loud yeah that's that's what I feel like yeah you know the",
+          "start": 222.28,
+          "end": 226.12
+        },
+        {
+          "id": 57,
+          "text": "Americana movies like the old cowboy ones I my mind just immediately goes to",
+          "start": 226.12,
+          "end": 231.84
+        },
+        {
+          "id": 58,
+          "text": "That uh I mean yeah I agree with that",
+          "start": 231.84,
+          "end": 234.52
+        },
+        {
+          "id": 59,
+          "text": "You know when I think of American accent",
+          "start": 234.52,
+          "end": 236.4
+        },
+        {
+          "id": 60,
+          "text": "I think of like the south I mean even though like you have other you know",
+          "start": 236.4,
+          "end": 240.56
+        },
+        {
+          "id": 61,
+          "text": "Accidents we are more exposed to like the New York accident stuff but Southern",
+          "start": 240.56,
+          "end": 244.52
+        }
+      ],
+      "original": [
+        {
+          "id": 11,
+          "text": "Question for today is when you speak English uh which accent do you use",
+          "start": 42.8,
+          "end": 48.4
+        },
+        {
+          "id": 12,
+          "text": "Indian accent normal Indian accent the best accent yeah Indian accent I mean",
+          "start": 48.4,
+          "end": 54
+        },
+        {
+          "id": 13,
+          "text": "That's what we learned you know like you live in India you know everyone around",
+          "start": 54,
+          "end": 57.44
+        },
+        {
+          "id": 14,
+          "text": "You speaks in an Indian accent so but I",
+          "start": 57.44,
+          "end": 59.96
+        },
+        {
+          "id": 15,
+          "text": "Will say you know like uh because we're so exposed to Western culture we do kind",
+          "start": 59.96,
+          "end": 64.88
+        },
+        {
+          "id": 16,
+          "text": "Of like assimilate maybe like a western",
+          "start": 64.88,
+          "end": 68.12
+        },
+        {
+          "id": 17,
+          "text": "Tone to our speaking like subconsciously",
+          "start": 68.12,
+          "end": 71.44
+        },
+        {
+          "id": 18,
+          "text": "So of all the English accents which one",
+          "start": 71.44,
+          "end": 74.2
+        },
+        {
+          "id": 19,
+          "text": "Do you find the sounds best which of the",
+          "start": 74.2,
+          "end": 77.88
+        },
+        {
+          "id": 20,
+          "text": "Accents all of the accents I mean Indian because it's easier to understand yeah",
+          "start": 77.88,
+          "end": 82.72
+        },
+        {
+          "id": 21,
+          "text": "Sounds the best I love uh British accent",
+          "start": 82.72,
+          "end": 86.96
+        },
+        {
+          "id": 22,
+          "text": "I love a more but Australian also it looks fun to hear a Australian accent a",
+          "start": 86.96,
+          "end": 90.68
+        },
+        {
+          "id": 23,
+          "text": "Lot American yes but British is much more like on the top Tire yeah yeah I'm",
+          "start": 90.68,
+          "end": 96.56
+        },
+        {
+          "id": 24,
+          "text": "More for the British and also I really like the Irish accent and like I like",
+          "start": 96.56,
+          "end": 101.68
+        },
+        {
+          "id": 25,
+          "text": "The more thicker accents compared to the US accent and everything yeah yeah",
+          "start": 101.68,
+          "end": 106.8
+        },
+        {
+          "id": 26,
+          "text": "What's the difference is the Indian accent too different from the American",
+          "start": 106.8,
+          "end": 112.16
+        },
+        {
+          "id": 27,
+          "text": "One a bit I think the nuances are quite quite different like compared there's a",
+          "start": 112.16,
+          "end": 117.52
+        },
+        {
+          "id": 28,
+          "text": "Different flow and a rhythm to it like the way the speak",
+          "start": 117.52,
+          "end": 120.44
+        },
+        {
+          "id": 29,
+          "text": "So yeah ours is more neutral it's more",
+          "start": 120.44,
+          "end": 123.64
+        },
+        {
+          "id": 30,
+          "text": "Bland I I personally feel that but I'm not sure what people think about it yeah",
+          "start": 123.64,
+          "end": 129.52
+        },
+        {
+          "id": 31,
+          "text": "Yeah but then faking I don't think I can",
+          "start": 129.52,
+          "end": 131.56
+        },
+        {
+          "id": 32,
+          "text": "Do that I even though I worked in a call",
+          "start": 131.56,
+          "end": 133.64
+        },
+        {
+          "id": 33,
+          "text": "Center briefly and I try to speak in an American accent like but I it didn't",
+          "start": 133.64,
+          "end": 138
+        },
+        {
+          "id": 34,
+          "text": "Really work out for me so today we want",
+          "start": 138,
+          "end": 139.8
+        },
+        {
+          "id": 35,
+          "text": "To do an experiment in how an Indian can",
+          "start": 139.8,
+          "end": 143.68
+        },
+        {
+          "id": 36,
+          "text": "Imitate an American accent are you ready oh my",
+          "start": 143.68,
+          "end": 148.48
+        },
+        {
+          "id": 37,
+          "text": "God I'm become death that's more British",
+          "start": 148.48,
+          "end": 152.12
+        },
+        {
+          "id": 38,
+          "text": "Wait uh that was amazing I become death",
+          "start": 152.12,
+          "end": 156.4
+        },
+        {
+          "id": 39,
+          "text": "The destroyer of w no that's British I I",
+          "start": 156.4,
+          "end": 158.76
+        },
+        {
+          "id": 40,
+          "text": "Can't do an American I don't know what what is an American accent I don't know",
+          "start": 158.76,
+          "end": 162.88
+        },
+        {
+          "id": 41,
+          "text": "I can do I can do a Taylor Swift Bridge",
+          "start": 162.88,
+          "end": 165.2
+        },
+        {
+          "id": 42,
+          "text": "Please please yes oh okay you think I",
+          "start": 165.2,
+          "end": 169.76
+        },
+        {
+          "id": 43,
+          "text": "Didn't see you there were flashing lights at least I had de see to keep my",
+          "start": 169.76,
+          "end": 173.4
+        },
+        {
+          "id": 44,
+          "text": "Nights out of side only Rumors by my hips and thighs and my whisper size a",
+          "start": 173.4,
+          "end": 177.2
+        },
+        {
+          "id": 45,
+          "text": "Lord I think about jumping off of very T some things just",
+          "start": 177.2,
+          "end": 182.24
+        },
+        {
+          "id": 46,
+          "text": "To see you come running and say the one thing I've been wanting but",
+          "start": 182.24,
+          "end": 187.72
+        },
+        {
+          "id": 47,
+          "text": "No yeah so this line is basically from",
+          "start": 187.72,
+          "end": 191.04
+        },
+        {
+          "id": 48,
+          "text": "Pulp Fiction and uh Samuel Jackson is",
+          "start": 191.04,
+          "end": 194.44
+        },
+        {
+          "id": 49,
+          "text": "The guy who says these lines here English [ __ ] do you speak it",
+          "start": 194.44,
+          "end": 199.84
+        },
+        {
+          "id": 50,
+          "text": "That's that's all I can I don't know if",
+          "start": 199.84,
+          "end": 201.72
+        },
+        {
+          "id": 51,
+          "text": "I did it well on a scale of 1 to 10 how",
+          "start": 201.72,
+          "end": 203.8
+        },
+        {
+          "id": 52,
+          "text": "Much would you give yourself for this accent I'll give me myself a solid zero",
+          "start": 203.8,
+          "end": 209.04
+        },
+        {
+          "id": 53,
+          "text": "Yeah what is your impression overall impression of American accent I think",
+          "start": 209.04,
+          "end": 214.08
+        },
+        {
+          "id": 54,
+          "text": "It's more open it's more out there that's the kind of feel I get within",
+          "start": 214.08,
+          "end": 217.8
+        },
+        {
+          "id": 55,
+          "text": "American accent yeah it's not that reserved or like they're quite open",
+          "start": 217.8,
+          "end": 222.28
+        },
+        {
+          "id": 56,
+          "text": "They're quite loud yeah that's that's what I feel like yeah you know the",
+          "start": 222.28,
+          "end": 226.12
+        },
+        {
+          "id": 57,
+          "text": "Americana movies like the old cowboy ones I my mind just immediately goes to",
+          "start": 226.12,
+          "end": 231.84
+        },
+        {
+          "id": 58,
+          "text": "That uh I mean yeah I agree with that",
+          "start": 231.84,
+          "end": 234.52
+        },
+        {
+          "id": 59,
+          "text": "You know when I think of American accent",
+          "start": 234.52,
+          "end": 236.4
+        },
+        {
+          "id": 60,
+          "text": "I think of like the south I mean even though like you have other you know",
+          "start": 236.4,
+          "end": 240.56
+        },
+        {
+          "id": 61,
+          "text": "Accidents we are more exposed to like the New York accident stuff but Southern",
+          "start": 240.56,
+          "end": 244.52
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "FQhIPchN-AQ",
+    "title": "How Happy Are Singaporeans Really in 2025? | Street Interview",
+    "level": "B2",
+    "topic": "Cuộc sống",
+    "lang": "en",
+    "week": 8,
+    "sentenceCount": 47,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 11,
+          "text": "Singaporeans really. Let's go. A bit of",
+          "start": 50.8,
+          "end": 54.88
+        },
+        {
+          "id": 12,
+          "text": "A random question. How happy would you",
+          "start": 54.88,
+          "end": 57.28
+        },
+        {
+          "id": 13,
+          "text": "Say you are on a scale of one to 10 nowadays? Maybe a",
+          "start": 57.28,
+          "end": 62.44
+        },
+        {
+          "id": 14,
+          "text": "Five. Yeah. Why five? Interesting. Why do you say that? I just feel like",
+          "start": 62.44,
+          "end": 68.24
+        },
+        {
+          "id": 15,
+          "text": "Recently I've been really tired like from work and I guess just life in",
+          "start": 68.24,
+          "end": 74.16
+        },
+        {
+          "id": 16,
+          "text": "General. I'm in my late 20s. So I just",
+          "start": 74.16,
+          "end": 78.88
+        },
+        {
+          "id": 17,
+          "text": "Feel it's been very tiring in life. So I",
+          "start": 78.88,
+          "end": 82.08
+        },
+        {
+          "id": 18,
+          "text": "Would just rate it a five right now.",
+          "start": 82.08,
+          "end": 83.92
+        },
+        {
+          "id": 19,
+          "text": "Yeah. On a scale of 1 to 10, maybe like",
+          "start": 83.92,
+          "end": 87.92
+        },
+        {
+          "id": 20,
+          "text": "Seven or eight, I guess. Yeah, I think that's about seven. Seven to eight.",
+          "start": 87.92,
+          "end": 93.84
+        },
+        {
+          "id": 21,
+          "text": "What's not? But how about you? How happy",
+          "start": 93.84,
+          "end": 95.76
+        },
+        {
+          "id": 22,
+          "text": "Would you say you are on a scale of 1 to",
+          "start": 95.76,
+          "end": 97.6
+        },
+        {
+          "id": 23,
+          "text": "10? N out of 10. Why do you say that you",
+          "start": 97.6,
+          "end": 100.6
+        },
+        {
+          "id": 24,
+          "text": "Are nine out of 10 happy? Because school",
+          "start": 100.6,
+          "end": 104.72
+        },
+        {
+          "id": 25,
+          "text": "Is fun and on weekends I get to do fun",
+          "start": 104.72,
+          "end": 108.08
+        },
+        {
+          "id": 26,
+          "text": "Stuff like going to shopping malls. Uh, I would say generally I'm around an",
+          "start": 108.08,
+          "end": 113.52
+        },
+        {
+          "id": 27,
+          "text": "Eight, but this is not every day. Okay. On average.",
+          "start": 113.52,
+          "end": 118.32
+        },
+        {
+          "id": 28,
+          "text": "Interesting. Why? Why do you say that?",
+          "start": 118.32,
+          "end": 122.44
+        },
+        {
+          "id": 29,
+          "text": "Um, I guess because I've learned to kind of",
+          "start": 122.44,
+          "end": 127.68
+        },
+        {
+          "id": 30,
+          "text": "See the silver linings, you know, like appreciate the small things every day. I",
+          "start": 127.68,
+          "end": 132.4
+        },
+        {
+          "id": 31,
+          "text": "Wouldn't say all along I'm a very happy person. Obviously, I went through like",
+          "start": 132.4,
+          "end": 135.76
+        },
+        {
+          "id": 32,
+          "text": "10 years of very unhappy times and then",
+          "start": 135.76,
+          "end": 139.44
+        },
+        {
+          "id": 33,
+          "text": "Yeah, I feel like now I'm able to really see the small little joys in everyday",
+          "start": 139.44,
+          "end": 144.52
+        },
+        {
+          "id": 34,
+          "text": "Life. Singap just dropped from being the happiest country in Asia on the World",
+          "start": 144.52,
+          "end": 150.32
+        },
+        {
+          "id": 35,
+          "text": "Happiness Index. Does that surprise",
+          "start": 150.32,
+          "end": 154.04
+        },
+        {
+          "id": 36,
+          "text": "You? No, actually it doesn't surprise me. Yeah, I think because",
+          "start": 154.04,
+          "end": 159.56
+        },
+        {
+          "id": 37,
+          "text": "Like you see less and less people who",
+          "start": 159.56,
+          "end": 163.04
+        },
+        {
+          "id": 38,
+          "text": "Are gracious nowadays like even on the train when I take the train to work you",
+          "start": 163.04,
+          "end": 167.68
+        },
+        {
+          "id": 39,
+          "text": "Know you get pressured even when you sit on like the the priority seat without",
+          "start": 167.68,
+          "end": 172.56
+        },
+        {
+          "id": 40,
+          "text": "Getting judged. I think that's a really bad indication that you know that people",
+          "start": 172.56,
+          "end": 176.64
+        },
+        {
+          "id": 41,
+          "text": "Are just not happy and yeah uh in fact I'm surprised that we are one",
+          "start": 176.64,
+          "end": 182.08
+        },
+        {
+          "id": 42,
+          "text": "Of the happiest in Asia first. Uh yeah",
+          "start": 182.08,
+          "end": 186.4
+        },
+        {
+          "id": 43,
+          "text": "But I'm surprised that okay I mean honestly I'm surprised we are one of the",
+          "start": 186.4,
+          "end": 190.24
+        },
+        {
+          "id": 44,
+          "text": "Happiest first uh but having said it",
+          "start": 190.24,
+          "end": 193.28
+        },
+        {
+          "id": 45,
+          "text": "Drop I think is uh in you know in like stock market they call mean reversion",
+          "start": 193.28,
+          "end": 199.04
+        },
+        {
+          "id": 46,
+          "text": "Right yeah so this is actually mean reversion we are going back to where we",
+          "start": 199.04,
+          "end": 202.48
+        },
+        {
+          "id": 47,
+          "text": "Should be so I don't know how that index",
+          "start": 202.48,
+          "end": 207.04
+        },
+        {
+          "id": 48,
+          "text": "Was calculated but I'm guessing in terms",
+          "start": 207.04,
+          "end": 209.2
+        },
+        {
+          "id": 49,
+          "text": "Of national security and like safetiness",
+          "start": 209.2,
+          "end": 213.12
+        },
+        {
+          "id": 50,
+          "text": "In like the country, we are generally quite happy. But I feel the people",
+          "start": 213.12,
+          "end": 217.84
+        },
+        {
+          "id": 51,
+          "text": "Around me are always like tired. They're just like running the rat race. So I'm",
+          "start": 217.84,
+          "end": 222.48
+        },
+        {
+          "id": 52,
+          "text": "Even I'm not surprised we dropped, but I'm surprised we're even the top",
+          "start": 222.48,
+          "end": 225.84
+        },
+        {
+          "id": 53,
+          "text": "Country. I guess it could be overall the",
+          "start": 225.84,
+          "end": 230.08
+        },
+        {
+          "id": 54,
+          "text": "World is a lot more turbulent than it has been um with, you know, all the",
+          "start": 230.08,
+          "end": 235.52
+        },
+        {
+          "id": 55,
+          "text": "Social unrest, the wars that have been going on. Economically it's not looking",
+          "start": 235.52,
+          "end": 240.28
+        },
+        {
+          "id": 56,
+          "text": "Too good and things are getting more",
+          "start": 240.28,
+          "end": 244.88
+        },
+        {
+          "id": 57,
+          "text": "Difficult in that sense. So people might be feeling that pressure. You know it's",
+          "start": 244.88,
+          "end": 249.04
+        }
+      ],
+      "original": [
+        {
+          "id": 11,
+          "text": "Singaporeans really. Let's go. A bit of",
+          "start": 50.8,
+          "end": 54.88
+        },
+        {
+          "id": 12,
+          "text": "A random question. How happy would you",
+          "start": 54.88,
+          "end": 57.28
+        },
+        {
+          "id": 13,
+          "text": "Say you are on a scale of one to 10 nowadays? Maybe a",
+          "start": 57.28,
+          "end": 62.44
+        },
+        {
+          "id": 14,
+          "text": "Five. Yeah. Why five? Interesting. Why do you say that? I just feel like",
+          "start": 62.44,
+          "end": 68.24
+        },
+        {
+          "id": 15,
+          "text": "Recently I've been really tired like from work and I guess just life in",
+          "start": 68.24,
+          "end": 74.16
+        },
+        {
+          "id": 16,
+          "text": "General. I'm in my late 20s. So I just",
+          "start": 74.16,
+          "end": 78.88
+        },
+        {
+          "id": 17,
+          "text": "Feel it's been very tiring in life. So I",
+          "start": 78.88,
+          "end": 82.08
+        },
+        {
+          "id": 18,
+          "text": "Would just rate it a five right now.",
+          "start": 82.08,
+          "end": 83.92
+        },
+        {
+          "id": 19,
+          "text": "Yeah. On a scale of 1 to 10, maybe like",
+          "start": 83.92,
+          "end": 87.92
+        },
+        {
+          "id": 20,
+          "text": "Seven or eight, I guess. Yeah, I think that's about seven. Seven to eight.",
+          "start": 87.92,
+          "end": 93.84
+        },
+        {
+          "id": 21,
+          "text": "What's not? But how about you? How happy",
+          "start": 93.84,
+          "end": 95.76
+        },
+        {
+          "id": 22,
+          "text": "Would you say you are on a scale of 1 to",
+          "start": 95.76,
+          "end": 97.6
+        },
+        {
+          "id": 23,
+          "text": "10? N out of 10. Why do you say that you",
+          "start": 97.6,
+          "end": 100.6
+        },
+        {
+          "id": 24,
+          "text": "Are nine out of 10 happy? Because school",
+          "start": 100.6,
+          "end": 104.72
+        },
+        {
+          "id": 25,
+          "text": "Is fun and on weekends I get to do fun",
+          "start": 104.72,
+          "end": 108.08
+        },
+        {
+          "id": 26,
+          "text": "Stuff like going to shopping malls. Uh, I would say generally I'm around an",
+          "start": 108.08,
+          "end": 113.52
+        },
+        {
+          "id": 27,
+          "text": "Eight, but this is not every day. Okay. On average.",
+          "start": 113.52,
+          "end": 118.32
+        },
+        {
+          "id": 28,
+          "text": "Interesting. Why? Why do you say that?",
+          "start": 118.32,
+          "end": 122.44
+        },
+        {
+          "id": 29,
+          "text": "Um, I guess because I've learned to kind of",
+          "start": 122.44,
+          "end": 127.68
+        },
+        {
+          "id": 30,
+          "text": "See the silver linings, you know, like appreciate the small things every day. I",
+          "start": 127.68,
+          "end": 132.4
+        },
+        {
+          "id": 31,
+          "text": "Wouldn't say all along I'm a very happy person. Obviously, I went through like",
+          "start": 132.4,
+          "end": 135.76
+        },
+        {
+          "id": 32,
+          "text": "10 years of very unhappy times and then",
+          "start": 135.76,
+          "end": 139.44
+        },
+        {
+          "id": 33,
+          "text": "Yeah, I feel like now I'm able to really see the small little joys in everyday",
+          "start": 139.44,
+          "end": 144.52
+        },
+        {
+          "id": 34,
+          "text": "Life. Singap just dropped from being the happiest country in Asia on the World",
+          "start": 144.52,
+          "end": 150.32
+        },
+        {
+          "id": 35,
+          "text": "Happiness Index. Does that surprise",
+          "start": 150.32,
+          "end": 154.04
+        },
+        {
+          "id": 36,
+          "text": "You? No, actually it doesn't surprise me. Yeah, I think because",
+          "start": 154.04,
+          "end": 159.56
+        },
+        {
+          "id": 37,
+          "text": "Like you see less and less people who",
+          "start": 159.56,
+          "end": 163.04
+        },
+        {
+          "id": 38,
+          "text": "Are gracious nowadays like even on the train when I take the train to work you",
+          "start": 163.04,
+          "end": 167.68
+        },
+        {
+          "id": 39,
+          "text": "Know you get pressured even when you sit on like the the priority seat without",
+          "start": 167.68,
+          "end": 172.56
+        },
+        {
+          "id": 40,
+          "text": "Getting judged. I think that's a really bad indication that you know that people",
+          "start": 172.56,
+          "end": 176.64
+        },
+        {
+          "id": 41,
+          "text": "Are just not happy and yeah uh in fact I'm surprised that we are one",
+          "start": 176.64,
+          "end": 182.08
+        },
+        {
+          "id": 42,
+          "text": "Of the happiest in Asia first. Uh yeah",
+          "start": 182.08,
+          "end": 186.4
+        },
+        {
+          "id": 43,
+          "text": "But I'm surprised that okay I mean honestly I'm surprised we are one of the",
+          "start": 186.4,
+          "end": 190.24
+        },
+        {
+          "id": 44,
+          "text": "Happiest first uh but having said it",
+          "start": 190.24,
+          "end": 193.28
+        },
+        {
+          "id": 45,
+          "text": "Drop I think is uh in you know in like stock market they call mean reversion",
+          "start": 193.28,
+          "end": 199.04
+        },
+        {
+          "id": 46,
+          "text": "Right yeah so this is actually mean reversion we are going back to where we",
+          "start": 199.04,
+          "end": 202.48
+        },
+        {
+          "id": 47,
+          "text": "Should be so I don't know how that index",
+          "start": 202.48,
+          "end": 207.04
+        },
+        {
+          "id": 48,
+          "text": "Was calculated but I'm guessing in terms",
+          "start": 207.04,
+          "end": 209.2
+        },
+        {
+          "id": 49,
+          "text": "Of national security and like safetiness",
+          "start": 209.2,
+          "end": 213.12
+        },
+        {
+          "id": 50,
+          "text": "In like the country, we are generally quite happy. But I feel the people",
+          "start": 213.12,
+          "end": 217.84
+        },
+        {
+          "id": 51,
+          "text": "Around me are always like tired. They're just like running the rat race. So I'm",
+          "start": 217.84,
+          "end": 222.48
+        },
+        {
+          "id": 52,
+          "text": "Even I'm not surprised we dropped, but I'm surprised we're even the top",
+          "start": 222.48,
+          "end": 225.84
+        },
+        {
+          "id": 53,
+          "text": "Country. I guess it could be overall the",
+          "start": 225.84,
+          "end": 230.08
+        },
+        {
+          "id": 54,
+          "text": "World is a lot more turbulent than it has been um with, you know, all the",
+          "start": 230.08,
+          "end": 235.52
+        },
+        {
+          "id": 55,
+          "text": "Social unrest, the wars that have been going on. Economically it's not looking",
+          "start": 235.52,
+          "end": 240.28
+        },
+        {
+          "id": 56,
+          "text": "Too good and things are getting more",
+          "start": 240.28,
+          "end": 244.88
+        },
+        {
+          "id": 57,
+          "text": "Difficult in that sense. So people might be feeling that pressure. You know it's",
+          "start": 244.88,
+          "end": 249.04
+        }
+      ]
+    }
+  },
+  {
+    "videoId": "Q8M57uJbVZo",
+    "title": "Do Singaporeans Know How Their English Sounds? (Singlish) | Street Interview",
+    "level": "B2",
+    "topic": "Giọng nói & accent",
+    "lang": "en",
+    "week": 8,
+    "sentenceCount": 60,
+    "cleanup": "heuristic",
+    "sentences": {
+      "ai": [
+        {
+          "id": 3,
+          "text": "You recognize the way I'm speaking right now how about my accent so today we are",
+          "start": 8.4,
+          "end": 12.8
+        },
+        {
+          "id": 4,
+          "text": "Going to interview singaporeans on Singlish so let's go when you are",
+          "start": 12.8,
+          "end": 17.4
+        },
+        {
+          "id": 5,
+          "text": "Speaking English as a Singaporean are you aware that you have a certain accent",
+          "start": 17.4,
+          "end": 22.76
+        },
+        {
+          "id": 6,
+          "text": "Oh yes 100% I uh I'm aware that I have a",
+          "start": 22.76,
+          "end": 26.16
+        },
+        {
+          "id": 7,
+          "text": "Slight Singlish accent I would say okay",
+          "start": 26.16,
+          "end": 28.48
+        },
+        {
+          "id": 8,
+          "text": "Like uh even when I was in the states my",
+          "start": 28.48,
+          "end": 30.92
+        },
+        {
+          "id": 9,
+          "text": "Friends told me that I had a little bit of an Asian accent because they didn't",
+          "start": 30.92,
+          "end": 34
+        },
+        {
+          "id": 10,
+          "text": "Know which part I was from okay yeah um I believe that when we speaks English",
+          "start": 34,
+          "end": 37.8
+        },
+        {
+          "id": 11,
+          "text": "Definitely to us it sounds very natural so we don't realize very often that we",
+          "start": 37.8,
+          "end": 41.6
+        },
+        {
+          "id": 12,
+          "text": "Have a different accent but at the same time I think it's a very common",
+          "start": 41.6,
+          "end": 44.48
+        },
+        {
+          "id": 13,
+          "text": "Experience when we go overseas and we hear that Singlish accent and the all",
+          "start": 44.48,
+          "end": 48.16
+        },
+        {
+          "id": 14,
+          "text": "The additional LA and everything that come out and it's just very distinctive",
+          "start": 48.16,
+          "end": 52.44
+        },
+        {
+          "id": 15,
+          "text": "So yes very aware that we do sound very different and per this difference does",
+          "start": 52.44,
+          "end": 57.16
+        },
+        {
+          "id": 16,
+          "text": "Have a certain connotation of value judgment behind it so do you like your",
+          "start": 57.16,
+          "end": 61.8
+        },
+        {
+          "id": 17,
+          "text": "Accent I do appreciate my accent it's a one of kindness in the whole world I",
+          "start": 61.8,
+          "end": 67.68
+        },
+        {
+          "id": 18,
+          "text": "Mean English it's been formed by so many",
+          "start": 67.68,
+          "end": 71.88
+        },
+        {
+          "id": 19,
+          "text": "Years from our forefathers till now it's",
+          "start": 71.88,
+          "end": 74.92
+        },
+        {
+          "id": 20,
+          "text": "Been evolving yeah a lot and I don't think I will",
+          "start": 74.92,
+          "end": 79.96
+        },
+        {
+          "id": 21,
+          "text": "Be I say I'm proud of the accent itself okay I'm also someone who teaches",
+          "start": 79.96,
+          "end": 85.28
+        },
+        {
+          "id": 22,
+          "text": "English okay yeah you know like um so um",
+          "start": 85.28,
+          "end": 88.92
+        },
+        {
+          "id": 23,
+          "text": "I think uh you have to love the language whatever language and um I think singage",
+          "start": 88.92,
+          "end": 94.28
+        },
+        {
+          "id": 24,
+          "text": "Itself is your background yeah so uh if",
+          "start": 94.28,
+          "end": 98.48
+        },
+        {
+          "id": 25,
+          "text": "You like who you are you Embrace Your Roots singl is is nothing bad do you",
+          "start": 98.48,
+          "end": 103.76
+        },
+        {
+          "id": 26,
+          "text": "Think foreigners will understand that",
+          "start": 103.76,
+          "end": 106.12
+        },
+        {
+          "id": 27,
+          "text": "Accent uh maybe foreigners W understand",
+          "start": 106.12,
+          "end": 110
+        },
+        {
+          "id": 28,
+          "text": "It might be not familiar for them like hey how come certain English you use it",
+          "start": 110,
+          "end": 114.8
+        },
+        {
+          "id": 29,
+          "text": "Differently MH I would say it's very mixed I mean just for myself personally",
+          "start": 114.8,
+          "end": 120.36
+        },
+        {
+          "id": 30,
+          "text": "Because like I mean a lot of people especially overseas people they tend to",
+          "start": 120.36,
+          "end": 125.2
+        },
+        {
+          "id": 31,
+          "text": "Think that Singlish is not a very refined form of English and I guess it's",
+          "start": 125.2,
+          "end": 129.72
+        },
+        {
+          "id": 32,
+          "text": "Agreeable to a certain extent but I think just in Singapore alone because we",
+          "start": 129.72,
+          "end": 133.76
+        },
+        {
+          "id": 33,
+          "text": "It's a language that we came up by ourselves is something that's unique to",
+          "start": 133.76,
+          "end": 137.28
+        },
+        {
+          "id": 34,
+          "text": "Us I think it's something that we singapor can definitely be proud of I",
+          "start": 137.28,
+          "end": 141.2
+        },
+        {
+          "id": 35,
+          "text": "Mean when we're using among other singapor and if of course if our",
+          "start": 141.2,
+          "end": 143.76
+        },
+        {
+          "id": 36,
+          "text": "Foreigners are interested to learn this language itself I mean we are also more",
+          "start": 143.76,
+          "end": 147.88
+        },
+        {
+          "id": 37,
+          "text": "Than open to sharing it with them yeah",
+          "start": 147.88,
+          "end": 150.32
+        },
+        {
+          "id": 38,
+          "text": "Yeah I did went to UK last year M sometimes my Singlish accent will slep",
+          "start": 150.32,
+          "end": 154.96
+        },
+        {
+          "id": 39,
+          "text": "Out when I ordering something sometimes I say like can I have this coffee can I",
+          "start": 154.96,
+          "end": 160.28
+        },
+        {
+          "id": 40,
+          "text": "I the love like sometimes they don't understand to them it's like uh it's",
+          "start": 160.28,
+          "end": 164.68
+        },
+        {
+          "id": 41,
+          "text": "Like saying yeah but to us it's like saying ah like that okay so sometimes I",
+          "start": 164.68,
+          "end": 169.92
+        },
+        {
+          "id": 42,
+          "text": "Need to repeat myself in a maybe more fluent accent so that they can",
+          "start": 169.92,
+          "end": 175.32
+        },
+        {
+          "id": 43,
+          "text": "Understand yeah I think s is just a",
+          "start": 175.32,
+          "end": 177.56
+        },
+        {
+          "id": 44,
+          "text": "Habit for us to develop okay yeah now uh",
+          "start": 177.56,
+          "end": 180.4
+        },
+        {
+          "id": 45,
+          "text": "So on the scale 1 to 10 how funny do you think your accent is to",
+          "start": 180.4,
+          "end": 184.96
+        },
+        {
+          "id": 46,
+          "text": "Foreigners like n n okay if they if they",
+          "start": 184.96,
+          "end": 188.56
+        },
+        {
+          "id": 47,
+          "text": "Hear like me talking to my friends and I don't know they're there then obviously",
+          "start": 188.56,
+          "end": 191.72
+        },
+        {
+          "id": 48,
+          "text": "I'll just be myself yeah but um if I actually see that they're there okay",
+          "start": 191.72,
+          "end": 195.2
+        },
+        {
+          "id": 49,
+          "text": "Like okay maybe cut down bit that is not",
+          "start": 195.2,
+          "end": 196.68
+        },
+        {
+          "id": 50,
+          "text": "So funny anymore okay yeah um yeah I would agree it's quite funny as well",
+          "start": 196.68,
+          "end": 201.12
+        },
+        {
+          "id": 51,
+          "text": "Maybe eight or seven okay do imp part to My Career there's a need to speak",
+          "start": 201.12,
+          "end": 206.88
+        },
+        {
+          "id": 52,
+          "text": "Slightly better English and sound slightly more like articulate my words",
+          "start": 206.88,
+          "end": 211.52
+        },
+        {
+          "id": 53,
+          "text": "And consonant better but at the same",
+          "start": 211.52,
+          "end": 214.68
+        },
+        {
+          "id": 54,
+          "text": "Time I think other people do have remark",
+          "start": 214.68,
+          "end": 217.72
+        },
+        {
+          "id": 55,
+          "text": "A lot of times that I do something very",
+          "start": 217.72,
+          "end": 218.76
+        },
+        {
+          "id": 56,
+          "text": "Different like when I travel by myself I stay at International hosts they always",
+          "start": 218.76,
+          "end": 223.28
+        },
+        {
+          "id": 57,
+          "text": "Ask me to speak slower or enunciate better yeah funny can be patronizing as",
+          "start": 223.28,
+          "end": 228.68
+        },
+        {
+          "id": 58,
+          "text": "A word okay but I think it depends which type of Foreigner you're referring to I",
+          "start": 228.68,
+          "end": 234.36
+        },
+        {
+          "id": 59,
+          "text": "Feel like our Southeast Asian counterparts um they would understand it",
+          "start": 234.36,
+          "end": 239
+        },
+        {
+          "id": 60,
+          "text": "A lot more yeah whereas people from Europe or who use English as a first",
+          "start": 239,
+          "end": 244.88
+        },
+        {
+          "id": 61,
+          "text": "Language might come here and be like the vocabulary structure is a little strange",
+          "start": 244.88,
+          "end": 249.64
+        },
+        {
+          "id": 62,
+          "text": "But there is actually like structure to English also okay and a lot of",
+          "start": 249.64,
+          "end": 253.4
+        }
+      ],
+      "original": [
+        {
+          "id": 3,
+          "text": "You recognize the way I'm speaking right now how about my accent so today we are",
+          "start": 8.4,
+          "end": 12.8
+        },
+        {
+          "id": 4,
+          "text": "Going to interview singaporeans on Singlish so let's go when you are",
+          "start": 12.8,
+          "end": 17.4
+        },
+        {
+          "id": 5,
+          "text": "Speaking English as a Singaporean are you aware that you have a certain accent",
+          "start": 17.4,
+          "end": 22.76
+        },
+        {
+          "id": 6,
+          "text": "Oh yes 100% I uh I'm aware that I have a",
+          "start": 22.76,
+          "end": 26.16
+        },
+        {
+          "id": 7,
+          "text": "Slight Singlish accent I would say okay",
+          "start": 26.16,
+          "end": 28.48
+        },
+        {
+          "id": 8,
+          "text": "Like uh even when I was in the states my",
+          "start": 28.48,
+          "end": 30.92
+        },
+        {
+          "id": 9,
+          "text": "Friends told me that I had a little bit of an Asian accent because they didn't",
+          "start": 30.92,
+          "end": 34
+        },
+        {
+          "id": 10,
+          "text": "Know which part I was from okay yeah um I believe that when we speaks English",
+          "start": 34,
+          "end": 37.8
+        },
+        {
+          "id": 11,
+          "text": "Definitely to us it sounds very natural so we don't realize very often that we",
+          "start": 37.8,
+          "end": 41.6
+        },
+        {
+          "id": 12,
+          "text": "Have a different accent but at the same time I think it's a very common",
+          "start": 41.6,
+          "end": 44.48
+        },
+        {
+          "id": 13,
+          "text": "Experience when we go overseas and we hear that Singlish accent and the all",
+          "start": 44.48,
+          "end": 48.16
+        },
+        {
+          "id": 14,
+          "text": "The additional LA and everything that come out and it's just very distinctive",
+          "start": 48.16,
+          "end": 52.44
+        },
+        {
+          "id": 15,
+          "text": "So yes very aware that we do sound very different and per this difference does",
+          "start": 52.44,
+          "end": 57.16
+        },
+        {
+          "id": 16,
+          "text": "Have a certain connotation of value judgment behind it so do you like your",
+          "start": 57.16,
+          "end": 61.8
+        },
+        {
+          "id": 17,
+          "text": "Accent I do appreciate my accent it's a one of kindness in the whole world I",
+          "start": 61.8,
+          "end": 67.68
+        },
+        {
+          "id": 18,
+          "text": "Mean English it's been formed by so many",
+          "start": 67.68,
+          "end": 71.88
+        },
+        {
+          "id": 19,
+          "text": "Years from our forefathers till now it's",
+          "start": 71.88,
+          "end": 74.92
+        },
+        {
+          "id": 20,
+          "text": "Been evolving yeah a lot and I don't think I will",
+          "start": 74.92,
+          "end": 79.96
+        },
+        {
+          "id": 21,
+          "text": "Be I say I'm proud of the accent itself okay I'm also someone who teaches",
+          "start": 79.96,
+          "end": 85.28
+        },
+        {
+          "id": 22,
+          "text": "English okay yeah you know like um so um",
+          "start": 85.28,
+          "end": 88.92
+        },
+        {
+          "id": 23,
+          "text": "I think uh you have to love the language whatever language and um I think singage",
+          "start": 88.92,
+          "end": 94.28
+        },
+        {
+          "id": 24,
+          "text": "Itself is your background yeah so uh if",
+          "start": 94.28,
+          "end": 98.48
+        },
+        {
+          "id": 25,
+          "text": "You like who you are you Embrace Your Roots singl is is nothing bad do you",
+          "start": 98.48,
+          "end": 103.76
+        },
+        {
+          "id": 26,
+          "text": "Think foreigners will understand that",
+          "start": 103.76,
+          "end": 106.12
+        },
+        {
+          "id": 27,
+          "text": "Accent uh maybe foreigners W understand",
+          "start": 106.12,
+          "end": 110
+        },
+        {
+          "id": 28,
+          "text": "It might be not familiar for them like hey how come certain English you use it",
+          "start": 110,
+          "end": 114.8
+        },
+        {
+          "id": 29,
+          "text": "Differently MH I would say it's very mixed I mean just for myself personally",
+          "start": 114.8,
+          "end": 120.36
+        },
+        {
+          "id": 30,
+          "text": "Because like I mean a lot of people especially overseas people they tend to",
+          "start": 120.36,
+          "end": 125.2
+        },
+        {
+          "id": 31,
+          "text": "Think that Singlish is not a very refined form of English and I guess it's",
+          "start": 125.2,
+          "end": 129.72
+        },
+        {
+          "id": 32,
+          "text": "Agreeable to a certain extent but I think just in Singapore alone because we",
+          "start": 129.72,
+          "end": 133.76
+        },
+        {
+          "id": 33,
+          "text": "It's a language that we came up by ourselves is something that's unique to",
+          "start": 133.76,
+          "end": 137.28
+        },
+        {
+          "id": 34,
+          "text": "Us I think it's something that we singapor can definitely be proud of I",
+          "start": 137.28,
+          "end": 141.2
+        },
+        {
+          "id": 35,
+          "text": "Mean when we're using among other singapor and if of course if our",
+          "start": 141.2,
+          "end": 143.76
+        },
+        {
+          "id": 36,
+          "text": "Foreigners are interested to learn this language itself I mean we are also more",
+          "start": 143.76,
+          "end": 147.88
+        },
+        {
+          "id": 37,
+          "text": "Than open to sharing it with them yeah",
+          "start": 147.88,
+          "end": 150.32
+        },
+        {
+          "id": 38,
+          "text": "Yeah I did went to UK last year M sometimes my Singlish accent will slep",
+          "start": 150.32,
+          "end": 154.96
+        },
+        {
+          "id": 39,
+          "text": "Out when I ordering something sometimes I say like can I have this coffee can I",
+          "start": 154.96,
+          "end": 160.28
+        },
+        {
+          "id": 40,
+          "text": "I the love like sometimes they don't understand to them it's like uh it's",
+          "start": 160.28,
+          "end": 164.68
+        },
+        {
+          "id": 41,
+          "text": "Like saying yeah but to us it's like saying ah like that okay so sometimes I",
+          "start": 164.68,
+          "end": 169.92
+        },
+        {
+          "id": 42,
+          "text": "Need to repeat myself in a maybe more fluent accent so that they can",
+          "start": 169.92,
+          "end": 175.32
+        },
+        {
+          "id": 43,
+          "text": "Understand yeah I think s is just a",
+          "start": 175.32,
+          "end": 177.56
+        },
+        {
+          "id": 44,
+          "text": "Habit for us to develop okay yeah now uh",
+          "start": 177.56,
+          "end": 180.4
+        },
+        {
+          "id": 45,
+          "text": "So on the scale 1 to 10 how funny do you think your accent is to",
+          "start": 180.4,
+          "end": 184.96
+        },
+        {
+          "id": 46,
+          "text": "Foreigners like n n okay if they if they",
+          "start": 184.96,
+          "end": 188.56
+        },
+        {
+          "id": 47,
+          "text": "Hear like me talking to my friends and I don't know they're there then obviously",
+          "start": 188.56,
+          "end": 191.72
+        },
+        {
+          "id": 48,
+          "text": "I'll just be myself yeah but um if I actually see that they're there okay",
+          "start": 191.72,
+          "end": 195.2
+        },
+        {
+          "id": 49,
+          "text": "Like okay maybe cut down bit that is not",
+          "start": 195.2,
+          "end": 196.68
+        },
+        {
+          "id": 50,
+          "text": "So funny anymore okay yeah um yeah I would agree it's quite funny as well",
+          "start": 196.68,
+          "end": 201.12
+        },
+        {
+          "id": 51,
+          "text": "Maybe eight or seven okay do imp part to My Career there's a need to speak",
+          "start": 201.12,
+          "end": 206.88
+        },
+        {
+          "id": 52,
+          "text": "Slightly better English and sound slightly more like articulate my words",
+          "start": 206.88,
+          "end": 211.52
+        },
+        {
+          "id": 53,
+          "text": "And consonant better but at the same",
+          "start": 211.52,
+          "end": 214.68
+        },
+        {
+          "id": 54,
+          "text": "Time I think other people do have remark",
+          "start": 214.68,
+          "end": 217.72
+        },
+        {
+          "id": 55,
+          "text": "A lot of times that I do something very",
+          "start": 217.72,
+          "end": 218.76
+        },
+        {
+          "id": 56,
+          "text": "Different like when I travel by myself I stay at International hosts they always",
+          "start": 218.76,
+          "end": 223.28
+        },
+        {
+          "id": 57,
+          "text": "Ask me to speak slower or enunciate better yeah funny can be patronizing as",
+          "start": 223.28,
+          "end": 228.68
+        },
+        {
+          "id": 58,
+          "text": "A word okay but I think it depends which type of Foreigner you're referring to I",
+          "start": 228.68,
+          "end": 234.36
+        },
+        {
+          "id": 59,
+          "text": "Feel like our Southeast Asian counterparts um they would understand it",
+          "start": 234.36,
+          "end": 239
+        },
+        {
+          "id": 60,
+          "text": "A lot more yeah whereas people from Europe or who use English as a first",
+          "start": 239,
+          "end": 244.88
+        },
+        {
+          "id": 61,
+          "text": "Language might come here and be like the vocabulary structure is a little strange",
+          "start": 244.88,
+          "end": 249.64
+        },
+        {
+          "id": 62,
+          "text": "But there is actually like structure to English also okay and a lot of",
+          "start": 249.64,
+          "end": 253.4
+        }
+      ]
+    }
+  }
+]

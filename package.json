@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "gen:audio": "node scripts/gen-ielts-audio.mjs",
+    "curate:shadowing": "node scripts/curate-shadowing.mjs",
     "audit:weeks": "node scripts/audit-week-load.mjs",
     "audit:reading": "node scripts/audit-reading-coverage.mjs"
   },

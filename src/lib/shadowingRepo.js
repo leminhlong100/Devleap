@@ -3,20 +3,55 @@ import { supabase, isCloudEnabled } from '@/lib/supabase'
 /**
  * Lớp truy cập dữ liệu clip Shadowing.
  *
- * Nguồn duy nhất là bảng `shadowing_clips` trên Supabase (thêm/sửa qua trang
- * admin, không cần deploy). Khi chưa cấu hình Supabase (chế độ khách / dev local
- * không có .env), danh mục trả rỗng — người dùng vẫn dán URL YouTube để tự tạo bài.
+ * Hai nguồn được GỘP lại:
+ * - File tĩnh `public/data/shadowing-clips.json` — bộ clip đã curate sẵn qua
+ *   `scripts/curate-shadowing.mjs` (xem docs/KE_HOACH_CAI_TIEN_WEBSITE.md Bước
+ *   1.3), luôn có sẵn kể cả chế độ khách / chưa cấu hình Supabase.
+ * - Bảng `shadowing_clips` trên Supabase — clip admin tự thêm/sửa qua
+ *   `/admin/shadowing`, không cần deploy lại. Cùng `videoId` thì bản Supabase
+ *   THẮNG (admin có thể ghi đè một clip đã seed sẵn).
  */
 
-/** Danh mục clip (cột nhẹ) cho lưới chọn clip. */
+let staticClipsPromise = null
+
+/** Nạp + cache bộ clip tĩnh trong phiên (tránh fetch lại mỗi lần gọi). */
+function loadStaticClips() {
+  if (!staticClipsPromise) {
+    staticClipsPromise = fetch('/data/shadowing-clips.json')
+      .then((res) => (res.ok ? res.json() : []))
+      .catch(() => [])
+  }
+  return staticClipsPromise
+}
+
+function toListItem(c) {
+  return {
+    videoId: c.videoId,
+    title: c.title,
+    level: c.level,
+    topic: c.topic,
+    sentenceCount: c.sentenceCount ?? countSentences(c.sentences),
+    week: c.week ?? null,
+  }
+}
+
+/** Gộp 2 danh mục theo `videoId`, bản sau (`overrides`) thắng khi trùng. */
+function mergeByVideoId(base, overrides) {
+  const map = new Map(base.map((c) => [c.videoId, c]))
+  for (const c of overrides) map.set(c.videoId, c)
+  return [...map.values()]
+}
+
+/** Danh mục clip (cột nhẹ) cho lưới chọn clip — tĩnh + Supabase gộp lại. */
 export async function fetchClipList() {
-  if (!isCloudEnabled) return []
+  const staticItems = (await loadStaticClips()).map(toListItem)
+  if (!isCloudEnabled) return staticItems
   const { data, error } = await supabase
     .from('shadowing_clips')
     .select('video_id, title, level, topic, sentence_count, week')
     .order('created_at', { ascending: true })
   if (error) throw error
-  return (data || []).map((r) => ({
+  const cloudItems = (data || []).map((r) => ({
     videoId: r.video_id,
     title: r.title,
     level: r.level,
@@ -24,6 +59,7 @@ export async function fetchClipList() {
     sentenceCount: r.sentence_count,
     week: r.week,
   }))
+  return mergeByVideoId(staticItems, cloudItems)
 }
 
 /**
@@ -32,42 +68,34 @@ export async function fetchClipList() {
  * curate bài nào cho tuần đó (bình thường, không phải lỗi).
  */
 export async function fetchClipsByWeek(week) {
-  if (!isCloudEnabled || !week) return []
-  const { data, error } = await supabase
-    .from('shadowing_clips')
-    .select('video_id, title, level, topic, sentence_count, week')
-    .eq('week', Number(week))
-    .order('created_at', { ascending: true })
-  if (error) throw error
-  return (data || []).map((r) => ({
-    videoId: r.video_id,
-    title: r.title,
-    level: r.level,
-    topic: r.topic,
-    sentenceCount: r.sentence_count,
-    week: r.week,
-  }))
+  if (!week) return []
+  const list = await fetchClipList()
+  return list.filter((c) => c.week === Number(week))
 }
 
 /** Nạp đầy đủ một clip (kèm câu) theo videoId. Trả null nếu không có. */
 export async function fetchClip(videoId) {
-  if (!isCloudEnabled) return null
-  const { data, error } = await supabase
-    .from('shadowing_clips')
-    .select('*')
-    .eq('video_id', videoId)
-    .maybeSingle()
-  if (error) throw error
-  if (!data) return null
-  return {
-    videoId: data.video_id,
-    title: data.title,
-    level: data.level,
-    topic: data.topic,
-    lang: data.lang,
-    week: data.week,
-    sentences: data.sentences, // { ai, original }
+  if (isCloudEnabled) {
+    const { data, error } = await supabase
+      .from('shadowing_clips')
+      .select('*')
+      .eq('video_id', videoId)
+      .maybeSingle()
+    if (error) throw error
+    if (data) {
+      return {
+        videoId: data.video_id,
+        title: data.title,
+        level: data.level,
+        topic: data.topic,
+        lang: data.lang,
+        week: data.week,
+        sentences: data.sentences, // { ai, original }
+      }
+    }
   }
+  const staticClips = await loadStaticClips()
+  return staticClips.find((c) => c.videoId === videoId) || null
 }
 
 /** Đếm số câu của clip (ưu tiên bản AI, fallback original). */
