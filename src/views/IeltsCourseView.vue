@@ -40,6 +40,13 @@ function goFinal() {
 }
 const finalResult = computed(() => user.quizOf('ielts', 'final'))
 const finalLocked = computed(() => !prog.value.allDone)
+
+function chooseTrack(track) {
+  if (track === user.ieltsTrack) return
+  const label = track === 'A' ? 'Work & Life English' : 'IELTS Bridge'
+  if (!confirm(`Đổi Tuần 6–8 sang lộ trình "${label}"? Trang sẽ tải lại.`)) return
+  user.setIeltsTrack(track)
+}
 </script>
 
 <template>
@@ -49,6 +56,16 @@ const finalLocked = computed(() => !prog.value.allDone)
       <div class="banner-emoji">🎯</div>
       <div class="banner-inner">
         <span class="back" @click="router.push({ name: 'courses' })">← Tất cả khóa học</span>
+        <div class="track-switch">
+          <span class="track-label">Tuần 6–8:</span>
+          <button class="track-btn" :class="{ active: user.ieltsTrack === 'A' }" @click="chooseTrack('A')">
+            🧑‍💼 Work & Life
+          </button>
+          <button class="track-btn" :class="{ active: user.ieltsTrack === 'B' }" @click="chooseTrack('B')">
+            🎯 IELTS Bridge
+          </button>
+          <button class="track-btn" @click="router.push({ name: 'milestones' })">📊 So sánh mốc</button>
+        </div>
         <div class="banner-head">
           <div class="banner-text">
             <span class="badge">{{ ieltsMeta.badge }}</span>
@@ -168,6 +185,37 @@ const finalLocked = computed(() => !prog.value.allDone)
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+.track-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.track-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.track-btn {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.track-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.track-btn.active {
+  background: #fff;
+  color: #00966a;
+  border-color: #fff;
 }
 .banner-head {
   display: flex;

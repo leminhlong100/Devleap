@@ -4,6 +4,9 @@ import { parseVideoId, loadYouTubeApi } from '@/lib/youtube'
 import { fetchClipList, fetchClip, saveClip, deleteClip } from '@/lib/shadowingRepo'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+// Thang nghe "thật hóa dần" (docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.5):
+// Tuần 4-6 gợi ý clip bán thực (podcast/tốc độ 0.8-1.0), Tuần 7-8 gợi ý clip gốc.
+const WEEK_OPTIONS = [4, 5, 6, 7, 8]
 
 // —— Danh sách clip đã có ——
 const clips = ref([])
@@ -24,7 +27,7 @@ const urlInput = ref('')
 const generating = ref(false)
 const error = ref('')
 
-// Bài đang soạn: { videoId, title, topic, level, lang, sentences:{ai,original} }
+// Bài đang soạn: { videoId, title, topic, level, lang, week, sentences:{ai,original} }
 const draft = ref(null)
 const saving = ref(false)
 const savedMsg = ref('')
@@ -57,6 +60,7 @@ async function generate() {
       topic: data.author || '',
       level: 'A1',
       lang: 'en',
+      week: null,
       sentences: data.sentences, // { ai, original }
     }
   } catch (e) {
@@ -84,6 +88,7 @@ async function editExisting(videoId) {
       topic: clip.topic || '',
       level: clip.level || 'A1',
       lang: clip.lang || 'en',
+      week: clip.week || null,
       sentences: s,
     }
   } catch (e) {
@@ -362,6 +367,13 @@ onBeforeUnmount(() => {
             <option v-for="l in LEVELS" :key="l" :value="l">{{ l }}</option>
           </select>
         </label>
+        <label class="field sm">
+          <span>Gắn với Tuần (thang nghe)</span>
+          <select v-model="draft.week" class="in">
+            <option :value="null">Không gắn tuần</option>
+            <option v-for="w in WEEK_OPTIONS" :key="w" :value="w">Tuần {{ w }}</option>
+          </select>
+        </label>
         <div class="field sm">
           <span>Video ID</span>
           <code class="vid">{{ draft.videoId }}</code>
@@ -452,7 +464,7 @@ onBeforeUnmount(() => {
     <div v-else-if="!clips.length" class="muted">Chưa có clip nào. Tạo bài đầu tiên ở trên.</div>
     <table v-else class="tbl">
       <thead>
-        <tr><th>Tiêu đề</th><th>Cấp độ</th><th>Số câu</th><th></th></tr>
+        <tr><th>Tiêu đề</th><th>Cấp độ</th><th>Tuần</th><th>Số câu</th><th></th></tr>
       </thead>
       <tbody>
         <tr v-for="c in clips" :key="c.videoId">
@@ -461,6 +473,7 @@ onBeforeUnmount(() => {
             <div class="c-sub">{{ c.topic }}</div>
           </td>
           <td><span class="lvl">{{ c.level }}</span></td>
+          <td><span v-if="c.week" class="lvl">Tuần {{ c.week }}</span><span v-else class="muted">—</span></td>
           <td>{{ c.sentenceCount }}</td>
           <td class="row-actions">
             <button class="link" @click="editExisting(c.videoId)">Sửa</button>

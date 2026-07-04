@@ -13,7 +13,7 @@ export async function fetchClipList() {
   if (!isCloudEnabled) return []
   const { data, error } = await supabase
     .from('shadowing_clips')
-    .select('video_id, title, level, topic, sentence_count')
+    .select('video_id, title, level, topic, sentence_count, week')
     .order('created_at', { ascending: true })
   if (error) throw error
   return (data || []).map((r) => ({
@@ -22,6 +22,30 @@ export async function fetchClipList() {
     level: r.level,
     topic: r.topic,
     sentenceCount: r.sentence_count,
+    week: r.week,
+  }))
+}
+
+/**
+ * Danh mục clip đã curate cho MỘT tuần cụ thể của khóa IELTS (thang nghe "thật
+ * hóa dần" — xem docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.5). Trả rỗng nếu chưa
+ * curate bài nào cho tuần đó (bình thường, không phải lỗi).
+ */
+export async function fetchClipsByWeek(week) {
+  if (!isCloudEnabled || !week) return []
+  const { data, error } = await supabase
+    .from('shadowing_clips')
+    .select('video_id, title, level, topic, sentence_count, week')
+    .eq('week', Number(week))
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data || []).map((r) => ({
+    videoId: r.video_id,
+    title: r.title,
+    level: r.level,
+    topic: r.topic,
+    sentenceCount: r.sentence_count,
+    week: r.week,
   }))
 }
 
@@ -41,6 +65,7 @@ export async function fetchClip(videoId) {
     level: data.level,
     topic: data.topic,
     lang: data.lang,
+    week: data.week,
     sentences: data.sentences, // { ai, original }
   }
 }
@@ -52,8 +77,10 @@ function countSentences(sentences) {
 }
 
 /**
- * Thêm/sửa một clip (admin). payload: { videoId, title, level, topic, lang, sentences }.
- * Dùng upsert theo khóa video_id nên gọi lại cùng video sẽ ghi đè.
+ * Thêm/sửa một clip (admin). payload: { videoId, title, level, topic, lang, week, sentences }.
+ * `week` (1-8, tùy chọn) gắn clip với một tuần của khóa IELTS nền tảng — dùng để
+ * gợi ý bài shadowing/nghe thật trong buổi học của tuần đó (Tuần 4-8, xem
+ * fetchClipsByWeek). Dùng upsert theo khóa video_id nên gọi lại cùng video sẽ ghi đè.
  */
 export async function saveClip(payload) {
   if (!isCloudEnabled) throw new Error('Chưa cấu hình Supabase — không thể lưu clip.')
@@ -63,6 +90,7 @@ export async function saveClip(payload) {
     level: payload.level,
     topic: payload.topic || null,
     lang: payload.lang || 'en',
+    week: payload.week ? Number(payload.week) : null,
     sentences: payload.sentences,
     sentence_count: countSentences(payload.sentences),
     updated_at: new Date().toISOString(),

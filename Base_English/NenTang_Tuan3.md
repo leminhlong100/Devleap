@@ -11,6 +11,8 @@
 - **Listening:** daily routine audio, time expressions
 - **Nhiệm vụ nhẹ:** Viết nhật ký 7 ảnh và mô tả một tuần bằng tiếng Anh đơn giản.
 - **Mốc kiểm tra:** Nói được 90 giây về một ngày bình thường.
+- **🌍 Mission tuần (ngoài app):** Nhắn tin tiếng Anh với 1 người (bạn bè/đồng nghiệp/language partner) tối thiểu 5 lượt qua lại. Bằng chứng: chụp ảnh đoạn chat, nộp ở Day 20.
+- **🗣️ Buổi nói người thật #1:** Từ tuần này, cứ 2 tuần lại có 1 buổi nói với người thật (≥10 phút) — xem guide "Buổi nói người thật đầu tiên" (docs/BUOI_NOI_NGUOI_THAT.md).
 
 ### Nhịp học hằng ngày
 
@@ -417,6 +419,8 @@ Không có từ khủng. Nhưng có đường đi.
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết đoạn 80 từ "một ngày của tôi" (present simple + tần suất); nhờ AI chữa.
 - [ ] Sản phẩm: đọc to & ghi âm đoạn vừa viết.
+- [ ] 🌍 Mission tuần (ngoài app): nhắn tin tiếng Anh với 1 người (bạn bè/đồng nghiệp/language partner) tối thiểu 5 lượt. Chụp ảnh đoạn chat làm bằng chứng.
+- [ ] 🗣️ Buổi nói người thật #1 (≥10 phút): luyện trước với AI theo kịch bản mở đầu, sau đó nói chuyện thật qua Tandem/HelloTalk/Discord/Free4Talk hoặc với bạn/đồng nghiệp.
 - [ ] Sổ lỗi (5'): câu nào còn dịch word-by-word?
 
 ### Day 21 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -425,6 +429,7 @@ Không có từ khủng. Nhưng có đường đi.
 - [ ] Viết: viết 8 câu vận dụng ngữ pháp tuần; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 3 (mốc: nói 90 giây về một ngày).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission/buổi nói người thật, ghi 1 câu bí, 1 từ không nghe ra, 1 điều làm tốt.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại.
 
 ## ✅ Quiz tuần 3

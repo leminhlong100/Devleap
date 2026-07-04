@@ -2,6 +2,9 @@
 
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
+- **🌍 Mission tuần — "Trận chung kết":** 15 phút nói chuyện với người thật + nghe lại bản ghi "mốc 0" (Day 1) để tự thấy tiến bộ. Bằng chứng: ghi chú/ghi âm buổi nói, nộp ở Day 63.
+- **🗣️ Buổi nói người thật #4:** buổi cuối cùng của khóa — xem guide "Buổi nói người thật đầu tiên" (docs/BUOI_NOI_NGUOI_THAT.md).
+
 ### Nhịp học hằng ngày
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
@@ -382,10 +385,13 @@ Lưu ý: Bài essay này dùng cho giai đoạn luyện nền tảng. Mục tiê
 - [ ] Sổ lỗi (5'): tổng kết 5 lỗi lớn nhất của bài mock.
 
 ### Day 63 — Nhìn lại + tự chấm band readiness + Bài kiểm tra tuần
+- [ ] 🗣️ Buổi nói người thật #4 (≥15 phút) — "Trận chung kết": luyện trước với AI, sau đó nói chuyện thật qua Tandem/HelloTalk/Discord/Free4Talk hoặc với bạn/đồng nghiệp.
+- [ ] 🌍 Mission tuần: nghe lại "bản ghi mốc 0" (Day 1) ngay sau buổi nói #4, ghi chú lại cảm nhận làm bằng chứng.
 - [ ] Tự chấm "band readiness": Chưa sẵn sàng (còn rơi rụng be/động từ, câu hay đứt) → Gần sẵn sàng ~3.5–4.0 (câu cơ bản đúng, nói 60–90s có khung) → Sẵn sàng vào IELTS ~4.0–4.5 (nói 2 phút có sườn, viết intro+body, đọc tìm được bằng chứng).
 - [ ] So sánh: nghe lại "bản ghi mốc 0" (Day 1) — ghi 3 tiến bộ rõ nhất.
 - [ ] Nhiệm vụ nhẹ: viết lá thư ngắn gửi lại bản thân ở Tuần 0.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 8 (đạt ≥70%).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng) — tổng kết cả khóa: 1 câu bí lớn nhất từng gặp, 1 điều tiến bộ rõ nhất, 1 việc sẽ tiếp tục làm sau khóa.
 - [ ] Bước tiếp theo: sau khóa nền tảng này, em đã đủ sức bắt đầu một khóa IELTS thật (band descriptors đầy đủ + full mock 4 kỹ năng).
 
 ## ✅ Quiz tuần 8

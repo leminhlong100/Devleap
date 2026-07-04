@@ -27,6 +27,9 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // So sánh mốc ghi âm (Đầu/Giữa/Cuối khóa) + nhật ký Mission + huy hiệu real-life
+  { path: '/milestones', name: 'milestones', component: () => import('@/views/MilestonesView.vue'), meta: { requiresAuth: true } },
+
   // Bài kiểm tra cuối tuần / cuối khóa (lưu điểm) — scope: "week-N" | "final"
   {
     path: '/courses/:course(java|ielts)/test/:scope',

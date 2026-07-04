@@ -11,6 +11,7 @@
 - **Listening:** catch basic verbs and nouns
 - **Nhiệm vụ nhẹ:** Mô tả căn phòng như một cảnh phim.
 - **Mốc kiểm tra:** Sửa được lỗi thiếu động từ như She beautiful.
+- **🌍 Mission tuần (ngoài app):** Viết 3 câu comment tiếng Anh THẬT dưới 1 video YouTube em thích. Bằng chứng: link video + ảnh chụp comment, nộp ở Day 13.
 
 ### Nhịp học hằng ngày
 
@@ -253,6 +254,7 @@ Bài viết phát triển bằng cách mở rộng từng bước, không phải
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết 8 câu, mỗi câu tự kiểm 3 điểm (động từ? "s"? đếm được?); nhờ AI chữa.
 - [ ] Sản phẩm: chọn 3 câu hay nhất, đọc to & ghi âm.
+- [ ] 🌍 Mission tuần (ngoài app): viết 3 câu comment tiếng Anh THẬT dưới 1 video YouTube em thích. Lưu link + ảnh chụp comment làm bằng chứng.
 - [ ] Sổ lỗi (5'): sửa lại 3 câu sai nhất trong tuần.
 
 ### Day 14 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -261,6 +263,7 @@ Bài viết phát triển bằng cách mở rộng từng bước, không phải
 - [ ] Viết: viết 8 câu vận dụng các điểm ngữ pháp tuần; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 2 (đạt ≥70% để mở tuần sau).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission tuần, ghi 1 câu/cụm em không biết diễn đạt, 1 điều làm tốt, 1 điều muốn thử lại.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại.
 
 ## ✅ Quiz tuần 2

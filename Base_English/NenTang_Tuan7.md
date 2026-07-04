@@ -11,6 +11,8 @@
 - **Listening:** prediction, keywords, paraphrase lite
 - **Nhiệm vụ nhẹ:** Tìm 10 biển hiệu hoặc đồ vật có chữ tiếng Anh quanh mình.
 - **Mốc kiểm tra:** Trả lời được 10 câu hỏi Reading từ một đoạn ngắn.
+- **🌍 Mission tuần (ngoài app):** Gọi món / hỏi đường / mua hàng bằng tiếng Anh (hoặc roleplay video-call với partner nếu không có bối cảnh thật). Bằng chứng: ghi âm/ghi lại đoạn hội thoại hoặc mô tả ngắn, nộp ở Day 48.
+- **🗣️ Buổi nói người thật #3:** 2 tuần kể từ buổi #2 — xem guide "Buổi nói người thật đầu tiên" (docs/BUOI_NOI_NGUOI_THAT.md).
 
 ### Nhịp học hằng ngày
 
@@ -500,6 +502,8 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết 1 câu tóm tắt cho mỗi passage + 1 short response; nhờ AI chữa.
 - [ ] Sản phẩm: trả lời câu hỏi 3 bài (tự chấm).
+- [ ] 🌍 Mission tuần (ngoài app): gọi món / hỏi đường / mua hàng bằng tiếng Anh (hoặc roleplay video-call với partner nếu chưa có bối cảnh thật). Ghi âm hoặc ghi chú lại đoạn hội thoại làm bằng chứng.
+- [ ] 🗣️ Buổi nói người thật #3 (≥10 phút): luyện trước với AI, sau đó nói chuyện thật qua Tandem/HelloTalk/Discord/Free4Talk hoặc với bạn/đồng nghiệp.
 - [ ] Sổ lỗi (5'): chỗ hiểu sai ý chính?
 
 ### Day 49 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -508,6 +512,7 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 - [ ] Viết: viết 8 câu vận dụng mạo từ/giới từ/mệnh đề quan hệ; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 7 (mốc: 10 câu Reading từ một đoạn ngắn).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission/buổi nói người thật, ghi 1 câu bí, 1 từ không nghe ra, 1 điều làm tốt.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước tuần output IELTS.
 
 ## ✅ Quiz tuần 7

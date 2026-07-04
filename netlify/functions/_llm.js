@@ -119,6 +119,63 @@ export function buildCoachPrompt(context = {}, persona = DEFAULT_PERSONA) {
     .join('\n')
 }
 
+/**
+ * Dựng system prompt cho SURPRISE ROLEPLAY: AI đóng vai một tình huống bất ngờ
+ * (khách khó tính, người hỏi đường vội…), người học KHÔNG biết trước câu hỏi kế
+ * tiếp, và AI chủ động đổi đề tài/thêm biến cố giữa chừng — mô phỏng hội thoại
+ * thật ngoài đời. Vẫn trả JSON cùng cấu trúc {evaluation, next} như COACH để tái
+ * dùng nguyên luồng chấm câu ở client.
+ */
+export function buildRoleplayPrompt(context = {}, persona = DEFAULT_PERSONA) {
+  const { vocabLine, grammarLine, topic } = contextLines(context)
+  const p = PERSONAS[persona] || PERSONAS[DEFAULT_PERSONA]
+  const scenario = context.scenario || 'You are a stranger having an everyday conversation with the learner.'
+  const wantSuggest = context.suggestWords !== false
+
+  return [
+    'You are running a SURPRISE ROLEPLAY exercise for a Vietnamese English learner (CEFR A1-B2).',
+    topic,
+    `Target vocabulary to weave in if natural: ${vocabLine}.`,
+    `Grammar focus: ${grammarLine}.`,
+    '',
+    `SCENARIO — stay fully in character as this role: ${scenario}`,
+    'The learner does NOT know your next line in advance. Do not preview, explain, or break character to describe the exercise.',
+    'After a few exchanges, UNEXPECTEDLY change the topic, add a complication, or ask a tricky follow-up — like a real unpredictable conversation. Never announce the change.',
+    '',
+    'On EACH turn you do TWO things at once and return ONE JSON object:',
+    "1) EVALUATE the learner's most recent message (their English, not their in-character choice).",
+    '2) CONTINUE the roleplay in character with your next line.',
+    '',
+    `Feedback persona (giọng điệu lời phê, ngoài vai diễn): ${p.label}. ${p.tone}`,
+    '',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "evaluation": {',
+    '    "corrected": "the learner\'s sentence rewritten in correct, natural English (keep their meaning). If already correct, repeat it.",',
+    '    "cefr": "one of A1,A2,B1,B2,C1 — estimated level of the learner\'s message",',
+    '    "feedback": ["1 to 2 SHORT lines in VIETNAMESE, in the persona tone above, pointing out what to fix and why"],',
+    '    "recommended": "a better example answer in natural English the learner could have said",',
+    '    "recommendedVi": "Vietnamese translation of recommended"',
+    '  },',
+    '  "next": {',
+    '    "message": "your in-character next line, 1-3 sentences, natural English",',
+    wantSuggest
+      ? '    "suggestedWords": ["up to 3 words (prefer the target vocabulary) the learner should try to use in their NEXT reply"]'
+      : '    "suggestedWords": []',
+    '  }',
+    '}',
+    '',
+    'Rules:',
+    '- "corrected", "recommended", "message" are ENGLISH. "feedback", "recommendedVi" are VIETNAMESE.',
+    '- If the learner has not written anything yet, set "evaluation" to null and OPEN the roleplay in character with your first line.',
+    '- Keep pushing the target vocabulary naturally, but the scenario always comes first.',
+    '- Never break character in "message". Only "feedback" speaks as the coach persona.',
+    '- Output JSON only.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
 /** Dựng system prompt cho chế độ FEEDBACK: chỉ chấm lại câu cuối theo persona. */
 export function buildFeedbackPrompt(context = {}, persona = DEFAULT_PERSONA) {
   const { vocabLine, examLine } = contextLines(context)
@@ -316,6 +373,9 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
     system = buildCorrectionPrompt(context)
     temperature = 0.3 // chữa bài cần ổn định, ít "sáng tạo"
     maxTokens = 1300 // đủ cho ~10 câu kèm chú thích từng câu
+  } else if (m === 'roleplay') {
+    system = buildRoleplayPrompt(context, persona)
+    temperature = 0.9 // cần biến hóa/bất ngờ hơn hội thoại thường
   } else {
     system = m === 'feedback' ? buildFeedbackPrompt(context, persona) : buildCoachPrompt(context, persona)
     // Persona "gắt" cần thêm chất lầy/biến hóa — nâng nhiệt để bớt ra giọng nhạt, lặp.

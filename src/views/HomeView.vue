@@ -65,9 +65,9 @@ function openFeatured() {
         <div class="mascot-card">
           <div class="mascot-bubble"></div>
           <MascotLogo variant="hero" :width="280" :height="280" uid="herom" />
-          <div class="float-tag tag-xp">+20 XP 🎉</div>
-          <div class="float-tag tag-streak">🔥 Streak 7 ngày</div>
-          <div class="float-tag tag-badge">🏅 Huy hiệu mới!</div>
+          <div class="float-tag tag-xp">⭐ Level {{ user.level }}</div>
+          <div class="float-tag tag-streak">🔥 Streak {{ user.streak }} ngày</div>
+          <div class="float-tag tag-badge">🎤 Nói {{ user.speakingStreak }} ngày liền</div>
         </div>
       </div>
     </section>

@@ -11,6 +11,8 @@
 - **Listening:** reasons and examples
 - **Nhiệm vụ nhẹ:** Viết 5 ý kiến ngắn bằng tiếng Anh.
 - **Mốc kiểm tra:** Viết được một đoạn rõ nghĩa dài 100–120 từ.
+- **🌍 Mission tuần (ngoài app):** Đăng self-intro lên 1 cộng đồng học tiếng Anh (Facebook group, Discord, Reddit r/EnglishLearning...), trả lời ít nhất 1 phản hồi. Bằng chứng: link bài đăng + ảnh chụp phản hồi, nộp ở Day 34.
+- **🗣️ Buổi nói người thật #2:** 2 tuần kể từ buổi #1 — xem guide "Buổi nói người thật đầu tiên" (docs/BUOI_NOI_NGUOI_THAT.md).
 
 ### Nhịp học hằng ngày
 
@@ -235,6 +237,8 @@ Người học viết 80-120 từ cho mỗi đề, dùng khung T-S-E-F và ưu t
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: chọn 1 đề, viết 100–120 từ theo T-S-E-F; tự soát rồi nhờ AI chữa.
 - [ ] Sản phẩm: đánh dấu 3 chỗ đã sửa.
+- [ ] 🌍 Mission tuần (ngoài app): đăng self-intro lên 1 cộng đồng học tiếng Anh, trả lời ít nhất 1 phản hồi. Lưu link bài đăng + ảnh chụp phản hồi làm bằng chứng.
+- [ ] 🗣️ Buổi nói người thật #2 (≥10 phút): luyện trước với AI, sau đó nói chuyện thật qua Tandem/HelloTalk/Discord/Free4Talk hoặc với bạn/đồng nghiệp.
 - [ ] Sổ lỗi (5'): loại lỗi lặp lại nhiều nhất?
 
 ### Day 35 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -243,6 +247,7 @@ Người học viết 80-120 từ cho mỗi đề, dùng khung T-S-E-F và ưu t
 - [ ] Viết: viết 1 đoạn vận dụng từ nối + T-S-E-F; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 5 (mốc: đoạn 100–120 từ rõ nghĩa).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission/buổi nói người thật, ghi 1 câu bí, 1 từ không nghe ra, 1 điều làm tốt.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước khi vào cầu nối IELTS.
 
 ## ✅ Quiz tuần 5

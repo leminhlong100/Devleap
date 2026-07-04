@@ -11,6 +11,7 @@
 - **Listening:** IELTS-style form completion lite
 - **Nhiệm vụ nhẹ:** Mô tả thời lượng dùng điện thoại trong một tuần.
 - **Mốc kiểm tra:** Mô tả được một biểu đồ đơn giản bằng 6–8 câu.
+- **🌍 Mission tuần (ngoài app):** Viết 1 email tiếng Anh THẬT (hỏi thông tin / cảm ơn / xác nhận lịch) và gửi đi. Bằng chứng: ảnh chụp email đã gửi, nộp ở Day 41.
 
 ### Nhịp học hằng ngày
 
@@ -188,6 +189,7 @@ Người học viết 6 câu:
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: tự tạo bảng số liệu nhỏ (thời lượng dùng điện thoại) và mô tả 6–8 câu; nhờ AI chữa.
 - [ ] Sản phẩm: đọc to bài mô tả; gạch chân động từ tăng/giảm.
+- [ ] 🌍 Mission tuần (ngoài app): viết 1 email tiếng Anh THẬT (hỏi thông tin / cảm ơn / xác nhận lịch) và gửi đi. Chụp ảnh email đã gửi làm bằng chứng.
 - [ ] Sổ lỗi (5'): số liệu nào mô tả còn sai?
 
 ### Day 42 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -196,6 +198,7 @@ Người học viết 6 câu:
 - [ ] Viết: viết 8 câu vận dụng so sánh + Task 1; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 6 (mốc: mô tả biểu đồ 6–8 câu).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission tuần (email thật), ghi 1 câu/cụm em không biết diễn đạt, 1 điều làm tốt, 1 điều muốn thử lại.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại trước tuần Reading/Listening.
 
 ## ✅ Quiz tuần 6

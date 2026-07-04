@@ -38,6 +38,17 @@ export async function coachTurn({ messages, context, persona }) {
 }
 
 /**
+ * Một lượt SURPRISE ROLEPLAY: AI đóng vai tình huống bất ngờ (context.scenario),
+ * chủ động đổi đề tài giữa chừng, vẫn vừa chấm câu vừa nói tiếp như coachTurn.
+ * @param {{ messages, context, persona }} args  context nên có thêm `scenario`.
+ */
+export async function roleplayTurn({ messages, context, persona }) {
+  const reply = await sendChat({ messages, context, persona, mode: 'roleplay' })
+  if (!reply || typeof reply !== 'object') throw new Error('AI trả về định dạng không hợp lệ.')
+  return reply
+}
+
+/**
  * Chấm LẠI câu cuối theo một persona khác (đổi phong cách lời phê tại chỗ).
  * @param {{ messages, context, persona }} args  messages kết thúc ở lượt user cần chấm.
  * @returns {Promise<object>} evaluation { corrected, cefr, feedback, recommended, recommendedVi }

@@ -102,6 +102,16 @@ create table if not exists public.shadowing_clips (
   updated_at     timestamptz not null default now()
 );
 
+-- Nâng cấp DB đã tạo trước khi gắn clip theo tuần khóa IELTS: thêm cột tuần áp
+-- dụng (1-8, NULL = clip chung, không gắn tuần nào — vd 2 clip mẫu ban đầu).
+alter table public.shadowing_clips
+  add column if not exists week integer;
+alter table public.shadowing_clips
+  drop constraint if exists shadowing_clips_week_check;
+alter table public.shadowing_clips
+  add constraint shadowing_clips_week_check check (week is null or (week between 1 and 8));
+create index if not exists shadowing_clips_week_idx on public.shadowing_clips (week);
+
 alter table public.shadowing_clips enable row level security;
 
 -- Nội dung công khai: ai cũng đọc được (kể cả khách chưa đăng nhập).

@@ -1,11 +1,22 @@
 <script setup>
 import { ref, shallowRef, computed, watch, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchClipList, fetchClip } from '@/lib/shadowingRepo'
 import ShadowingPlayer from '@/components/tools/ShadowingPlayer.vue'
 import { parseVideoId } from '@/lib/youtube'
 import { useUserStore } from '@/stores/user'
 
 const user = useUserStore()
+const route = useRoute()
+const router = useRouter()
+
+// Đến từ buổi học IELTS (?week=N) -> lọc sẵn theo clip đã gắn tuần đó (thang nghe
+// "thật hóa dần", xem docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.5).
+const weekFilter = ref(route.query.week ? Number(route.query.week) : null)
+function clearWeekFilter() {
+  weekFilter.value = null
+  router.replace({ query: { ...route.query, week: undefined } })
+}
 
 const shadowingClips = ref([])
 const selectedId = ref(null)
@@ -59,7 +70,8 @@ const filteredClips = computed(() =>
   shadowingClips.value.filter((c) => {
     const okTopic = topicFilter.value === 'all' || c.topic === topicFilter.value
     const okLevel = levelFilter.value === 'all' || levelTokens(c.level).includes(levelFilter.value)
-    return okTopic && okLevel
+    const okWeek = !weekFilter.value || c.week === weekFilter.value
+    return okTopic && okLevel && okWeek
   }),
 )
 
@@ -143,6 +155,12 @@ function pickFeatured(id) {
     </form>
     <p v-if="loadError" class="url-err">⚠️ {{ loadError }}</p>
 
+    <!-- Đến từ buổi học IELTS: đang lọc theo tuần -->
+    <div v-if="weekFilter" class="week-banner">
+      <span>🎧 Đang lọc bài gợi ý cho <b>Tuần {{ weekFilter }}</b></span>
+      <button class="week-clear" @click="clearWeekFilter">Xem tất cả bài ✕</button>
+    </div>
+
     <!-- Thanh lọc: chủ đề + cấp độ -->
     <div class="filters">
       <select v-model="topicFilter" class="topic-select">
@@ -174,6 +192,10 @@ function pickFeatured(id) {
     <div v-if="listLoading" class="empty">Đang tải thư viện…</div>
     <div v-else-if="!shadowingClips.length" class="empty">
       Chưa có bài nào trong thư viện. Hãy dán link YouTube ở trên để bắt đầu.
+    </div>
+    <div v-else-if="weekFilter && !filteredClips.length" class="empty">
+      Chưa có bài nào được gắn cho Tuần {{ weekFilter }}. Xem thư viện chung bên dưới hoặc dán link YouTube ở trên.
+      <div><button class="week-clear" @click="clearWeekFilter">Xem tất cả bài ✕</button></div>
     </div>
     <div v-else-if="!filteredClips.length" class="empty">
       Không có bài nào khớp bộ lọc. Thử bỏ bớt điều kiện.
@@ -284,6 +306,31 @@ function pickFeatured(id) {
   border: 1px solid rgba(214, 81, 43, 0.25);
   padding: 10px 14px;
   border-radius: 12px;
+}
+
+.week-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto 6px;
+  padding: 10px 16px;
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.week-clear {
+  border: none;
+  background: none;
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 4px 8px;
 }
 
 /* —— Thanh lọc —— */

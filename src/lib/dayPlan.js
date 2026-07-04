@@ -20,6 +20,8 @@ const ALL_ON = {
   aiChat: true,
   quiz: true,
   reading: true,
+  mission: true,
+  realTalk: true,
 }
 
 /**
@@ -42,5 +44,7 @@ export function planFromChecklist(checklist = []) {
     aiChat: has(/hội thoại|trò chuyện|giao tiếp|tự hỏi|nói\s*&|với ai|luyện nói/),
     quiz: has(/quiz/),
     reading: has(/bài đọc|đọc to|reading|script|khung mẫu|kịch bản/),
+    mission: has(/🌍|mission\s*tuần/),
+    realTalk: has(/🗣️|buổi nói người thật/),
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getIeltsDay, getIeltsWeek, computeIeltsStatuses, assignWeekGrammar } from '@/data/courseIelts'
+import { getIeltsDay, getIeltsWeek, computeIeltsStatuses, assignWeekGrammar, getIeltsWeeksData } from '@/data/courseIelts'
 
 describe('getIeltsDay() — ngữ pháp chia theo ngày', () => {
   const week = getIeltsWeek(1)
@@ -79,10 +79,11 @@ describe('assignWeekGrammar() — gán ngữ pháp theo KẾ HOẠCH NGÀY, khô
     }
   })
 
-  it('Tuần 8 (không có mục "Ngữ pháp"): không vỡ, các ngày không có ngữ pháp', () => {
-    const week = getIeltsWeek(8)
+  it('Tuần 8 Track B (không có mục "Ngữ pháp"): không vỡ, các ngày không có ngữ pháp', () => {
+    const trackB = getIeltsWeeksData('B')
+    const week = getIeltsWeek(8, trackB)
     expect(week.grammar.length).toBe(0)
-    const d = getIeltsDay(8, 1)
+    const d = getIeltsDay(8, 1, trackB)
     expect(d).toBeTruthy()
     expect(d.grammar.length).toBe(0)
   })

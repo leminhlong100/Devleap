@@ -531,6 +531,7 @@ onBeforeUnmount(() => {
               <span v-for="(w, i) in scores[activeId].words" :key="i" class="sh-word" :class="{ miss: !w.ok }">{{ w.word }}</span>
             </div>
             <div class="sh-heard">Bạn nói: “{{ scores[activeId].heard }}”</div>
+            <p class="sh-score-note">💡 Điểm này đo đúng TỪ, KHÔNG đo âm cuối/ngữ điệu — trình duyệt tự "sửa" âm cuối nên điểm có thể cao ảo.</p>
           </div>
           <p v-if="attemptError" class="sh-mic-err">⚠️ {{ attemptError }}</p>
         </div>
@@ -973,6 +974,11 @@ onBeforeUnmount(() => {
   margin-top: 8px;
   font-size: 12.5px;
   font-style: italic;
+  color: var(--muted);
+}
+.sh-score-note {
+  margin-top: 6px;
+  font-size: 11.5px;
   color: var(--muted);
 }
 .sh-mic-err {

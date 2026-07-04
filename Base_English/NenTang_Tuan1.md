@@ -14,6 +14,7 @@
 - **Nhiệm vụ nhẹ:** Làm thẻ hồ sơ tiếng Anh về bản thân.
 - **Chẩn đoán đầu vào (mốc 0):** Ngay buổi 1 — viết 5–10 câu về bản thân (AI chấm điểm + xếp trình độ CEFR) và ghi âm đọc to. Đây là "mốc 0" để cuối khóa so sánh, KHÔNG phải để đánh giá cao–thấp.
 - **Mốc kiểm tra:** Viết được 10 câu đơn đúng về bản thân.
+- **🌍 Mission tuần (ngoài app):** Đổi điện thoại hoặc 1 app quen dùng sang tiếng Anh; mỗi ngày chép lại 5 cụm tiếng Anh em nhìn thấy trên máy. Bằng chứng: ảnh chụp màn hình + danh sách cụm, nộp ở Day 6.
 
 ### Nhịp học hằng ngày
 
@@ -315,6 +316,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Viết: viết đoạn 6–8 câu giới thiệu bản thân (be + do + 2 cụm tuần này); nhờ AI chữa.
 - [ ] Sản phẩm: ghi âm 60 giây giới thiệu bản thân. Nghe lại 1 lần và tự chấm theo **4 tiêu chí**: (1) đủ 5 ý chưa? (2) câu nào thiếu **be** hoặc sai **do/does**? (3) có đọc rõ ÂM CUỐI (-s, -ed) không? (4) nói có trôi không hay ngắt quá nhiều? → ghi 2 điểm cần sửa.
 - [ ] Sổ lỗi (5'): so với "bản ghi mốc 0" — đã rõ hơn ở đâu?
+- [ ] 🌍 Mission tuần (ngoài app): đổi điện thoại/1 app quen dùng sang tiếng Anh; chép lại 5 cụm nhìn thấy mỗi ngày. Chụp ảnh màn hình + danh sách cụm làm bằng chứng.
 - [ ] Đọc hiểu: đọc bài Reading (một bài giới thiệu mẫu), trả lời 3 câu hỏi.
 - [ ] Nghe hiểu: nghe bài Listening (bạn mới giới thiệu), trả lời 3 câu hỏi.
 - [ ] Extra Challenge: thử giới thiệu lại bằng cách đổi 2 thông tin (VD: đổi mục tiêu và sở thích).
@@ -327,6 +329,7 @@ Do/does/did là trợ động từ giúp tạo câu hỏi và câu phủ định
 - [ ] Đọc hiểu: đọc bài Reading tổng hợp cuối tuần, trả lời 3 câu hỏi.
 - [ ] Nghe hiểu: nghe bài Listening tổng hợp, trả lời 3 câu hỏi.
 - [ ] Kiểm tra: hoàn thành đủ 7 buổi rồi làm Bài kiểm tra Tuần 1 (đạt ≥70% để mở tuần sau).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission tuần, ghi 1 câu/cụm em không biết diễn đạt, 1 điều làm tốt, 1 điều muốn thử lại.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại tuần sau (lấy từ sổ lỗi).
 
 ## ✅ Quiz tuần 1

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { supabase, isCloudEnabled } from '@/lib/supabase'
 import { schedule, isDue, GRADES } from '@/lib/srs'
+import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
 
 /**
  * Trạng thái người học (gamification) — nguồn sự thật duy nhất cho tiến độ thật.
@@ -60,6 +61,12 @@ const XP_REVIEW = { hard: 5, good: 10, easy: 10 }
 // do component tính theo SỐ CÂU đạt mốc cá nhân (xem ShadowingPlayer.vue), không
 // suy từ một ngưỡng điểm trung bình ở đây.
 const XP_SHADOWING_PASS = 120
+// Mission tuần (real-life, ngoài app) — thưởng lớn hơn 1 buổi học thường vì đòi
+// hỏi rủi ro thật (nói/viết với người thật), không phải chỉ hoàn thành trong app.
+const XP_MISSION = 150
+// Buổi nói người thật — rủi ro thật nhưng nhẹ hơn Mission (không cần bằng chứng
+// dán link, chỉ cần 3 dòng sổ lỗi đời thực sau buổi nói).
+const XP_REAL_TALK = 100
 // Hợp nhất lịch SRS: với mỗi thẻ, giữ bản ôn gần nhất (so theo `last`, dạng ISO).
 const mergeSrs = (a = {}, b = {}) => {
   const out = { ...a }
@@ -162,6 +169,16 @@ export const useUserStore = defineStore('user', {
     // và để khóa tiến độ; chưa đẩy lên cloud nên không cần đổi schema bảng progress.
     writings: {},
 
+    // Mission tuần (real-life, ngoài app) — khóa theo "course:week:day":
+    // { [key]: { note, done, at } }. note = ghi chú/link bằng chứng người học dán vào.
+    // Local-only như writings/checklists (chưa đổi schema bảng progress).
+    missions: {},
+
+    // Buổi nói người thật (2 tuần/lần từ Tuần 3) — cùng hình dạng với `missions`,
+    // khóa theo "course:week:day": { note, done, at }. note = 3 dòng sổ lỗi đời
+    // thực sau buổi nói. Local-only.
+    realTalks: {},
+
     // tiến độ checklist "việc cần làm hôm nay", khóa theo "course:week:day":
     // { [key]: [bool, bool, …] } theo thứ tự mục. Local-only (như writings) để
     // khóa hoàn thành buổi mà không phải đổi schema bảng progress.
@@ -169,6 +186,18 @@ export const useUserStore = defineStore('user', {
 
     // tùy chọn chế độ hội thoại (hiện chỉ có persona lời phê) — chỉ local.
     convoPrefs: { ...DEFAULT_CONVO },
+
+    // Track khóa IELTS nền tảng ('A' = Work & Life English, mặc định; 'B' = IELTS
+    // Bridge) — chỉ local, đọc từ data/courseIelts.js lúc app khởi động.
+    ieltsTrack,
+
+    // Nhật ký NÓI (voice-first AiChat) — { [ 'YYYY-M-D' ]: số giây đã nói trong
+    // ngày }. Tách streak nói khỏi streak học (bumpStreak) vì "dám nói" là rủi ro
+    // thật riêng, không nên tính chung với việc hoàn thành task trong app (xem
+    // docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.4/Đợt 4). Local-only.
+    speakingLog: {},
+    speakingStreak: 0,
+    lastSpeakingDate: null,
 
     // —— đồng bộ cloud ——
     cloudUserId: null, // id user khi đã đăng nhập; null = chế độ khách
@@ -183,6 +212,20 @@ export const useUserStore = defineStore('user', {
       return Math.max(0, Math.min(100, Math.round(((s.xp - start) / LEVEL_SPAN) * 100)))
     },
     knownCount: (s) => s.knownCards.length,
+    /** Tổng số giây đã NÓI trong 7 ngày gần nhất (kể cả hôm nay). */
+    speakingSecondsThisWeek: (s) => {
+      let sum = 0
+      const d = new Date()
+      for (let i = 0; i < 7; i++) {
+        sum += s.speakingLog[ymd(d)] || 0
+        d.setDate(d.getDate() - 1)
+      }
+      return sum
+    },
+    /** Số phút đã nói trong 7 ngày gần nhất (làm tròn). */
+    speakingMinutesThisWeek() {
+      return Math.round(this.speakingSecondsThisWeek / 60)
+    },
     /** Lịch ôn của một thẻ (null nếu chưa từng ôn). Dùng: user.srsOf(id). */
     srsOf: (s) => (id) => s.srs[id] || null,
     /** Thẻ có đang đến hạn ôn không? Thẻ mới (chưa có lịch) coi như đến hạn. */
@@ -214,6 +257,14 @@ export const useUserStore = defineStore('user', {
     writingOf: (s) => (course, week, day) => s.writings[`${course}:${week}:${day}`] || null,
     /** Đã NỘP xong bài viết của một ngày chưa? (dùng để khóa hoàn thành buổi) */
     writingDone: (s) => (course, week, day) => !!s.writings[`${course}:${week}:${day}`]?.done,
+    /** Mission tuần của một ngày (null nếu chưa làm). Dùng: user.missionOf('ielts',w,d). */
+    missionOf: (s) => (course, week, day) => s.missions[`${course}:${week}:${day}`] || null,
+    /** Đã đánh dấu hoàn thành Mission tuần của ngày này chưa? */
+    missionDone: (s) => (course, week, day) => !!s.missions[`${course}:${week}:${day}`]?.done,
+    /** Buổi nói người thật của một ngày (null nếu chưa làm). */
+    realTalkOf: (s) => (course, week, day) => s.realTalks[`${course}:${week}:${day}`] || null,
+    /** Đã đánh dấu hoàn thành buổi nói người thật của ngày này chưa? */
+    realTalkDone: (s) => (course, week, day) => !!s.realTalks[`${course}:${week}:${day}`]?.done,
     /** Danh sách từ đã lưu (mảng thẻ), xếp theo thứ tự lưu (cũ trước). */
     savedWordList: (s) =>
       Object.values(s.savedWords).sort((a, b) => ((a.savedAt || '') < (b.savedAt || '') ? -1 : 1)),
@@ -427,6 +478,69 @@ export const useUserStore = defineStore('user', {
     },
 
     /**
+     * Lưu Mission tuần của một ngày (ghi chú/link bằng chứng + trạng thái đánh dấu
+     * xong). `done` là "dính" — đã đánh dấu xong thì giữ (gõ thêm ghi chú không mất
+     * XP đã thưởng). Chỉ thưởng XP vào LẦN ĐẦU đánh dấu xong (tránh cày XP).
+     */
+    saveMission(course, week, day, note, done = false) {
+      if (!course) return
+      const key = `${course}:${week}:${day}`
+      const prev = this.missions[key] || null
+      const wasDone = !!prev?.done
+      this.missions[key] = {
+        note: note ?? prev?.note ?? '',
+        done: wasDone || !!done,
+        at: ymd(new Date()),
+      }
+      if (!wasDone && this.missions[key].done) {
+        this.xp += XP_MISSION
+        this.badges += 1
+        this.bumpStreak()
+      }
+      this.persist()
+    },
+
+    /**
+     * Lưu buổi nói người thật của một ngày (3 dòng sổ lỗi đời thực + trạng thái
+     * đánh dấu xong). Cùng cơ chế "dính" + thưởng-1-lần như `saveMission`.
+     */
+    saveRealTalk(course, week, day, note, done = false) {
+      if (!course) return
+      const key = `${course}:${week}:${day}`
+      const prev = this.realTalks[key] || null
+      const wasDone = !!prev?.done
+      this.realTalks[key] = {
+        note: note ?? prev?.note ?? '',
+        done: wasDone || !!done,
+        at: ymd(new Date()),
+      }
+      if (!wasDone && this.realTalks[key].done) {
+        this.xp += XP_REAL_TALK
+        this.bumpStreak()
+      }
+      this.persist()
+    },
+
+    /**
+     * Ghi nhận số giây vừa NÓI thật (mic mở ở AiChat voice-first), tách streak nói
+     * (`speakingStreak`) khỏi streak học (`bumpStreak`) — nói là một rủi ro/kỹ năng
+     * riêng, không nên tính chung với việc hoàn thành task trong app.
+     */
+    logSpeakingSeconds(seconds) {
+      const sec = Math.round(seconds)
+      if (!sec || sec < 1) return
+      const today = ymd(new Date())
+      this.speakingLog[today] = (this.speakingLog[today] || 0) + sec
+      if (this.lastSpeakingDate !== today) {
+        const y = new Date()
+        y.setDate(y.getDate() - 1)
+        this.speakingStreak = this.lastSpeakingDate === ymd(y) ? this.speakingStreak + 1 : 1
+        this.lastSpeakingDate = today
+      }
+      this.persist()
+    },
+
+    /**
      * Lưu một từ vào danh sách cá nhân (vd khi đang chat với AI).
      * @param {object} card  thẻ từ vựng (term + ipa/vi/ex/cat/srsId) — thường
      *   dựng sẵn bằng `cardsFromTerms([term], 'saved')[0]`; có thể kèm `context`.
@@ -503,7 +617,12 @@ export const useUserStore = defineStore('user', {
         savedWords: this.savedWords,
         shadowingScores: this.shadowingScores,
         writings: this.writings,
+        missions: this.missions,
+        realTalks: this.realTalks,
         checklists: this.checklists,
+        speakingLog: this.speakingLog,
+        speakingStreak: this.speakingStreak,
+        lastSpeakingDate: this.lastSpeakingDate,
       }
     },
 
@@ -521,7 +640,12 @@ export const useUserStore = defineStore('user', {
       this.shadowingScores =
         s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {}
       this.writings = s.writings && typeof s.writings === 'object' ? s.writings : {}
+      this.missions = s.missions && typeof s.missions === 'object' ? s.missions : {}
+      this.realTalks = s.realTalks && typeof s.realTalks === 'object' ? s.realTalks : {}
       this.checklists = s.checklists && typeof s.checklists === 'object' ? s.checklists : {}
+      this.speakingLog = s.speakingLog && typeof s.speakingLog === 'object' ? s.speakingLog : {}
+      this.speakingStreak = s.speakingStreak ?? 0
+      this.lastSpeakingDate = s.lastSpeakingDate ?? null
     },
 
     persist() {
@@ -566,6 +690,17 @@ export const useUserStore = defineStore('user', {
     setConvoPrefs(patch = {}) {
       this.convoPrefs = { ...this.convoPrefs, ...patch }
       this.persistConvo()
+    },
+
+    /**
+     * Đổi track khóa IELTS nền tảng ('A'|'B'). Tuần 1–8 được nạp một lần lúc
+     * module tải (xem data/courseIelts.js) nên đổi track cần tải lại trang.
+     */
+    setIeltsTrack(track) {
+      const next = track === 'B' ? 'B' : 'A'
+      if (next === this.ieltsTrack) return
+      setIeltsTrackPref(next)
+      window.location.reload()
     },
 
     // ——————————————————————— đồng bộ cloud ———————————————————————
@@ -703,8 +838,40 @@ function mergeSnapshots(local, remote) {
     savedWords: mergeSaved(local.savedWords, remote.savedWords),
     shadowingScores: mergeShadowing(local.shadowingScores, remote.shadowingScores),
     writings: mergeWritings(local.writings, remote.writings),
+    missions: mergeMissions(local.missions, remote.missions),
+    realTalks: mergeMissions(local.realTalks, remote.realTalks),
     checklists: mergeChecklists(local.checklists, remote.checklists),
+    speakingLog: mergeSpeakingLog(local.speakingLog, remote.speakingLog),
+    speakingStreak: Math.max(local.speakingStreak || 0, remote.speakingStreak || 0),
+    lastSpeakingDate: laterDate(local.lastSpeakingDate, remote.lastSpeakingDate),
   }
+}
+
+// Hợp nhất nhật ký nói: mỗi ngày giữ số giây LỚN HƠN (thiết bị nào nói nhiều hơn
+// ngày đó thắng) — đơn giản, đủ dùng cho quy mô cá nhân như các merge khác.
+function mergeSpeakingLog(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  for (const [k, v] of Object.entries(b || {})) out[k] = Math.max(out[k] || 0, v || 0)
+  return out
+}
+
+// Hợp nhất Mission tuần: mỗi ngày giữ bản mới hơn (theo `at`), OR trạng thái đã xong.
+function mergeMissions(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  for (const [k, v] of Object.entries(b || {})) {
+    const cur = out[k]
+    if (!cur) {
+      out[k] = v
+      continue
+    }
+    const keepNew = (v.at || '') > (cur.at || '')
+    out[k] = {
+      note: keepNew ? v.note : cur.note,
+      done: !!(cur.done || v.done),
+      at: laterDate(cur.at, v.at),
+    }
+  }
+  return out
 }
 
 // Hợp nhất checklist: mỗi ngày OR theo từng vị trí (đã tick ở thiết bị nào thì giữ).

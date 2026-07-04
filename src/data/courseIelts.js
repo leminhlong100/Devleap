@@ -11,6 +11,51 @@ import { getGrammarExtra } from './ieltsGrammarExtra'
 
 const rawFiles = import.meta.glob('../../Base_English/*.md', { query: '?raw', import: 'default', eager: true })
 
+// Track A (Work & Life English, mặc định) thay Tuần 6–8 bằng bản "*_Work.md";
+// Track B (IELTS Bridge) giữ nguyên các file gốc. Tuần 1–5 dùng chung cho cả hai track.
+const baseRaw = {}
+const workRaw = {}
+for (const [path, mod] of Object.entries(rawFiles)) {
+  if (/_Work\.md$/.test(path)) workRaw[path] = mod
+  else baseRaw[path] = mod
+}
+
+const TRACK_KEY = 'devleap:ielts-track:v1'
+/** Đọc track đã lưu (mặc định 'A' — Work & Life English). Đổi track cần tải lại trang. */
+function readTrackPref() {
+  try {
+    return localStorage.getItem(TRACK_KEY) === 'B' ? 'B' : 'A'
+  } catch {
+    return 'A'
+  }
+}
+export function setIeltsTrackPref(track) {
+  try {
+    localStorage.setItem(TRACK_KEY, track === 'B' ? 'B' : 'A')
+  } catch {
+    // localStorage không khả dụng (SSR/test) -> bỏ qua, track vẫn dùng mặc định
+  }
+}
+export const ieltsTrack = readTrackPref()
+
+const baseWeeksRaw = Object.values(baseRaw).map((raw) => parseIeltsWeek(raw)).filter((w) => w.num > 0)
+const workWeeksRaw = Object.values(workRaw).map((raw) => parseIeltsWeek(raw)).filter((w) => w.num > 0)
+const weeksCache = {}
+
+/** Dựng danh sách tuần cho một track cụ thể ('A' | 'B'), có cache lại. */
+export function getIeltsWeeksData(track) {
+  const key = track === 'B' ? 'B' : 'A'
+  if (weeksCache[key]) return weeksCache[key]
+  const workNums = new Set(workWeeksRaw.map((w) => w.num))
+  const weeks = (
+    key === 'A' ? [...baseWeeksRaw.filter((w) => !workNums.has(w.num)), ...workWeeksRaw] : baseWeeksRaw
+  )
+    .map(mergeGrammarExtra)
+    .sort((a, b) => a.num - b.num)
+  weeksCache[key] = weeks
+  return weeks
+}
+
 // Chuẩn hóa câu hỏi để so trùng khi gộp bài tập (bỏ dấu câu, gộp khoảng trắng).
 const drillKey = (q) => String(q || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 
@@ -34,11 +79,7 @@ function mergeGrammarExtra(week) {
   return week
 }
 
-export const ieltsWeeksData = Object.values(rawFiles)
-  .map((raw) => parseIeltsWeek(raw))
-  .filter((w) => w.num > 0)
-  .map(mergeGrammarExtra)
-  .sort((a, b) => a.num - b.num)
+export const ieltsWeeksData = getIeltsWeeksData(ieltsTrack)
 
 export const ieltsTotals = {
   weeks: ieltsWeeksData.length,
@@ -348,13 +389,13 @@ export function assignWeekGrammar(week) {
 // Bản đồ mặc định (chưa có tiến độ) — dùng cho re-export.
 export const ieltsWeeks = computeIeltsWeeks([])
 
-export function getIeltsWeek(num) {
-  return ieltsWeeksData.find((w) => w.num === Number(num)) || null
+export function getIeltsWeek(num, weeksData = ieltsWeeksData) {
+  return weeksData.find((w) => w.num === Number(num)) || null
 }
 
 /** Chi tiết một ngày IELTS = checklist của ngày + ngữ cảnh tuần (grammar/vocab). */
-export function getIeltsDay(weekNum, dayNum) {
-  const week = getIeltsWeek(weekNum)
+export function getIeltsDay(weekNum, dayNum, weeksData = ieltsWeeksData) {
+  const week = getIeltsWeek(weekNum, weeksData)
   if (!week) return null
   const idx = week.days.findIndex((d) => d.n === Number(dayNum))
   const day = idx >= 0 ? week.days[idx] : week.days[0]

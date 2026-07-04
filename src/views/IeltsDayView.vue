@@ -17,6 +17,7 @@ import SentenceBankPractice from '@/components/day/SentenceBankPractice.vue'
 import VoiceRecorder from '@/components/day/VoiceRecorder.vue'
 import { getIeltsDay } from '@/data/courseIelts'
 import { planFromChecklist } from '@/lib/dayPlan'
+import { listeningStageOf, listeningStageInfo } from '@/data/ieltsListeningStage'
 import { speak } from '@/lib/speak'
 import { correctWriting } from '@/lib/aiChat'
 
@@ -40,6 +41,19 @@ const isDiagnostic = computed(() => !!d.value && Number(d.value.week) === 1 && d
 // cho từng ngày (Ngày 1 = ngữ pháp + viết + ghi âm; ngày từ vựng mới mở phòng từ…).
 // Không có checklist -> hiện đầy đủ (an toàn ngược). Logic ở lib/dayPlan (test riêng).
 const plan = computed(() => planFromChecklist(d.value?.checklist || []))
+
+// Thang nghe "thật hóa dần" (Tuần 4-6 bán thực, Tuần 7-8 clip gốc) — gợi ý bài
+// shadowing đã curate cho tuần này (xem docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.5).
+const listeningStage = computed(() => (d.value ? listeningStageInfo(d.value.week) : null))
+// Hiện gợi ý ở buổi có nội dung nghe HOẶC buổi cuối tuần (tổng hợp) — không rải
+// mọi buổi để tránh quá tải, nhưng vẫn chắc chắn xuất hiện ít nhất 1 lần/tuần.
+const showListeningUpgrade = computed(
+  () => !!d.value && listeningStageOf(d.value.week) !== 'tts' && (plan.value.listening || !d.value.nextDay),
+)
+function goShadowingForWeek() {
+  if (!d.value) return
+  router.push({ name: 'shadowing', query: { week: d.value.week } })
+}
 
 // Tiến độ thật: số buổi đã hoàn thành trong tuần & trạng thái buổi hiện tại.
 const isDone = (n) => !!d.value && user.isDone('ielts', d.value.week, n)
@@ -247,6 +261,8 @@ const agenda = computed(() => {
   if (p.aiChat) a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
   if (p.quiz && d.value.quiz.length && d.value.grammarMode !== 'final') a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · ôn nhanh` })
   if (d.value.weekPracticeQuiz?.length) a.push({ title: 'Bài tập ôn tuần', meta: `${d.value.weekPracticeQuiz.length} câu · tổng hợp` })
+  if (missionNeeded.value) a.push({ title: '🌍 Mission tuần', meta: missionDone.value ? '✅ đã hoàn thành' : 'ngoài app · +150 XP' })
+  if (realTalkNeeded.value) a.push({ title: '🗣️ Buổi nói người thật', meta: realTalkDone.value ? '✅ đã hoàn thành' : 'ngoài app · +100 XP' })
   return a
 })
 
@@ -265,6 +281,60 @@ function goWeekTest() {
 }
 // Kết quả bài kiểm tra tuần (nếu đã làm) để hiện trên thẻ CTA.
 const weekTest = computed(() => (d.value ? user.quizOf('ielts', `week:${d.value.week}`) : null))
+
+// —— MISSION TUẦN (real-life, ngoài app) ——
+// Mô tả mission lấy trực tiếp từ checklist ngày (bullet "🌍 Mission tuần…: …"),
+// không soạn riêng ở tầng dữ liệu — tránh trùng 2 nguồn sự thật.
+const missionText = computed(() => {
+  if (!d.value) return ''
+  const item = (d.value.checklist || []).find((c) => /🌍|mission\s*tuần/i.test(c))
+  if (!item) return ''
+  return item.replace(/^.*?mission\s*tuần[^:]*:\s*/i, '').replace(/^🌍\s*/, '').trim() || item
+})
+const missionNeeded = computed(() => plan.value.mission && !!missionText.value)
+const missionNote = ref('')
+watch(
+  d,
+  (cur) => {
+    if (cur) missionNote.value = user.missionOf('ielts', cur.week, cur.n)?.note || ''
+  },
+  { immediate: true },
+)
+const missionDone = computed(() => !!d.value && user.missionDone('ielts', d.value.week, d.value.n))
+function saveMissionDraft() {
+  if (d.value) user.saveMission('ielts', d.value.week, d.value.n, missionNote.value, false)
+}
+function toggleMissionDone(ev) {
+  if (!d.value) return
+  user.saveMission('ielts', d.value.week, d.value.n, missionNote.value, !!ev.target.checked)
+}
+
+// —— BUỔI NÓI NGƯỜI THẬT (2 tuần/lần, từ Tuần 3) ——
+// Cùng cơ chế với Mission: lấy mô tả từ bullet checklist "🗣️ Buổi nói người
+// thật…: …", ghi chú là 3 dòng sổ lỗi đời thực sau buổi nói.
+const realTalkText = computed(() => {
+  if (!d.value) return ''
+  const item = (d.value.checklist || []).find((c) => /🗣️|buổi nói người thật/i.test(c))
+  if (!item) return ''
+  return item.replace(/^.*?buổi nói người thật[^:]*:\s*/i, '').replace(/^🗣️\s*/, '').trim() || item
+})
+const realTalkNeeded = computed(() => plan.value.realTalk && !!realTalkText.value)
+const realTalkNote = ref('')
+watch(
+  d,
+  (cur) => {
+    if (cur) realTalkNote.value = user.realTalkOf('ielts', cur.week, cur.n)?.note || ''
+  },
+  { immediate: true },
+)
+const realTalkDone = computed(() => !!d.value && user.realTalkDone('ielts', d.value.week, d.value.n))
+function saveRealTalkDraft() {
+  if (d.value) user.saveRealTalk('ielts', d.value.week, d.value.n, realTalkNote.value, false)
+}
+function toggleRealTalkDone(ev) {
+  if (!d.value) return
+  user.saveRealTalk('ielts', d.value.week, d.value.n, realTalkNote.value, !!ev.target.checked)
+}
 
 // Sổ lỗi tự động: gom các câu SAI mà AI đã chữa trong bài viết của buổi này.
 const autoErrors = computed(() => {
@@ -467,6 +537,18 @@ const aiContext = computed(() =>
           <!-- BÀI NGHE HIỂU — nghe đoạn ngắn (tên & số) + câu hỏi -->
           <ListeningComprehension v-if="d.listening" :listening="d.listening" />
 
+          <!-- THANG NGHE "THẬT HÓA DẦN": gợi ý shadowing bán thực/clip gốc theo tuần -->
+          <section v-if="showListeningUpgrade" class="step-card listening-upgrade">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">{{ listeningStage.label }}</div>
+                <h2 class="step-title">🎧 Nghe thật hơn tuần này</h2>
+              </div>
+            </div>
+            <p class="quiz-intro">{{ listeningStage.goal }}</p>
+            <button class="btn-shadow" @click="goShadowingForWeek">Xem bài shadowing gợi ý cho Tuần {{ d.week }} →</button>
+          </section>
+
           <!-- BÀI GIẢNG & KHUNG MẪU — bài đọc, script nghe, khung Speaking/Writing… -->
           <section v-if="plan.reading && d.skills && d.skills.length" class="step-card">
             <div class="step-head">
@@ -499,7 +581,7 @@ const aiContext = computed(() =>
 
           <!-- ════ 7) LUYỆN PHÁT ÂM (Productive — controlled) ════ -->
           <!-- LUYỆN PHÁT ÂM — nghe mẫu rồi đọc to, máy chấm (kỹ năng Pronunciation) -->
-          <PronunciationDrill v-if="plan.pronunciation" :items="pronItems" />
+          <PronunciationDrill v-if="plan.pronunciation" :items="pronItems" :week="d.week" />
 
           <!-- SẢN PHẨM — ghi âm "mốc 0" (đọc to, giữ lại để cuối khóa so sánh) -->
           <VoiceRecorder
@@ -626,6 +708,52 @@ const aiContext = computed(() =>
             <div class="grammar-drill">
               <QuizTool :questions="d.weekPracticeQuiz" mode="practice" embedded />
             </div>
+          </section>
+
+          <!-- MISSION TUẦN — nhiệm vụ NGOÀI app, có rủi ro thật, không do app chấm -->
+          <section v-if="missionNeeded" class="step-card mission-card" :class="{ current: !missionDone }">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow" :class="{ green: missionDone }">NGOÀI APP · CÓ RỦI RO THẬT</div>
+                <h2 class="step-title">🌍 Mission tuần</h2>
+              </div>
+              <span class="wt-badge" :class="{ ok: missionDone }">{{ missionDone ? '✅ Đã hoàn thành' : '+150 XP' }}</span>
+            </div>
+            <p class="quiz-intro">{{ missionText }}</p>
+            <textarea
+              v-model="missionNote"
+              class="write-area mission-note"
+              rows="3"
+              placeholder="Dán link / ghi chú bằng chứng (ảnh chụp, đoạn chat, email đã gửi…)…"
+              @change="saveMissionDraft"
+            ></textarea>
+            <label class="mission-check">
+              <input type="checkbox" :checked="missionDone" @change="toggleMissionDone" />
+              <span>Em đã làm mission này ngoài đời thật</span>
+            </label>
+          </section>
+
+          <!-- BUỔI NÓI NGƯỜI THẬT — 2 tuần/lần từ Tuần 3, không do app chấm -->
+          <section v-if="realTalkNeeded" class="step-card mission-card" :class="{ current: !realTalkDone }">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow" :class="{ green: realTalkDone }">NGOÀI APP · CÓ RỦI RO THẬT</div>
+                <h2 class="step-title">🗣️ Buổi nói người thật</h2>
+              </div>
+              <span class="wt-badge" :class="{ ok: realTalkDone }">{{ realTalkDone ? '✅ Đã hoàn thành' : '+100 XP' }}</span>
+            </div>
+            <p class="quiz-intro">{{ realTalkText }}</p>
+            <textarea
+              v-model="realTalkNote"
+              class="write-area mission-note"
+              rows="3"
+              placeholder="Sổ lỗi đời thực sau buổi nói: 1 câu bí, 1 từ không nghe ra, 1 điều làm tốt…"
+              @change="saveRealTalkDraft"
+            ></textarea>
+            <label class="mission-check">
+              <input type="checkbox" :checked="realTalkDone" @change="toggleRealTalkDone" />
+              <span>Em đã nói chuyện với người thật buổi này</span>
+            </label>
           </section>
 
           <!-- SỔ LỖI — tự gom lỗi thật từ bài AI đã chữa + ghi chú thêm -->
@@ -911,6 +1039,20 @@ const aiContext = computed(() =>
 .step-card.current {
   border: 2px solid var(--green);
   box-shadow: 0 18px 44px rgba(0, 214, 143, 0.16);
+}
+.listening-upgrade {
+  background: linear-gradient(135deg, #f4f3fb, #fff);
+}
+.btn-shadow {
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--grad-purple);
+  padding: 11px 20px;
+  border-radius: 12px;
 }
 .step-head {
   display: flex;
@@ -1451,6 +1593,34 @@ const aiContext = computed(() =>
   line-height: 1.6;
   color: var(--muted);
   margin-top: 12px;
+}
+.mission-card {
+  border: 1.5px solid rgba(255, 176, 32, 0.3);
+  background: linear-gradient(135deg, #fffaf0, #fff);
+}
+.mission-card.current {
+  border: 2px solid #ffb020;
+  box-shadow: 0 18px 44px rgba(255, 176, 32, 0.16);
+}
+.mission-note {
+  margin-top: 14px;
+  min-height: 70px;
+}
+.mission-check {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a5200;
+  cursor: pointer;
+}
+.mission-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: #ffb020;
+  cursor: pointer;
 }
 .week-test {
   border: 1.5px solid rgba(0, 214, 143, 0.25);

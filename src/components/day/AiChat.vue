@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, reactive, nextTick, watch, onMounted } from 'vue'
+import { ref, computed, reactive, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { coachTurn, reFeedback, getHint, getIdea, translateWord, translateToVi } from '@/lib/aiChat'
+import { coachTurn, roleplayTurn, reFeedback, getHint, getIdea, translateWord, translateToVi } from '@/lib/aiChat'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
@@ -29,6 +29,33 @@ const PERSONAS = [
   { key: 'gaubong', label: '🧸 Gấu bông', desc: 'Ấm áp, động viên' },
   { key: 'nghiemtuc', label: '🎓 Nghiêm túc', desc: 'Giáo viên thẳng thắn' },
 ]
+
+// —— "Tình huống bất ngờ" (Surprise mode) — mở khóa từ Tuần 4 ——
+// AI đóng vai 1 kịch bản ngẫu nhiên, chủ động đổi đề tài giữa chừng, người học
+// không biết trước câu hỏi kế tiếp (xem netlify/functions/_llm.js buildRoleplayPrompt).
+const ROLEPLAY_UNLOCK_WEEK = 4
+const SCENARIOS = [
+  {
+    key: 'customer',
+    label: '😠 Khách hàng khó tính',
+    brief: 'You are a demanding, impatient customer complaining about a product or service the learner is helping with. Stay in character.',
+  },
+  {
+    key: 'stranger',
+    label: '🏃 Người hỏi đường vội',
+    brief: 'You are a stranger in a hurry asking the learner for directions or quick help, then suddenly need something different than what you first asked.',
+  },
+  {
+    key: 'coworker',
+    label: '🧐 Đồng nghiệp hỏi vặn',
+    brief: 'You are a skeptical coworker checking on the status of a work task, pushing back with follow-up questions and doubts.',
+  },
+  {
+    key: 'interviewer',
+    label: '🎙️ Người phỏng vấn',
+    brief: 'You are a job interviewer asking the learner unexpected follow-up questions about their experience and skills.',
+  },
+]
 // —— Trạng thái phiên ——
 const messages = ref([]) // xem mô hình bên dưới
 const input = ref('')
@@ -40,6 +67,21 @@ const scroller = ref(null)
 const savedToast = ref('')
 let toastTimer = null
 
+// —— Voice-first: mặc định tự bật mic sau mỗi lượt AI, đếm ngược 10s để ép phản
+// xạ (không kịp soạn câu trước trong đầu). Gõ chữ vẫn dùng được — chỉ là fallback.
+const ANSWER_SECONDS = 10
+const voiceFirst = ref(true)
+const answerTimer = ref(0)
+let answerTimerId = null
+
+function clearAnswerTimer() {
+  if (answerTimerId) {
+    clearInterval(answerTimerId)
+    answerTimerId = null
+  }
+  answerTimer.value = 0
+}
+
 // Phong cách lời phê — nhớ lần chọn gần nhất (lưu local).
 const persona = ref(user.convoPrefs.persona || 'cotnha')
 function setPersona(key) {
@@ -50,9 +92,15 @@ function setPersona(key) {
 const speakable = canSpeak()
 const listenable = canListen()
 let recognizer = null
+let micStartedAt = 0 // mốc thời gian mic bật — đo số giây đã NÓI để tính streak nói
 
 // Bộ từ của bài (để gợi ý người học dùng trong câu trả lời).
 const vocab = computed(() => (props.context?.vocab || []).filter(Boolean))
+
+// —— Tình huống bất ngờ (Surprise mode) ——
+const unlockedRoleplay = computed(() => Number(props.context?.week || 0) >= ROLEPLAY_UNLOCK_WEEK)
+const roleplayOn = ref(false)
+const currentScenario = ref(null)
 
 // Ngữ cảnh gửi lên backend.
 const chatContext = computed(() => ({
@@ -63,9 +111,10 @@ const chatContext = computed(() => ({
   vocab: vocab.value,
   exam: props.context?.exam || 'none',
   suggestWords: true,
+  scenario: roleplayOn.value ? currentScenario.value?.brief : undefined,
 }))
 
-// Câu mở đầu tĩnh (không tốn quota).
+// Câu mở đầu tĩnh (không tốn quota) — chỉ dùng cho chế độ luyện thường.
 const opener = computed(() => {
   const topic = props.context?.title ? props.context.title : 'today’s topic'
   return `Hi there! 👋 Let's practise English about ${topic}. Tell me about your day or ask me anything to get started.`
@@ -80,7 +129,45 @@ function initSession() {
   error.value = ''
   closePop()
 }
+
+// Surprise mode: KHÔNG hiện câu mở đầu tĩnh — để AI tự mở màn trong vai diễn
+// (gọi ngay 1 lượt roleplay với lịch sử rỗng, giống quy tắc "evaluation: null"
+// của coach khi người học chưa viết gì).
+async function startRoleplaySession() {
+  currentScenario.value = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
+  messages.value = []
+  input.value = ''
+  error.value = ''
+  closePop()
+  loading.value = true
+  try {
+    const { next } = await roleplayTurn({ messages: [], context: chatContext.value, persona: persona.value })
+    messages.value.push({
+      role: 'assistant',
+      message: next?.message || '…',
+      suggestedWords: Array.isArray(next?.suggestedWords) ? next.suggestedWords.slice(0, 3) : [],
+      ui: reactive({}),
+    })
+    if (autoSpeak.value) speak(next?.message || '')
+    maybeAutoListen()
+  } catch (e) {
+    error.value = e.message || 'Không mở được tình huống, thử lại nhé.'
+    roleplayOn.value = false
+  } finally {
+    loading.value = false
+    scrollToEnd()
+  }
+}
+
+function toggleRoleplay() {
+  if (!unlockedRoleplay.value) return
+  roleplayOn.value = !roleplayOn.value
+  if (roleplayOn.value) startRoleplaySession()
+  else initSession()
+}
+
 onMounted(initSession)
+onUnmounted(clearAnswerTimer)
 
 async function scrollToEnd() {
   await nextTick()
@@ -97,6 +184,7 @@ function historyFor(upto = messages.value.length) {
 async function send() {
   const text = input.value.trim()
   if (!text || loading.value) return
+  clearAnswerTimer()
   error.value = ''
   const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
   messages.value.push(userEntry)
@@ -105,7 +193,8 @@ async function send() {
   scrollToEnd()
 
   try {
-    const { evaluation, next } = await coachTurn({
+    const turn = roleplayOn.value ? roleplayTurn : coachTurn
+    const { evaluation, next } = await turn({
       messages: historyFor(),
       context: chatContext.value,
       persona: persona.value,
@@ -120,6 +209,7 @@ async function send() {
     }
     messages.value.push(aiEntry)
     if (autoSpeak.value) speak(aiEntry.message)
+    maybeAutoListen()
   } catch (e) {
     userEntry.evaluating = false
     error.value = e.message || 'Có lỗi xảy ra, thử lại nhé.'
@@ -302,6 +392,7 @@ function openSavedDeck() {
 function toggleMic() {
   if (!listenable) return
   if (listening.value) {
+    clearAnswerTimer()
     recognizer?.stop()
     return
   }
@@ -311,6 +402,7 @@ function toggleMic() {
       input.value = final || interim
     },
     onError: (err) => {
+      clearAnswerTimer()
       error.value =
         err === 'not-allowed'
           ? 'Trình duyệt chưa cho phép dùng micro. Hãy bật quyền micro rồi thử lại.'
@@ -318,24 +410,61 @@ function toggleMic() {
       listening.value = false
     },
     onEnd: (finalText) => {
+      clearAnswerTimer()
       listening.value = false
+      if (micStartedAt) user.logSpeakingSeconds((Date.now() - micStartedAt) / 1000)
+      micStartedAt = 0
       if (finalText) send()
     },
   })
   if (!recognizer) return
   error.value = ''
   listening.value = true
+  micStartedAt = Date.now()
   recognizer.start()
 }
 
-function reset() {
-  initSession()
+// Sau mỗi lượt AI, tự bật mic + đếm ngược 10s (voice-first). Người học vẫn có
+// thể tắt mic giữa chừng hoặc gõ chữ — đây chỉ là mặc định để ép phản xạ nói ngay.
+function maybeAutoListen() {
+  if (!voiceFirst.value || !listenable || listening.value) return
+  toggleMic()
+  if (!listening.value) return
+  answerTimer.value = ANSWER_SECONDS
+  answerTimerId = setInterval(() => {
+    answerTimer.value -= 1
+    if (answerTimer.value <= 0) {
+      clearAnswerTimer()
+      if (listening.value) recognizer?.stop()
+    }
+  }, 1000)
 }
 
-// Đổi bài học thì làm mới phiên.
+function toggleVoiceFirst() {
+  voiceFirst.value = !voiceFirst.value
+  if (!voiceFirst.value) {
+    clearAnswerTimer()
+    if (listening.value) recognizer?.stop()
+  }
+}
+
+function reset() {
+  if (roleplayOn.value) {
+    startRoleplaySession()
+  } else {
+    initSession()
+    maybeAutoListen()
+  }
+}
+
+// Đổi bài học thì làm mới phiên (tắt luôn Surprise mode — kịch bản cũ không còn hợp).
 watch(
   () => props.context?.title,
-  () => reset(),
+  () => {
+    roleplayOn.value = false
+    currentScenario.value = null
+    initSession()
+  },
 )
 </script>
 
@@ -348,6 +477,15 @@ watch(
       </div>
       <div class="head-tools">
         <button
+          v-if="listenable"
+          class="tool-toggle"
+          :class="{ on: voiceFirst }"
+          :title="voiceFirst ? 'Voice-first: tự bật mic + đếm 10s sau mỗi lượt AI. Bấm để chỉ gõ chữ' : 'Đang chỉ gõ chữ. Bấm để bật lại voice-first'"
+          @click.stop="toggleVoiceFirst"
+        >
+          {{ voiceFirst ? '🎤 Nói ngay' : '💬 Gõ chữ' }}
+        </button>
+        <button
           v-if="speakable"
           class="tool-toggle"
           :class="{ on: autoSpeak }"
@@ -356,9 +494,21 @@ watch(
         >
           {{ autoSpeak ? '🔊 Đọc' : '🔇 Đọc' }}
         </button>
+        <button
+          class="tool-toggle"
+          :class="{ on: roleplayOn, locked: !unlockedRoleplay }"
+          :disabled="!unlockedRoleplay"
+          :title="unlockedRoleplay ? (roleplayOn ? 'Đang ở tình huống bất ngờ — bấm để tắt' : 'Vào tình huống bất ngờ: AI đổi vai, không báo trước câu hỏi') : 'Mở khóa từ Tuần 4'"
+          @click.stop="toggleRoleplay"
+        >
+          {{ roleplayOn ? '🎭 Đang bất ngờ' : unlockedRoleplay ? '🎭 Tình huống bất ngờ' : '🔒 Tình huống bất ngờ' }}
+        </button>
         <button class="tool-toggle" title="Bắt đầu lại từ đầu" @click.stop="reset">↺ Mới</button>
       </div>
     </div>
+
+    <!-- Nhãn kịch bản đang luyện ở chế độ Surprise mode -->
+    <div v-if="roleplayOn && currentScenario" class="scenario-tag">{{ currentScenario.label }} — không biết trước câu hỏi kế tiếp, hãy phản xạ tự nhiên!</div>
 
     <!-- Thanh chọn phong cách lời phê (đổi được bất cứ lúc nào) -->
     <div class="persona-bar">
@@ -470,6 +620,8 @@ watch(
 
       <p v-if="error" class="chat-error">⚠️ {{ error }}</p>
 
+      <div v-if="answerTimer > 0" class="answer-timer">⏱ Còn {{ answerTimer }}s — cứ nói tự nhiên, đừng soạn câu trước!</div>
+
       <form class="composer" @submit.prevent="send">
         <button
           v-if="listenable"
@@ -544,6 +696,27 @@ watch(
   background: linear-gradient(135deg, #00d68f, #00a86f);
   border-color: transparent;
   color: #fff;
+}
+.tool-toggle.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tool-toggle.locked:hover {
+  background: #fff;
+}
+
+/* —— Nhãn kịch bản Surprise mode —— */
+.scenario-tag {
+  margin-top: 12px;
+  background: linear-gradient(135deg, #fff7e8, #fff1f1);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  border-left: 3px solid #ffb020;
+  color: #7a5200;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 9px 13px;
+  border-radius: 12px;
 }
 
 /* —— Thanh chọn phong cách lời phê —— */
@@ -990,6 +1163,18 @@ watch(
   border-radius: 12px;
 }
 
+.answer-timer {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #c0392b;
+  background: rgba(255, 90, 90, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  border-radius: 999px;
+  padding: 6px 13px;
+  display: inline-flex;
+  align-self: flex-start;
+}
 .composer {
   margin-top: 16px;
   display: flex;

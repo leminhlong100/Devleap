@@ -11,6 +11,7 @@
 - **Listening:** past tense verbs and event sequence
 - **Nhiệm vụ nhẹ:** Làm truyện tranh ngắn về “my worst Monday”.
 - **Mốc kiểm tra:** Kể được một câu chuyện quá khứ đơn giản bằng 8–10 câu.
+- **🌍 Mission tuần (ngoài app):** Kể lại một ngày của mình bằng voice message tiếng Anh (60–90s) gửi cho partner/bạn bè. Bằng chứng: lưu lại voice message (hoặc ảnh chụp đã gửi), nộp ở Day 27.
 
 ### Nhịp học hằng ngày
 
@@ -302,6 +303,7 @@ Translate naturally. Do not translate word by word.
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: viết "my worst Monday" 8–10 câu; nhờ AI chữa.
 - [ ] Sản phẩm: kể lại bằng giọng nói (ghi âm), không đọc nguyên văn.
+- [ ] 🌍 Mission tuần (ngoài app): gửi bản ghi vừa làm (hoặc bản mới 60–90s) như một voice message tiếng Anh THẬT cho partner/bạn bè.
 - [ ] Sổ lỗi (5'): 3 lỗi cần sửa trước Day 28.
 
 ### Day 28 — Tổng hợp tuần + Bài kiểm tra tuần
@@ -310,6 +312,7 @@ Translate naturally. Do not translate word by word.
 - [ ] Viết: viết 8 câu vận dụng 3 thì đã học; nhờ AI chữa.
 - [ ] Quiz: làm quiz từ vựng của buổi.
 - [ ] Kiểm tra: làm Bài kiểm tra Tuần 4 (mốc: kể chuyện quá khứ 8–10 câu).
+- [ ] 📔 Sổ lỗi đời thực (3 dòng): từ Mission tuần, ghi 1 câu/cụm em không biết diễn đạt, 1 điều làm tốt, 1 điều muốn thử lại.
 - [ ] Kế hoạch: chọn 3 nội dung cần lặp lại (thường là động từ bất quy tắc).
 
 ## ✅ Quiz tuần 4
