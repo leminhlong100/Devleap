@@ -59,6 +59,19 @@ function buildCloze(wrong, correct) {
   const wTok = wrong.split(/\s+/).filter(Boolean)
   const cTok = correct.split(/\s+/).filter(Boolean)
   if (cTok.length < 3) return null
+
+  // Nếu câu sai chỉ là ĐẢO VỊ TRÍ các từ của câu đúng (cùng số từ, cùng tập từ),
+  // lỗi ngữ pháp nằm ở TRẬT TỰ chứ không phải ở một từ cụ thể — khoét 1 từ sẽ
+  // biến bài thành câu hỏi từ vựng vô nghĩa (vd "I like _____ very much." chấp
+  // nhận cả "book"). Trường hợp này để rơi xuống dạng "error" (sửa cả câu).
+  const wNorm = wTok.map(normTok).filter(Boolean)
+  const cNorm = cTok.map(normTok).filter(Boolean)
+  if (wNorm.length === cNorm.length) {
+    const wSorted = [...wNorm].sort()
+    const cSorted = [...cNorm].sort()
+    if (wSorted.length && wSorted.every((w, i) => w === cSorted[i])) return null
+  }
+
   const keepB = lcsKeep(wTok.map(normTok), cTok.map(normTok))
 
   const changed = []
