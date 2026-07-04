@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { recognizeOnce, recognitionSupported } from '@/lib/speechRecognize'
 import { correctWriting } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
 
 const props = defineProps({
   prompts: { type: Array, default: () => [] }, // câu mở đầu: "I usually…"
@@ -26,15 +27,18 @@ function fullSentence(i) {
 const filledCount = computed(() => answers.value.filter((a) => a && a.trim().length >= 2).length)
 
 const busyIndex = ref(-1)
+const micError = ref('') // lỗi ghi âm gần nhất — KHÔNG phải lỗi AI (Web Speech API), nhưng vẫn phải báo, không nuốt im lặng
 async function speakInto(i) {
   if (!recordable || busyIndex.value >= 0) return
   busyIndex.value = i
+  micError.value = ''
   try {
     const { promise } = recognizeOnce({ lang: 'en-US' })
     const heard = await promise
     if (heard) answers.value[i] = heard
+    else micError.value = 'Không nghe rõ, thử lại hoặc gõ tay nhé.'
   } catch {
-    /* bỏ qua lỗi nhận diện */
+    micError.value = 'Không dùng được mic lúc này (trình duyệt chặn quyền hoặc không hỗ trợ) — gõ tay nhé.'
   } finally {
     busyIndex.value = -1
   }
@@ -60,7 +64,7 @@ async function askAi() {
     isDone.value = true
     emit('done')
   } catch (e) {
-    reviewError.value = e?.message || 'Không gọi được AI. Thử lại nhé.'
+    reviewError.value = friendlyAiError(e).message
   } finally {
     reviewing.value = false
   }
@@ -101,6 +105,7 @@ const isDone = ref(false)
         </div>
       </div>
     </div>
+    <p v-if="micError" class="mic-err">🎤 {{ micError }}</p>
 
     <div class="sb-foot">
       <button class="green-btn" :class="{ locked: filledCount < 3 || reviewing }" :disabled="filledCount < 3 || reviewing" @click="askAi">
@@ -194,6 +199,12 @@ const isDone = ref(false)
   .sb-input-wrap {
     grid-column: 1 / -1;
   }
+}
+
+.mic-err {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--text-danger);
 }
 
 /* —— Kết quả AI chữa (style cục bộ vì component scoped riêng) —— */

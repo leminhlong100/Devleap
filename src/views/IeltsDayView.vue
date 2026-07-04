@@ -20,6 +20,7 @@ import { planFromChecklist } from '@/lib/dayPlan'
 import { listeningStageOf, listeningStageInfo } from '@/data/ieltsListeningStage'
 import { speak } from '@/lib/speak'
 import { correctWriting } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
 
 function say(text) {
   speak(text)
@@ -148,7 +149,7 @@ async function askAiCorrect() {
     if (!review) throw new Error('AI chưa trả về kết quả. Thử lại nhé.')
     user.saveWriting('ielts', d.value.week, d.value.n, writingText.value, true, review)
   } catch (e) {
-    reviewError.value = e?.message || 'Không gọi được AI. Thử lại nhé.'
+    reviewError.value = friendlyAiError(e).message
   } finally {
     reviewing.value = false
   }
@@ -232,12 +233,54 @@ const ringPct = computed(() => (d.value ? Math.round((weekDoneCount.value / d.va
 function markDone() {
   // Phải xong cả luyện ngữ pháp lẫn bài viết trước khi cho hoàn thành buổi.
   if (d.value && !done.value && dayReady.value) {
+    const { week, nextDay } = d.value
     const vocabTerms = [...d.value.vocab, ...d.value.reviewVocab].map((v) => v.term)
-    user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays, vocabTerms)
+    user.toggleDay('ielts', week, d.value.n, d.value.totalDays, vocabTerms)
+    // Vừa xong buổi CUỐI CÙNG của tuần -> hỏi cảm nhận (chỉ 1 lần/tuần).
+    if (!nextDay && !user.weekFeedbackOf('ielts', week)) showWeekSurvey.value = true
   }
 }
 function unmark() {
   if (d.value && done.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)
+}
+
+// —— KHẢO SÁT CẢM NHẬN CUỐI TUẦN (Dễ/Vừa/Khó) ——
+// Đầu vào duy nhất để hiệu chỉnh độ khó (xem docs/KE_HOACH_DO_KHO_KHOA_HOC.md mục 5).
+// weekTest (kết quả bài kiểm tra tuần) được khai báo bên dưới — dùng được ở đây
+// vì các hàm chỉ chạy khi người dùng bấm nút, lúc đó mọi computed đã sẵn sàng.
+const showWeekSurvey = ref(false)
+const weekSurveyNote = ref('')
+const weekSurveySuggestion = ref(null) // null | 'remedial' | 'ahead' — gợi ý sau khi chọn cảm nhận
+function closeWeekSurvey() {
+  showWeekSurvey.value = false
+  weekSurveySuggestion.value = null
+  weekSurveyNote.value = ''
+}
+function chooseWeekFeeling(rating) {
+  if (!d.value) return
+  user.saveWeekFeedback('ielts', d.value.week, rating, weekSurveyNote.value)
+  const wt = weekTest.value
+  if (rating === 'hard' && wt && !wt.passed && wt.pct < 70) {
+    weekSurveySuggestion.value = 'remedial'
+  } else if (rating === 'easy' && wt && wt.passed && wt.pct > 90) {
+    weekSurveySuggestion.value = 'ahead'
+  } else {
+    closeWeekSurvey()
+  }
+}
+function skipWeekSurvey() {
+  if (d.value) user.saveWeekFeedback('ielts', d.value.week, 'skipped')
+  closeWeekSurvey()
+}
+// "Khó" + quiz tuần < 70% -> dẫn thẳng tới khối ôn bù (đã có ở IeltsCourseView.vue).
+function goRemedialFromSurvey() {
+  if (d.value) router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${d.value.week}` } })
+  closeWeekSurvey()
+}
+// "Dễ" + quiz tuần > 90% -> gợi ý thử sức sớm với tuần kế tiếp.
+function goAheadFromSurvey() {
+  if (d.value) router.push({ name: 'ielts-day', params: { week: Number(d.value.week) + 1, day: 1 } })
+  closeWeekSurvey()
 }
 
 const agenda = computed(() => {
@@ -804,6 +847,55 @@ const aiContext = computed(() =>
           </section>
         </div>
       </div>
+
+      <!-- KHẢO SÁT CẢM NHẬN CUỐI TUẦN -->
+      <Transition name="wf-fade">
+        <div v-if="showWeekSurvey" class="wf-overlay" @click.self="skipWeekSurvey">
+          <div class="wf-card">
+            <template v-if="!weekSurveySuggestion">
+              <h3 class="wf-title">Tuần này với em thế nào?</h3>
+              <div class="wf-options">
+                <button class="wf-opt" @click="chooseWeekFeeling('easy')">
+                  <span class="wf-emoji">😌</span><span>Dễ</span>
+                </button>
+                <button class="wf-opt" @click="chooseWeekFeeling('ok')">
+                  <span class="wf-emoji">🙂</span><span>Vừa</span>
+                </button>
+                <button class="wf-opt" @click="chooseWeekFeeling('hard')">
+                  <span class="wf-emoji">😵</span><span>Khó</span>
+                </button>
+              </div>
+              <textarea
+                v-model="weekSurveyNote"
+                class="wf-note"
+                rows="2"
+                placeholder="Ghi chú thêm (không bắt buộc)…"
+              ></textarea>
+              <button class="wf-skip" @click="skipWeekSurvey">Bỏ qua</button>
+            </template>
+            <template v-else-if="weekSurveySuggestion === 'remedial'">
+              <h3 class="wf-title">🩹 Ôn lại trước khi qua tuần mới nhé</h3>
+              <p class="wf-desc">
+                Bài kiểm tra Tuần {{ d.week }} mới đạt {{ weekTest?.pct }}% — ôn lại câu sai sẽ giúp tuần sau nhẹ hơn hẳn.
+              </p>
+              <div class="wf-actions">
+                <button class="wf-primary" @click="goRemedialFromSurvey">Ôn ngay →</button>
+                <button class="wf-skip" @click="closeWeekSurvey">Để sau</button>
+              </div>
+            </template>
+            <template v-else>
+              <h3 class="wf-title">🚀 Học nhanh đấy!</h3>
+              <p class="wf-desc">
+                Điểm kiểm tra Tuần {{ d.week }} đạt {{ weekTest?.pct }}% — thử sang Tuần {{ Number(d.week) + 1 }} sớm xem sao?
+              </p>
+              <div class="wf-actions">
+                <button class="wf-primary" @click="goAheadFromSurvey">Sang Tuần {{ Number(d.week) + 1 }} →</button>
+                <button class="wf-skip" @click="closeWeekSurvey">Để sau</button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </Transition>
     </template>
 
     <div v-else class="empty">
@@ -1739,6 +1831,113 @@ const aiContext = computed(() =>
 .empty p {
   color: var(--muted);
   margin: 10px 0 22px;
+}
+
+/* khảo sát cảm nhận cuối tuần */
+.wf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(30, 30, 46, 0.5);
+  backdrop-filter: blur(6px);
+}
+.wf-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 22px;
+  padding: 28px 26px 24px;
+  text-align: center;
+  box-shadow: 0 30px 70px rgba(30, 30, 46, 0.32);
+}
+.wf-title {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.wf-desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--slate);
+  margin: 10px 0 0;
+}
+.wf-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.wf-opt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e6e6f0;
+  background: #fafafe;
+  border-radius: 14px;
+  padding: 14px 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.wf-opt:hover {
+  transform: translateY(-2px);
+  background: #f1f1fb;
+}
+.wf-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+.wf-note {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid #e6e6f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  resize: vertical;
+}
+.wf-skip {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  background: none;
+  color: var(--muted-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.wf-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+.wf-primary {
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  padding: 13px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00d68f, #00a86f);
+  box-shadow: 0 12px 26px rgba(0, 214, 143, 0.3);
+}
+.wf-fade-enter-active,
+.wf-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.wf-fade-enter-from,
+.wf-fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 900px) {

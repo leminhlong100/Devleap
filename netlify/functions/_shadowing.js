@@ -7,14 +7,13 @@
  * GROQ_API_KEY luôn ở phía server — không lộ ra bundle client.
  */
 import { tidyText } from '../../src/lib/shadowingSegment.js'
-
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = (typeof process !== 'undefined' && process.env?.GROQ_MODEL) || 'llama-3.3-70b-versatile'
+import { AiError, groqRequest } from './_llm.js'
 
 /**
  * Nhờ AI thêm dấu câu / viết hoa / sửa lỗi chính tả nhận dạng cho TỪNG đoạn,
  * giữ NGUYÊN số đoạn & thứ tự để timestamp không lệch. Trả về mảng văn bản mới
- * (cùng độ dài). Ném lỗi nếu không dùng được (caller tự quyết fallback).
+ * (cùng độ dài). Ném lỗi nếu không dùng được (caller tự quyết fallback — xem
+ * shadowing.js, vốn rơi về bản "heuristic" khi hàm này thất bại kể cả sau retry).
  *
  * @param {string[]} texts  các đoạn phụ đề đã gom (lowercase, ít/không dấu câu)
  * @param {string}   key    GROQ_API_KEY
@@ -28,24 +27,20 @@ export async function polishSegments(texts, key) {
     'For each segment: add proper capitalization and sentence punctuation, fix obvious speech-recognition spelling errors.',
     'Keep the original wording and meaning. Do NOT merge, split, add, or remove segments.',
   ].join('\n')
-  const res = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      temperature: 0.2,
-      max_tokens: 6000,
-      response_format: { type: 'json_object' },
+  const raw = await groqRequest(
+    {
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: JSON.stringify({ segments: texts }) },
       ],
-    }),
-  })
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text().catch(() => '')).slice(0, 160)}`)
-  const data = await res.json()
-  const out = JSON.parse(data?.choices?.[0]?.message?.content || '{}')?.segments
-  if (!Array.isArray(out) || out.length !== texts.length) throw new Error('số đoạn trả về không khớp')
+      temperature: 0.2,
+      maxTokens: 6000,
+      json: true,
+    },
+    key,
+  )
+  const out = JSON.parse(raw || '{}')?.segments
+  if (!Array.isArray(out) || out.length !== texts.length) throw new AiError('số đoạn trả về không khớp', 'upstream')
   // Vẫn chạy tidyText để chắc chắn "I" hoa & khoảng trắng gọn.
   return out.map((t) => tidyText(t))
 }

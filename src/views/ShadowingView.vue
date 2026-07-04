@@ -99,13 +99,22 @@ async function loadFromUrl() {
   }
   loadingUrl.value = true
   try {
-    const res = await fetch('/.netlify/functions/shadowing', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: urlInput.value }),
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data?.error || 'Không tải được bài.')
+    let res
+    try {
+      res = await fetch('/.netlify/functions/shadowing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput.value }),
+      })
+    } catch {
+      throw new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')
+    }
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      // error có thể là string (dạng cũ) hoặc { code, message } (netlify/functions/_llm.js#errorResponse).
+      const err = data?.error
+      throw new Error((err && typeof err === 'object' ? err.message : err) || 'Không tải được bài.')
+    }
     selectedId.value = null // bỏ chọn clip gợi ý để player nhận clip URL
     clip.value = {
       videoId: data.videoId,

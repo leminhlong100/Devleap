@@ -16,6 +16,7 @@ create table if not exists public.progress (
   quiz_scores    jsonb       not null default '{}'::jsonb,
   saved_words    jsonb       not null default '{}'::jsonb,
   shadowing_scores jsonb     not null default '{}'::jsonb,
+  week_feedback  jsonb       not null default '{}'::jsonb,
   updated_at     timestamptz not null default now()
 );
 
@@ -34,6 +35,10 @@ alter table public.progress
 -- Nâng cấp DB đã tạo trước khi có Shadowing: thêm cột kết quả luyện shadowing.
 alter table public.progress
   add column if not exists shadowing_scores jsonb not null default '{}'::jsonb;
+
+-- Nâng cấp DB đã tạo trước khi có khảo sát cuối tuần: thêm cột cảm nhận Dễ/Vừa/Khó.
+alter table public.progress
+  add column if not exists week_feedback jsonb not null default '{}'::jsonb;
 
 -- Bật RLS: mặc định chặn hết, chỉ mở đúng các policy bên dưới.
 alter table public.progress enable row level security;

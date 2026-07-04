@@ -2,6 +2,7 @@
 import { ref, computed, reactive, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { coachTurn, roleplayTurn, reFeedback, getHint, getIdea, translateWord, translateToVi } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
@@ -61,6 +62,7 @@ const messages = ref([]) // xem mô hình bên dưới
 const input = ref('')
 const loading = ref(false)
 const error = ref('')
+const retry = ref(null) // hàm thử lại lượt vừa lỗi, null khi không có gì để thử lại
 const autoSpeak = ref(true)
 const listening = ref(false)
 const scroller = ref(null)
@@ -134,10 +136,11 @@ function initSession() {
 // (gọi ngay 1 lượt roleplay với lịch sử rỗng, giống quy tắc "evaluation: null"
 // của coach khi người học chưa viết gì).
 async function startRoleplaySession() {
-  currentScenario.value = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
+  currentScenario.value = currentScenario.value || SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
   messages.value = []
   input.value = ''
   error.value = ''
+  retry.value = null
   closePop()
   loading.value = true
   try {
@@ -151,7 +154,11 @@ async function startRoleplaySession() {
     if (autoSpeak.value) speak(next?.message || '')
     maybeAutoListen()
   } catch (e) {
-    error.value = e.message || 'Không mở được tình huống, thử lại nhé.'
+    error.value = friendlyAiError(e).message
+    retry.value = () => {
+      roleplayOn.value = true
+      startRoleplaySession()
+    }
     roleplayOn.value = false
   } finally {
     loading.value = false
@@ -186,12 +193,18 @@ async function send() {
   if (!text || loading.value) return
   clearAnswerTimer()
   error.value = ''
+  retry.value = null
   const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
   messages.value.push(userEntry)
   input.value = ''
+  await sendTurn(userEntry)
+}
+
+// Tách riêng để "Thử lại" gọi lại đúng lượt vừa lỗi mà KHÔNG đẩy thêm bong bóng
+// chat mới hay mất câu người học vừa gõ (câu đã nằm sẵn trong userEntry).
+async function sendTurn(userEntry) {
   loading.value = true
   scrollToEnd()
-
   try {
     const turn = roleplayOn.value ? roleplayTurn : coachTurn
     const { evaluation, next } = await turn({
@@ -210,9 +223,12 @@ async function send() {
     messages.value.push(aiEntry)
     if (autoSpeak.value) speak(aiEntry.message)
     maybeAutoListen()
+    error.value = ''
+    retry.value = null
   } catch (e) {
     userEntry.evaluating = false
-    error.value = e.message || 'Có lỗi xảy ra, thử lại nhé.'
+    error.value = friendlyAiError(e).message
+    retry.value = () => sendTurn(userEntry)
   } finally {
     loading.value = false
     scrollToEnd()
@@ -240,7 +256,7 @@ async function changePersona(userEntry, key) {
     if (evaluation) userEntry.evaluation = evaluation
     userEntry.persona = key
   } catch (e) {
-    flashToast('⚠️ Không chấm lại được, thử lại nhé')
+    flashToast('⚠️ ' + friendlyAiError(e).message)
   } finally {
     userEntry.reEvaluating = false
   }
@@ -256,8 +272,8 @@ async function showHint(m) {
   try {
     m.ui.hint = await getHint(m.message, chatContext.value)
     m.ui.showHint = true
-  } catch {
-    m.ui.hint = 'Không lấy được gợi ý, thử lại nhé.'
+  } catch (e) {
+    m.ui.hint = friendlyAiError(e).message
     m.ui.showHint = true
   } finally {
     m.ui.hintLoading = false
@@ -272,8 +288,8 @@ async function showIdea(m) {
   try {
     m.ui.idea = await getIdea(m.message, chatContext.value)
     m.ui.showIdea = true
-  } catch {
-    m.ui.idea = 'Không lấy được ý tưởng, thử lại nhé.'
+  } catch (e) {
+    m.ui.idea = friendlyAiError(e).message
     m.ui.showIdea = true
   } finally {
     m.ui.ideaLoading = false
@@ -288,8 +304,8 @@ async function showTranslation(m) {
   try {
     m.ui.vi = await translateToVi(m.message)
     m.ui.showVi = true
-  } catch {
-    m.ui.vi = 'Không dịch được, thử lại nhé.'
+  } catch (e) {
+    m.ui.vi = friendlyAiError(e).message
     m.ui.showVi = true
   } finally {
     m.ui.viLoading = false
@@ -618,7 +634,10 @@ watch(
         </div>
       </div>
 
-      <p v-if="error" class="chat-error">⚠️ {{ error }}</p>
+      <div v-if="error" class="chat-error-box">
+        <p class="chat-error">⚠️ {{ error }}</p>
+        <button v-if="retry" type="button" class="chat-retry-btn" @click="retry?.()">🔄 Thử lại</button>
+      </div>
 
       <div v-if="answerTimer > 0" class="answer-timer">⏱ Còn {{ answerTimer }}s — cứ nói tự nhiên, đừng soạn câu trước!</div>
 
@@ -1153,14 +1172,35 @@ watch(
   }
 }
 
-.chat-error {
+.chat-error-box {
   margin-top: 12px;
   background: #fff3f3;
   border: 1px solid #ffd5d5;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chat-error {
   color: #c0392b;
   font-size: 13.5px;
-  padding: 10px 14px;
-  border-radius: 12px;
+}
+.chat-retry-btn {
+  flex-shrink: 0;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-retry-btn:hover {
+  background: #a53125;
 }
 
 .answer-timer {

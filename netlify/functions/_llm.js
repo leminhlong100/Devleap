@@ -19,6 +19,108 @@
 const MODEL = (typeof process !== 'undefined' && process.env?.GROQ_MODEL) || 'llama-3.3-70b-versatile'
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 
+// Netlify Function có trần thực thi ~26s -> mỗi lần gọi Groq tối đa 18s, và chỉ
+// retry được ĐÚNG 1 lần (18s x 2 + backoff vẫn còn dư margin cho phần code còn lại).
+const REQUEST_TIMEOUT_MS = 18000
+const MAX_RETRIES = 1
+const BASE_BACKOFF_MS = 1000
+const MAX_BACKOFF_MS = 4000
+
+/** Lỗi gọi AI có `code` để client/hàm gọi phân loại (rate_limited/timeout/upstream/...). */
+export class AiError extends Error {
+  constructor(message, code = 'upstream') {
+    super(message)
+    this.name = 'AiError'
+    this.code = code
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/** Thời gian chờ trước lần retry: ưu tiên header Retry-After, else exponential + jitter, có trần. */
+function backoffDelay(attempt, retryAfterHeader) {
+  const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : NaN
+  if (Number.isFinite(retryAfterMs) && retryAfterMs > 0) return Math.min(retryAfterMs, MAX_BACKOFF_MS)
+  const base = BASE_BACKOFF_MS * 2 ** attempt
+  return Math.min(base + Math.random() * 300, MAX_BACKOFF_MS)
+}
+
+/**
+ * Gửi 1 request chat/completions tới Groq với timeout + retry (429/5xx/mạng/timeout).
+ * Trả về nội dung reply thô (string). Ném `AiError` với `code` phù hợp khi hết cách.
+ * @param {{ messages, temperature, maxTokens, json? }} args
+ */
+export async function groqRequest({ messages, temperature = 0.7, maxTokens = 400, json = false }, key) {
+  const body = { model: MODEL, messages, temperature, max_tokens: maxTokens }
+  if (json) body.response_format = { type: 'json_object' }
+
+  let lastErr
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    let res
+    try {
+      res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      })
+    } catch (e) {
+      lastErr =
+        e?.name === 'AbortError'
+          ? new AiError('AI phản hồi quá lâu, thử lại nhé.', 'timeout')
+          : new AiError('Không kết nối được tới máy chủ AI.', 'network')
+      if (attempt < MAX_RETRIES) {
+        await sleep(backoffDelay(attempt))
+        continue
+      }
+      throw lastErr
+    } finally {
+      clearTimeout(timer)
+    }
+
+    if (res.ok) {
+      const data = await res.json()
+      const reply = data?.choices?.[0]?.message?.content || ''
+      if (!reply) throw new AiError('AI không trả về nội dung. Thử lại nhé.', 'upstream')
+      return reply.trim()
+    }
+
+    if (res.status === 429) {
+      lastErr = new AiError('Đã chạm giới hạn tốc độ Groq (429). Đợi vài giây rồi thử lại.', 'rate_limited')
+      if (attempt < MAX_RETRIES) {
+        await sleep(backoffDelay(attempt, res.headers?.get?.('retry-after')))
+        continue
+      }
+      throw lastErr
+    }
+    if (res.status === 401) throw new AiError('GROQ_API_KEY không hợp lệ. Kiểm tra lại key ở console.groq.com.', 'config')
+    if (res.status >= 500) {
+      lastErr = new AiError(`AI đang gặp sự cố (Groq ${res.status}).`, 'upstream')
+      if (attempt < MAX_RETRIES) {
+        await sleep(backoffDelay(attempt))
+        continue
+      }
+      throw lastErr
+    }
+    // 4xx khác (400 sai payload…): lỗi phía mình, retry không giúp được gì.
+    const detail = await res.text().catch(() => '')
+    throw new AiError(`Groq API ${res.status}: ${detail.slice(0, 200)}`, 'bad_request')
+  }
+  throw lastErr
+}
+
+/** Dựng { status, body } chuẩn hoá từ một lỗi AiError (hoặc Error thường) để trả về client. */
+export function errorResponse(e) {
+  const code = e?.code || 'upstream'
+  const status =
+    code === 'rate_limited' ? 429 : code === 'timeout' ? 504 : code === 'bad_request' ? 400 : code === 'config' ? 500 : 502
+  return { status, body: { error: { code, message: e?.message || 'Lỗi không xác định' } } }
+}
+
 /**
  * Phong cách "lời phê" của AI khi chấm câu. Lời phê LUÔN bằng tiếng Việt cho dễ
  * hiểu; câu sửa & câu trả lời mẫu thì bằng tiếng Anh. Mỗi persona chỉ đổi GIỌNG
@@ -318,29 +420,7 @@ export async function askLLM({ key, system, messages = [], json = false, tempera
       .filter((m) => m && m.text)
       .map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text })),
   ]
-
-  const body = { model: MODEL, messages: chat, temperature, max_tokens: maxTokens }
-  if (json) body.response_format = { type: 'json_object' }
-
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify(body),
-  })
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    if (res.status === 429)
-      throw new Error('Đã chạm giới hạn tốc độ Groq (429). Đợi vài giây rồi thử lại.')
-    if (res.status === 401)
-      throw new Error('GROQ_API_KEY không hợp lệ. Kiểm tra lại key ở console.groq.com.')
-    throw new Error(`Groq API ${res.status}: ${detail.slice(0, 200)}`)
-  }
-
-  const data = await res.json()
-  const reply = data?.choices?.[0]?.message?.content || ''
-  if (!reply) throw new Error('Groq không trả về nội dung. Thử lại nhé.')
-  return reply.trim()
+  return groqRequest({ messages: chat, temperature, maxTokens, json }, key)
 }
 
 /**
@@ -398,6 +478,6 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
     }
   }
   if (!parsed || typeof parsed !== 'object')
-    throw new Error('AI trả về định dạng không hợp lệ. Thử lại nhé.')
+    throw new AiError('AI trả về định dạng không hợp lệ. Thử lại nhé.', 'upstream')
   return { reply: parsed }
 }

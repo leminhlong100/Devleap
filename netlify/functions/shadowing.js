@@ -15,6 +15,7 @@ import { YoutubeTranscript } from 'youtube-transcript'
 import { parseVideoId } from '../../src/lib/youtube.js'
 import { groupIntoSentences, splitIntoSentences } from '../../src/lib/shadowingSegment.js'
 import { polishSegments } from './_shadowing.js'
+import { errorResponse } from './_llm.js'
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -69,16 +70,21 @@ async function fetchTranscript(videoId) {
 }
 
 export default async (req) => {
-  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+  if (req.method !== 'POST')
+    return json({ error: { code: 'bad_request', message: 'Method not allowed' } }, 405)
 
   let videoId
   try {
     const { url } = await req.json()
     videoId = parseVideoId(url)
   } catch {
-    return json({ error: 'Body không hợp lệ.' }, 400)
+    return json({ error: { code: 'bad_request', message: 'Body không hợp lệ.' } }, 400)
   }
-  if (!videoId) return json({ error: 'Không nhận ra link YouTube. Hãy dán link dạng youtube.com/watch?v=… hoặc youtu.be/…' }, 400)
+  if (!videoId)
+    return json(
+      { error: { code: 'bad_request', message: 'Không nhận ra link YouTube. Hãy dán link dạng youtube.com/watch?v=… hoặc youtu.be/…' } },
+      400,
+    )
 
   // Phụ đề là phần dễ hỏng nhất (YouTube chặn IP) -> bắt riêng để báo 422.
   let raw
@@ -90,9 +96,12 @@ export default async (req) => {
   if (!raw || !raw.length) {
     return json(
       {
-        error:
-          'Không lấy được phụ đề — video không có phụ đề tiếng Anh hoặc YouTube đang tạm chặn. ' +
-          'Thử video khác (có phụ đề) hoặc chọn một clip gợi ý bên dưới.',
+        error: {
+          code: 'no_transcript',
+          message:
+            'Không lấy được phụ đề — video không có phụ đề tiếng Anh hoặc YouTube đang tạm chặn. ' +
+            'Thử video khác (có phụ đề) hoặc chọn một clip gợi ý bên dưới.',
+        },
         videoId,
       },
       422,

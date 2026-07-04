@@ -74,7 +74,33 @@ qua preview: seed localStorage → banner Home hiện đúng số → mở deck 
 
 ### Bước 1.2 — Khảo sát "Dễ / Vừa / Khó" cuối tuần
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-04):** Thêm state `weekFeedback` (khóa `course:week`, giá trị
+`{ rating: 'easy'|'ok'|'hard'|'skipped', note, at }`) + getter `weekFeedbackOf`
++ action `saveWeekFeedback` trong `src/stores/user.js`. Đồng bộ Supabase thật sự
+(khác `writings`/`missions` vốn chỉ local): thêm cột `week_feedback jsonb` vào
+`supabase/schema.sql`, đưa vào `select`/`upsert` của `pullAndMerge`/`pushNow`,
+và hàm `mergeWeekFeedback` (giữ bản mới hơn theo `at`, giống `mergeMissions`).
+`IeltsDayView.vue#markDone`: khi vừa hoàn thành buổi có `!d.nextDay` (buổi cuối
+tuần) và tuần đó chưa có `weekFeedback` → mở modal 1 câu hỏi + 3 nút Dễ/Vừa/Khó
++ ô ghi chú tùy chọn + nút "Bỏ qua" (bỏ qua cũng ghi `rating:'skipped'` để không
+hỏi lại). Chọn "Khó" mà đã có điểm quiz tuần `< 70%` (đọc từ `weekTest` — cùng
+getter `user.quizOf('ielts','week:N')` mà khối "Bài kiểm tra Tuần" trong view đã
+dùng) → hiện luôn gợi ý "Ôn ngay" dẫn tới `assessment` scope `week-N` (khối ôn bù
+có sẵn ở `IeltsCourseView.vue`, chỉ tái dùng route). Chọn "Dễ" mà quiz tuần
+`> 90%` → gợi ý "Sang Tuần N+1" luôn (quyết định khác kế hoạch: vì bài kiểm tra
+tuần chỉ MỞ SAU KHI xong hết các buổi trong tuần — `weekComplete` — nên tại thời
+điểm vừa hoàn thành buổi cuối, `weekTest` thường còn `null` lần đầu; 2 gợi ý này
+chỉ thật sự xuất hiện khi người học làm lại tuần sau khi đã có điểm — đúng như
+mô tả kế hoạch, chỉ hiếm gặp hơn dự kiến ban đầu). Test mới trong
+`tests/user.store.test.js`: `saveWeekFeedback`/`weekFeedbackOf` (lưu, bỏ qua,
+không cộng XP, thiếu tham số thì bỏ qua, bền hoá qua hydrate) + `pullAndMerge`
+2 chiều cho `weekFeedback` (remote mới hơn thắng, local mới hơn thắng, union
+nhiều tuần). Chưa thử tay được trên trình duyệt: `.env.local` của máy này đã
+cấu hình Supabase thật nên các route khóa học yêu cầu đăng nhập Google — không
+đăng nhập được trong phiên preview sandbox; đã xác nhận bằng `npm test`
+(193/193, +8) và `npm run build` pass, không có lỗi biên dịch template mới.
 
 **Vấn đề:** `KE_HOACH_DO_KHO_KHOA_HOC.md` mục 5 đặt thước đo "≥70% người học trả lời Vừa" nhưng chưa có cơ chế hỏi. Dữ liệu này là đầu vào duy nhất để hiệu chỉnh độ khó về sau.
 
@@ -89,7 +115,70 @@ qua preview: seed localStorage → banner Home hiện đúng số → mở deck 
 
 ### Bước 1.3 — Curate nội dung shadowing Tuần 4–8 (việc dở từ kế hoạch cũ)
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-04):** Đi Đường A (script tự động) —
+`scripts/curate-shadowing.mjs` mới: với mỗi video, lấy phụ đề qua
+`youtube-transcript`, gộp câu bằng `groupIntoSentences` (dùng chung với
+`netlify/functions/shadowing.js`), CẮT còn một cửa sổ [trimStart,trimEnd] chọn
+thủ công sau khi đọc transcript từng video (giữ nguyên timestamp gốc — chỉ lọc
+bớt phần tử mảng câu, đúng cách `player.seekTo` trong `ShadowingPlayer.vue`
+hoạt động), đánh bóng qua `polishSegments` (Groq, tái dùng thẳng từ
+`netlify/functions/_shadowing.js`) nếu có `GROQ_API_KEY`, rồi ghi cả bộ vào
+`public/data/shadowing-clips.json`. Có thêm bước chặn an toàn: tính tỉ lệ ký tự
+Latin trong văn bản mỗi clip, bỏ qua (báo lỗi rõ ràng) nếu < 90% — phát hiện
+được nhờ chính lần chạy này.
+
+**Khác với kế hoạch cũ — 5/10 URL gốc trong `KE_HOACH_CAI_TIEN_GIAO_TIEP.md`
+không dùng được, đã thay thế:** kiểm tra qua oEmbed (như ghi chú cũ) chỉ xác
+nhận video tồn tại, KHÔNG xác nhận có phụ đề hay phụ đề đúng ngôn ngữ. Kiểm tra
+thật qua `youtube-transcript` phát hiện: 3 video VOA Tuần 4 (`Nzye1wn4MXI`,
+`CyjLzIF7_L4`, `LCcKsIlacbI`) và 1 video Asian Boss Tuần 8 (`DU9GdKT32io`)
+**không có phụ đề nào** (đã đổi kênh vlog từ khi soạn kế hoạch); video Asian
+Boss Tuần 8 còn lại (`WnBjhNDdEiY`, "Marie Kondo") có phụ đề nhưng là **tiếng
+Nhật** (người được phỏng vấn nói tiếng Nhật, không phải tiếng Anh) — không
+dùng cho luyện nghe tiếng Anh được. Đã tìm thay thế bằng cách tự scrape trang
+tìm kiếm YouTube rồi kiểm từng video qua `youtube-transcript` tới khi ra đủ:
+Tuần 4 đổi hẳn sang BBC Learning English *Easy English Conversations* Ep.1/Ep.6
+(`I_tRSrPru94`, `aiUGN3TDvw4`, A2) + *Grammar Gameshow* Ep.1 (`OsW5sV3GMDM`,
+trùng chủ đề hiện tại/tiếp diễn); Tuần 8 đổi sang 2 phỏng vấn đường phố tiếng
+Anh thật ở Singapore — nước nói tiếng Anh, tránh lặp lại lỗi ngôn ngữ —
+`FQhIPchN-AQ` (hạnh phúc) và `Q8M57uJbVZo` (Singlish/tự nhận thức giọng nói).
+5 video còn lại (Tuần 5: `9ifQ3xRz4hM`, `h_pvijqmolQ`; Tuần 6: `QdE63sYqwd8`;
+Tuần 7: `fEacJtQbTko`, `lBNM6aKwPl0`) giữ nguyên như kế hoạch — phụ đề tốt.
+
+**Kết quả:** 10/10 clip ghi vào `public/data/shadowing-clips.json`, phủ đủ
+Tuần 4→8 (3/2/1/2/2 clip), mỗi clip đã cắt còn ~2.2–5.4 phút nội dung thật (bỏ
+nhạc mở đầu/quảng cáo giữa video/lời kêu gọi subscribe cuối). AI polish (Groq)
+chỉ thành công cho 2/10 clip — free tier bị rate-limit ngay giữa lúc chạy
+script, 8 clip còn lại rơi về bản "heuristic" (viết hoa/gộp khoảng trắng, không
+thêm dấu câu mới — đúng hành vi fallback đã có sẵn khi người dùng tự dán URL mà
+server hết quota Groq). Với 2 clip BBC *6 Minute English*/*Grammar Gameshow* thì
+không đáng lo vì phụ đề gốc của BBC vốn đã có dấu câu thủ công; 2 clip
+*Easy English*/*Asian Boss* dùng phụ đề tự động (không dấu câu) nên đọc hơi khó
+hơn — chạy lại `npm run curate:shadowing` (script mới, idempotent, ghi đè toàn
+bộ file) khi quota Groq hồi phục để nâng cấp.
+
+**Thay đổi kiến trúc:** `src/lib/shadowingRepo.js` trước đây CHỈ đọc bảng
+Supabase `shadowing_clips` (trả rỗng khi guest/dev local dù comment trong
+`ShadowingView.vue` đã nhắc "Supabase, fallback file tĩnh" — fallback đó chưa
+từng được viết). Giờ `fetchClipList`/`fetchClipsByWeek`/`fetchClip` gộp file
+tĩnh `public/data/shadowing-clips.json` (luôn có, kể cả guest) với bảng
+Supabase (thắng khi trùng `videoId`, để admin vẫn sửa/ghi đè qua
+`/admin/shadowing` như cũ, không cần deploy lại).
+
+**Kiểm chứng:** route `/shadowing` yêu cầu đăng nhập
+(`requiresAuth`) và máy này đã cấu hình Supabase thật nên không đăng nhập được
+qua Google trong sandbox preview (giống hạn chế đã ghi ở Bước 1.2) — xác nhận
+bằng cách gọi thẳng `fetchClipsByWeek(4)`/`(8)`/`fetchClip(...)` qua
+`import('/src/lib/shadowingRepo.js')` trong console trình duyệt: đúng 3/2 clip
+mỗi tuần, `fetchClipsByWeek(1)` rỗng, `fetchClip` trả đúng câu (kèm timestamp).
+Test mới `tests/shadowingRepo.test.js` (8 test: gộp tĩnh+cloud, cloud override
+cùng videoId, lọc theo tuần, fallback khi Supabase không có bản ghi, lỗi mạng
+không crash). `npm test` (201/201, +8) và `npm run build` pass — file tĩnh có
+mặt trong `dist/data/shadowing-clips.json`.
+
+**Việc cần làm (kế hoạch gốc, đã hoàn thành với sai khác nêu trên):**
 
 **Vấn đề:** cơ chế gắn clip theo tuần đã xong (cột `week` trong `shadowing_clips`, ô "Gắn với Tuần" trong `AdminShadowingView.vue`, thẻ "🎧 Nghe thật hơn tuần này" trong `IeltsDayView.vue`) nhưng **thư viện đang rỗng** — người học Tuần 4+ bấm vào không có gì.
 
@@ -103,9 +192,75 @@ qua preview: seed localStorage → banner Home hiện đúng số → mở deck 
 
 ### Bước 1.4 — Chống lỗi 429/timeout cho mọi lời gọi AI
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Vấn đề:** `netlify/functions/_llm.js` gọi Groq thẳng, không retry; free tier hay 429. Client (`AiChat.vue`, writing trong `IeltsDayView.vue`, `SentenceBankPractice.vue`) hiện lỗi thô hoặc im lặng.
+**Ghi chú (2026-07-04):** `netlify/functions/_llm.js` thêm `AiError` (có
+`.code`) + hàm lõi mới `groqRequest()` (thay ruột `askLLM`): timeout 18s/lần
+qua `AbortController`, retry **đúng 1 lần** (đúng trần ~26s của Netlify
+Function) cho 429/5xx/lỗi mạng/timeout — 429 ưu tiên đợi theo header
+`Retry-After`, còn lại backoff exponential (1s → tối đa 4s) + jitter; 400/401
+không retry (lỗi phía mình/key sai, retry vô ích). Thêm `errorResponse(e)` map
+`code -> {status, body:{error:{code,message}}}` dùng chung. `_shadowing.js#polishSegments`
+đổi sang gọi `groqRequest()` thay vì tự `fetch` riêng (import thẳng từ `_llm.js`,
+xoá 2 hằng `GROQ_ENDPOINT`/`GROQ_MODEL` trùng lặp) — polish shadowing giờ cũng
+được retry, thất bại thì vẫn rơi về "heuristic" như cũ (hành vi này KHÔNG đổi,
+không cần báo lỗi cho người học vì đã có fallback hợp lý). `chat.js` và
+`shadowing.js` đổi mọi response lỗi sang `{error:{code,message}}`.
+
+**Khác với kế hoạch — gộp luôn dev proxy chat vào cùng cơ chế với shadowing:**
+`vite.config.js` trước đây có 2 plugin viết tay riêng (`chatDevPlugin` tự gọi
+`runChat` trực tiếp, `shadowingDevPlugin` gọi thẳng handler thật) — 2 đường
+khác nhau nghĩa là dev dễ lệch format với production. Gộp thành 1
+`netlifyFunctionDevPlugin(name, handler, env)` dùng chung, cả 2 đều gọi ĐÚNG
+handler thật (`chat.js`/`shadowing.js`) như Netlify sẽ chạy — tự động đảm bảo
+yêu cầu "dev proxy phải mô phỏng cùng format lỗi" mà không cần double-maintain.
+
+Client: thêm `src/lib/aiError.js` (`friendlyAiError(err)` — bảng map
+`code -> câu tiếng Việt thân thiện`, `retryable` false riêng cho `config`; và
+`AiCallError` — lỗi có `.code`). `src/lib/aiChat.js#sendChat` giờ ném
+`AiCallError` (đỡ được cả format lỗi cũ dạng string phòng lệch bản, không bắt
+buộc phải đổi cùng lúc mọi server).
+- `AiChat.vue`: banner lỗi đổi sang dùng `friendlyAiError()`; thêm nút **"🔄 Thử
+  lại"** cạnh thông báo lỗi — tách `send()` thành `sendTurn(userEntry)` để bấm
+  thử lại gọi lại ĐÚNG lượt vừa lỗi (không đẩy thêm bong bóng chat mới, không
+  mất câu đã gõ vì câu đó đã nằm trong bong bóng `userEntry` từ trước khi gọi
+  AI). Áp dụng tương tự cho lỗi mở màn Surprise mode; các nút phụ (gợi ý/ý
+  tưởng/dịch) cũng đổi sang thông điệp từ `friendlyAiError()`.
+- `IeltsDayView.vue` (chữa viết) và `SentenceBankPractice.vue`: đổi câu lỗi
+  sang `friendlyAiError()`. Không thêm nút "Thử lại" riêng vì nút "🤖 Nhờ AI
+  chữa (lại) bài" sẵn có đã đóng đúng vai trò đó (nhãn nút không đổi khi lỗi vì
+  `saveWriting(...,done=true)` chỉ gọi lúc THÀNH CÔNG) — bản nháp không mất vì
+  `saveWriting`/autosave `@change` chạy độc lập, trước khi gọi AI.
+- `SentenceBankPractice.vue`: sửa luôn lỗi nuốt im lặng khi nhận diện giọng nói
+  thất bại (`speakInto` — không phải lỗi AI/Groq mà là Web Speech API, nhưng
+  nghiệm thu của bước này có nêu đích danh) — giờ hiện dòng nhỏ "🎤 Không dùng
+  được mic lúc này…" thay vì im lặng.
+- `ShadowingView.vue`: `loadFromUrl` phải đọc được `data.error` dạng OBJECT mới
+  (trước sẽ hiện `[object Object]`) — sửa để lấy `.message`, vẫn đỡ được string
+  cũ; tách riêng lỗi fetch mạng thành thông điệp "Không kết nối được máy chủ…"
+  thay vì để lộ message kỹ thuật của trình duyệt (`Failed to fetch`).
+
+**Không nhét lỗi vào bong bóng chat:** giữ nguyên — mọi thông điệp lỗi vẫn ở
+banner/box riêng (`chat-error-box`, `rev-error`, `mic-err`, `url-err`), không
+tạo message giả `role:'assistant'`.
+
+**Kiểm chứng:** test mới `tests/llmRetry.test.js` (9 test, mock `fetch` toàn
+cục + `vi.useFakeTimers()` — 429 kèm `Retry-After` rồi thành công, 429 liên tục
+retry đúng 1 lần rồi ném `rate_limited`, 401 không retry, 400 không retry, lỗi
+mạng có retry, 5xx liên tục ném `upstream`, timeout 18s ném `timeout`,
+`errorResponse()` map đúng status HTTP), `tests/aiError.test.js` (5 test cho
+`friendlyAiError`) và `tests/aiChatError.test.js` (4 test cho `sendChat` — cả
+format lỗi mới lẫn cũ, lỗi mạng, thành công). Đã khởi động `npm run dev` thật
+và gọi trực tiếp qua console trình duyệt: `GET /.netlify/functions/chat` ->
+`405 {error:{code:'bad_request',...}}`, `POST /.netlify/functions/shadowing`
+với URL rác -> `400 {error:{code:'bad_request',...}}` — xác nhận dev proxy mới
+(gọi thẳng handler thật) trả đúng format như production; máy này có
+`GROQ_API_KEY` thật nên `sendChat` một lượt bình thường vẫn chạy thành công
+(không regress). Không giả lập được 429 thật từ Groq (cần free-tier bị nghẽn
+đúng lúc) nên độ tin cậy của nhánh retry dựa vào unit test mock, không phải
+lượt gọi thật. `npm test` (219/219, +18) và `npm run build` đều pass.
+
+**Vấn đề (kế hoạch gốc):** `netlify/functions/_llm.js` gọi Groq thẳng, không retry; free tier hay 429. Client (`AiChat.vue`, writing trong `IeltsDayView.vue`, `SentenceBankPractice.vue`) hiện lỗi thô hoặc im lặng.
 
 **Việc cần làm:**
 1. Trong `_llm.js`: bọc fetch bằng retry với exponential backoff + jitter (đợi theo header `retry-after` nếu có, có trần). **Chú ý trần thời gian Netlify Function ~26s** — timeout mỗi lần gọi ~18s, tổng retry không vượt trần (thực tế chỉ retry được 1 lần).
@@ -337,9 +492,9 @@ Mỗi tuần 1 lần, gom các lỗi trong Error Ledger + câu quiz sai (`quizSc
 | Bước | Tên | Ước lượng | Trạng thái |
 | --- | --- | --- | --- |
 | 1.1 | SRS tự động + nhắc ôn | 1 buổi | ✅ |
-| 1.2 | Khảo sát Dễ/Vừa/Khó | 0.5 buổi | ⬜ |
-| 1.3 | Curate shadowing 4–8 | 0.5–1 buổi | ⬜ |
-| 1.4 | Retry/backoff AI | 0.5 buổi | ⬜ |
+| 1.2 | Khảo sát Dễ/Vừa/Khó | 0.5 buổi | ✅ |
+| 1.3 | Curate shadowing 4–8 | 0.5–1 buổi | ✅ |
+| 1.4 | Retry/backoff AI | 0.5 buổi | ✅ |
 | 2.1 | Sync ghi âm | 1 buổi | ⬜ |
 | 2.2 | Ảnh từ vựng ổn định | 0.5–1 buổi | ⬜ |
 | 2.3 | Fallback Safari/iOS | 1 buổi | ⬜ |

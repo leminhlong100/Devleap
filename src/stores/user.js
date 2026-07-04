@@ -202,6 +202,14 @@ export const useUserStore = defineStore('user', {
     // khóa hoàn thành buổi mà không phải đổi schema bảng progress.
     checklists: {},
 
+    // Khảo sát cảm nhận cuối tuần (Dễ/Vừa/Khó), khóa theo "course:week":
+    // { [key]: { rating: 'easy'|'ok'|'hard'|'skipped', note, at } }. Đầu vào duy
+    // nhất để hiệu chỉnh độ khó (xem docs/KE_HOACH_DO_KHO_KHOA_HOC.md mục 5).
+    // Ghi cả trường hợp "bỏ qua" để modal không hỏi lại tuần đó. Đồng bộ cloud
+    // (cột `week_feedback`) như srs/completed — khác với writings/missions vốn
+    // chỉ local, vì dữ liệu này cần tổng hợp được kể cả khi đổi thiết bị.
+    weekFeedback: {},
+
     // tùy chọn chế độ hội thoại (hiện chỉ có persona lời phê) — chỉ local.
     convoPrefs: { ...DEFAULT_CONVO },
 
@@ -342,6 +350,8 @@ export const useUserStore = defineStore('user', {
     /** Một ngày đã hoàn thành chưa? Dùng như hàm: user.isDone('java', w, d). */
     isDone: (s) => (course, week, day) =>
       (s.completed[course] || []).includes(dayKey(week, day)),
+    /** Khảo sát cảm nhận của một tuần (null nếu chưa trả lời/bỏ qua). */
+    weekFeedbackOf: (s) => (course, week) => s.weekFeedback[`${course}:${week}`] || null,
   },
 
   actions: {
@@ -606,6 +616,18 @@ export const useUserStore = defineStore('user', {
     },
 
     /**
+     * Lưu cảm nhận khảo sát cuối tuần (Dễ/Vừa/Khó) hoặc đánh dấu "bỏ qua". Ghi cả
+     * hai trường hợp để modal không hỏi lại tuần đó ở lần sau. Không cộng XP —
+     * đây chỉ là dữ liệu thu thập để hiệu chỉnh độ khó, không phải hoạt động học.
+     * @param {'easy'|'ok'|'hard'|'skipped'} rating
+     */
+    saveWeekFeedback(course, week, rating, note = '') {
+      if (!course || !week || !rating) return
+      this.weekFeedback[`${course}:${week}`] = { rating, note: note || '', at: ymd(new Date()) }
+      this.persist()
+    },
+
+    /**
      * Ghi nhận số giây vừa NÓI thật (mic mở ở AiChat voice-first), tách streak nói
      * (`speakingStreak`) khỏi streak học (`bumpStreak`) — nói là một rủi ro/kỹ năng
      * riêng, không nên tính chung với việc hoàn thành task trong app.
@@ -707,6 +729,7 @@ export const useUserStore = defineStore('user', {
         speakingLog: this.speakingLog,
         speakingStreak: this.speakingStreak,
         lastSpeakingDate: this.lastSpeakingDate,
+        weekFeedback: this.weekFeedback,
       }
     },
 
@@ -730,6 +753,7 @@ export const useUserStore = defineStore('user', {
       this.speakingLog = s.speakingLog && typeof s.speakingLog === 'object' ? s.speakingLog : {}
       this.speakingStreak = s.speakingStreak ?? 0
       this.lastSpeakingDate = s.lastSpeakingDate ?? null
+      this.weekFeedback = s.weekFeedback && typeof s.weekFeedback === 'object' ? s.weekFeedback : {}
     },
 
     persist() {
@@ -813,7 +837,7 @@ export const useUserStore = defineStore('user', {
       try {
         const { data, error } = await supabase
           .from('progress')
-          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores')
+          .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores, week_feedback')
           .eq('user_id', userId)
           .maybeSingle()
         if (error) throw error
@@ -831,6 +855,7 @@ export const useUserStore = defineStore('user', {
             quizScores: data.quiz_scores || {},
             savedWords: data.saved_words || {},
             shadowingScores: data.shadowing_scores || {},
+            weekFeedback: data.week_feedback || {},
           }
           this.applySnapshot(mergeSnapshots(local, remote))
         }
@@ -888,6 +913,7 @@ export const useUserStore = defineStore('user', {
             quiz_scores: s.quizScores,
             saved_words: s.savedWords,
             shadowing_scores: s.shadowingScores,
+            week_feedback: s.weekFeedback,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id' },
@@ -928,7 +954,19 @@ function mergeSnapshots(local, remote) {
     speakingLog: mergeSpeakingLog(local.speakingLog, remote.speakingLog),
     speakingStreak: Math.max(local.speakingStreak || 0, remote.speakingStreak || 0),
     lastSpeakingDate: laterDate(local.lastSpeakingDate, remote.lastSpeakingDate),
+    weekFeedback: mergeWeekFeedback(local.weekFeedback, remote.weekFeedback),
   }
+}
+
+// Hợp nhất khảo sát cảm nhận tuần: mỗi tuần giữ bản mới hơn (theo `at`) — chỉ
+// một lượt trả lời/tuần nên không cần OR trạng thái như mission/writing.
+function mergeWeekFeedback(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  for (const [k, v] of Object.entries(b || {})) {
+    const cur = out[k]
+    if (!cur || (v.at || '') > (cur.at || '')) out[k] = v
+  }
+  return out
 }
 
 // Hợp nhất nhật ký nói: mỗi ngày giữ số giây LỚN HƠN (thiết bị nào nói nhiều hơn

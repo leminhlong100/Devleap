@@ -1,3 +1,5 @@
+import { AiCallError } from './aiError.js'
+
 /**
  * Gọi backend chat AI (Netlify Function / dev proxy). Gửi lịch sử hội thoại +
  * ngữ cảnh bài học, nhận về câu trả lời của AI. API key nằm hoàn toàn ở server.
@@ -9,6 +11,8 @@ const ENDPOINT = '/.netlify/functions/chat'
  *  - mặc định/'coach': trả về OBJECT có cấu trúc { evaluation, next }.
  *  - 'translate' | 'hint' | 'idea' | 'word': trả về string.
  * @param {{ messages?: Array<{role,text}>, context?: object, persona?: string, mode?: string }} args
+ * @throws {AiCallError} luôn có `.code` (xem netlify/functions/_llm.js#errorResponse)
+ *   để `friendlyAiError()` (src/lib/aiError.js) phân loại thông điệp hiển thị.
  */
 export async function sendChat({ messages = [], context = {}, persona, mode }) {
   let res
@@ -19,11 +23,17 @@ export async function sendChat({ messages = [], context = {}, persona, mode }) {
       body: JSON.stringify({ messages, context, persona, mode }),
     })
   } catch {
-    throw new Error('Không kết nối được máy chủ AI. Kiểm tra mạng hoặc cấu hình API.')
+    throw new AiCallError('Không kết nối được máy chủ AI. Kiểm tra mạng hoặc cấu hình API.', 'network')
   }
 
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `Lỗi máy chủ (${res.status})`)
+  if (!res.ok) {
+    // Format mới: { error: { code, message } }. Vẫn đỡ được format cũ (string) phòng lệch bản.
+    const err = data.error
+    const { code, message } =
+      err && typeof err === 'object' ? err : { code: 'upstream', message: err || `Lỗi máy chủ (${res.status})` }
+    throw new AiCallError(message, code)
+  }
   return data.reply
 }
 

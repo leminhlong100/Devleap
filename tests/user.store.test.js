@@ -699,3 +699,106 @@ describe('user store — pullAndMerge savedWords', () => {
     expect(s.isWordSaved('exception')).toBe(true) // chỉ ở remote -> nhận
   })
 })
+
+describe('user store — saveWeekFeedback (khảo sát Dễ/Vừa/Khó)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('lưu cảm nhận + ghi chú, tra lại được qua weekFeedbackOf', () => {
+    const s = useUserStore()
+    expect(s.weekFeedbackOf('ielts', 3)).toBeNull()
+    s.saveWeekFeedback('ielts', 3, 'hard', 'Ngữ pháp tuần này khó')
+    const fb = s.weekFeedbackOf('ielts', 3)
+    expect(fb.rating).toBe('hard')
+    expect(fb.note).toBe('Ngữ pháp tuần này khó')
+    expect(fb.at).toBeTruthy()
+  })
+
+  it('"bỏ qua" cũng được ghi lại (không hỏi lại tuần đó)', () => {
+    const s = useUserStore()
+    s.saveWeekFeedback('ielts', 2, 'skipped')
+    expect(s.weekFeedbackOf('ielts', 2).rating).toBe('skipped')
+  })
+
+  it('không cộng XP/huy hiệu — chỉ là dữ liệu thu thập', () => {
+    const s = useUserStore()
+    s.saveWeekFeedback('ielts', 1, 'easy')
+    expect(s.xp).toBe(0)
+    expect(s.badges).toBe(0)
+  })
+
+  it('không lưu khi thiếu course/week/rating', () => {
+    const s = useUserStore()
+    s.saveWeekFeedback('', 1, 'easy')
+    s.saveWeekFeedback('ielts', 0, 'easy')
+    s.saveWeekFeedback('ielts', 1, '')
+    expect(Object.keys(s.weekFeedback)).toHaveLength(0)
+  })
+
+  it('bền hoá vào localStorage và khôi phục được qua hydrate', () => {
+    const s = useUserStore()
+    s.saveWeekFeedback('ielts', 4, 'ok', 'Vừa sức')
+    setActivePinia(createPinia())
+    const s2 = useUserStore()
+    s2.hydrate()
+    expect(s2.weekFeedbackOf('ielts', 4)).toMatchObject({ rating: 'ok', note: 'Vừa sức' })
+  })
+})
+
+describe('user store — pullAndMerge weekFeedback', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    mockMaybeSingle.mockReset()
+    mockUpsert.mockClear()
+    mockUpsert.mockResolvedValue({ error: null })
+  })
+
+  it('hợp nhất khảo sát tuần: giữ bản MỚI HƠN theo `at` (remote mới hơn local)', async () => {
+    const s = useUserStore()
+    s.applySnapshot({
+      weekFeedback: { 'ielts:1': { rating: 'hard', note: '', at: '2026-06-10' } },
+    })
+    mockMaybeSingle.mockResolvedValue({
+      data: { week_feedback: { 'ielts:1': { rating: 'ok', note: 'sửa lại', at: '2026-06-12' } } },
+      error: null,
+    })
+
+    await s.pullAndMerge('user-wf-a')
+
+    expect(s.weekFeedbackOf('ielts', 1)).toMatchObject({ rating: 'ok', note: 'sửa lại' })
+  })
+
+  it('hợp nhất khảo sát tuần: giữ bản MỚI HƠN theo `at` (local mới hơn remote)', async () => {
+    const s = useUserStore()
+    s.applySnapshot({
+      weekFeedback: { 'ielts:1': { rating: 'easy', note: 'local mới', at: '2026-06-15' } },
+    })
+    mockMaybeSingle.mockResolvedValue({
+      data: { week_feedback: { 'ielts:1': { rating: 'hard', note: 'remote cũ', at: '2026-06-12' } } },
+      error: null,
+    })
+
+    await s.pullAndMerge('user-wf-b')
+
+    expect(s.weekFeedbackOf('ielts', 1)).toMatchObject({ rating: 'easy', note: 'local mới' })
+  })
+
+  it('gộp union các tuần khác nhau giữa 2 thiết bị', async () => {
+    const s = useUserStore()
+    s.applySnapshot({
+      weekFeedback: { 'ielts:1': { rating: 'hard', note: '', at: '2026-06-10' } },
+    })
+    mockMaybeSingle.mockResolvedValue({
+      data: { week_feedback: { 'ielts:2': { rating: 'easy', note: '', at: '2026-06-11' } } },
+      error: null,
+    })
+
+    await s.pullAndMerge('user-wf-c')
+
+    expect(s.weekFeedbackOf('ielts', 1).rating).toBe('hard')
+    expect(s.weekFeedbackOf('ielts', 2).rating).toBe('easy')
+  })
+})
