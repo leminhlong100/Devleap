@@ -145,6 +145,74 @@ describe('user store — toggleDay', () => {
   })
 })
 
+describe('user store — seedSrsFromDay (tự động gieo SRS khi hoàn thành buổi IELTS)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 5, 21, 9, 0, 0)) // 2026-06-21
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('hoàn thành buổi IELTS: từ mới vào srs, due sau 3 ngày, KHÔNG cộng thêm XP', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name', 'Age'])
+    expect(s.xp).toBe(50) // chỉ +XP_PER_DAY, không cộng gì thêm cho việc gieo SRS
+    expect(s.srsOf('ielts:name')).toMatchObject({ due: '2026-06-24', reps: 0 })
+    expect(s.srsOf('ielts:age')).toMatchObject({ due: '2026-06-24', reps: 0 })
+    expect(s.isCardDue('ielts:name')).toBe(false) // chưa tới hạn ngay
+  })
+
+  it('không đè lịch của thẻ đã tự ôn trước đó', () => {
+    const s = useUserStore()
+    s.reviewCard('ielts:name', 'easy') // đã ôn thật, due đẩy xa hơn 3 ngày
+    const before = s.srsOf('ielts:name')
+    s.toggleDay('ielts', 1, 1, 0, ['Name'])
+    expect(s.srsOf('ielts:name')).toEqual(before)
+  })
+
+  it('khóa Java KHÔNG tự gieo SRS (chỉ áp dụng IELTS)', () => {
+    const s = useUserStore()
+    s.toggleDay('java', 1, 1, 0, ['deploy'])
+    expect(s.srsOf('java:deploy')).toBeNull()
+    expect(s.srsLearned).toBe(0)
+  })
+
+  it('không có vocabTerms hoặc bỏ đánh dấu: an toàn, không lỗi', () => {
+    const s = useUserStore()
+    expect(() => s.toggleDay('ielts', 1, 1)).not.toThrow()
+    expect(s.srsLearned).toBe(0)
+    s.toggleDay('ielts', 1, 1) // bỏ đánh dấu
+    expect(s.isDone('ielts', 1, 1)).toBe(false)
+  })
+})
+
+describe('user store — dueTodayCount / dueWords', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 5, 21, 9, 0, 0)) // 2026-06-21
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('đếm & liệt kê thẻ đến hạn hôm nay, gộp cả từ tự lưu khi chat AI', () => {
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1, 0, ['Name']) // due 2026-06-24 -> chưa tới hạn
+    s.saveWord({ term: 'inheritance', srsId: 'saved:inheritance', vi: 'kế thừa' }) // thẻ mới -> đến hạn ngay
+    expect(s.dueTodayCount).toBe(1)
+    expect(s.dueWords.map((c) => c.term)).toEqual(['inheritance'])
+    expect(s.dueWords[0]).toMatchObject({ vi: 'kế thừa', srsId: 'saved:inheritance' })
+  })
+
+  it('tra ngược nghĩa từ vocabGlossary cho thẻ gieo tự động khi đã tới hạn', () => {
+    const s = useUserStore()
+    s.srs['ielts:name'] = { ease: 2.5, interval: 3, reps: 0, lapses: 0, due: '2026-06-20', last: null }
+    expect(s.dueTodayCount).toBe(1)
+    expect(s.dueWords[0]).toMatchObject({ term: 'name', vi: 'tên' })
+  })
+})
+
 describe('user store — bumpStreak', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

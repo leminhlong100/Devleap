@@ -52,6 +52,9 @@ const remedial = computed(() =>
 function goRemedial() {
   router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${prog.value.currentWeek}` } })
 }
+function goDueReview() {
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })
+}
 
 function chooseTrack(track) {
   if (track === user.ieltsTrack) return
@@ -91,6 +94,10 @@ function chooseTrack(track) {
 
         <div v-if="remedial" class="remedial-hint" @click="goRemedial">
           🩹 Bài kiểm tra Tuần {{ prog.currentWeek }} mới đạt {{ remedial.pct }}% — ôn lại {{ remedial.wrong.length }} câu sai trước khi học tiếp →
+        </div>
+
+        <div v-if="user.dueTodayCount > 0" class="remedial-hint" @click="goDueReview">
+          📆 Hôm nay có {{ user.dueTodayCount }} từ đến hạn ôn — ôn nhanh vài phút để khỏi quên →
         </div>
 
         <div class="strip">

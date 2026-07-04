@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { supabase, isCloudEnabled } from '@/lib/supabase'
-import { schedule, isDue, GRADES } from '@/lib/srs'
+import { schedule, seedSchedule, isDue, GRADES } from '@/lib/srs'
 import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
+import { lookupVocab } from '@/data/vocabGlossary'
 
 /**
  * Trạng thái người học (gamification) — nguồn sự thật duy nhất cho tiến độ thật.
@@ -52,6 +53,19 @@ const PUSH_DEBOUNCE_MS = 1200
 
 const dayKey = (week, day) => `${week}:${day}`
 const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+// Chuẩn hóa từ để sinh srsId khớp với `cardsFromTerms` (data/tools.js) mà không
+// phải kéo chunk khóa học (course.js/courseIelts.js) nặng vào bundle của store —
+// xem `data/searchIndex.js#normalize`, cùng logic, cố ý trùng lặp.
+const normalizeTerm = (str) =>
+  (str || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
 
 // Hợp nhất 2 mảng thành tập hợp không trùng (giữ tiến độ từ cả 2 thiết bị).
 const union = (a = [], b = []) => Array.from(new Set([...a, ...b]))
@@ -238,6 +252,45 @@ export const useUserStore = defineStore('user', {
     dueCount: (s) => (ids = []) => ids.filter((id) => isDue(s.srs[id])).length,
     /** Số thẻ đã có lịch ôn (đã học ít nhất 1 lần). */
     srsLearned: (s) => Object.keys(s.srs).length,
+    /**
+     * Mọi srsId đang đến hạn ôn hôm nay, gộp mọi nguồn: thẻ đã có lịch (đến
+     * hạn/quá hạn) + từ vừa lưu khi chat AI nhưng CHƯA từng ôn lần nào (thẻ mới
+     * luôn tính là đến hạn — savedWords không tự ghi vào `srs` cho tới lần ôn đầu).
+     */
+    dueSrsIds: (s) => {
+      const ids = new Set(Object.keys(s.srs).filter((id) => isDue(s.srs[id])))
+      for (const w of Object.values(s.savedWords)) {
+        if (w.srsId && !s.srs[w.srsId]) ids.add(w.srsId)
+      }
+      return Array.from(ids)
+    },
+    /** Tổng số từ đến hạn ôn hôm nay — dùng cho banner nhắc ở Home/course. */
+    dueTodayCount() {
+      return this.dueSrsIds.length
+    },
+    /**
+     * Thẻ đến hạn ôn hôm nay, tra ngược nghĩa/IPA/ví dụ để nạp thẳng cho
+     * FlashcardTool (deck `due`) mà không cần tải dữ liệu khóa học. Ưu tiên
+     * savedWords (đủ context); còn lại tra `vocabGlossary.js` theo từ suy ra
+     * từ srsId (`course:từ`). Không tìm được nghĩa thì vẫn hiện thẻ (để trống).
+     */
+    dueWords(s) {
+      const savedBySrsId = new Map(Object.values(s.savedWords).map((w) => [w.srsId, w]))
+      return this.dueSrsIds.map((id) => {
+        const saved = savedBySrsId.get(id)
+        if (saved) return saved
+        const term = id.slice(id.indexOf(':') + 1)
+        const g = lookupVocab(term)
+        return {
+          term,
+          ipa: g?.ipa || '',
+          cat: 'Từ vựng',
+          vi: g?.vi || '',
+          ex: g?.ex ? g.ex.replace('{w}', term) : '',
+          srsId: id,
+        }
+      })
+    },
     /** Kết quả một bài kiểm tra (null nếu chưa làm). Dùng: user.quizOf('java','week:3'). */
     quizOf: (s) => (course, scope) => s.quizScores[`${course}:${scope}`] || null,
     /** Đã đạt một bài kiểm tra chưa? */
@@ -295,8 +348,10 @@ export const useUserStore = defineStore('user', {
     /**
      * Bật/tắt trạng thái hoàn thành của một ngày học.
      * `totalDays` = số ngày của tuần (để tính thưởng & huy hiệu khi xong trọn tuần).
+     * `vocabTerms` (tùy chọn) = từ vựng của buổi — chỉ dùng để tự "gieo" lịch SRS
+     * (xem `seedSrsFromDay`) khi vừa đánh dấu hoàn thành, không ảnh hưởng XP/badge.
      */
-    toggleDay(course, week, day, totalDays = 0) {
+    toggleDay(course, week, day, totalDays = 0, vocabTerms = []) {
       const arr = this.completed[course] || (this.completed[course] = [])
       const k = dayKey(week, day)
       const i = arr.indexOf(k)
@@ -311,6 +366,7 @@ export const useUserStore = defineStore('user', {
           this.badges += 1
         }
         this.bumpStreak()
+        this.seedSrsFromDay(course, vocabTerms)
       } else {
         // Bỏ đánh dấu — hoàn lại XP/huy hiệu đã cấp
         const wasWeekDone = totalDays > 0 && weekCount() === totalDays
@@ -364,6 +420,27 @@ export const useUserStore = defineStore('user', {
         this.bumpStreak()
       }
       this.persist()
+    },
+
+    /**
+     * "Gieo" lịch ôn SRS mặc định cho từ vựng của một buổi vừa hoàn thành, để
+     * người học vẫn được nhắc ôn dù chưa từng tự lật flashcard. Chỉ áp dụng khóa
+     * IELTS (Java học thuật ngữ qua flashcard riêng, không theo "từ vựng buổi").
+     * Không đè lịch đã có (thẻ đã ôn thật giữ nguyên tiến độ); KHÔNG cộng XP
+     * (tránh farm XP bằng cách tắt/bật lại hoàn thành buổi).
+     * @param {string[]|{term:string}[]} terms  danh sách từ (chuỗi hoặc object có `.term`).
+     */
+    seedSrsFromDay(course, terms = []) {
+      if (course !== 'ielts' || !Array.isArray(terms) || !terms.length) return
+      const seen = new Set()
+      for (const raw of terms) {
+        const term = typeof raw === 'string' ? raw : raw?.term
+        const key = normalizeTerm(term)
+        if (!key || seen.has(key)) continue
+        seen.add(key)
+        const id = `ielts:${key}`
+        if (!this.srs[id]) this.srs[id] = seedSchedule()
+      }
     },
 
     /**

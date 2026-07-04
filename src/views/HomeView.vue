@@ -72,6 +72,18 @@ function openFeatured() {
       </div>
     </section>
 
+    <!-- NHẮC ÔN TỪ VỰNG ĐẾN HẠN -->
+    <section v-if="user.dueTodayCount > 0" class="container due-wrap">
+      <div class="due-card" @click="router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })">
+        <span class="due-emoji">📆</span>
+        <div class="due-text">
+          <b>Hôm nay có {{ user.dueTodayCount }} từ đến hạn ôn</b>
+          <span>Ôn nhanh vài phút để khỏi quên nhé</span>
+        </div>
+        <span class="due-arrow">→</span>
+      </div>
+    </section>
+
     <!-- VALUE PROPS -->
     <section class="container section">
       <div class="section-head">
@@ -304,6 +316,48 @@ function openFeatured() {
   font-weight: 700;
   font-size: 14px;
   animation: floaty2 4.5s ease-in-out infinite 0.3s;
+}
+
+/* nhắc ôn từ đến hạn */
+.due-wrap {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.due-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #f5f3ff, #eef6ff);
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 18px;
+  padding: 16px 22px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.due-card:hover {
+  transform: translateY(-2px);
+}
+.due-emoji {
+  font-size: 28px;
+}
+.due-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.due-text b {
+  font-size: 15.5px;
+  color: var(--ink);
+}
+.due-text span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.due-arrow {
+  font-size: 20px;
+  color: var(--purple);
+  font-weight: 800;
 }
 
 /* sections */

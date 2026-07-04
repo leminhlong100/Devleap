@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   schedule,
   previewInterval,
+  seedSchedule,
   isDue,
   daysUntil,
   addDaysISO,
@@ -79,6 +80,22 @@ describe('srs — schedule (SM-2)', () => {
   it('previewInterval khớp với interval mà schedule tạo ra', () => {
     const c = schedule(null, 'good', NOW)
     expect(previewInterval(c, 'good', NOW)).toBe(schedule(c, 'good', NOW).interval)
+  })
+})
+
+describe('srs — seedSchedule (gieo tự động sau khi học xong buổi)', () => {
+  it('due sau 3 ngày, reps/last để nguyên (không tính là một lần ôn thật)', () => {
+    const c = seedSchedule(NOW)
+    expect(c.due).toBe('2026-06-24')
+    expect(c.reps).toBe(0)
+    expect(c.lapses).toBe(0)
+    expect(c.last).toBeNull()
+    expect(c.ease).toBe(2.5)
+  })
+  it('chưa đến hạn ngay sau khi gieo, nhưng đến hạn sau 3 ngày', () => {
+    const c = seedSchedule(NOW)
+    expect(isDue(c, NOW)).toBe(false)
+    expect(isDue(c, new Date(2026, 5, 24))).toBe(true)
   })
 })
 

@@ -95,6 +95,15 @@ export function previewInterval(card, grade, now = new Date()) {
   return schedule(card, grade, now).interval
 }
 
+/**
+ * Lịch mặc định cho một thẻ vừa "gieo" tự động (học xong buổi nhưng chưa từng
+ * tự lật flashcard) — due sau 3 ngày, `reps`/`last` để nguyên vì đây KHÔNG phải
+ * một lần ôn thật. Card thật (khi người học lật & chấm) sẽ ghi đè qua `schedule`.
+ */
+export function seedSchedule(now = new Date()) {
+  return { ease: EASE_DEFAULT, interval: 3, reps: 0, lapses: 0, due: addDaysISO(todayISO(now), 3), last: null }
+}
+
 /** Nhãn người-đọc-được cho một khoảng `days` ngày. */
 export function intervalLabel(days) {
   if (days <= 0) return 'ôn lại'

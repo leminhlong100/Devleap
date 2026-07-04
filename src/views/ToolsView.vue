@@ -35,6 +35,10 @@ const lessonOnly = (id) => id === 'flashcard' || id === 'quiz'
 // Chế độ ôn bộ "từ đã lưu" (lưu khi chat AI) — mở qua ?deck=saved ở tab flashcard.
 const savedMode = computed(() => active.value === 'flashcard' && route.query.deck === 'saved')
 const savedCards = computed(() => (user.savedWordList.length ? user.savedWordList : null))
+// Chế độ ôn nhanh mọi thẻ đến hạn hôm nay — mở qua ?deck=due (banner "N từ đến
+// hạn ôn" ở Home/course). Không cần tải dữ liệu khóa: store tự tra ngược nghĩa.
+const dueMode = computed(() => active.value === 'flashcard' && route.query.deck === 'due')
+const dueCards = computed(() => user.dueWords)
 
 // -------- Ngữ cảnh bài học (mở tool từ một ngày học qua query ?c&w&d) --------
 // Dữ liệu khóa học là chunk nặng nên chỉ nạp động khi thực sự có ngữ cảnh,
@@ -127,7 +131,9 @@ const activeProps = computed(() => {
   if (active.value === 'flashcard')
     return savedMode.value
       ? { cards: savedCards.value, deck: 'saved' }
-      : { cards: flashCards.value }
+      : dueMode.value
+        ? { cards: dueCards.value, deck: 'due' }
+        : { cards: flashCards.value }
   if (active.value === 'playground') return { initial: codeInit.value }
   if (active.value === 'quiz') return { questions: quizQs.value }
   if (active.value === 'chat') return { context: chatContext.value }
@@ -154,6 +160,11 @@ function select(id) {
   router.push({ name: 'tools-tab', params: { tool: id }, query: q }).then(scrollToWorkspace)
 }
 function exitSaved() {
+  const q = { ...route.query }
+  delete q.deck
+  router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: q })
+}
+function exitDue() {
   const q = { ...route.query }
   delete q.deck
   router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: q })
@@ -206,6 +217,20 @@ function backToDay() {
       </div>
     </div>
 
+    <!-- Banner ngữ cảnh: đang ôn nhanh mọi thẻ đến hạn hôm nay -->
+    <div v-if="dueMode" class="ctx-banner saved-banner">
+      <div class="ctx-info">
+        <span class="ctx-emoji">📆</span>
+        <div>
+          <div class="ctx-eyebrow">ĐANG ÔN TỪ ĐẾN HẠN HÔM NAY</div>
+          <div class="ctx-title">{{ user.dueTodayCount }} từ đến hạn ôn</div>
+        </div>
+      </div>
+      <div class="ctx-cta">
+        <button class="ctx-exit" @click="exitDue">↺ Chọn bài khác</button>
+      </div>
+    </div>
+
     <div class="tool-grid">
       <div
         v-for="t in toolDefs"
@@ -229,7 +254,7 @@ function backToDay() {
     <!-- Vùng làm bài/học — mốc neo để cuộn xuống khi chọn chức năng -->
     <div ref="workspaceEl" class="tool-workspace">
       <!-- Flashcard/Quiz chưa có ngữ cảnh -> bộ chọn bài đã hoàn thành -->
-      <LessonPicker v-if="lessonOnly(active) && !ctx && !savedMode" :key="'picker-' + active" :tool="active" />
+      <LessonPicker v-if="lessonOnly(active) && !ctx && !savedMode && !dueMode" :key="'picker-' + active" :tool="active" />
       <Transition v-else name="fade" mode="out-in">
         <component :is="componentMap[active]" :key="active" v-bind="activeProps" />
       </Transition>

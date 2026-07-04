@@ -231,7 +231,10 @@ const ringPct = computed(() => (d.value ? Math.round((weekDoneCount.value / d.va
 
 function markDone() {
   // Phải xong cả luyện ngữ pháp lẫn bài viết trước khi cho hoàn thành buổi.
-  if (d.value && !done.value && dayReady.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)
+  if (d.value && !done.value && dayReady.value) {
+    const vocabTerms = [...d.value.vocab, ...d.value.reviewVocab].map((v) => v.term)
+    user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays, vocabTerms)
+  }
 }
 function unmark() {
   if (d.value && done.value) user.toggleDay('ielts', d.value.week, d.value.n, d.value.totalDays)

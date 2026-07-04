@@ -19,6 +19,8 @@ const props = defineProps({
 
 const user = useUserStore()
 const isSaved = computed(() => props.deck === 'saved')
+// `deck='due'` -> bộ ôn nhanh mọi thẻ đến hạn hôm nay (gieo tự động + tự lưu).
+const isDueDeck = computed(() => props.deck === 'due')
 // Thẻ "câu" (lưu cả câu khi chat AI): mặt trước là câu tiếng Anh, mặt sau là
 // bản dịch — không có ảnh minh họa/IPA như thẻ từ đơn.
 const isSentence = computed(() => card.value?.kind === 'sentence')
@@ -114,6 +116,11 @@ function dotColor(i) {
       <h2>Chưa có từ nào được lưu</h2>
       <p>Vào <b>💬 Trò chuyện với AI</b>, bật <b>📌 Lưu từ</b> rồi chạm vào từ trong câu trả lời để thêm vào đây.</p>
     </div>
+    <div v-else-if="!hasCards && isDueDeck" class="empty-tool">
+      <div class="empty-emoji">🎉</div>
+      <h2>Không có từ nào đến hạn ôn hôm nay</h2>
+      <p>Tuyệt vời! Quay lại vào ngày mai, hoặc học thêm một buổi mới để có từ ôn.</p>
+    </div>
     <div v-else-if="!hasCards" class="empty-tool">
       <div class="empty-emoji">🃏</div>
       <h2>Flashcard đi theo từng bài học</h2>
@@ -123,7 +130,7 @@ function dotColor(i) {
     <template v-else>
     <div class="tool-head">
       <div>
-        <h2 class="tool-title">{{ isSaved ? '📚 Từ vựng đã lưu' : '🃏 Flashcard từ vựng IT' }}</h2>
+        <h2 class="tool-title">{{ isSaved ? '📚 Từ vựng đã lưu' : isDueDeck ? '📆 Từ đến hạn ôn hôm nay' : '🃏 Flashcard từ vựng IT' }}</h2>
         <p class="tool-sub">Lật thẻ, rồi tự chấm mức nhớ. Lịch ôn giãn cách tự xếp ngày ôn lại.</p>
       </div>
       <div class="known">
