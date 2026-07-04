@@ -1,5 +1,7 @@
 # Tuần 3 — Personal English & Daily Life (Tiếng Anh cá nhân và đời sống)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A1+** · Ngữ pháp mới: 2 điểm (present simple + trạng từ tần suất; questions wh-/do-does) · Từ vựng mới: ~30 từ · Tốc độ nghe mục tiêu: ~120 WPM
+
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
 - **Mục tiêu tuần:** Em nói được về đời mình mà không dịch từng chữ.
@@ -368,6 +370,14 @@ Không có từ khủng. Nhưng có đường đi.
 - Do you prefer hot or cold weather?
 
 **Nguyên tắc luyện tập:** pick two questions, answer each in 3–4 sentences, record once only, then write one sentence you want to improve.
+
+## 🔄 Vòng xoáy ôn
+
+> Ôn có chủ đích ngữ pháp Tuần 2 (số ít–số nhiều & there is/are; countable/uncountable) trong chủ đề Daily Routine/Food/Hobbies của tuần này.
+
+1. Điền **there is/there are**: "___ a lot of vegetables in my fridge today." *(Đáp án: There are)*
+2. Chọn **much/many**: "I don't eat ___ junk food." *(Đáp án: much)*
+3. Điền số nhiều đúng: "My hobby is collecting old ___ (photo)." *(Đáp án: photos)*
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 

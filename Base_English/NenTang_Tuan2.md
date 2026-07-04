@@ -1,9 +1,11 @@
 # Tuần 2 — Clean Sentence Engine (Cấu trúc mệnh đề cơ bản)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A1** · Ngữ pháp mới: 2 điểm (số ít-số nhiều & there is/are; countable/uncountable) · Từ vựng mới: ~20 từ · Tốc độ nghe mục tiêu: ~100 WPM
+
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
 - **Mục tiêu tuần:** Em biết câu tiếng Anh cần xương sống gì.
-- **Trọng tâm ngữ pháp:** subject, verb, object/complement, be vs action verbs, singular/plural
+- **Trọng tâm ngữ pháp:** plural nouns, there is/are, countable vs uncountable
 - **Nhóm từ vựng:** People, family, school, home
 - **Speaking:** Answer Part 1 questions with 2–3 sentences
 - **Writing:** Sentence garden: 5 daily sentences
@@ -17,7 +19,7 @@
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
 | --- | --- | --- | --- |
-| Day 8 | Chủ ngữ – động từ hợp nhau | 8 câu có động từ | Nhớ-lại 3 cụm Tuần 1 |
+| Day 8 | Số ít – số nhiều & There is/are | 8 câu số nhiều | Nhớ-lại 3 cụm Tuần 1 |
 | Day 9 | Đếm được / không đếm (much/many) | 6 câu much/many | Đọc to câu Day 8 |
 | Day 10 | Phòng từ vựng Family & School | 10 thẻ cụm | Anh→Việt→Anh |
 | Day 11 | Nói Part 1 (2–3 câu) | Bản ghi 60–90s | Lật Flashcard |
@@ -33,31 +35,31 @@ Trong tuần này, người học có quyền đi chậm, lặp lại và dùng 
 
 ## 📖 Ngữ pháp trọng tâm
 
-### Câu phải có động từ — Chủ ngữ hợp động từ
+### Số ít – Số nhiều & There is/are
 
-Một câu tiếng Anh phải có động từ, và động từ phải hợp với chủ ngữ. Tiếng Việt nói được 'Cô ấy đẹp', 'Các bạn tôi ở rạp phim' mà không cần 'là/ở'; tiếng Anh thì luôn cần **be** (is/am/are) hoặc một động từ rõ ràng. Ngoài ra, chủ ngữ số nhiều thì danh từ cần thêm 's' và động từ KHÔNG thêm 's'.
+Danh từ tiếng Việt không đổi dạng theo số lượng ("một quyển sách" / "hai quyển sách" — "sách" giữ nguyên), nhưng danh từ tiếng Anh đếm được từ 2 trở lên PHẢI thêm "s/es", và động từ "be" cũng phải đổi theo: số ít đi với **is**, số nhiều đi với **are**. Đây là quy tắc KÉP — thiếu một trong hai phần là sai.
 
-**Mẫu câu chính:** Subject + (be / động từ) + Object/Complement
+**Mẫu câu chính:** This/That + danh từ số ít + is... | These/Those + danh từ số nhiều(+s) + are... | There is + số ít | There are + số nhiều
 
 **Câu đúng:**
 
-- My mother is very patient.
-- The streets are crowded at night.
-- My friends are at the cinema.
-- Students need to review regularly.
+- This book is interesting.
+- These books are interesting.
+- There is one classroom on this floor.
+- There are three classrooms on this floor.
 
 **Lỗi thường gặp của người học Việt Nam:**
 
 | Câu sai | Câu đúng |
 | --- | --- |
-| She beautiful. | She is beautiful. |
-| My friends at the cinema. | My friends are at the cinema. |
-| Student need to review. | Students need to review. |
-| She like music. | She likes music. |
+| Many student is in my class. | Many students are in my class. |
+| There is two windows in my room. | There are two windows in my room. |
+| This books is mine. | These books are mine. |
+| I have three friend. | I have three friends. |
 
-**Bài tập ngắn:** Thêm động từ còn thiếu vào 5 câu: 1) My mother very patient. 2) The streets crowded at night. 3) My phone on the table. 4) Many students afraid of speaking. 5) Learning English a long journey.
+**Bài tập ngắn:** Viết 5 câu tả đồ vật/người quanh em, dùng This/These + is/are hoặc There is/are; chú ý thêm "s" cho danh từ số nhiều.
 
-**Mẹo nhớ:** Viết xong câu, tự hỏi "Động từ của câu này đâu?" — nếu câu mô tả tính chất / nơi chốn mà không thấy động từ thường thì chắc chắn cần **be** (is/am/are). Chủ ngữ số nhiều ("students", "friends") đi với động từ nguyên thể, nhưng danh từ số nhiều phải có "s".
+**Mẹo nhớ:** Đếm được từ 2 trở lên → LUÔN làm 2 việc cùng lúc: (1) thêm "s/es" vào danh từ, (2) đổi "be" thành "are". Chỉ làm một trong hai là câu vẫn sai.
 
 ### Countable và Uncountable
 
@@ -96,13 +98,13 @@ English rất quan tâm đến số lượng. Vietnamese often does not mark plu
 > Đây đều là câu ĐÚNG để đọc to & shadowing (Day 12) và làm mẫu cho "vườn câu" (Day 13).
 > Mỗi câu đã qua 3 lần tự kiểm: có động từ chưa? "s" số nhiều đúng chưa? đếm được/không đếm được đúng chưa?
 
-*Gia đình & quan hệ (be · hòa hợp chủ ngữ–động từ):*
+*Số ít – số nhiều & There is/are:*
 
-1. My mother is very patient.
-2. My friends are at the cinema.
-3. My brothers are still at school.
-4. I am close to my sister because she listens to me.
-5. In many Vietnamese families, children respect their parents a lot.
+1. This is my favourite book.
+2. These are my favourite books.
+3. There is one bedroom in my apartment.
+4. There are two bedrooms in my apartment.
+5. My friends are at the cinema.
 6. My parents share the housework every evening.
 
 *Trường lớp & học tập:*
@@ -204,17 +206,25 @@ Thêm ý cân bằng:
 
 Bài viết phát triển bằng cách mở rộng từng bước, không phải bằng cách học thuộc những mở bài phức tạp nhưng xa ý thật.
 
+## 🔄 Vòng xoáy ôn
+
+> Ôn có chủ đích ngữ pháp Tuần 1 (be / do-does-did / S–V–O) trong chủ đề Family & School của tuần này, để không quên trước khi học thêm điểm mới.
+
+1. Điền dạng đúng của **be**: "My parents ___ very supportive when I have problems." *(Đáp án: are)*
+2. Đặt câu hỏi với **does**: "________ your teacher explain homework clearly?" *(Đáp án: Does your teacher explain homework clearly?)*
+3. Sắp xếp đúng trật tự **S–V–O**: "homework / every day / I / do" *(Đáp án: I do homework every day.)*
+
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
 > Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Trọng tâm tuần: xương sống câu — chủ ngữ–động từ hợp nhau, đếm được/không đếm được, bồi câu ngắn thành câu dài.
 
-### Day 8 — Chủ ngữ – động từ hợp nhau (be vs động từ thường)
+### Day 8 — Số ít – số nhiều & There is/are
 - [ ] Ôn (5'): nhớ-lại 3 cụm của Tuần 1.
-- [ ] Học: điểm ngữ pháp của buổi; chú ý "đã có động từ chưa?" và "s" số nhiều.
-- [ ] Luyện ngữ pháp: làm bài tập (thêm động từ còn thiếu), đạt ≥70%.
+- [ ] Học: điểm ngữ pháp của buổi; chú ý quy tắc kép "danh từ +s" và "be → are" khi số nhiều.
+- [ ] Luyện ngữ pháp: làm bài tập (thêm "s" / chọn is-are), đạt ≥70%.
 - [ ] Từ vựng: học từ mới + nghe 🔊, lưu Flashcard.
-- [ ] Viết: viết 8 câu về gia đình/lớp học, tự kiểm động từ; nhờ AI chữa.
-- [ ] Sổ lỗi (5'): câu nào suýt quên động từ?
+- [ ] Viết: viết 8 câu về gia đình/lớp học, ít nhất 4 câu số nhiều (This/These, There is/are); nhờ AI chữa.
+- [ ] Sổ lỗi (5'): câu nào quên thêm "s" hoặc quên đổi is→are?
 
 ### Day 9 — Đếm được / Không đếm được (much / many / a lot of)
 - [ ] Ôn (5'): đọc to 5 câu của Day 8.
@@ -284,19 +294,19 @@ Bài viết phát triển bằng cách mở rộng từng bước, không phải
    - [ ] manys
    💡 "Free time" không đếm được nên dùng "much", không dùng "many".
 
-3. Câu nào đúng về động từ "be"?
-   - [ ] She beautiful.
-   - [x] She is very patient.
-   - [ ] She are patient.
-   - [ ] She be patient.
-   💡 Câu cần động từ "be"; chủ ngữ số ít "she" đi với "is".
+3. Câu nào đúng về số nhiều?
+   - [ ] This books is mine.
+   - [x] These books are mine.
+   - [ ] These book is mine.
+   - [ ] This book are mine.
+   💡 Danh từ số nhiều thêm "s" và động từ "be" đổi thành "are": These books are mine.
 
-4. Chọn câu đúng về sự hòa hợp chủ ngữ – động từ?
+4. Chọn câu đúng về sự hòa hợp danh từ – động từ "be"?
    - [ ] My friends is at the cinema.
-   - [ ] Student need to review.
-   - [x] Students need to review regularly.
+   - [ ] There is two windows in my room.
+   - [x] There are two windows in my room.
    - [ ] My friends at the cinema.
-   💡 Chủ ngữ số nhiều "students/friends" đi với động từ nguyên mẫu, và "students" cần "s".
+   💡 Số nhiều "two windows" cần "are": There are two windows in my room.
 
 5. Điền đúng: "There ______ many students in my class."?
    - [ ] is
@@ -307,11 +317,11 @@ Bài viết phát triển bằng cách mở rộng từng bước, không phải
 
 ### Part A — Fix the sentences
 
-1. My mother very patient.
+1. I have three friend.
 2. I have many homework.
 3. There is many students in my class.
-4. She like music very much.
-5. I am go to school every day.
+4. This books is mine.
+5. There is two windows in my room.
 
 ### Part B — Complete the answers
 
@@ -329,11 +339,11 @@ Answer in 60 seconds:
 
 ### Answer Key — Part A
 
-1. My mother is very patient.
+1. I have three friends.
 2. I have a lot of homework.
 3. There are many students in my class.
-4. She likes music very much.
-5. I go to school every day.
+4. These books are mine.
+5. There are two windows in my room.
 
 ### Teacher note
 

@@ -1,9 +1,11 @@
 # Tuần 8 — Phỏng vấn + Final Boss (Track A — Work & Life English)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A2+/B1-** · Ngữ pháp mới: 2 điểm (past simple vs present perfect — ôn từ Tuần 6; comparatives + second conditional — ôn nhẹ) · Từ vựng mới: ~20 từ · Tốc độ nghe mục tiêu: ~150–160 WPM (tự nhiên)
+
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
 - **Mục tiêu tuần:** Người học tự giới thiệu được trong phỏng vấn, trả lời điểm mạnh/điểm yếu có khung, và hoàn thành "trận chung kết" nói chuyện với người thật.
-- **Trọng tâm ngữ pháp:** past simple vs present perfect cho câu chuyện phỏng vấn, so sánh hơn/nhất cho điểm mạnh, câu điều kiện loại 2 cho câu hỏi giả định
+- **Trọng tâm ngữ pháp:** past simple vs present perfect cho câu chuyện phỏng vấn (ôn từ Tuần 6); so sánh hơn/nhất + câu điều kiện loại 2 (ôn nhẹ) cho điểm mạnh & câu hỏi giả định
 - **Nhóm từ vựng:** interview & careers, strengths & weaknesses
 - **Speaking:** self-intro phỏng vấn 90 giây (khung STAR-lite) + trả lời điểm mạnh/yếu
 - **Writing:** viết dàn ý STAR-lite cho 1 câu chuyện công việc
@@ -19,9 +21,9 @@
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
 | --- | --- | --- | --- |
 | Day 50 | Past simple vs present perfect cho câu chuyện | 5 câu chuyện ngắn | Nhớ-lại 3 cụm Tuần 7 |
-| Day 51 | So sánh hơn/nhất cho điểm mạnh | 5 câu điểm mạnh | Đọc to câu Day 50 |
+| Day 51 | So sánh hơn/nhất + điều kiện loại 2 (ôn nhẹ) | 5 câu điểm mạnh + 3 câu giả định | Đọc to câu Day 50 |
 | Day 52 | Phòng từ vựng Interview & Careers | 10 thẻ cụm | Lật Flashcard |
-| Day 53 | Câu điều kiện loại 2 cho câu hỏi giả định | 5 câu giả định | Nhớ-lại điểm mạnh |
+| Day 53 | Ôn tập: câu hỏi giả định trong phỏng vấn | 5 câu giả định | Nhớ-lại điểm mạnh |
 | Day 54 | Phòng từ vựng Strengths & Weaknesses + khung STAR-lite | 1 dàn ý STAR-lite | Đọc to 5 cụm |
 | Day 55 | Sản phẩm: self-intro phỏng vấn 90 giây | Bản ghi 90 giây | Nghe lại bản ghi Day 54 |
 | Day 56 | Điểm mạnh/điểm yếu có khung | 2 câu trả lời | Nghe lại bản ghi 90s |
@@ -66,41 +68,18 @@ Phỏng vấn hay hỏi "Tell me about a time when…" (past simple, chuyện đ
 
 **Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
 
-### Comparatives & Superlatives — Nói về điểm mạnh
+### Comparatives & Second Conditional — Điểm mạnh & câu hỏi giả định
 
-Khi trả lời "What is your biggest strength?", người học cần so sánh hơn/nhất để làm rõ điểm mạnh của mình so với người khác hoặc so với bản thân trước đây.
+Khi trả lời "What is your biggest strength?", người học cần so sánh hơn/nhất để làm rõ điểm mạnh của mình so với người khác hoặc so với bản thân trước đây. Bên cạnh đó, nhà tuyển dụng hay hỏi tình huống giả định ("What would you do if…?") — câu điều kiện loại 2 diễn tả tình huống giả định ở hiện tại/tương lai; ở tuần cuối này chỉ cần NHẬN DIỆN và dùng lại đúng mẫu, không cần đào sâu.
 
-**Mẫu câu chính:** My biggest strength is… / I'm more organized than I used to be. / I work better under pressure than most people.
+**Mẫu câu chính:** My biggest strength is… / I'm more organized than I used to be. | If + past simple, would + V (nguyên mẫu). Ví dụ: If I faced that situation, I would ask for more information first.
 
 **Câu đúng:**
 
 - My biggest strength is problem-solving.
 - I'm more organized than I used to be.
 - I work better under pressure than most people I know.
-- One of my strongest skills is communication.
-
-**Lỗi thường gặp của người học Việt Nam:**
-
-| Câu sai | Câu đúng |
-| --- | --- |
-| My strength biggest is problem-solving. | My biggest strength is problem-solving. |
-| I'm more organized than before I. | I'm more organized than I used to be. |
-| I work gooder under pressure. | I work better under pressure. |
-
-**Bài tập ngắn:** Viết 3 câu về điểm mạnh của em dùng so sánh hơn/nhất + 2 câu về điểm cần cải thiện.
-
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
-
-### Second Conditional — Câu hỏi giả định trong phỏng vấn
-
-Nhà tuyển dụng hay hỏi tình huống giả định ("What would you do if…?"). Câu điều kiện loại 2 diễn tả tình huống giả định ở hiện tại/tương lai.
-
-**Mẫu câu chính:** If + past simple, would + V (nguyên mẫu). Ví dụ: If I faced that situation, I would ask for more information first.
-
-**Câu đúng:**
-
 - If I faced that situation, I would ask for more information first.
-- If I disagreed with my manager, I would explain my reasons calmly.
 - If I had a tight deadline, I would prioritize the most important tasks.
 - What would you do if a client complained about a delay?
 
@@ -108,11 +87,12 @@ Nhà tuyển dụng hay hỏi tình huống giả định ("What would you do if
 
 | Câu sai | Câu đúng |
 | --- | --- |
+| My strength biggest is problem-solving. | My biggest strength is problem-solving. |
+| I work gooder under pressure. | I work better under pressure. |
 | If I face that situation, I will ask. | If I faced that situation, I would ask. |
-| If I would disagree, I would explain. | If I disagreed, I would explain. |
 | What will you do if a client complain? | What would you do if a client complained? |
 
-**Bài tập ngắn:** Viết 3 câu trả lời giả định cho câu hỏi "What would you do if…?" bằng câu điều kiện loại 2.
+**Bài tập ngắn:** Viết 3 câu về điểm mạnh của em dùng so sánh hơn/nhất + 2 câu trả lời giả định cho "What would you do if…?".
 
 **Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
 
@@ -200,6 +180,14 @@ STAR-lite (rút gọn từ Situation — Task — Action — Result) giúp trả
 3. **Sau buổi nói:** nghe lại bản ghi "mốc 0" (Day 1) ngay sau đó, ghi 3 tiến bộ rõ nhất.
 4. **Tự chấm rubric nhanh:** (a) nói được liên tục không đứt quãng dài, (b) dùng được ít nhất 1 khung đã học (self-intro/STAR-lite/điểm mạnh), (c) tự sửa được khi nói sai, (d) nghe hiểu được câu hỏi của người đối diện mà không cần lặp lại nhiều lần.
 
+## 🔄 Vòng xoáy ôn
+
+> Ôn có chủ đích ngữ pháp Tuần 7 (indirect questions; modals) và Tuần 5 (connectors + future) — tuần cuối chỉ ôn qua lỗi, không nhồi điểm mới.
+
+1. *(Tuần 7 — indirect question)* Chuyển thành câu hỏi lịch sự: "What is your biggest weakness?" *(Đáp án: Could you tell me what your biggest weakness is?)*
+2. *(Tuần 7 — modal)* Điền: "___ you give me an example of a challenge you faced?" *(Đáp án: Could)*
+3. *(Tuần 5 — connector + future)* Điền: "If I get this role, I ___ (focus) on improving my teamwork skills." *(Đáp án: will focus)*
+
 ## 📅 Lịch học 14 ngày (Daily Checklist)
 
 > Tuần cuối nặng hơn nên trải 14 buổi: **Buổi 50–56** = kỹ năng phỏng vấn; **Buổi 57–63** = mini-mock + trận chung kết. Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*.
@@ -212,11 +200,11 @@ STAR-lite (rút gọn từ Situation — Task — Action — Result) giúp trả
 - [ ] Nói & Quiz: kể 1 câu chuyện công việc ngắn với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): lẫn lộn "last year I have…".
 
-### Day 51 — So sánh hơn/nhất cho điểm mạnh
+### Day 51 — So sánh hơn/nhất cho điểm mạnh + nhận diện câu điều kiện loại 2
 - [ ] Ôn (5'): đọc to 5 câu Day 50.
-- [ ] Học: "My biggest strength is…"; "I'm more organized than I used to be."
+- [ ] Học: "My biggest strength is…"; "I'm more organized than I used to be."; nhận diện "If + past simple, would + V".
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
-- [ ] Viết: 3 câu điểm mạnh + 2 câu điểm cần cải thiện; nhờ AI chữa.
+- [ ] Viết: 3 câu điểm mạnh (so sánh hơn/nhất) + 2 câu trả lời giả định "What would you do if…?"; nhờ AI chữa.
 - [ ] Nói & Quiz: nói điểm mạnh của em với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): so sánh sai dạng (gooder, more better).
 
@@ -228,11 +216,11 @@ STAR-lite (rút gọn từ Situation — Task — Action — Result) giúp trả
 - [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): cụm dễ nhầm (experience vs experiment).
 
-### Day 53 — Câu điều kiện loại 2 cho câu hỏi giả định
+### Day 53 — Ôn tập: câu hỏi giả định trong phỏng vấn
 - [ ] Ôn (5'): lật thẻ Flashcard Day 52.
-- [ ] Học: "If + past simple, would + V"; "What would you do if…?"
+- [ ] Học: ôn lại "If + past simple, would + V"; "What would you do if…?"
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
-- [ ] Viết: 3 câu trả lời giả định cho "What would you do if…?"; nhờ AI chữa.
+- [ ] Viết: 3 câu trả lời giả định khác cho "What would you do if…?"; nhờ AI chữa.
 - [ ] Nói & Quiz: trả lời 1 câu hỏi giả định với AI + quiz từ vựng.
 - [ ] Sổ lỗi (5'): lỗi "If I will…".
 

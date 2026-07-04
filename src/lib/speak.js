@@ -23,6 +23,21 @@ export function canSpeak() {
 }
 
 /**
+ * Thang tốc độ Listening tăng dần theo tuần (docs/KE_HOACH_DO_KHO_KHOA_HOC.md mục 3):
+ * Tuần 1–2 ~100 WPM (TTS chậm) -> Tuần 3–4 ~120 -> Tuần 5–6 ~140 -> Tuần 7–8 ~150–160
+ * (tốc độ tự nhiên). `rate` của Web Speech API là hệ số tương đối (1.0 = giọng mặc định
+ * của trình duyệt), nên đây là quy đổi GẦN ĐÚNG, không phải WPM chính xác tuyệt đối.
+ */
+const WEEK_RATE = [0.72, 0.72, 0.82, 0.82, 0.92, 0.92, 1, 1]
+
+/** Tốc độ đọc cơ bản cho một tuần (1–8); tuần ngoài khoảng -> lấy mốc gần nhất. */
+export function wpmRateForWeek(week) {
+  const n = Number(week)
+  if (!Number.isFinite(n) || n < 1) return WEEK_RATE[0]
+  return WEEK_RATE[Math.min(n, WEEK_RATE.length) - 1]
+}
+
+/**
  * Đọc to một từ / cụm từ tiếng Anh. Tự hủy lần đọc trước để không chồng tiếng.
  * @param {string} text
  * @param {number} rate tốc độ đọc (mặc định hơi chậm để dễ nghe)

@@ -8,6 +8,7 @@
  *   ## 📖 Ngữ pháp trọng tâm         (### từng điểm ngữ pháp)
  *   ## 🗂️ Phòng từ vựng             (### từng nhóm: **Từ chính:** a, b, c …)
  *   ## 🛠️/🏋️ Kỹ năng & Khung mẫu / Ngân hàng luyện tập
+ *   ## 🔄 Vòng xoáy ôn               (spiral review — gộp vào nhóm "skills" ở trên)
  *   ## 📅 Lịch học 7 ngày            (### Day N = checklist [ ])
  *   ## 📝 Kịch bản bài học           (### Bài học N.M)
  *   ## ✅ Quiz tuần N
@@ -269,7 +270,7 @@ export function parseIeltsWeek(raw) {
         const extras = parseThemeExtras(s.lines)
         vocabThemes.push({ title: s.heading, words: parseThemeWords(s.lines), phrases: extras.phrases, sentences: extras.sentences, html: md(s.lines.join('\n')) })
       }
-    } else if (/Kỹ năng|Khung mẫu|luyện tập/i.test(h)) {
+    } else if (/Kỹ năng|Khung mẫu|luyện tập|Vòng xoáy/i.test(h)) {
       // "Ngân hàng … câu mở đầu" -> kho đặt câu (Production), không nhồi vào accordion.
       const bank = parseSentenceBank(sec.lines)
       if (bank.length >= 10) sentenceBank = bank

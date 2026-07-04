@@ -87,13 +87,17 @@ const mergeQuiz = (a = {}, b = {}) => {
       continue
     }
     const keepNew = (v.pct || 0) > (cur.pct || 0)
+    const passed = !!(cur.passed || v.passed)
+    // "wrong" phản ánh lần làm GẦN NHẤT (không phải điểm cao nhất) -> lấy theo bên có lastAt mới hơn.
+    const wrongFromNewer = laterDate(cur.lastAt, v.lastAt) === v.lastAt ? v.wrong : cur.wrong
     out[k] = {
       best: keepNew ? v.best : cur.best,
       total: keepNew ? v.total : cur.total,
       pct: Math.max(cur.pct || 0, v.pct || 0),
       attempts: Math.max(cur.attempts || 0, v.attempts || 0),
-      passed: !!(cur.passed || v.passed),
+      passed,
       lastAt: laterDate(cur.lastAt, v.lastAt),
+      wrong: passed ? [] : wrongFromNewer || [],
     }
   }
   return out
@@ -373,20 +377,23 @@ export const useUserStore = defineStore('user', {
      * Lưu điểm % CAO NHẤT giữa các lần làm; chỉ thưởng XP + huy hiệu vào LẦN ĐẦU
      * đạt ngưỡng (không cày bằng cách làm lại). Làm bài cũng tính là có học (streak).
      */
-    recordQuiz(course, scope, correct, total, threshold = PASS_PCT) {
+    recordQuiz(course, scope, correct, total, threshold = PASS_PCT, wrong = []) {
       if (!course || !scope || !total) return
       const key = `${course}:${scope}`
       const pct = Math.round((correct / total) * 100)
       const prev = this.quizScores[key] || null
       const wasPassed = prev?.passed || false
       const keepNew = !prev || pct > prev.pct
+      const passed = wasPassed || pct >= threshold * 100
       const entry = {
         best: keepNew ? correct : prev.best,
         total: keepNew ? total : prev.total,
         pct: keepNew ? pct : prev.pct,
         attempts: (prev?.attempts || 0) + 1,
-        passed: wasPassed || pct >= threshold * 100,
+        passed,
         lastAt: ymd(new Date()),
+        // Câu sai của LẦN LÀM GẦN NHẤT — nguồn cho "ngày ôn bù"; xóa khi đã đạt.
+        wrong: passed ? [] : wrong.slice(0, 8),
       }
       this.quizScores[key] = entry
       if (!wasPassed && entry.passed) {

@@ -1,11 +1,15 @@
 <script setup>
 import { computed, ref } from 'vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
-import { speak, canSpeak } from '@/lib/speak'
+import { speak, canSpeak, wpmRateForWeek } from '@/lib/speak'
 
 const props = defineProps({
   listening: { type: Object, required: true }, // { title, subtitle, script, audioUrl, questions }
+  week: { type: [String, Number], default: null }, // tuần hiện tại -> chỉnh tốc độ TTS theo thang WPM
 })
+
+// Tốc độ "nghe thường" tăng dần theo tuần; "nghe chậm" luôn chậm hơn ~30% so với mức đó.
+const baseRate = computed(() => wpmRateForWeek(props.week))
 
 const questions = computed(() => props.listening?.questions || [])
 const hasAudioFile = computed(() => !!props.listening?.audioUrl)
@@ -20,13 +24,13 @@ function play(slow) {
   if (hasAudioFile.value) {
     const el = audioEl.value
     if (el) {
-      el.playbackRate = slow ? 0.75 : 1
+      el.playbackRate = slow ? baseRate.value * 0.8 : baseRate.value
       el.currentTime = 0
       el.play()
     }
     return
   }
-  if (speakable && props.listening?.script) speak(props.listening.script, slow ? 0.62 : 0.9)
+  if (speakable && props.listening?.script) speak(props.listening.script, slow ? baseRate.value * 0.68 : baseRate.value)
 }
 </script>
 

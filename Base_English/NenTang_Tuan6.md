@@ -1,5 +1,7 @@
 # Tuần 6 — Cầu nối IELTS (IELTS Entry / Bridge)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A2** · Ngữ pháp mới: 2 điểm (comparatives; superlatives + passive + noun phrases) — dùng lại ngữ pháp đã học để mô tả biểu đồ, không dạy thêm điểm mới ngoài 2 điểm này · Từ vựng mới: ~20 từ · Tốc độ nghe mục tiêu: ~140 WPM
+
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
 - **Mục tiêu tuần:** Người học tiếp cận IELTS bằng phiên bản nhỏ, tránh quá tải.
@@ -206,6 +208,14 @@ Người học viết 6 câu:
 19. Young users should protect their personal information online.
 20. Many students work part-time to gain experience.
 21. Communication skills are important in almost every job.
+
+## 🔄 Vòng xoáy ôn
+
+> Ôn có chủ đích ngữ pháp Tuần 5 (future; connectors) và Tuần 3 (present simple) trong chủ đề Technology/Work & Money của tuần này.
+
+1. *(Tuần 5 — future)* Điền dạng đúng: "Salaries ___ (increase) next year because of inflation." *(Đáp án: will increase)*
+2. *(Tuần 5 — connector)* Nối 2 câu bằng **so**: "I save money. I want to buy a new phone." *(Đáp án: I save money, so I want to buy a new phone.)*
+3. *(Tuần 3 — present simple)* Điền dạng đúng: "Most employees ___ (check) their phones during work." *(Đáp án: check)*
 
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 

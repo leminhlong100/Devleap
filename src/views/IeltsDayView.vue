@@ -535,7 +535,7 @@ const aiContext = computed(() =>
           <ReadingComprehension v-if="d.reading" :reading="d.reading" />
 
           <!-- BÀI NGHE HIỂU — nghe đoạn ngắn (tên & số) + câu hỏi -->
-          <ListeningComprehension v-if="d.listening" :listening="d.listening" />
+          <ListeningComprehension v-if="d.listening" :listening="d.listening" :week="d.week" />
 
           <!-- THANG NGHE "THẬT HÓA DẦN": gợi ý shadowing bán thực/clip gốc theo tuần -->
           <section v-if="showListeningUpgrade" class="step-card listening-upgrade">
@@ -577,7 +577,7 @@ const aiContext = computed(() =>
 
           <!-- ════ 6) LUYỆN NGHE (Receptive practice) ════ -->
           <!-- LUYỆN NGHE — nghe & chép lại câu (kỹ năng Listening) -->
-          <ListeningDictation v-if="plan.listening" :sentences="listenSentences" />
+          <ListeningDictation v-if="plan.listening" :sentences="listenSentences" :week="d.week" />
 
           <!-- ════ 7) LUYỆN PHÁT ÂM (Productive — controlled) ════ -->
           <!-- LUYỆN PHÁT ÂM — nghe mẫu rồi đọc to, máy chấm (kỹ năng Pronunciation) -->

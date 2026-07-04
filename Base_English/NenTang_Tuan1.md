@@ -1,5 +1,7 @@
 # Tuần 1 — Reset & Diagnostic (Khởi động và kiểm tra nền)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A1** · Ngữ pháp mới: 3 điểm (be/do/S-V-O — tuần chẩn đoán nên gộp cả nền tảng câu) · Từ vựng mới: ~20 từ · Tốc độ nghe mục tiêu: ~100 WPM (TTS chậm)
+>
 > 📌 Tuần khởi động: xác định mốc xuất phát mà không tự trách mình. (Tài liệu gốc đôi chỗ gọi là "Week 0 – Reset".)
 
 ## 🎯 Mục tiêu & Trọng tâm tuần

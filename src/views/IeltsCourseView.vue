@@ -41,6 +41,18 @@ function goFinal() {
 const finalResult = computed(() => user.quizOf('ielts', 'final'))
 const finalLocked = computed(() => !prog.value.allDone)
 
+// Gợi ý "ngày ôn bù": tuần hiện tại đã làm bài kiểm tra nhưng chưa đạt 70% ->
+// nhắc ôn lại câu sai TRƯỚC khi khuyến nghị học tiếp (soft gating, không chặn).
+const currentWeekQuiz = computed(() => user.quizOf('ielts', `week:${prog.value.currentWeek}`))
+const remedial = computed(() =>
+  currentWeekQuiz.value && !currentWeekQuiz.value.passed && currentWeekQuiz.value.wrong?.length
+    ? currentWeekQuiz.value
+    : null,
+)
+function goRemedial() {
+  router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${prog.value.currentWeek}` } })
+}
+
 function chooseTrack(track) {
   if (track === user.ieltsTrack) return
   const label = track === 'A' ? 'Work & Life English' : 'IELTS Bridge'
@@ -75,6 +87,10 @@ function chooseTrack(track) {
             <p class="desc">{{ ieltsMeta.desc }}</p>
           </div>
           <button class="continue-btn" @click="start">{{ continueLabel }}</button>
+        </div>
+
+        <div v-if="remedial" class="remedial-hint" @click="goRemedial">
+          🩹 Bài kiểm tra Tuần {{ prog.currentWeek }} mới đạt {{ remedial.pct }}% — ôn lại {{ remedial.wrong.length }} câu sai trước khi học tiếp →
         </div>
 
         <div class="strip">
@@ -265,6 +281,21 @@ function chooseTrack(track) {
 }
 .continue-btn:hover {
   transform: translateY(-2px);
+}
+.remedial-hint {
+  margin-top: 18px;
+  background: rgba(255, 214, 102, 0.22);
+  border: 1px solid rgba(255, 214, 102, 0.5);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.remedial-hint:hover {
+  background: rgba(255, 214, 102, 0.32);
 }
 .strip {
   display: grid;

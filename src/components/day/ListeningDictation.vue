@@ -1,15 +1,17 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { speak, canSpeak } from '@/lib/speak'
+import { speak, canSpeak, wpmRateForWeek } from '@/lib/speak'
 
 const props = defineProps({
   sentences: { type: Array, default: () => [] }, // câu mẫu đúng để nghe-chép
+  week: { type: [String, Number], default: null }, // tuần hiện tại -> chỉnh tốc độ TTS theo thang WPM
 })
 const emit = defineEmits(['done'])
 
 // Tối đa 5 câu/buổi cho vừa sức.
 const items = computed(() => props.sentences.filter(Boolean).slice(0, 5))
 const speakable = canSpeak()
+const baseRate = computed(() => wpmRateForWeek(props.week))
 
 const answers = ref([])
 const results = ref([]) // null = chưa kiểm tra; số 0..100 = % đúng
@@ -23,7 +25,7 @@ watch(
 )
 
 function play(text, slow) {
-  if (speakable) speak(text, slow ? 0.6 : 0.95)
+  if (speakable) speak(text, slow ? baseRate.value * 0.68 : baseRate.value)
 }
 
 // Chuẩn hóa: bỏ dấu câu, về chữ thường, tách từ.

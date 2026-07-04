@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gen:audio": "node scripts/gen-ielts-audio.mjs"
+    "gen:audio": "node scripts/gen-ielts-audio.mjs",
+    "audit:weeks": "node scripts/audit-week-load.mjs",
+    "audit:reading": "node scripts/audit-reading-coverage.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",

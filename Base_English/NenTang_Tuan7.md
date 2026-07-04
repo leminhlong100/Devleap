@@ -1,9 +1,11 @@
 # Tuần 7 — Reading & Listening Confidence (Tự tin Reading và Listening)
 
+> 📊 **Chuẩn độ khó:** CEFR đích **A2+** · Ngữ pháp mới: 2 điểm (relative clauses; articles + prepositions — ôn & mở rộng) · Từ vựng mới: ~10 từ (Environment) · Tốc độ nghe mục tiêu: ~150 WPM, giọng đa dạng hơn
+
 ## 🎯 Mục tiêu & Trọng tâm tuần
 
 - **Mục tiêu tuần:** Em đọc/nghe có chiến thuật, không hoảng khi không hiểu hết.
-- **Trọng tâm ngữ pháp:** relative clauses, prepositions of time/place, articles review
+- **Trọng tâm ngữ pháp:** relative clauses; articles & prepositions of time/place (ôn + mở rộng)
 - **Nhóm từ vựng:** environment, work, money, culture, media
 - **Speaking:** talk about a place/object/person with details
 - **Writing:** summary sentence and short response
@@ -18,8 +20,8 @@
 
 | Day | Nhiệm vụ chính | Sản phẩm nhỏ | Ôn tập |
 | --- | --- | --- | --- |
-| Day 43 | Mạo từ + mệnh đề quan hệ | 10 câu who/which/that | Nhớ-lại 3 cụm Tuần 6 |
-| Day 44 | Giới từ theo cảnh | 10 nhãn đồ vật | Đọc to câu Day 43 |
+| Day 43 | Mệnh đề quan hệ (who/which/that) | 10 câu who/which/that | Nhớ-lại 3 cụm Tuần 6 |
+| Day 44 | Mạo từ + giới từ theo cảnh | 10 nhãn đồ vật | Đọc to câu Day 43 |
 | Day 45 | Từ vựng Environment + chiến thuật đọc | Passage 1–2 + 5 cụm | Lật Flashcard |
 | Day 46 | Reading True / False / Not Given | Passage 3–4 (bằng chứng) | Nhớ-lại 4 bước đọc |
 | Day 47 | Listening micro-skills | Script 1–2 + shadowing | Đọc to 5 cụm |
@@ -34,23 +36,20 @@ Trong tuần này, người học có quyền đi chậm, lặp lại và dùng 
 
 ## 📖 Ngữ pháp trọng tâm
 
-### Articles
+### Articles & Prepositions — Mạo từ & giới từ theo cảnh sử dụng
 
-A/an dùng khi người nghe chưa biết chính xác cái nào hoặc khi nói một cái bất kỳ trong nhóm. The dùng khi người nghe biết cái nào hoặc khi đã nhắc trước đó. Người Việt hay bỏ articles vì tiếng Việt không có hệ thống tương đương rõ.
+A/an dùng khi người nghe chưa biết chính xác cái nào hoặc khi nói một cái bất kỳ trong nhóm. The dùng khi người nghe biết cái nào hoặc khi đã nhắc trước đó. Người Việt hay bỏ articles vì tiếng Việt không có hệ thống tương đương rõ. Prepositions cũng nhỏ nhưng dễ sai — học theo cảnh: at school, in the city, on the table, interested in, good at, depend on.
 
-**Mẫu câu chính:**
-
-| Mạo từ | Cách dùng |
-| --- | --- |
-| a/an | one general thing |
-| the | specific/known thing |
+**Mẫu câu chính:** a/an = one general thing; the = specific/known thing | place/time/function chunks (in/on/at/interested in/good at)
 
 **Câu đúng:**
 
 - I bought a book yesterday. The book is about habits.
 - She wants to become a doctor.
-- The café near my school is quiet.
 - I need an umbrella.
+- I am good at listening but weak in writing.
+- She is interested in Korean music.
+- The book is on the desk.
 
 **Lỗi thường gặp của người học Việt Nam:**
 
@@ -58,34 +57,10 @@ A/an dùng khi người nghe chưa biết chính xác cái nào hoặc khi nói 
 | --- | --- |
 | I am student. | I am a student. |
 | Sun is hot today. | The sun is hot today. |
-| I bought book. | I bought a book. |
-
-**Bài tập ngắn:** Chọn a/an/the hoặc không dùng mạo từ: I saw dog. dog was sleeping near school gate.
-
-**Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
-
-### Prepositions — Học theo cảnh sử dụng
-
-Prepositions are small but slippery. Learn them with scenes: at school, in the city, on the table, interested in, good at, depend on.
-
-**Mẫu câu chính:** place/time/function chunks
-
-**Câu đúng:**
-
-- I am good at listening but weak in writing.
-- She is interested in Korean music.
-- The book is on the desk.
-- I usually study at night.
-
-**Lỗi thường gặp của người học Việt Nam:**
-
-| Câu sai | Câu đúng |
-| --- | --- |
 | depend of | depend on |
 | discuss about the problem | discuss the problem |
-| married with | married to |
 
-**Bài tập ngắn:** Vẽ bàn học và ghi nhãn 10 đồ vật bằng in/on/under/next to/near/between.
+**Bài tập ngắn:** Chọn a/an/the hoặc không dùng mạo từ cho 3 câu, rồi vẽ bàn học và ghi nhãn 5 đồ vật bằng in/on/under/next to/near/between.
 
 **Nguyên tắc sửa lỗi:** sửa một lỗi thật kỹ còn hơn làm 50 câu mà không biết mình sai vì sao.
 
@@ -457,15 +432,12 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 > Đây đều là câu ĐÚNG để đọc to & shadowing (Day 43–44) và làm mẫu cho Reading/Listening cả tuần.
 > Mỗi câu đã tự kiểm: mạo từ a/an/the có đúng chỗ chưa? giới từ có đi đúng cụm cố định chưa? mệnh đề quan hệ có lặp chủ ngữ thừa không?
 
-*Articles — mạo từ a/an/the:*
+*Articles & Prepositions — mạo từ a/an/the, giới từ theo cảnh:*
 
 1. I bought a book yesterday. The book is about habits.
 2. She wants to become a doctor.
 3. The café near my school is quiet.
 4. I need an umbrella.
-
-*Prepositions — giới từ theo cảnh sử dụng:*
-
 5. I am good at listening but weak in writing.
 6. She is interested in Korean music.
 7. The book is on the desk.
@@ -486,25 +458,33 @@ Mina used to sleep very late before exams. She thought studying until midnight w
 16. Many families are trying to save energy at home.
 17. We should use public transport more often to reduce pollution.
 
+## 🔄 Vòng xoáy ôn
+
+> Ôn có chủ đích ngữ pháp Tuần 6 (comparatives; passive) và Tuần 4 (past simple) trong chủ đề Environment của tuần này.
+
+1. *(Tuần 6 — comparative)* Điền dạng đúng: "Air pollution is ___ (bad) in big cities than in the countryside." *(Đáp án: worse)*
+2. *(Tuần 6 — passive)* Chuyển sang bị động: "People recycle plastic bottles." *(Đáp án: Plastic bottles are recycled.)*
+3. *(Tuần 4 — past simple)* Điền dạng đúng: "Twenty years ago, this river ___ (be) much cleaner." *(Đáp án: was)*
+
 ## 📅 Lịch học 7 ngày (Daily Checklist)
 
 > Mỗi buổi ~45–60 phút. Không bỏ *Ôn đầu giờ* và *Sổ lỗi*. Tuần này luyện đọc/nghe có chiến thuật — không hoảng khi chưa hiểu hết. Trong trang có sẵn 6 bài đọc và 3 script nghe kèm đáp án. Đích: trả lời 10 câu Reading từ một đoạn ngắn.
 
-### Day 43 — Mạo từ (a/an/the) + Mệnh đề quan hệ (who/which/that)
+### Day 43 — Mệnh đề quan hệ (who/which/that)
 - [ ] Ôn (5'): nhớ-lại 3 cụm Tuần 6.
-- [ ] Học: "I am a student"; "teachers who explain clearly"; không bỏ mạo từ.
+- [ ] Học: "teachers who explain clearly"; không lặp chủ ngữ thừa sau mệnh đề quan hệ.
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: mô tả 5 người + 5 đồ vật bằng who/which/that; nhờ AI chữa.
 - [ ] Nói & Quiz: mô tả người/vật quanh em với AI + quiz từ vựng.
-- [ ] Sổ lỗi (5'): lỗi bỏ mạo từ / lặp chủ ngữ ("the app which it is").
+- [ ] Sổ lỗi (5'): lỗi lặp chủ ngữ ("the app which it is").
 
-### Day 44 — Giới từ theo "cảnh" + ôn mệnh đề quan hệ
+### Day 44 — Mạo từ (a/an/the) + Giới từ theo "cảnh"
 - [ ] Ôn (5'): đọc to 4 câu Day 43.
-- [ ] Học: giới từ theo cụm (good at, interested in, depend on); tránh "depend of / discuss about".
+- [ ] Học: "I am a student" (không bỏ mạo từ); giới từ theo cụm (good at, interested in, depend on); tránh "depend of / discuss about".
 - [ ] Luyện ngữ pháp: làm bài tập, đạt ≥70%.
 - [ ] Viết: vẽ bàn học, ghi nhãn 10 đồ vật bằng in/on/under/next to/between; nhờ AI chữa.
 - [ ] Nói & Quiz: luyện hội thoại với AI + quiz từ vựng.
-- [ ] Sổ lỗi (5'): 2 cụm giới từ hay sai.
+- [ ] Sổ lỗi (5'): lỗi bỏ mạo từ / 2 cụm giới từ hay sai.
 
 ### Day 45 — Phòng từ vựng Environment + chiến thuật đọc
 - [ ] Ôn (5'): lật thẻ Flashcard từ vựng.

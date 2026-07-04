@@ -54,6 +54,8 @@ const checked = ref(false)
 const textCorrect = ref(false)
 const score = ref(0)
 const done = ref(false)
+// Câu trả lời sai của lượt hiện tại — nguồn cho "ngày ôn bù" (chỉ dùng ở assessment).
+const wrongList = ref([])
 // Lần này có phải lần ĐẦU đạt không (để hiện thưởng XP). Khai báo trước watch
 // vì watch immediate gọi restart() ngay trong setup.
 const justPassed = ref(false)
@@ -84,6 +86,8 @@ function select(i) {
   if (i === current.value.correct) {
     score.value++
     if (!isAssessment.value) user.addXp(10) // bài kiểm tra thưởng theo kết quả cuối
+  } else {
+    wrongList.value.push({ q: current.value.q, correct: current.value.opts[current.value.correct], ex: current.value.ex })
   }
 }
 // Bung viết tắt tiếng Anh (he's -> he is, don't -> do not...) để chấm theo nghĩa,
@@ -127,6 +131,8 @@ function checkText() {
   if (ok) {
     score.value++
     if (!isAssessment.value) user.addXp(10)
+  } else {
+    wrongList.value.push({ q: current.value.q, correct: accepted[0], ex: current.value.ex })
   }
 }
 // —— Dạng "sắp xếp câu" —— kho từ -> dãy đã chọn và ngược lại; chấm khi xếp đủ từ.
@@ -154,6 +160,8 @@ function checkOrder() {
   if (ok) {
     score.value++
     if (!isAssessment.value) user.addXp(10)
+  } else {
+    wrongList.value.push({ q: current.value.q, correct: accepted[0], ex: current.value.ex })
   }
 }
 function optStyle(i) {
@@ -167,10 +175,10 @@ function next() {
     done.value = true
     if (isAssessment.value && total.value) {
       const wasPassed = best.value?.passed || false
-      user.recordQuiz(props.course, props.scope, score.value, total.value, props.passThreshold)
+      user.recordQuiz(props.course, props.scope, score.value, total.value, props.passThreshold, wrongList.value)
       justPassed.value = !wasPassed && passed.value
     }
-    emit('complete', { score: score.value, total: total.value, pct: pct.value, passed: passed.value })
+    emit('complete', { score: score.value, total: total.value, pct: pct.value, passed: passed.value, wrong: wrongList.value })
   } else {
     index.value++
     selected.value = null
@@ -190,6 +198,7 @@ function restart() {
   score.value = 0
   done.value = false
   justPassed.value = false
+  wrongList.value = []
   initOrder()
 }
 

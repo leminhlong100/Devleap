@@ -86,6 +86,22 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
         :passThreshold="0.7"
         :limit="limit"
       />
+
+      <!-- NGÀY ÔN BÙ — chỉ hiện khi chưa đạt và còn câu sai của lần làm gần nhất -->
+      <div v-if="best && !best.passed && best.wrong?.length" class="remedial">
+        <div class="remedial-head">
+          <span class="remedial-emoji">🩹</span>
+          <div>
+            <h3>Ngày ôn bù trước khi học tiếp</h3>
+            <p>Bạn đạt {{ best.pct }}% (cần 70%). Ôn lại {{ best.wrong.length }} câu sai dưới đây rồi làm lại bài kiểm tra.</p>
+          </div>
+        </div>
+        <div v-for="(w, i) in best.wrong" :key="i" class="remedial-item">
+          <div class="remedial-q">{{ i + 1 }}. {{ w.q }}</div>
+          <div class="remedial-a">✅ Đáp án đúng: <b>{{ w.correct }}</b></div>
+          <div v-if="w.ex" class="remedial-ex">💡 {{ w.ex }}</div>
+        </div>
+      </div>
     </template>
 
     <div v-else class="empty">
@@ -207,6 +223,52 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
   font-size: 13px;
   font-weight: 700;
   color: #5a5a72;
+}
+.remedial {
+  max-width: 680px;
+  margin: 24px auto 0;
+  background: #fff8ec;
+  border: 1px solid rgba(255, 176, 32, 0.3);
+  border-radius: 20px;
+  padding: 22px 26px;
+}
+.remedial-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.remedial-emoji {
+  font-size: 26px;
+}
+.remedial-head h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--amber-ink, #a86a00);
+}
+.remedial-head p {
+  font-size: 13.5px;
+  color: #7a7a92;
+  margin-top: 4px;
+}
+.remedial-item {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 176, 32, 0.3);
+}
+.remedial-q {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink, #2a2a3c);
+}
+.remedial-a {
+  font-size: 13.5px;
+  color: #00966a;
+  margin-top: 6px;
+}
+.remedial-ex {
+  font-size: 13px;
+  color: #7a7a92;
+  margin-top: 4px;
 }
 .empty {
   text-align: center;
