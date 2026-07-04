@@ -95,8 +95,13 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
   padding: 13px 16px;
   font-size: 14.5px;
   font-family: inherit;
+  background: var(--surface);
+  color: var(--ink);
   outline: none;
   transition: border-color 0.15s;
+}
+.composer-input::placeholder {
+  color: var(--muted-2);
 }
 .composer-input:focus {
   border-color: var(--green);
