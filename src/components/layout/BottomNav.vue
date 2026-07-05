@@ -49,7 +49,7 @@ const isActive = (tab) => tab.match.includes(activeKey.value)
     z-index: 55;
     background: var(--surface);
     border-top: 1px solid var(--line);
-    padding: 6px 4px calc(6px + var(--safe-bottom));
+    padding: 6px 4px calc(14px + var(--safe-bottom));
   }
   .bn-tab {
     flex: 1;

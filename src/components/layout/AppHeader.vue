@@ -132,9 +132,10 @@ async function signOut() {
         <button
           v-if="auth.cloudEnabled && authReady && !authUser"
           class="signin-btn"
+          title="Đăng nhập / Đăng ký"
           @click="signIn"
         >
-          <span class="g">G</span> Đăng nhập / Đăng ký
+          <span class="g">G</span> <span class="signin-label">Đăng nhập / Đăng ký</span>
         </button>
       </div>
     </div>
@@ -466,6 +467,23 @@ async function signOut() {
   }
   .menu-stats {
     display: flex;
+  }
+  /* Nút đăng nhập quá to trên mobile — chỉ giữ icon G tròn như theme-toggle/avatar */
+  .signin-btn {
+    gap: 0;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 11px;
+    justify-content: center;
+  }
+  .signin-label {
+    display: none;
+  }
+  .signin-btn .g {
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
   }
 }
 </style>

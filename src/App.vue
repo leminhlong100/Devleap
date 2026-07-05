@@ -41,12 +41,12 @@ import OfflineBanner from '@/components/common/OfflineBanner.vue'
   .app-shell :deep(.footer) {
     display: none;
   }
-  /* Chừa chỗ cho tab bar đáy (~64px + safe-area) để nội dung cuối trang không bị che */
+  /* Chừa chỗ cho tab bar đáy (~72px + safe-area) để nội dung cuối trang không bị che */
   .app-main {
-    padding-bottom: calc(64px + var(--safe-bottom));
+    padding-bottom: calc(72px + var(--safe-bottom));
   }
   .app-shell :deep(.back-to-top) {
-    bottom: calc(76px + var(--safe-bottom));
+    bottom: calc(84px + var(--safe-bottom));
   }
 }
 </style>
