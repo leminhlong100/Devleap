@@ -20,7 +20,7 @@ export function decorateVocab(terms) {
     const g = lookupVocab(term) || {}
     return {
       term,
-      illo: VOCAB_ILLOS[i % VOCAB_ILLOS.length],
+      illo: g.emoji || VOCAB_ILLOS[i % VOCAB_ILLOS.length],
       g1: VOCAB_GRADS[i % VOCAB_GRADS.length][0],
       g2: VOCAB_GRADS[i % VOCAB_GRADS.length][1],
       ipa: g.ipa || '',

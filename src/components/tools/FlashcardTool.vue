@@ -142,7 +142,7 @@ function dotColor(i) {
             <span class="card-no">Thẻ {{ index + 1 }}/{{ total }}</span>
             <div class="fc-illo">
               <span v-if="isSentence" class="fc-illo-fallback">💬</span>
-              <VocabIllustration v-else :term="card.term" :size="150" show-spinner fallback-emoji="🗂️" />
+              <VocabIllustration v-else :term="card.term" :size="150" show-spinner :fallback-emoji="card.emoji || '🗂️'" />
             </div>
             <div class="term" :class="{ 'term-sentence': isSentence }">{{ card.term }}</div>
             <div v-if="card.ipa" class="ipa">{{ card.ipa }}</div>

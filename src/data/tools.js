@@ -14,27 +14,27 @@ export const toolDefs = [
 ]
 
 export const flashcards = [
-  { term: 'deploy', ipa: '/dɪˈplɔɪ/', cat: 'DevOps', vi: 'Triển khai', ex: 'We deploy the app to production every Friday afternoon.' },
-  { term: 'inheritance', ipa: '/ɪnˈherɪtəns/', cat: 'OOP', vi: 'Tính kế thừa', ex: 'A subclass uses inheritance to reuse the parent’s code.' },
-  { term: 'exception', ipa: '/ɪkˈsepʃn/', cat: 'Java Core', vi: 'Ngoại lệ', ex: 'The method throws an exception when the input is invalid.' },
-  { term: 'concurrency', ipa: '/kənˈkɜːrənsi/', cat: 'Threads', vi: 'Tính đồng thời', ex: 'Concurrency lets the server handle many requests at once.' },
-  { term: 'dependency', ipa: '/dɪˈpendənsi/', cat: 'Spring', vi: 'Sự phụ thuộc', ex: 'Spring injects the dependency into the service automatically.' },
-  { term: 'repository', ipa: '/rɪˈpɒzətri/', cat: 'Data', vi: 'Kho lưu trữ', ex: 'The repository handles all database access for users.' },
+  { term: 'deploy', ipa: '/dɪˈplɔɪ/', cat: 'DevOps', vi: 'Triển khai', ex: 'We deploy the app to production every Friday afternoon.', emoji: '🚀' },
+  { term: 'inheritance', ipa: '/ɪnˈherɪtəns/', cat: 'OOP', vi: 'Tính kế thừa', ex: 'A subclass uses inheritance to reuse the parent’s code.', emoji: '🧬' },
+  { term: 'exception', ipa: '/ɪkˈsepʃn/', cat: 'Java Core', vi: 'Ngoại lệ', ex: 'The method throws an exception when the input is invalid.', emoji: '🚨' },
+  { term: 'concurrency', ipa: '/kənˈkɜːrənsi/', cat: 'Threads', vi: 'Tính đồng thời', ex: 'Concurrency lets the server handle many requests at once.', emoji: '🧵' },
+  { term: 'dependency', ipa: '/dɪˈpendənsi/', cat: 'Spring', vi: 'Sự phụ thuộc', ex: 'Spring injects the dependency into the service automatically.', emoji: '🔗' },
+  { term: 'repository', ipa: '/rɪˈpɒzətri/', cat: 'Data', vi: 'Kho lưu trữ', ex: 'The repository handles all database access for users.', emoji: '🗄️' },
 ]
 
 export const dictionary = [
-  { term: 'API', cat: 'Web', vi: 'Giao diện lập trình ứng dụng', def: 'Tập hợp quy tắc cho phép các phần mềm giao tiếp với nhau.' },
-  { term: 'OOP', cat: 'Java Core', vi: 'Lập trình hướng đối tượng', def: 'Mô hình tổ chức code quanh các "đối tượng" (object).' },
-  { term: 'Inheritance', cat: 'OOP', vi: 'Tính kế thừa', def: 'Cho phép một class dùng lại thuộc tính & phương thức của class khác.' },
-  { term: 'Polymorphism', cat: 'OOP', vi: 'Tính đa hình', def: 'Cùng một phương thức hành xử khác nhau ở các class con.' },
-  { term: 'Exception', cat: 'Java Core', vi: 'Ngoại lệ', def: 'Sự kiện bất thường làm gián đoạn luồng chạy của chương trình.' },
-  { term: 'Stream', cat: 'Java 8+', vi: 'Luồng dữ liệu', def: 'API xử lý tập hợp dữ liệu theo phong cách hàm: map, filter, reduce.' },
-  { term: 'Concurrency', cat: 'Threads', vi: 'Tính đồng thời', def: 'Khả năng xử lý nhiều tác vụ cùng lúc bằng nhiều luồng.' },
-  { term: 'Dependency Injection', cat: 'Spring', vi: 'Tiêm phụ thuộc', def: 'Spring tự cung cấp các đối tượng mà class cần, thay vì tự tạo.' },
-  { term: 'Repository', cat: 'Data', vi: 'Kho lưu trữ', def: 'Lớp trung gian truy cập dữ liệu, tách logic khỏi database.' },
-  { term: 'REST', cat: 'Web', vi: 'Kiến trúc REST', def: 'Phong cách thiết kế API qua HTTP với GET/POST/PUT/DELETE.' },
-  { term: 'JVM', cat: 'Java Core', vi: 'Máy ảo Java', def: 'Môi trường thực thi bytecode Java, chạy được trên mọi nền tảng.' },
-  { term: 'Microservices', cat: 'System', vi: 'Vi dịch vụ', def: 'Kiến trúc chia ứng dụng lớn thành nhiều dịch vụ nhỏ độc lập.' },
+  { term: 'API', cat: 'Web', vi: 'Giao diện lập trình ứng dụng', def: 'Tập hợp quy tắc cho phép các phần mềm giao tiếp với nhau.', emoji: '🔌' },
+  { term: 'OOP', cat: 'Java Core', vi: 'Lập trình hướng đối tượng', def: 'Mô hình tổ chức code quanh các "đối tượng" (object).', emoji: '🧱' },
+  { term: 'Inheritance', cat: 'OOP', vi: 'Tính kế thừa', def: 'Cho phép một class dùng lại thuộc tính & phương thức của class khác.', emoji: '🧬' },
+  { term: 'Polymorphism', cat: 'OOP', vi: 'Tính đa hình', def: 'Cùng một phương thức hành xử khác nhau ở các class con.', emoji: '🎭' },
+  { term: 'Exception', cat: 'Java Core', vi: 'Ngoại lệ', def: 'Sự kiện bất thường làm gián đoạn luồng chạy của chương trình.', emoji: '🚨' },
+  { term: 'Stream', cat: 'Java 8+', vi: 'Luồng dữ liệu', def: 'API xử lý tập hợp dữ liệu theo phong cách hàm: map, filter, reduce.', emoji: '🌊' },
+  { term: 'Concurrency', cat: 'Threads', vi: 'Tính đồng thời', def: 'Khả năng xử lý nhiều tác vụ cùng lúc bằng nhiều luồng.', emoji: '🧵' },
+  { term: 'Dependency Injection', cat: 'Spring', vi: 'Tiêm phụ thuộc', def: 'Spring tự cung cấp các đối tượng mà class cần, thay vì tự tạo.', emoji: '💉' },
+  { term: 'Repository', cat: 'Data', vi: 'Kho lưu trữ', def: 'Lớp trung gian truy cập dữ liệu, tách logic khỏi database.', emoji: '🗄️' },
+  { term: 'REST', cat: 'Web', vi: 'Kiến trúc REST', def: 'Phong cách thiết kế API qua HTTP với GET/POST/PUT/DELETE.', emoji: '🌐' },
+  { term: 'JVM', cat: 'Java Core', vi: 'Máy ảo Java', def: 'Môi trường thực thi bytecode Java, chạy được trên mọi nền tảng.', emoji: '☕' },
+  { term: 'Microservices', cat: 'System', vi: 'Vi dịch vụ', def: 'Kiến trúc chia ứng dụng lớn thành nhiều dịch vụ nhỏ độc lập.', emoji: '🧩' },
 ]
 
 export const defaultCode = `public class Main {
@@ -49,8 +49,8 @@ export const defaultCode = `public class Main {
 // dictionary (vi/def). flashcards ghi đè vì dữ liệu đầy đủ hơn.
 const VOCAB_LOOKUP = (() => {
   const m = new Map()
-  for (const d of dictionary) m.set(d.term.toLowerCase(), { term: d.term, ipa: '', cat: d.cat, vi: d.vi, ex: d.def })
-  for (const f of flashcards) m.set(f.term.toLowerCase(), { term: f.term, ipa: f.ipa, cat: f.cat, vi: f.vi, ex: f.ex })
+  for (const d of dictionary) m.set(d.term.toLowerCase(), { term: d.term, ipa: '', cat: d.cat, vi: d.vi, ex: d.def, emoji: d.emoji })
+  for (const f of flashcards) m.set(f.term.toLowerCase(), { term: f.term, ipa: f.ipa, cat: f.cat, vi: f.vi, ex: f.ex, emoji: f.emoji })
   return m
 })()
 
@@ -75,7 +75,7 @@ export function cardsFromTerms(terms, course = 'java') {
     if (!base) {
       const g = lookupVocab(t)
       base = g
-        ? { term: t, ipa: g.ipa, cat: 'Từ vựng', vi: g.vi, ex: g.ex.replace('{w}', t) }
+        ? { term: t, ipa: g.ipa, cat: 'Từ vựng', vi: g.vi, ex: g.ex.replace('{w}', t), emoji: g.emoji }
         : { term: t, ipa: '', cat: 'Từ vựng', vi: '', ex: '' }
     }
     out.push({ ...base, srsId: `${course}:${normalize(t)}` })

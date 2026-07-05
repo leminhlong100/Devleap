@@ -58,13 +58,35 @@ describe('vocabImage — fetchVocabImage', () => {
     await expect(fetchVocabImage('name')).resolves.toBe('')
   })
 
+  it('trang chính không có ảnh -> thử thêm Wikipedia search, tìm được ảnh liên quan', async () => {
+    const fetchMock = vi
+      .fn()
+      // 1) tra thẳng theo tên trang: đa nghĩa, coi như rỗng
+      .mockResolvedValueOnce(jsonRes(200, { type: 'disambiguation' }))
+      // 2) dự phòng: search trả về vài trang, trang đầu đa nghĩa, trang sau có ảnh
+      .mockResolvedValueOnce(
+        jsonRes(200, {
+          query: {
+            pages: {
+              1: { index: 1, pageprops: { disambiguation: '' }, title: 'Stress (disambiguation)' },
+              2: { index: 2, thumbnail: { source: 'https://x/stress.jpg' }, title: 'Psychological stress' },
+            },
+          },
+        }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await fetchVocabImage('stress')).toBe('https://x/stress.jpg')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('cùng 1 từ: lần 2 lấy từ cache, KHÔNG gọi mạng lại (kể cả kết quả rỗng)', async () => {
     const fetchMock = vi.fn(() => Promise.resolve(jsonRes(200, { type: 'disambiguation' })))
     vi.stubGlobal('fetch', fetchMock)
     expect(await fetchVocabImage('balance')).toBe('')
     expect(await fetchVocabImage('balance')).toBe('')
     expect(await fetchVocabImage('Balance')).toBe('') // không phân biệt hoa/thường
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    // lượt đầu: tra theo tên trang (đa nghĩa) + thử search dự phòng (cũng không có ảnh) = 2 lần gọi
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('cache thành công cũng không gọi lại mạng ở lần sau', async () => {
@@ -80,11 +102,14 @@ describe('vocabImage — fetchVocabImage', () => {
   it('lỗi mạng KHÔNG được cache -> lần sau vẫn thử gọi lại', async () => {
     const fetchMock = vi
       .fn()
+      // lượt đầu: cả tra thẳng lẫn search dự phòng đều lỗi mạng -> không xác định được, không cache
       .mockRejectedValueOnce(new Error('network'))
+      .mockRejectedValueOnce(new Error('network'))
+      // lượt sau: tra thẳng theo tên trang thành công ngay, không cần search dự phòng
       .mockResolvedValueOnce(jsonRes(200, { type: 'standard', thumbnail: { source: 'https://x/z.jpg' } }))
     vi.stubGlobal('fetch', fetchMock)
     expect(await fetchVocabImage('goal')).toBe('')
     expect(await fetchVocabImage('goal')).toBe('https://x/z.jpg')
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 })
