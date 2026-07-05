@@ -79,7 +79,30 @@ header/2 cột cũ. `npm test` (383 tests) + `npm run build` pass.
 
 ### Bước 1.2 — Safe-area, dvh, và chuẩn hóa khoảng cách/chữ cho mobile
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** `index.html` thêm `viewport-fit=cover` + 3 meta `apple-mobile-web-app-*`.
+`base.css` thêm biến `--safe-top/bottom/left/right` (env với fallback 0px) và `--space-page-x:
+clamp(16px, 4vw, 28px)` dùng lại thay padding cố định; `App.vue`/`BottomNav.vue` đổi sang dùng
+`var(--safe-bottom)` thay vì lặp lại `env(...)`. Thêm rule toàn cục `input, textarea, select {
+font-size: 16px; font-family: inherit; }` để chống iOS auto-zoom khi focus, rồi rà tay 12 chỗ có
+font-size cố định < 16px đang override rule này (ChatComposer `.composer-input`, ErrorLedger
+`.el-input`/`.el-fix-input`, ieltsDaySection `.write-area`, IeltsDayView `.wf-note`, ShadowingPlayer
+`.sh-edit-text`, ShadowingView `.topic-select`, AdminShadowingView `.in`, SentenceBankPractice
+`.sb-input`, LeaderboardTool `.name-row input`, DictionaryTool/SavedTool `.search input`) — đưa hết
+về 16px. Quét `100vh` trong `src/`: chỉ có 3 chỗ (`App.vue` `.app-shell`, `AdminLayout.vue` `.admin`,
+`ShadowingPlayer.vue` `.sh-list` desktop-only) — giữ dòng `100vh` cũ làm fallback, thêm dòng
+`100dvh`/`calc(100dvh...)` ngay sau (trình duyệt cũ bỏ qua). Đổi padding cố định 26–32px sang
+`var(--space-page-x)`/`clamp()`: `.container` (dùng chung bởi 10 view), wrapper trang `.day`
+(DayView + IeltsDayView), `.assess` (AssessmentView), `.banner-inner` (Java/IeltsCourseView),
+`.admin-main` (AdminLayout), `.pg` CodePlayground, và cụm `.step-card`/`.vr`/`.ai-chat` lặp giống
+nhau ở 6 file (`ieltsDaySection.css`, DayView, ListeningComprehension, ReadingComprehension,
+VoiceRecorder, AiChat) — mọi nơi giữ padding trên/dưới, chỉ đổi cạnh ngang. Không đổi cỡ chữ heading
+(h1/h2 dùng class riêng theo từng component, không phải thẻ thuần nên rule global không có tác dụng
+— để dành cho Bước 2.1/2.6 khi làm lại layout từng màn cụ thể). Đã kiểm 375×812 + 1280×800 (light +
+dark) bằng preview: không còn scroll ngang ở DayView/IeltsDayView, `.day` padding-left/right giảm
+từ 28px xuống 16px ở mobile và giữ 28px ở desktop, input/textarea trong trang đo được `font-size:
+16px` qua `getComputedStyle`. `npm test` (383 tests) + `npm run build` pass.
 
 **Vấn đề:** Thiếu `viewport-fit=cover` nên `env(safe-area-inset-*)` luôn = 0 → chạy standalone trên iPhone, thanh home đè lên nút dưới cùng. `100vh` gây nhảy layout khi thanh URL co giãn. Padding container 28px và cỡ chữ cố định khiến 375px chật chội.
 
@@ -359,7 +382,7 @@ header/2 cột cũ. `npm test` (383 tests) + `npm run build` pass.
 | Bước | Tên | Ước lượng | Trạng thái |
 | --- | --- | --- | --- |
 | 1.1 | Bottom tab bar + header gọn | 1 buổi | ✅ |
-| 1.2 | Safe-area, dvh, spacing/chữ | 0.5–1 buổi | ⬜ |
+| 1.2 | Safe-area, dvh, spacing/chữ | 0.5–1 buổi | ✅ |
 | 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ⬜ |
 | 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ⬜ |
 | 2.2 | Chat như app nhắn tin | 1–2 buổi | ⬜ |

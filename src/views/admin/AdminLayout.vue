@@ -36,6 +36,7 @@ const route = useRoute()
   display: grid;
   grid-template-columns: 232px 1fr;
   min-height: calc(100vh - 76px);
+  min-height: calc(100dvh - 76px);
   max-width: var(--container);
   margin: 0 auto;
 }
@@ -86,7 +87,7 @@ const route = useRoute()
   color: var(--muted-2);
 }
 .admin-main {
-  padding: 32px 28px 64px;
+  padding: 32px var(--space-page-x) 64px;
   min-width: 0;
 }
 @media (max-width: 760px) {

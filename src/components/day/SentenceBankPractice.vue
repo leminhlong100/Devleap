@@ -180,7 +180,7 @@ const isDone = ref(false)
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 7px 11px;
-  font-size: 14px;
+  font-size: 16px;
   background: var(--surface-2);
   color: var(--text-primary);
   outline: none;

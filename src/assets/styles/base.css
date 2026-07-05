@@ -88,6 +88,17 @@
   --today-card-bg: linear-gradient(135deg, #f5f3ff, #eef6ff);
   --chip-warn-bg: #fff7ec;
   --chip-bg: #f1f0fb;
+
+  /* Safe-area (viền notch/thanh home khi chạy standalone) — cần viewport-fit=cover
+     trong index.html thì env() mới trả giá trị thật, không có thì = 0px. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Khoảng đệm ngang trang chuẩn mobile-first, dùng lại ở .container và các
+     wrapper trang/card lớn thay cho padding cố định 26-32px. */
+  --space-page-x: clamp(16px, 4vw, 28px);
 }
 
 /* ============================================================
@@ -177,6 +188,14 @@ svg {
   display: block;
 }
 
+/* Chống iOS tự zoom khi focus input/textarea/select có font-size < 16px */
+input,
+textarea,
+select {
+  font-size: 16px;
+  font-family: inherit;
+}
+
 /* ---------------- Animations ---------------- */
 @keyframes floaty {
   0%,
@@ -237,8 +256,8 @@ svg {
 .container {
   max-width: var(--container);
   margin: 0 auto;
-  padding-left: 28px;
-  padding-right: 28px;
+  padding-left: var(--space-page-x);
+  padding-right: var(--space-page-x);
 }
 
 .brand-text {

@@ -206,7 +206,7 @@ function removeManual(i) {
   border: 1.5px solid var(--line, rgba(108, 92, 231, 0.15));
   border-radius: 9px;
   padding: 9px 12px;
-  font-size: 14.5px;
+  font-size: 16px;
   font-family: inherit;
   color: var(--ink, #1e1e2e);
   background: var(--surface);
@@ -316,7 +316,7 @@ function removeManual(i) {
   border: 1px solid var(--line, #e3e3ee);
   border-radius: 8px;
   padding: 7px 11px;
-  font-size: 13.5px;
+  font-size: 16px;
   background: var(--surface);
   color: var(--ink, #1e1e2e);
   outline: none;

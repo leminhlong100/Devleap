@@ -507,7 +507,7 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 .in {
-  font-size: 15px;
+  font-size: 16px;
   padding: 11px 14px;
   border: 1.5px solid rgba(108, 92, 231, 0.2);
   border-radius: 12px;

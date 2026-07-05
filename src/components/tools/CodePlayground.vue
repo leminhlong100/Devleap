@@ -120,7 +120,7 @@ function reset() {
   background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 28px;
-  padding: 32px;
+  padding: clamp(16px, 4vw, 32px);
   box-shadow: 0 18px 50px rgba(108, 92, 231, 0.1);
 }
 .pg-head {

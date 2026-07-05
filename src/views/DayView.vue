@@ -222,7 +222,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 
 <style scoped>
 .day {
-  padding: 26px 28px 70px;
+  padding: 26px var(--space-page-x) 70px;
 }
 .back {
   display: inline-flex;
@@ -410,7 +410,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 .step-card {
   background: var(--surface);
   border-radius: 22px;
-  padding: 26px 28px;
+  padding: 26px var(--space-page-x);
   border: 1px solid rgba(108, 92, 231, 0.1);
   box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
 }

@@ -28,6 +28,7 @@ import OfflineBanner from '@/components/common/OfflineBanner.vue'
 <style scoped>
 .app-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -42,10 +43,10 @@ import OfflineBanner from '@/components/common/OfflineBanner.vue'
   }
   /* Chừa chỗ cho tab bar đáy (~64px + safe-area) để nội dung cuối trang không bị che */
   .app-main {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(64px + var(--safe-bottom));
   }
   .app-shell :deep(.back-to-top) {
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(76px + var(--safe-bottom));
   }
 }
 </style>

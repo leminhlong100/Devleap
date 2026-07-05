@@ -566,7 +566,7 @@ const aiContext = computed(() =>
 <style scoped src="@/components/day/ieltsDaySection.css"></style>
 <style scoped>
 .day {
-  padding: 26px 28px 70px;
+  padding: 26px var(--space-page-x) 70px;
 }
 .back {
   display: inline-flex;
@@ -862,7 +862,7 @@ const aiContext = computed(() =>
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 10px 12px;
-  font-size: 13.5px;
+  font-size: 16px;
   font-family: inherit;
   resize: vertical;
   background: var(--surface);

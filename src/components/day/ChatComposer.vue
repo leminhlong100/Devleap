@@ -99,7 +99,7 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 14px;
   padding: 13px 16px;
-  font-size: 14.5px;
+  font-size: 16px;
   font-family: inherit;
   background: var(--surface);
   color: var(--ink);

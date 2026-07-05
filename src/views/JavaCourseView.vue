@@ -108,7 +108,7 @@ const finalLocked = computed(() => !prog.value.allDone)
 .banner-inner {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 30px 28px 44px;
+  padding: 30px var(--space-page-x) 44px;
   position: relative;
 }
 .back {

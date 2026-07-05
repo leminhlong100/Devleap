@@ -367,7 +367,7 @@ function pickFeatured(id) {
   border-radius: 16px;
 }
 .topic-select {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--ink);
   padding: 9px 14px;

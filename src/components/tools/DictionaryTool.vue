@@ -98,7 +98,7 @@ const results = computed(() => {
   border: 1.5px solid rgba(108, 92, 231, 0.16);
   background: var(--bg);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--ink);
   outline: none;
 }

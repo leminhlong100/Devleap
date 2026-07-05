@@ -114,7 +114,7 @@ const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.que
 
 <style scoped>
 .assess {
-  padding: 26px 28px 70px;
+  padding: 26px var(--space-page-x) 70px;
 }
 .back {
   display: inline-flex;

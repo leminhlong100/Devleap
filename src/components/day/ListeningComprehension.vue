@@ -74,7 +74,7 @@ function play(slow) {
   background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.1);
   border-radius: 22px;
-  padding: 26px 28px;
+  padding: 26px var(--space-page-x);
   box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
 }
 .step-head {

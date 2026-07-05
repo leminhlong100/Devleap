@@ -1136,6 +1136,7 @@ onBeforeUnmount(() => {
 @media (min-width: 960px) {
   .sh-list {
     max-height: calc(100vh - 130px);
+    max-height: calc(100dvh - 130px);
     overflow-y: auto;
     padding-right: 4px;
   }
@@ -1228,7 +1229,7 @@ onBeforeUnmount(() => {
 .sh-edit-text {
   width: 100%;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
   background: var(--surface);

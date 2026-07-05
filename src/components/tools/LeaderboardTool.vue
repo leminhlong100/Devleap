@@ -210,7 +210,7 @@ watch(() => user.leaderboardName, (v) => { name.value = v })
   border: 1.5px solid rgba(108, 92, 231, 0.16);
   background: var(--surface);
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink);
   outline: none;
   max-width: 320px;
