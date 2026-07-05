@@ -1,8 +1,10 @@
 <script setup>
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
+import MobileCheckpointBar from '@/components/day/MobileCheckpointBar.vue'
+import { useSectionScrollSpy } from '@/composables/useSectionScrollSpy'
 import VocabCard from '@/components/day/VocabCard.vue'
 import AiChat from '@/components/day/AiChat.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
@@ -186,29 +188,41 @@ const agenda = computed(() => {
   const p = plan.value
   const a = []
   // Thứ tự khớp với trang; chỉ liệt kê khối thực sự hiện trong buổi (theo kế hoạch ngày).
-  if (p.vocab && d.value.vocab.length) a.push({ title: 'Từ vựng buổi này', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
-  if (p.flashcards && d.value.vocab.length) a.push({ title: 'Nhớ nhanh từ', meta: 'lật thẻ · nhớ lại' })
+  // `key` phải khớp đúng `data-agenda-key` gắn trên section/component tương ứng trong
+  // template (và trong GrammarSection.vue/MissionSection.vue) — dùng cho scroll-spy mobile.
+  if (p.vocab && d.value.vocab.length) a.push({ key: 'vocab', title: 'Từ vựng buổi này', meta: `${d.value.vocab.length + d.value.reviewVocab.length} từ` })
+  if (p.flashcards && d.value.vocab.length) a.push({ key: 'flashcards', title: 'Nhớ nhanh từ', meta: 'lật thẻ · nhớ lại' })
   if (p.grammar && d.value.grammar.length) {
     const label = d.value.grammarMode === 'new' ? 'Ngữ pháp hôm nay' : d.value.grammarMode === 'final' ? 'Tổng hợp ngữ pháp tuần' : 'Ôn tập ngữ pháp'
-    a.push({ title: label, meta: `${d.value.grammar.length} điểm` })
+    a.push({ key: 'grammar', title: label, meta: `${d.value.grammar.length} điểm` })
   }
-  if (showGrammarDrills.value) a.push({ title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · ${grammarGateNeeded.value ? 'bắt buộc đạt' : 'tự chọn'}` })
-  if (d.value.reading) a.push({ title: 'Bài đọc hiểu', meta: `${d.value.reading.questions.length} câu hỏi` })
-  if (d.value.listening) a.push({ title: 'Bài nghe (tên & số)', meta: `${d.value.listening.questions.length} câu hỏi` })
-  if (p.reading && d.value.skills?.length) a.push({ title: 'Bài giảng & khung mẫu', meta: `${d.value.skills.length} mục` })
-  if (p.reading && d.value.lessonScript) a.push({ title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
-  if (p.listening && listenSentences.value.length) a.push({ title: 'Luyện nghe', meta: `${listenSentences.value.length} câu nghe–chép` })
-  if (p.pronunciation && pronItems.value.length) a.push({ title: 'Luyện phát âm', meta: `${pronItems.value.length} từ · nghe → nói` })
-  if (recordingTask.value) a.push({ title: 'Ghi âm sản phẩm', meta: 'mốc so sánh' })
-  if (p.sentenceBank && d.value.sentenceBank?.length) a.push({ title: 'Đặt câu về bản thân', meta: `${Math.min(d.value.sentenceBank.length, 8)} câu · AI chữa` })
-  if (p.writing && writingTask.value) a.push({ title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
-  if (p.aiChat) a.push({ title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
-  if (p.quiz && d.value.quiz.length && d.value.grammarMode !== 'final') a.push({ title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · ôn nhanh` })
-  if (d.value.weekPracticeQuiz?.length) a.push({ title: 'Bài tập ôn tuần', meta: `${d.value.weekPracticeQuiz.length} câu · tổng hợp` })
-  if (missionNeeded.value) a.push({ title: '🌍 Mission tuần', meta: missionDone.value ? '✅ đã hoàn thành' : 'ngoài app · +150 XP' })
-  if (realTalkNeeded.value) a.push({ title: '🗣️ Buổi nói người thật', meta: realTalkDone.value ? '✅ đã hoàn thành' : 'ngoài app · +100 XP' })
+  if (showGrammarDrills.value) a.push({ key: 'grammar-drills', title: 'Luyện tập ngữ pháp', meta: `${grammarDrills.value.length} câu · ${grammarGateNeeded.value ? 'bắt buộc đạt' : 'tự chọn'}` })
+  if (d.value.reading) a.push({ key: 'reading', title: 'Bài đọc hiểu', meta: `${d.value.reading.questions.length} câu hỏi` })
+  if (d.value.listening) a.push({ key: 'listening', title: 'Bài nghe (tên & số)', meta: `${d.value.listening.questions.length} câu hỏi` })
+  if (p.reading && d.value.skills?.length) a.push({ key: 'skills', title: 'Bài giảng & khung mẫu', meta: `${d.value.skills.length} mục` })
+  if (p.reading && d.value.lessonScript) a.push({ key: 'lessonScript', title: 'Kịch bản bài học', meta: d.value.lessonScript.title })
+  if (p.listening && listenSentences.value.length) a.push({ key: 'listenPractice', title: 'Luyện nghe', meta: `${listenSentences.value.length} câu nghe–chép` })
+  if (p.pronunciation && pronItems.value.length) a.push({ key: 'pronunciation', title: 'Luyện phát âm', meta: `${pronItems.value.length} từ · nghe → nói` })
+  if (recordingTask.value) a.push({ key: 'recording', title: 'Ghi âm sản phẩm', meta: 'mốc so sánh' })
+  if (p.sentenceBank && d.value.sentenceBank?.length) a.push({ key: 'sentenceBank', title: 'Đặt câu về bản thân', meta: `${Math.min(d.value.sentenceBank.length, 8)} câu · AI chữa` })
+  if (p.writing && writingTask.value) a.push({ key: 'writing', title: 'Bài tập viết', meta: `${requiredSentences.value} câu · làm tại bài` })
+  if (p.aiChat) a.push({ key: 'aiChat', title: 'Trò chuyện với AI', meta: 'luyện giao tiếp' })
+  if (p.quiz && d.value.quiz.length && d.value.grammarMode !== 'final') a.push({ key: 'quiz', title: 'Quiz từ vựng', meta: `${d.value.quiz.length} câu · ôn nhanh` })
+  if (d.value.weekPracticeQuiz?.length) a.push({ key: 'weekPracticeQuiz', title: 'Bài tập ôn tuần', meta: `${d.value.weekPracticeQuiz.length} câu · tổng hợp` })
+  if (missionNeeded.value) a.push({ key: 'mission', title: '🌍 Mission tuần', meta: missionDone.value ? '✅ đã hoàn thành' : 'ngoài app · +150 XP' })
+  if (realTalkNeeded.value) a.push({ key: 'realTalk', title: '🗣️ Buổi nói người thật', meta: realTalkDone.value ? '✅ đã hoàn thành' : 'ngoài app · +100 XP' })
   return a
 })
+
+// Thanh bước học ngang (mobile) + thanh CTA dính đáy: biết đang ở mục nào khi cuộn,
+// và bấm 1 mục trong rail để nhảy tới đúng phần (xem data-agenda-key trong template).
+const { activeKey, scrollToKey, refresh } = useSectionScrollSpy()
+const activeIndex = computed(() => agenda.value.findIndex((a) => a.key === activeKey.value))
+function onSelectAgenda(i) {
+  const key = agenda.value[i]?.key
+  if (key) scrollToKey(key)
+}
+watch(d, () => nextTick(refresh))
 
 function goDay(n) {
   if (n && dayUnlocked(n)) router.push({ name: 'ielts-day', params: { week: props.week, day: n } })
@@ -306,12 +320,18 @@ const aiContext = computed(() =>
 
       <!-- TWO COLUMN -->
       <div class="two-col">
-        <AgendaRail title="Buổi học hôm nay" subtitle="Nhẹ nhàng, làm lần lượt nhé" :items="agenda" />
+        <AgendaRail
+          title="Buổi học hôm nay"
+          subtitle="Nhẹ nhàng, làm lần lượt nhé"
+          :items="agenda"
+          :active-index="activeIndex"
+          @select="onSelectAgenda"
+        />
 
         <div class="main">
           <!-- ════ 1) HỌC TỪ VỰNG (Presentation) ════ -->
           <!-- VOCAB (week) -->
-          <section v-if="plan.vocab && (d.vocab.length || d.reviewVocab.length)" class="step-card">
+          <section v-if="plan.vocab && (d.vocab.length || d.reviewVocab.length)" class="step-card" data-agenda-key="vocab">
             <div class="step-head">
               <div>
                 <div class="eyebrow">PHÒNG TỪ VỰNG · BƯỚC 1 HỌC TỪ</div>
@@ -351,7 +371,7 @@ const aiContext = computed(() =>
 
           <!-- ════ 2) NHỚ LẠI TỪ VỪA HỌC (active recall) ════ -->
           <!-- FLASHCARD — nhớ lại chủ động ngay sau khi học từ -->
-          <InlineFlashcards v-if="plan.flashcards && d.vocab.length" :vocab="d.vocab" title="Nhớ nhanh từ vừa học" />
+          <InlineFlashcards v-if="plan.flashcards && d.vocab.length" data-agenda-key="flashcards" :vocab="d.vocab" title="Nhớ nhanh từ vừa học" />
 
           <!-- ════ 3) HỌC NGỮ PHÁP (Presentation) ════ -->
           <GrammarSection
@@ -364,10 +384,10 @@ const aiContext = computed(() =>
 
           <!-- ════ 5) ĐỌC & TÀI LIỆU (Input) ════ -->
           <!-- BÀI ĐỌC HIỂU — đoạn ngắn (input thật) + câu hỏi đọc hiểu -->
-          <ReadingComprehension v-if="d.reading" :reading="d.reading" />
+          <ReadingComprehension v-if="d.reading" data-agenda-key="reading" :reading="d.reading" />
 
           <!-- BÀI NGHE HIỂU — nghe đoạn ngắn (tên & số) + câu hỏi -->
-          <ListeningComprehension v-if="d.listening" :listening="d.listening" :week="d.week" />
+          <ListeningComprehension v-if="d.listening" data-agenda-key="listening" :listening="d.listening" :week="d.week" />
 
           <!-- THANG NGHE "THẬT HÓA DẦN": gợi ý shadowing bán thực/clip gốc theo tuần -->
           <section v-if="showListeningUpgrade" class="step-card listening-upgrade">
@@ -382,7 +402,7 @@ const aiContext = computed(() =>
           </section>
 
           <!-- BÀI GIẢNG & KHUNG MẪU — bài đọc, script nghe, khung Speaking/Writing… -->
-          <section v-if="plan.reading && d.skills && d.skills.length" class="step-card">
+          <section v-if="plan.reading && d.skills && d.skills.length" class="step-card" data-agenda-key="skills">
             <div class="step-head">
               <div>
                 <div class="eyebrow">BÀI GIẢNG & KHUNG MẪU</div>
@@ -397,7 +417,7 @@ const aiContext = computed(() =>
           </section>
 
           <!-- LESSON SCRIPT (đọc/kịch bản) -->
-          <section v-if="plan.reading && d.lessonScript" class="step-card">
+          <section v-if="plan.reading && d.lessonScript" class="step-card" data-agenda-key="lessonScript">
             <div class="step-head">
               <div>
                 <div class="eyebrow">KỊCH BẢN BÀI HỌC</div>
@@ -409,15 +429,16 @@ const aiContext = computed(() =>
 
           <!-- ════ 6) LUYỆN NGHE (Receptive practice) ════ -->
           <!-- LUYỆN NGHE — nghe & chép lại câu (kỹ năng Listening) -->
-          <ListeningDictation v-if="plan.listening" :sentences="listenSentences" :week="d.week" />
+          <ListeningDictation v-if="plan.listening" data-agenda-key="listenPractice" :sentences="listenSentences" :week="d.week" />
 
           <!-- ════ 7) LUYỆN PHÁT ÂM (Productive — controlled) ════ -->
           <!-- LUYỆN PHÁT ÂM — nghe mẫu rồi đọc to, máy chấm (kỹ năng Pronunciation) -->
-          <PronunciationDrill v-if="plan.pronunciation" :items="pronItems" :week="d.week" :vocab-terms="pronVocabTerms" />
+          <PronunciationDrill v-if="plan.pronunciation" data-agenda-key="pronunciation" :items="pronItems" :week="d.week" :vocab-terms="pronVocabTerms" />
 
           <!-- SẢN PHẨM — ghi âm "mốc 0" (đọc to, giữ lại để cuối khóa so sánh) -->
           <VoiceRecorder
             v-if="recordingTask"
+            data-agenda-key="recording"
             :rec-id="recordingTask.recId"
             :label="recordingTask.label"
             :sentences="recordingTask.sentences"
@@ -425,17 +446,17 @@ const aiContext = computed(() =>
 
           <!-- ════ 8) ĐẶT CÂU CÓ KHUNG (Production — guided) ════ -->
           <!-- ĐẶT CÂU — kho 100 câu mở đầu, viết tiếp cho đúng với mình + AI chữa -->
-          <SentenceBankPractice v-if="plan.sentenceBank" :prompts="d.sentenceBank" :context="aiContext" />
+          <SentenceBankPractice v-if="plan.sentenceBank" data-agenda-key="sentenceBank" :prompts="d.sentenceBank" :context="aiContext" />
 
           <!-- ════ 9) VIẾT ĐOẠN (Production — freer) ════ -->
           <!-- BÀI TẬP VIẾT — làm ngay tại bài (bắt buộc nộp để qua buổi) -->
-          <WritingSection v-if="plan.writing && writingTask" :day="d" />
+          <WritingSection v-if="plan.writing && writingTask" data-agenda-key="writing" :day="d" />
 
           <!-- AI CHAT — luyện giao tiếp -->
-          <AiChat v-if="plan.aiChat" :context="aiContext" />
+          <AiChat v-if="plan.aiChat" data-agenda-key="aiChat" :context="aiContext" />
 
           <!-- QUIZ TỪ VỰNG — ÔN NHANH, không bắt buộc; ẩn ở buổi cuối (đã có quiz tổng hợp) -->
-          <section v-if="plan.quiz && vocabQuiz.length && d.grammarMode !== 'final'" class="step-card">
+          <section v-if="plan.quiz && vocabQuiz.length && d.grammarMode !== 'final'" class="step-card" data-agenda-key="quiz">
             <div class="step-head">
               <div>
                 <div class="eyebrow" :class="{ green: vocabPassed }">ÔN NHANH — TỰ CHỌN</div>
@@ -451,7 +472,7 @@ const aiContext = computed(() =>
           </section>
 
           <!-- TỰ LUYỆN CUỐI TUẦN — quiz TỔNG HỢP MỚI (ngữ pháp + từ vựng cả tuần) -->
-          <section v-if="d.weekPracticeQuiz && d.weekPracticeQuiz.length" class="step-card">
+          <section v-if="d.weekPracticeQuiz && d.weekPracticeQuiz.length" class="step-card" data-agenda-key="weekPracticeQuiz">
             <div class="step-head">
               <div>
                 <div class="eyebrow">TỰ LUYỆN CUỐI TUẦN</div>
@@ -490,7 +511,7 @@ const aiContext = computed(() =>
               <p v-if="!done">Làm xong các hoạt động của buổi (luyện ngữ pháp + nộp bài viết), rồi đánh dấu hoàn thành để nhận <b>+50 XP</b> và giữ streak.</p>
               <p v-else>Tuần {{ d.week }}: đã xong {{ weekDoneCount }}/{{ d.totalDays }} buổi. Xong cả tuần sẽ mở khóa tuần kế tiếp 🔓</p>
             </div>
-            <div class="cp-cta">
+            <div class="cp-cta cp-cta-desktop">
               <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Buổi {{ d.prevDay }}</button>
               <button v-if="!done" class="green-btn" :class="{ locked: !dayReady }" :disabled="!dayReady" @click="markDone">
                 {{ nextGateLabel }}
@@ -504,6 +525,19 @@ const aiContext = computed(() =>
           </section>
         </div>
       </div>
+
+      <!-- Thanh hành động chính dính đáy — chỉ hiện ≤720px, thay cho .cp-cta nằm cuối trang dài -->
+      <MobileCheckpointBar :current="Math.max(activeIndex, 0) + 1" :total="agenda.length">
+        <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Buổi {{ d.prevDay }}</button>
+        <button v-if="!done" class="green-btn" :class="{ locked: !dayReady }" :disabled="!dayReady" @click="markDone">
+          {{ nextGateLabel }}
+        </button>
+        <template v-else>
+          <button class="outline-btn" @click="unmark">↩ Bỏ đánh dấu</button>
+          <button v-if="d.nextDay" class="green-btn" @click="goDay(d.nextDay)">Buổi {{ d.nextDay }} →</button>
+          <button v-else class="green-btn" @click="router.push({ name: 'ielts' })">Về bản đồ →</button>
+        </template>
+      </MobileCheckpointBar>
 
       <!-- KHẢO SÁT CẢM NHẬN CUỐI TUẦN -->
       <Transition name="wf-fade">
@@ -932,6 +966,16 @@ const aiContext = computed(() =>
   }
   .vocab-grid {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  /* Nút hoàn thành/điều hướng buổi đã chuyển xuống thanh dính đáy (MobileCheckpointBar) */
+  .cp-cta-desktop {
+    display: none;
+  }
+  /* Chừa chỗ cho thanh CTA dính đáy (~60px) + tab bar dưới cùng để không bị che nội dung cuối trang */
+  .day {
+    padding-bottom: 150px;
   }
 }
 </style>

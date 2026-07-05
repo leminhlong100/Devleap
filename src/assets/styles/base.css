@@ -293,6 +293,22 @@ select {
   padding-right: var(--space-page-x);
 }
 
+/* Các mục trong buổi học (AgendaRail scroll-spy) — bù khoảng bị header + thanh
+   bước học ngang dính trên che mất khi bấm nhảy tới section (xem AgendaRail.vue). */
+@media (max-width: 720px) {
+  [data-agenda-key] {
+    scroll-margin-top: 116px;
+  }
+}
+
+/* Trang buổi học có MobileCheckpointBar dính đáy — đẩy nút "về đầu trang" (BackToTop,
+   nằm ngoài cây component của trang) lên cao hơn nữa để khỏi đè lên thanh CTA. */
+@media (max-width: 720px) {
+  body.has-mcb-bar .back-to-top {
+    bottom: calc(140px + var(--safe-bottom)) !important;
+  }
+}
+
 .brand-text {
   background: var(--grad-brand);
   -webkit-background-clip: text;

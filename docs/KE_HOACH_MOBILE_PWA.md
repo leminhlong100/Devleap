@@ -164,7 +164,49 @@ dụng đúng, `.theme-toggle` có `::after{inset:-3px}` mở vùng chạm, bott
 
 ### Bước 2.1 — Màn hình buổi học (DayView + AgendaRail): bỏ sidebar, hành động chính dính đáy
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Tên file thật: `DayView.vue` (Java, 3 mục: theory/code/interview),
+`IeltsDayView.vue` (IELTS, đến 18 mục tùy buổi — `GrammarSection.vue`/`MissionSection.vue` mỗi cái
+gánh 2 mục). Rail cũ chưa có scroll-spy/click-to-jump thật (status luôn "default" vì không nơi nào
+set `item.status`) — phải viết mới, không chỉ đổi CSS. Cách làm: mỗi mục trong `agenda` computed có
+thêm `key` string ổn định; section/component tương ứng trong template gắn `data-agenda-key="..."`
+(props tự fallthrough xuống root element của child component, không cần sửa gì thêm ở hầu hết case;
+riêng `GrammarSection.vue`/`MissionSection.vue` phải sửa trực tiếp vì 1 component gánh 2 mục agenda).
+`src/composables/useSectionScrollSpy.js` (mới) dùng `document.querySelectorAll('[data-agenda-key]')`
++ `IntersectionObserver` (không cần template ref vì chỉ 1 buổi mount tại 1 thời điểm) để biết mục nào
+đang hiện (`activeKey`) và cuộn tới 1 mục (`scrollToKey`, dùng `el.scrollIntoView` — an toàn vì đây là
+hành động 1 lần do người dùng bấm, không nằm trong watcher phản hồi ngược).
+`AgendaRail.vue` giờ render **2 root** (Vue 3 cho phép multi-root): `.rail-v` (dọc, giao diện cũ,
+ẩn ≤720px) và `.rail-h` (thanh chip ngang mới, `position: sticky; top: 64px` dính dưới header, ẩn
+>720px) — dùng chung `items`/`activeIndex` prop + emit `select`. **Bẫy đã gặp:** ban đầu dùng
+`chip.scrollIntoView({inline:'center', block:'nearest'})` để tự cuộn chip active vào giữa thanh —
+trình duyệt có lúc cuộn luôn CẢ TRANG để đưa chip vào khung nhìn, gây lặp vô hạn với
+IntersectionObserver (cuộn trang → đổi active → cuộn lại…) làm treo hẳn tab preview. Sửa bằng cách tự
+tính `track.scrollLeft` thủ công (không gọi `scrollIntoView` trên chip nữa), track có
+`scroll-behavior: smooth` trong CSS để mượt.
+Nút hoàn thành buổi: tạo `src/components/day/MobileCheckpointBar.vue` (thanh dính đáy, chỉ hiện
+≤720px, `bottom: calc(72px + var(--safe-bottom))` — ngay trên BottomNav) nhận slot cho các nút CTA
+(tái dùng đúng class `.outline-btn`/`.green-btn`/handler cũ qua slot, không viết lại logic) + hiện
+"Mục x/y" (x = vị trí đang cuộn tới, không phải số mục đã hoàn thành thật — không có tín hiệu hoàn
+thành theo từng mục nên dùng vị trí cuộn làm chỉ báo tiến độ đọc, trung thực hơn là giả vờ đo hoàn
+thành). CTA gốc trong `.checkpoint` được thêm class `.cp-cta-desktop`, ẩn ở ≤720px (không xoá, giữ
+context/text cho desktop). `.day` cộng `padding-bottom: 150px` ở ≤720px để nội dung cuối trang không
+bị thanh CTA mới che. **Bẫy thứ 2:** `BackToTop.vue` (nút nổi toàn site, nằm ngoài cây component của
+trang buổi học) đè lên thanh CTA mới vì offset cũ (`bottom: 84px`, tính cho BottomNav) không tính
+thêm chiều cao MobileCheckpointBar — sửa bằng cách `MobileCheckpointBar` gắn/gỡ class
+`body.has-mcb-bar` lúc mount/unmount, `base.css` thêm rule `body.has-mcb-bar .back-to-top { bottom:
+calc(140px + var(--safe-bottom)) !important }` (dùng `!important` có chủ đích vì đây là điều phối
+giữa 2 component không có quan hệ cha-con, cần thắng chắc chắn rule `:deep()` cũ trong `App.vue`).
+Đã kiểm 375×812 (light + dark) bằng preview: rail ngang dính đúng dưới header, bấm chip nhảy đúng
+section (đã thử tay, không treo sau khi sửa bẫy scrollIntoView), "Mục x/y" cập nhật theo scroll,
+CTA bar hiện đúng nhãn khóa/mở theo `dayReady`, BackToTop không còn đè CTA. 1280×800: rail dọc + CTA
+gốc giữ nguyên như cũ, không có thanh ngang/CTA trùng lặp; bonus: rail dọc giờ cũng highlight mục
+đang cuộn tới (an toàn, chỉ là tô màu "current" có sẵn, không đổi hình dạng). `npm test` (383 tests)
++ `npm run build` pass. **Lưu ý cho AI làm bước sau:** lúc kiểm tra preview có tạm đổi tên
+`.env.local` để test giao diện ở chế độ khách (guest mode, vì route buổi học yêu cầu đăng nhập) — đã
+khôi phục lại nguyên vẹn ngay sau đó (diff sạch), nhưng **không nên lặp lại cách này**; lần sau nếu
+cần xem giao diện buổi học khi chưa đăng nhập, hỏi người dùng trước hoặc đăng nhập thật qua Google.
 
 **Phụ thuộc:** Bước 1.1, 1.2.
 
@@ -408,7 +450,7 @@ dụng đúng, `.theme-toggle` có `::after{inset:-3px}` mở vùng chạm, bott
 | 1.1 | Bottom tab bar + header gọn | 1 buổi | ✅ |
 | 1.2 | Safe-area, dvh, spacing/chữ | 0.5–1 buổi | ✅ |
 | 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ✅ |
-| 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ⬜ |
+| 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ✅ |
 | 2.2 | Chat như app nhắn tin | 1–2 buổi | ⬜ |
 | 2.3 | Quiz chạm thay kéo | 1 buổi | ⬜ |
 | 2.4 | Flashcard full-screen + vuốt | 1 buổi | ⬜ |

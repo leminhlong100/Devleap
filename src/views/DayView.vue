@@ -1,11 +1,13 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import AgendaRail from '@/components/day/AgendaRail.vue'
+import MobileCheckpointBar from '@/components/day/MobileCheckpointBar.vue'
 import ProgressRing from '@/components/common/ProgressRing.vue'
 import CodeEditor from '@/components/tools/CodeEditor.vue'
 import { getJavaDay } from '@/data/course'
+import { useSectionScrollSpy } from '@/composables/useSectionScrollSpy'
 
 const props = defineProps({ week: [String, Number], day: [String, Number] })
 const router = useRouter()
@@ -31,11 +33,21 @@ function unmark() {
 const agenda = computed(() => {
   if (!d.value) return []
   const a = []
-  if (d.value.contentHtml) a.push({ title: 'Lý thuyết cốt lõi', meta: 'Đọc & gõ tay' })
-  if (d.value.code) a.push({ title: 'Code mẫu', meta: d.value.code.file })
-  if (d.value.questions.length) a.push({ title: 'Câu hỏi phỏng vấn', meta: `${d.value.questions.length} câu` })
+  if (d.value.contentHtml) a.push({ key: 'theory', title: 'Lý thuyết cốt lõi', meta: 'Đọc & gõ tay' })
+  if (d.value.code) a.push({ key: 'code', title: 'Code mẫu', meta: d.value.code.file })
+  if (d.value.questions.length) a.push({ key: 'interview', title: 'Câu hỏi phỏng vấn', meta: `${d.value.questions.length} câu` })
   return a
 })
+
+// Thanh bước học ngang (mobile) + thanh CTA dính đáy: biết đang ở mục nào khi cuộn,
+// và bấm 1 mục trong rail để nhảy tới đúng phần (xem data-agenda-key trong template).
+const { activeKey, scrollToKey, refresh } = useSectionScrollSpy()
+const activeIndex = computed(() => agenda.value.findIndex((a) => a.key === activeKey.value))
+function onSelectAgenda(i) {
+  const key = agenda.value[i]?.key
+  if (key) scrollToKey(key)
+}
+watch(d, () => nextTick(refresh))
 
 function goDay(n) {
   if (n) router.push({ name: 'java-day', params: { week: props.week, day: n } })
@@ -100,11 +112,11 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 
       <!-- TWO COLUMN -->
       <div class="two-col">
-        <AgendaRail :items="agenda" />
+        <AgendaRail :items="agenda" :active-index="activeIndex" @select="onSelectAgenda" />
 
         <div class="main">
           <!-- THEORY -->
-          <section v-if="d.contentHtml" class="step-card current">
+          <section v-if="d.contentHtml" class="step-card current" data-agenda-key="theory">
             <div class="step-head">
               <div>
                 <div class="eyebrow purple">LÝ THUYẾT CỐT LÕI</div>
@@ -115,7 +127,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
           </section>
 
           <!-- CODE -->
-          <section v-if="d.code" class="step-card">
+          <section v-if="d.code" class="step-card" data-agenda-key="code">
             <div class="step-head">
               <div>
                 <div class="eyebrow">CODE MẪU · GÕ TAY KHÔNG COPY</div>
@@ -133,7 +145,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
           </section>
 
           <!-- INTERVIEW Q&A -->
-          <section v-if="d.questions.length" class="step-card">
+          <section v-if="d.questions.length" class="step-card" data-agenda-key="interview">
             <div class="step-head">
               <div>
                 <div class="eyebrow">LUYỆN PHỎNG VẤN</div>
@@ -198,7 +210,7 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
               <p v-if="!done">Gõ tay code mẫu, làm bài tập và tự trả lời câu phỏng vấn, rồi đánh dấu hoàn thành để nhận <b>+50 XP</b>.</p>
               <p v-else>Tuần {{ d.week }}: đã xong {{ weekDoneCount }}/{{ d.totalDays }} ngày. Xong cả tuần sẽ mở khóa tuần kế tiếp 🔓</p>
             </div>
-            <div class="cp-cta">
+            <div class="cp-cta cp-cta-desktop">
               <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Ngày {{ d.prevDay }}</button>
               <button v-if="!done" class="green-btn" @click="markDone">✓ Đánh dấu hoàn thành</button>
               <template v-else>
@@ -210,6 +222,17 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
           </section>
         </div>
       </div>
+
+      <!-- Thanh hành động chính dính đáy — chỉ hiện ≤720px, thay cho .cp-cta nằm cuối trang dài -->
+      <MobileCheckpointBar :current="Math.max(activeIndex, 0) + 1" :total="agenda.length">
+        <button v-if="d.prevDay" class="outline-btn" @click="goDay(d.prevDay)">← Ngày {{ d.prevDay }}</button>
+        <button v-if="!done" class="green-btn" @click="markDone">✓ Hoàn thành</button>
+        <template v-else>
+          <button class="outline-btn" @click="unmark">↩ Bỏ đánh dấu</button>
+          <button v-if="d.nextDay" class="green-btn" @click="goDay(d.nextDay)">Ngày {{ d.nextDay }} →</button>
+          <button v-else class="green-btn" @click="router.push({ name: 'java' })">Về bản đồ →</button>
+        </template>
+      </MobileCheckpointBar>
     </template>
 
     <div v-else class="empty">
@@ -824,6 +847,16 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
 @media (max-width: 900px) {
   .two-col {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  /* Nút hoàn thành/điều hướng buổi đã chuyển xuống thanh dính đáy (MobileCheckpointBar) */
+  .cp-cta-desktop {
+    display: none;
+  }
+  /* Chừa chỗ cho thanh CTA dính đáy (~60px) + tab bar dưới cùng để không bị che nội dung cuối trang */
+  .day {
+    padding-bottom: 150px;
   }
 }
 </style>

@@ -60,7 +60,7 @@ function toggleRealTalkDone(ev) {
 
 <template>
   <!-- MISSION TUẦN — nhiệm vụ NGOÀI app, có rủi ro thật, không do app chấm -->
-  <section v-if="missionNeeded" class="step-card mission-card" :class="{ current: !missionDone }">
+  <section v-if="missionNeeded" class="step-card mission-card" data-agenda-key="mission" :class="{ current: !missionDone }">
     <div class="step-head">
       <div>
         <div class="eyebrow" :class="{ green: missionDone }">NGOÀI APP · CÓ RỦI RO THẬT</div>
@@ -83,7 +83,7 @@ function toggleRealTalkDone(ev) {
   </section>
 
   <!-- BUỔI NÓI NGƯỜI THẬT — 2 tuần/lần từ Tuần 3, không do app chấm -->
-  <section v-if="realTalkNeeded" class="step-card mission-card" :class="{ current: !realTalkDone }">
+  <section v-if="realTalkNeeded" class="step-card mission-card" data-agenda-key="realTalk" :class="{ current: !realTalkDone }">
     <div class="step-head">
       <div>
         <div class="eyebrow" :class="{ green: realTalkDone }">NGOÀI APP · CÓ RỦI RO THẬT</div>

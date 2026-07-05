@@ -24,7 +24,7 @@ function onGrammarComplete(r) {
 
 <template>
   <!-- GRAMMAR (theo ngày: điểm mới / ôn tập / tổng hợp cuối tuần) -->
-  <section v-if="plan.grammar && day.grammar.length" class="step-card">
+  <section v-if="plan.grammar && day.grammar.length" class="step-card" data-agenda-key="grammar">
     <div class="step-head">
       <div>
         <div class="eyebrow">{{ day.grammarMode === 'new' ? 'NGỮ PHÁP HÔM NAY' : day.grammarMode === 'final' ? 'TỔNG HỢP NGỮ PHÁP TUẦN' : 'ÔN TẬP NGỮ PHÁP' }}</div>
@@ -43,7 +43,7 @@ function onGrammarComplete(r) {
   </section>
 
   <!-- LUYỆN TẬP NGỮ PHÁP — bắt buộc ở ngày học MỚI; ngày ôn là tự chọn -->
-  <section v-if="showGrammarDrills" class="step-card" :class="{ current: grammarGateNeeded && !grammarPassed }">
+  <section v-if="showGrammarDrills" class="step-card" data-agenda-key="grammar-drills" :class="{ current: grammarGateNeeded && !grammarPassed }">
     <div class="step-head">
       <div>
         <div class="eyebrow" :class="{ green: grammarPassed }">{{ grammarGateNeeded ? 'LUYỆN TẬP — VẬN DỤNG NGAY' : 'ÔN LẠI — TỰ CHỌN' }}</div>
