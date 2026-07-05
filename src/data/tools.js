@@ -10,6 +10,7 @@ export const toolDefs = [
   { id: 'playground', icon: '💻', title: 'Code Playground', desc: 'Gõ & chạy thử code Java.', iconBg: 'rgba(0,214,143,.14)' },
   { id: 'saved', icon: '🔖', title: 'Từ vựng & câu đã lưu', desc: 'Xem lại từ & câu bạn đã lưu.', iconBg: 'rgba(108,92,231,.14)' },
   { id: 'chat', icon: '💬', title: 'Trò chuyện với AI', desc: 'Luyện giao tiếp tiếng Anh.', iconBg: 'rgba(0,214,143,.14)' },
+  { id: 'leaderboard', icon: '🏆', title: 'Bảng xếp hạng tuần', desc: 'So XP tuần với bạn học khác (tùy chọn).', iconBg: 'rgba(255,176,32,.16)' },
 ]
 
 export const flashcards = [

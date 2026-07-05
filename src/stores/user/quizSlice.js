@@ -63,7 +63,7 @@ export const actions = {
     }
     this.quizScores[key] = entry
     if (!wasPassed && entry.passed) {
-      this.xp += XP_QUIZ_PASS
+      this.addXp(XP_QUIZ_PASS)
       this.badges += 1
     }
     this.bumpStreak()

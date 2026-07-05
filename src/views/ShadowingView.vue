@@ -5,8 +5,10 @@ import { fetchClipList, fetchClip } from '@/lib/shadowingRepo'
 import ShadowingPlayer from '@/components/tools/ShadowingPlayer.vue'
 import { parseVideoId } from '@/lib/youtube'
 import { useUserStore } from '@/stores/user'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 const user = useUserStore()
+const { isOnline } = useOnlineStatus()
 const route = useRoute()
 const router = useRouter()
 
@@ -93,6 +95,10 @@ watch(selectedId, load, { immediate: true })
 async function loadFromUrl() {
   const id = parseVideoId(urlInput.value)
   loadError.value = ''
+  if (!isOnline.value) {
+    loadError.value = 'Cần có mạng để tải bài từ YouTube.'
+    return
+  }
   if (!id) {
     loadError.value = 'Link không hợp lệ. Dán dạng youtube.com/watch?v=… hoặc youtu.be/…'
     return
@@ -158,8 +164,13 @@ function pickFeatured(id) {
         placeholder="Dán link YouTube… (vd https://youtube.com/watch?v=…)"
         :disabled="loadingUrl"
       />
-      <button class="url-btn" type="submit" :disabled="loadingUrl || !urlInput.trim()">
-        {{ loadingUrl ? 'Đang tải…' : '▶ Tải video' }}
+      <button
+        class="url-btn"
+        type="submit"
+        :disabled="loadingUrl || !urlInput.trim() || !isOnline"
+        :title="!isOnline ? 'Cần có mạng để tải video mới' : undefined"
+      >
+        {{ loadingUrl ? 'Đang tải…' : isOnline ? '▶ Tải video' : '🔌 Offline' }}
       </button>
     </form>
     <p v-if="loadError" class="url-err">⚠️ {{ loadError }}</p>

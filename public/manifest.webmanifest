@@ -1,0 +1,17 @@
+{
+  "name": "Devleap — Học lập trình & tiếng Anh",
+  "short_name": "Devleap",
+  "description": "Học lập trình Java & tiếng Anh IELTS như chơi một game — lộ trình rõ ràng, công cụ thực hành, streak giữ lửa.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7f8fc",
+  "theme_color": "#6c5ce7",
+  "lang": "vi",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

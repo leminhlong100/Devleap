@@ -347,6 +347,51 @@ export function buildCorrectionPrompt(context = {}) {
     .join('\n')
 }
 
+/**
+ * Dựng system prompt cho chế độ ERROR DRILL: sinh bài tập LUYỆN LẠI đúng kiểu
+ * lỗi người học đã mắc trong tuần (Bước 5.4 — "Trợ lý ôn sổ lỗi"). `context.errors`
+ * là mảng { wrong, right, note } gom từ bài viết đã chữa + Sổ lỗi + câu quiz sai
+ * (xem src/lib/errorDrillStats.js#collectWeekErrors) — KHÔNG lặp lại nguyên câu
+ * cũ, chỉ luyện lại đúng DẠNG lỗi đó với câu mới.
+ */
+export function buildErrorDrillPrompt(context = {}) {
+  const { grammarLine, topic } = contextLines(context)
+  const errors = Array.isArray(context.errors) ? context.errors : []
+  const errorLines = errors.length
+    ? errors
+        .map((e, i) => `${i + 1}. Wrong: "${e.wrong}" -> Correct: "${e.right}"${e.note ? ` (note: ${e.note})` : ''}`)
+        .join('\n')
+    : '(no recorded mistakes this week — invent common CEFR A2-B1 mistakes for a Vietnamese learner instead)'
+
+  return [
+    'You are an exercise generator creating a PERSONALIZED practice drill for a Vietnamese English learner (CEFR A1-B2).',
+    topic,
+    `Grammar focus this week: ${grammarLine}.`,
+    '',
+    'Below are mistakes this learner ACTUALLY made this week (wrong sentence -> corrected sentence):',
+    errorLines,
+    '',
+    'Create EXACTLY 5 short exercises that target the SAME KINDS of mistakes above (same grammar/vocab point), using NEW sentences — do not reuse the exact wrong/correct sentences verbatim.',
+    'Each exercise is one of:',
+    '  - "cloze": a sentence with one blank ("_____") testing the point; "answer" = array of acceptable exact words/phrases for the blank.',
+    '  - "error": one WRONG sentence (with a mistake of the same kind) the learner must rewrite correctly; "answer" = array of acceptable corrected forms.',
+    '',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "questions": [',
+    '    { "type": "cloze"|"error", "q": "the exercise sentence", "answer": ["accepted answer", "..."], "ex": "SHORT Vietnamese explanation of the grammar/vocab point" }',
+    '  ]',
+    '}',
+    'Rules:',
+    '- Exactly 5 items in "questions", mixing "cloze" and "error" types.',
+    '- "q" and "answer" values are ENGLISH; "ex" is VIETNAMESE.',
+    '- Keep sentences short and natural, appropriate for CEFR A2-B1.',
+    '- Output JSON only.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
 /** Dựng system prompt cho các chế độ phụ trợ trả TEXT ngắn. */
 export function buildSystemPrompt(context = {}) {
   const mode = context.mode
@@ -456,6 +501,10 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
   } else if (m === 'roleplay') {
     system = buildRoleplayPrompt(context, persona)
     temperature = 0.9 // cần biến hóa/bất ngờ hơn hội thoại thường
+  } else if (m === 'errorDrill') {
+    system = buildErrorDrillPrompt(context)
+    temperature = 0.5
+    maxTokens = 900
   } else {
     system = m === 'feedback' ? buildFeedbackPrompt(context, persona) : buildCoachPrompt(context, persona)
     // Persona "gắt" cần thêm chất lầy/biến hóa — nâng nhiệt để bớt ra giọng nhạt, lặp.

@@ -5,8 +5,9 @@ import { mergeQuiz } from './quizSlice'
 import { mergeMissions, mergeWeekFeedback } from './missionSlice'
 import { mergeSaved, mergeShadowing } from './vocabSlice'
 import { mergeWritings } from './writingSlice'
-import { mergeChecklists } from './progressSlice'
+import { mergeChecklists, mergeWeekXp } from './progressSlice'
 import { mergeSpeakingLog } from './speakingSlice'
+import { mergeLeaderboardPrefs } from './leaderboardSlice'
 
 /**
  * Đồng bộ cloud (Supabase, bảng `progress`) — kéo/hợp nhất/đẩy tiến độ đa
@@ -71,7 +72,9 @@ export const actions = {
     try {
       const { data, error } = await supabase
         .from('progress')
-        .select('xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores, week_feedback')
+        .select(
+          'xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores, week_feedback, week_xp, week_xp_key, leaderboard_opt_in, leaderboard_name',
+        )
         .eq('user_id', userId)
         .maybeSingle()
       if (error) throw error
@@ -90,6 +93,10 @@ export const actions = {
           savedWords: data.saved_words || {},
           shadowingScores: data.shadowing_scores || {},
           weekFeedback: data.week_feedback || {},
+          weekXp: data.week_xp || 0,
+          weekXpKey: data.week_xp_key || null,
+          leaderboardOptIn: !!data.leaderboard_opt_in,
+          leaderboardName: data.leaderboard_name || '',
         }
         this.applySnapshot(mergeSnapshots(local, remote))
       }
@@ -148,6 +155,10 @@ export const actions = {
           saved_words: s.savedWords,
           shadowing_scores: s.shadowingScores,
           week_feedback: s.weekFeedback,
+          week_xp: s.weekXp,
+          week_xp_key: s.weekXpKey,
+          leaderboard_opt_in: s.leaderboardOptIn,
+          leaderboard_name: s.leaderboardName,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
@@ -166,8 +177,14 @@ export const actions = {
  * điểm số. Đủ tốt cho quy mô cá nhân — không cần CRDT.
  */
 export function mergeSnapshots(local, remote) {
+  const weekXp = mergeWeekXp(local, remote)
+  const leaderboardPrefs = mergeLeaderboardPrefs(local, remote)
   return {
     xp: Math.max(local.xp || 0, remote.xp || 0),
+    weekXp: weekXp.weekXp,
+    weekXpKey: weekXp.weekXpKey,
+    leaderboardOptIn: leaderboardPrefs.leaderboardOptIn,
+    leaderboardName: leaderboardPrefs.leaderboardName,
     streak: Math.max(local.streak || 0, remote.streak || 0),
     badges: Math.max(local.badges || 0, remote.badges || 0),
     lastStudyDate: laterDate(local.lastStudyDate, remote.lastStudyDate),

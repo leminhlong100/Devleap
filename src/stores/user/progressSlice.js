@@ -1,6 +1,7 @@
-import { dayKey, ymd } from './helpers'
+import { dayKey, ymd, isoWeekKey } from './helpers'
 import { computeIeltsProgress, getIeltsDay } from '@/data/courseIelts'
 import { computeJavaProgress, getJavaDay } from '@/data/course'
+import { maybeRequestNotificationPermission } from '@/lib/studyReminder'
 
 /**
  * Slice "tiến độ cốt lõi": ngày đã hoàn thành, streak, XP, huy hiệu, thẻ đã
@@ -13,6 +14,11 @@ const XP_PER_WEEK = 150 // thưởng thêm khi xong trọn 1 tuần
 export function state() {
   return {
     xp: 0,
+    // XP tính riêng cho tuần ISO hiện tại (Bước 5.1 — leaderboard tuần), reset
+    // qua `weekXpKey` (xem `addXp`/`subtractXp`). Không phải nguồn sự thật cho
+    // tổng XP — chỉ để xếp hạng, `xp` (tổng) vẫn dùng cho level/streak như cũ.
+    weekXp: 0,
+    weekXpKey: null,
     streak: 0,
     badges: 0,
     lastStudyDate: null, // 'YYYY-M-D' của lần học gần nhất (tính streak)
@@ -102,20 +108,23 @@ export const actions = {
     if (i === -1) {
       // Đánh dấu hoàn thành
       arr.push(k)
-      this.xp += XP_PER_DAY
+      this.addXp(XP_PER_DAY)
       if (totalDays > 0 && weekCount() === totalDays) {
-        this.xp += XP_PER_WEEK
+        this.addXp(XP_PER_WEEK)
         this.badges += 1
       }
       this.bumpStreak()
       this.seedSrsFromDay(course, vocabTerms)
+      // Mức 2 của Bước 4.4: xin quyền Notification đúng lúc vừa đủ buổi thứ 3
+      // (đúng thời điểm "engagement" — không hỏi ngay lần đầu mở app).
+      maybeRequestNotificationPermission((this.completed.java || []).length + (this.completed.ielts || []).length)
     } else {
       // Bỏ đánh dấu — hoàn lại XP/huy hiệu đã cấp
       const wasWeekDone = totalDays > 0 && weekCount() === totalDays
       arr.splice(i, 1)
-      this.xp = Math.max(0, this.xp - XP_PER_DAY)
+      this.subtractXp(XP_PER_DAY)
       if (wasWeekDone) {
-        this.xp = Math.max(0, this.xp - XP_PER_WEEK)
+        this.subtractXp(XP_PER_WEEK)
         this.badges = Math.max(0, this.badges - 1)
       }
     }
@@ -132,16 +141,39 @@ export const actions = {
     this.lastStudyDate = today
   },
 
+  /**
+   * Nguồn DUY NHẤT cộng XP trong toàn app (mọi slice khác gọi `this.addXp(...)`
+   * thay vì tự `this.xp += ...`) — để mọi lượt cộng XP đều tính vào `weekXp`
+   * (Bước 5.1, leaderboard tuần) mà không phải sửa rải rác từng nơi thưởng XP.
+   */
   addXp(amount) {
+    this._rolloverWeekXp()
     this.xp += amount
+    this.weekXp += amount
     this.persist()
+  },
+
+  /** Trừ XP đã cấp nhầm/hoàn tác (vd bỏ đánh dấu buổi đã hoàn thành). */
+  subtractXp(amount) {
+    this._rolloverWeekXp()
+    this.xp = Math.max(0, this.xp - amount)
+    this.weekXp = Math.max(0, this.weekXp - amount)
+    this.persist()
+  },
+
+  /** Sang tuần ISO mới thì reset bộ đếm XP-tuần (không đụng tổng XP). */
+  _rolloverWeekXp() {
+    const key = isoWeekKey(new Date())
+    if (this.weekXpKey !== key) {
+      this.weekXpKey = key
+      this.weekXp = 0
+    }
   },
 
   markCardKnown(index) {
     if (!this.knownCards.includes(index)) {
       this.knownCards.push(index)
-      this.xp += 20
-      this.persist()
+      this.addXp(20)
     }
   },
 
@@ -160,6 +192,8 @@ export const actions = {
 export function pick(s) {
   return {
     xp: s.xp,
+    weekXp: s.weekXp,
+    weekXpKey: s.weekXpKey,
     streak: s.streak,
     badges: s.badges,
     lastStudyDate: s.lastStudyDate,
@@ -173,6 +207,8 @@ export function pick(s) {
 export function applyDefaults(s = {}) {
   return {
     xp: s.xp ?? 0,
+    weekXp: s.weekXp ?? 0,
+    weekXpKey: s.weekXpKey ?? null,
     streak: s.streak ?? 0,
     badges: s.badges ?? 0,
     lastStudyDate: s.lastStudyDate ?? null,
@@ -195,4 +231,19 @@ export function mergeChecklists(a = {}, b = {}) {
     out[k] = Array.from({ length: len }, (_, i) => !!cur[i] || !!v[i])
   }
   return out
+}
+
+/**
+ * Hợp nhất XP-tuần giữa 2 thiết bị: cùng tuần ISO thì lấy lớn hơn (như `xp`
+ * tổng); khác tuần thì tuần MỚI HƠN thắng toàn bộ (khóa dạng "YYYY-Wnn" so
+ * sánh lexicographic đúng thứ tự thời gian) — tránh cộng nhầm XP của tuần cũ
+ * (đã hết hạn xếp hạng) vào tuần đang tính trên thiết bị khác.
+ */
+export function mergeWeekXp(a = {}, b = {}) {
+  const ak = a.weekXpKey || null
+  const bk = b.weekXpKey || null
+  if (ak === bk) return { weekXpKey: ak, weekXp: Math.max(a.weekXp || 0, b.weekXp || 0) }
+  if (!ak) return { weekXpKey: bk, weekXp: b.weekXp || 0 }
+  if (!bk) return { weekXpKey: ak, weekXp: a.weekXp || 0 }
+  return ak > bk ? { weekXpKey: ak, weekXp: a.weekXp || 0 } : { weekXpKey: bk, weekXp: b.weekXp || 0 }
 }

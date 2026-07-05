@@ -85,6 +85,24 @@ export async function correctWriting(text, context = {}) {
   return reply.review || null
 }
 
+/**
+ * Nhờ AI sinh 5 bài tập LUYỆN LẠI đúng kiểu lỗi người học đã mắc trong tuần
+ * (Bước 5.4 — Trợ lý ôn sổ lỗi). Trả về mảng câu hỏi thô từ AI — gọi
+ * `sanitizeDrillQuestions()` (src/lib/errorDrillStats.js) trước khi render qua
+ * QuizTool để bỏ mục hỏng.
+ * @param {Array<{wrong: string, right: string, note: string}>} errors  gom qua collectWeekErrors().
+ * @param {object} context  ngữ cảnh bài học (title, week, grammar…).
+ */
+export async function generateErrorDrill(errors, context = {}) {
+  const reply = await sendChat({
+    messages: [{ role: 'user', text: 'Generate the drill now.' }],
+    context: { ...context, errors },
+    mode: 'errorDrill',
+  })
+  if (!reply || typeof reply !== 'object') throw new Error('AI trả về định dạng không hợp lệ.')
+  return reply.questions || []
+}
+
 /** Gợi ý CÁCH trả lời (tiếng Việt) cho một câu hỏi của AI. */
 export async function getHint(question, context = {}) {
   return sendChat({ messages: [{ role: 'user', text: String(question || '') }], context, mode: 'hint' })

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MascotLogo from '@/components/common/MascotLogo.vue'
 import { useUserStore } from '@/stores/user'
@@ -7,6 +7,7 @@ import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
 import { javaStages } from '@/data/courses'
 import { pendingWeekMission } from '@/lib/missionStats'
+import { useStudyReminder } from '@/composables/useStudyReminder'
 
 const router = useRouter()
 const user = useUserStore()
@@ -29,6 +30,17 @@ function openFeatured() {
 // —— Home = "bảng điều khiển hôm nay" khi đã có tiến độ (không phải khách mới) ——
 const hasProgress = computed(() => user.completed.java.length > 0 || user.completed.ielts.length > 0)
 const streakAtRisk = computed(() => user.streak > 0 && !user.studiedToday())
+
+// Bước 4.4 — nhắc học hằng ngày. Mức 1: banner riêng, nổi bật hơn chip cảnh
+// báo ở trên, chỉ hiện khi ĐÃ tới "giờ quen thuộc" (mặc định 20h, chỉnh được).
+const { preferredHour, setPreferredHour, eveningReminderDue, checkReminderNotification } = useStudyReminder()
+const showEveningReminder = computed(() => hasProgress.value && eveningReminderDue(user.streak, user.studiedToday()))
+const reminderHourOptions = [18, 19, 20, 21, 22]
+
+onMounted(() => {
+  // Mức 2: kiểm tra ngay khi mở app — gửi Notification nếu đã có quyền & đủ điều kiện.
+  if (hasProgress.value) checkReminderNotification(user.streak, user.studiedToday())
+})
 
 // Bài kiểm tra tuần IELTS đang học chưa đạt (chỉ IELTS có gate theo tuần).
 const ieltsContinue = computed(() => user.nextLesson.find((n) => n.course === 'ielts') || null)
@@ -127,6 +139,26 @@ function goRemedial() {
           <div class="float-tag tag-streak">🔥 Streak {{ user.streak }} ngày</div>
           <div class="float-tag tag-badge">🎤 Nói {{ user.speakingStreak }} ngày liền</div>
         </div>
+      </div>
+    </section>
+
+    <!-- NHẮC HỌC TỐI (Bước 4.4 — mức 1) -->
+    <section v-if="showEveningReminder" class="container due-wrap">
+      <div class="due-card reminder-card" @click="user.nextLesson.length ? goContinue(user.nextLesson[0]) : router.push({ name: 'courses' })">
+        <span class="due-emoji">🔥</span>
+        <div class="due-text">
+          <b>Streak {{ user.streak }} ngày sắp đứt — 1 buổi 15' là giữ được</b>
+          <span>Học ngay tối nay để không mất công sức đã tích lũy</span>
+        </div>
+        <span class="due-arrow">→</span>
+      </div>
+      <div class="reminder-hour" @click.stop>
+        <label>
+          ⏰ Giờ học quen thuộc:
+          <select :value="preferredHour" @change="setPreferredHour(Number($event.target.value))">
+            <option v-for="h in reminderHourOptions" :key="h" :value="h">{{ h }}:00</option>
+          </select>
+        </label>
       </div>
     </section>
 
@@ -517,6 +549,23 @@ function goRemedial() {
   font-size: 20px;
   color: var(--purple);
   font-weight: 800;
+}
+.reminder-card {
+  border-color: rgba(230, 126, 34, 0.3);
+}
+.reminder-hour {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.reminder-hour select {
+  margin-left: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 3px 8px;
+  font-size: 13px;
 }
 
 /* sections */

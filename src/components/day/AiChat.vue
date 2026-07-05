@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChatEngine, PERSONAS } from '@/composables/useChatEngine'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 import ChatMessages from './ChatMessages.vue'
 import ChatComposer from './ChatComposer.vue'
@@ -25,6 +26,7 @@ const props = defineProps({
 const router = useRouter()
 const user = useUserStore()
 const chatMessages = ref(null)
+const { isOnline } = useOnlineStatus()
 
 const {
   messages,
@@ -162,6 +164,7 @@ function closePop() {
       :listening="listening"
       :listenable="listenable"
       :answer-timer="answerTimer"
+      :online="isOnline"
       @submit="send"
       @toggle-mic="toggleMic"
     />

@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { recognizeOnce, recognitionSupported } from '@/lib/speechRecognize'
 import { correctWriting } from '@/lib/aiChat'
 import { friendlyAiError } from '@/lib/aiError'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 
 const props = defineProps({
@@ -10,6 +11,7 @@ const props = defineProps({
   context: { type: Object, default: () => ({}) }, // ngữ cảnh cho AI chữa
 })
 const emit = defineEmits(['done'])
+const { isOnline } = useOnlineStatus()
 
 // Lấy tối đa 8 câu mở đầu cho một buổi.
 const starters = computed(() => props.prompts.filter(Boolean).slice(0, 8))
@@ -52,7 +54,7 @@ const reviewError = ref('')
 
 async function askAi() {
   const sentences = starters.value.map((_, i) => fullSentence(i)).filter(Boolean)
-  if (sentences.length < 3 || reviewing.value) {
+  if (sentences.length < 3 || reviewing.value || !isOnline.value) {
     reviewError.value = sentences.length < 3 ? 'Hoàn thành ít nhất 3 câu rồi nhờ AI chữa nhé.' : ''
     return
   }
@@ -113,8 +115,14 @@ const isDone = ref(false)
     <p v-if="micError" class="mic-err">🎤 {{ micError }}</p>
 
     <div class="sb-foot">
-      <button class="green-btn" :class="{ locked: filledCount < 3 || reviewing }" :disabled="filledCount < 3 || reviewing" @click="askAi">
-        {{ reviewing ? '🤖 AI đang chữa…' : review ? '↻ Nhờ AI chữa lại' : filledCount >= 3 ? '🤖 Nhờ AI chữa câu' : `Cần thêm ${3 - filledCount} câu` }}
+      <button
+        class="green-btn"
+        :class="{ locked: filledCount < 3 || reviewing || !isOnline }"
+        :disabled="filledCount < 3 || reviewing || !isOnline"
+        :title="!isOnline && filledCount >= 3 ? 'Cần có mạng để AI chữa câu' : undefined"
+        @click="askAi"
+      >
+        {{ reviewing ? '🤖 AI đang chữa…' : !isOnline && filledCount >= 3 ? '🔌 Cần có mạng' : review ? '↻ Nhờ AI chữa lại' : filledCount >= 3 ? '🤖 Nhờ AI chữa câu' : `Cần thêm ${3 - filledCount} câu` }}
       </button>
     </div>
     <div v-if="reviewError" class="rev-error">⚠️ {{ reviewError }}</div>

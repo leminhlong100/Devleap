@@ -1045,9 +1045,100 @@ nhiều bước trước) nên phần lớn được xác nhận qua đọc kỹ
 
 ### Bước 4.3 — PWA: cài lên màn hình chính + offline nội dung đã học
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-**Việc cần làm:**
+**Ghi chú (2026-07-05):** Chọn **viết tay hoàn toàn** (không cài
+`vite-plugin-pwa`/workbox) — đúng triết lý zero-dependency, không cần dùng tới
+"ngoại lệ có chủ đích" mà kế hoạch cho phép.
+
+**Icon 192/512 — vấn đề không lường trước:** repo chỉ có đúng 1 file
+`src/images/favicon.png` (256×256 thật, kiểm bằng cách đọc header PNG), không
+có logo SVG hay công cụ resize ảnh (không dependency nào xử lý ảnh). Thay vì
+cài thêm thư viện (`sharp`...) chỉ để resize 1 lần, dùng thẳng **Canvas API của
+trình duyệt** qua `preview_eval` (vẽ `favicon.png` lên `<canvas>` 192×192 và
+512×512, `toDataURL('image/png')`) rồi giải mã base64 ghi ra
+`public/icons/icon-192.png` (thật 192×192, 63.9KB) và `icon-512.png` (thật
+512×512, 350KB) — 2 file PNG thật, không phải khai `sizes` sai kích thước
+thật. Hạn chế: ảnh gốc chỉ 256px nên bản 512 là phóng to (hơi mờ) — chấp nhận
+được cho MVP, nâng cấp sau nếu có asset thiết kế 512 thật.
+
+`public/manifest.webmanifest`: `name`/`short_name`/`description`, `start_url`/
+`scope: "/"`, `display: "standalone"`, `theme_color: "#6c5ce7"` (đúng
+`--purple` — màu brand), `background_color: "#f7f8fc"` (đúng `--bg` light),
+`lang: "vi"`, 2 icon 192/512 `purpose: "any"`. `index.html` thêm
+`<link rel="manifest">`, `<meta name="theme-color">`,
+`<link rel="apple-touch-icon">` (dùng icon 192).
+
+**`public/sw.js` — chiến lược cache (khác chi tiết so với kế hoạch, cùng tinh
+thần):** kế hoạch gợi ý "precache app shell + `Base_English/*.md` + `weeks/*.md`"
+— nhưng khảo sát trước khi code phát hiện 2 thư mục `.md` đó **không phải
+asset runtime-fetch được**: `src/data/course.js`/`courseIelts.js` dùng
+`import.meta.glob('../../weeks/*.md', { query: '?raw', eager: true })` — nội
+dung được nhúng thẳng vào JS bundle lúc build, không có request HTTP riêng nào
+để cache. Vì Vite build ra tên file có hash (không biết trước lúc viết
+`sw.js` tĩnh, không dùng plugin sinh manifest), **không precache bundle theo
+tên** — chỉ precache lúc `install`: `/`, `/manifest.webmanifest`, 2 icon (luôn
+cùng tên, ổn định). Mọi request GET cùng-gốc khác (route JS/CSS chunk theo
+code-splitting sẵn có của router, `public/audio/ielts/*.mp3`,
+`public/data/shadowing-clips.json`, ảnh minh họa Wikipedia…) dùng
+**stale-while-revalidate**: trả bản cache ngay nếu có, song song tải bản mới
+lưu lại — nghĩa là nội dung `.md` (đã nằm sẵn trong JS chunk của từng buổi/tuần)
+**tự động** được cache khi người học **đã mở buổi đó**, đúng tinh thần "offline
+nội dung đã học" mà không cần biết trước danh sách file. Điều hướng
+(`request.mode === 'navigate'`, tức reload/gõ URL) → network trước, lỗi thì trả
+`'/'` đã precache để SPA tự boot lại và vue-router render đúng route từ URL từ
+những chunk JS đã cache trước đó. `.netlify/functions/*` và domain
+`*.supabase.co` **bỏ qua hoàn toàn** (không `respondWith`) — AI/đăng nhập/đồng
+bộ luôn cần mạng sống, không trả dữ liệu cũ giả vờ thành công.
+
+**Lưu ý vòng đời Service Worker (giới hạn thật, không phải lỗi code):** lần tải
+trang đầu tiên tuyệt đối không được SW kiểm soát (đặc tả trình duyệt — SW phải
+`activate` xong rồi `clients.claim()` thì các request TIẾP THEO mới đi qua
+`fetch` handler) — nên "tắt mạng sau 1 lần vào" trong tiêu chí nghiệm thu chính
+xác hơn là "sau khi đã có ít nhất 1 lần điều hướng/tải lại kể từ khi SW active".
+SW chỉ đăng ký khi `import.meta.env.PROD` (`src/main.js`) — **không** chạy ở
+`npm run dev` (tránh xung đột HMR) — nên phải thêm 1 config mới
+`devleap-preview` (`npm run preview -- --port 5182`) vào `.claude/launch.json`
+để thử tay được (dev server cũ không kiểm chứng được PWA).
+
+**Banner offline:** composable mới `src/composables/useOnlineStatus.js`
+(singleton module-level, cùng pattern `useTheme.js` — nghe `window`
+`online`/`offline`) + `src/components/common/OfflineBanner.vue` (mount 1 lần
+duy nhất ở `App.vue`, ngay dưới `AppHeader`) — dùng token
+`--bg-warning`/`--text-warning` có sẵn từ Bước 4.2 nên tự đúng màu cả 2 theme,
+không cần CSS mới.
+
+**Disable nút AI khi offline (điểm 2 của kế hoạch gốc):** truyền `isOnline`
+xuống nút bấm chính tại các luồng gọi AI — nút "Gửi →" trong `ChatComposer.vue`
+(dùng bởi `AiChat.vue`), "🤖 Nhờ AI chữa bài" trong `WritingSection.vue`, "🤖
+Nhờ AI chữa câu" trong `SentenceBankPractice.vue`, "▶ Tải video" (gọi
+`/.netlify/functions/shadowing` để polish) trong `ShadowingView.vue` — mỗi nút
+đổi nhãn "🔌 Offline"/"🔌 Cần có mạng" + `title` giải thích khi bấm không được.
+Không đụng `AdminShadowingView.vue` (trang quản trị, ngoài phạm vi người học)
+và không đụng mic/Web Speech API (không cần mạng, độc lập với luồng này).
+
+**Kiểm chứng:** test mới `tests/onlineStatus.test.js` (2 test — phản ánh đúng
+sự kiện `online`/`offline`, nhiều lần gọi dùng chung 1 state). `npm test`
+(301/301, +2) và `npm run build` đều pass; xác nhận `dist/manifest.webmanifest`,
+`dist/sw.js`, `dist/icons/icon-192.png`, `dist/icons/icon-512.png` có mặt sau
+build. Chạy `npm run preview` (route `/` và `/tools/chat` không yêu cầu đăng
+nhập): `navigator.serviceWorker.getRegistration()` trả về SW `activated`,
+`fetch('/manifest.webmanifest')` ra đúng JSON với đủ 2 icon; sau vài lượt điều
+hướng, `caches.open('devleap-v1')` chứa `/`, `/manifest.webmanifest`, 2 icon,
+font Google Fonts, và đúng các chunk JS/CSS của route đã ghé qua (`HomeView`,
+`courses`, `missionStats`) — xác nhận cơ chế "cache theo trang đã xem" hoạt
+động thật. Giả lập offline bằng `window.dispatchEvent(new Event('offline'))`
+(composable lắng nghe đúng sự kiện này) thay vì cắt mạng thật — sandbox không
+có công cụ giả lập network-offline qua CDP — banner hiện đúng cả 2 theme (màu
+đọc được, đã `preview_inspect` xác nhận), nút "Gửi →" ở `/tools/chat` disable
+đúng kèm tooltip "Cần có mạng để gửi cho AI", không lỗi console. **Chưa** xác
+nhận được bằng cách cắt mạng thật (máy bay/tắt Wi-Fi) trên trình duyệt thật
+ngoài sandbox, và **chưa** chạy Lighthouse thật (không có sẵn trong sandbox) —
+đã tự kiểm đủ các điều kiện installability cốt lõi mà audit đó dựa vào
+(manifest có `name`/icons 192+512 thật/`start_url`/`display: standalone`, SW
+có `fetch` handler và đang `activated`, `index.html` có `link rel="manifest"`).
+
+**Việc cần làm (kế hoạch gốc, đã hoàn thành với sai khác nêu trên):**
 1. `manifest.webmanifest` (tên, icon 192/512 — sinh từ logo hiện có trong `src/images/` hoặc chữ D nền xanh), theme color.
 2. Service worker (viết tay hoặc `vite-plugin-pwa` — nếu cài plugin thì đây là **ngoại lệ zero-dependency có chủ đích**, ghi rõ trong commit): precache app shell + `Base_English/*.md` + `weeks/*.md` + data tĩnh; runtime cache stale-while-revalidate cho ảnh/audio. **Không** cache Netlify Functions (AI cần mạng) — offline thì các nút AI disable kèm giải thích.
 3. Trạng thái offline: banner nhỏ "Đang offline — bài học vẫn xem được, AI và sync tạm dừng".
@@ -1058,7 +1149,73 @@ nhiều bước trước) nên phần lớn được xác nhận qua đọc kỹ
 
 ### Bước 4.4 — Nhắc học hằng ngày
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Làm cả 2 mức trong kế hoạch (không chỉ mức 1) vì
+nghiệm thu của bước này đã nhắc đích danh cả điều kiện xin quyền Notification.
+Logic quyết định tách thuần vào [`src/lib/studyReminder.js`](../src/lib/studyReminder.js)
+(test được không cần mock trình duyệt): `shouldShowEveningReminder({streak,
+studiedToday,hour,preferredHour})`, `eligibleForNotificationPrompt(totalSessions,
+alreadyAsked)`; phần có side-effect thật (đọc/ghi `localStorage`, gọi
+`Notification`) nằm riêng trong cùng file nhưng không có "pure" ở tên hàm:
+`getPreferredHour`/`setPreferredHour` (mặc định 20h, giá trị hỏng/ngoài
+[0,23] rơi về mặc định), `maybeRequestNotificationPermission(totalSessions)`,
+`maybeSendReminderNotification({...})`.
+
+**Mức 1 (banner trong app):** composable mới
+[`src/composables/useStudyReminder.js`](../src/composables/useStudyReminder.js)
+— cùng pattern singleton module-level như `useTheme.js`/`useOnlineStatus.js`:
+1 đồng hồ `now` tick mỗi 60s + khi tab quay lại foreground
+(`visibilitychange`/`focus`), để banner tự hiện đúng lúc dù người học mở app
+từ trước 20h và không tương tác gì. `HomeView.vue` thêm 1 khối `due-card`
+riêng (class `.reminder-card`, viền cam) ngay trên khối nhắc ôn SRS sẵn có,
+chỉ hiện khi `hasProgress && streak>0 && !studiedToday() && giờ hiện tại >=
+giờ ưa thích` — đúng câu chữ kế hoạch "🔥 Streak N ngày sắp đứt — 1 buổi 15'
+là giữ được". Thêm 1 `<select>` nhỏ "⏰ Giờ học quen thuộc" (18h–22h) ngay dưới
+banner để đổi giờ ưa thích, lưu `localStorage` ngay khi đổi (đã thử tay: đổi
+select từ 0h sang 22h → banner biến mất NGAY không cần reload, đúng tính
+reactive nhờ `preferredHour` là `ref` dùng chung).
+
+**Khác 1 chỗ với kế hoạch (không phải lỗi, cân nhắc có chủ đích):** giữ
+nguyên chip `⚠️ Sắp đứt streak` cũ trong khối "Hôm nay" (luôn hiện, không theo
+giờ) THAY VÌ thay thế nó — banner mới là lời nhắc **mạnh hơn, đúng giờ**, còn
+chip cũ vẫn có ích như tín hiệu nhẹ nhàng suốt cả ngày; không có gì mâu thuẫn
+khi cả 2 cùng hiện vào buổi tối.
+
+**Mức 2 (Notification API, không server push):** hook xin quyền đặt ngay
+trong `progressSlice.js#toggleDay` — đúng thời điểm "vừa hoàn thành 1 buổi"
+(nhánh đánh dấu xong), gọi `maybeRequestNotificationPermission(tổng số buổi
+đã xong CẢ 2 khóa)`. Chọn buổi thứ 3 gộp cả Java+IELTS (không tách riêng từng
+khóa) vì đây là mốc "engagement" chung của người dùng, không phải của 1 khóa
+cụ thể. Cờ "đã hỏi" lưu `localStorage` (`devleap:notify-asked`) ngay cả khi
+`Notification.permission` không phải `'default'` lúc đó (vd đã bị chặn ở cấp
+trình duyệt) — tránh gọi `requestPermission()` vô ích ở mọi buổi sau.
+`HomeView.vue#onMounted` gọi `checkReminderNotification(streak, studiedToday)`
+— nếu đã có quyền + đủ điều kiện giờ/streak + CHƯA nhắc trong ngày
+(`localStorage devleap:notify-last`) thì bắn 1 `Notification` thật (icon dùng
+lại `icon-192.png` đã có từ Bước 4.3). Đúng yêu cầu kế hoạch "không dựng
+server push" — chỉ hoạt động khi tab còn mở/được mở lại, không nhắc được khi
+app đã đóng hẳn (giới hạn thật của cách làm không server, không phải thiếu
+sót).
+
+**Kiểm chứng:** test mới `tests/studyReminder.test.js` (14 test — giờ ưa
+thích mặc định/lưu-đọc/giá trị hỏng, `shouldShowEveningReminder` đủ 4 tổ hợp
+streak/đã học/giờ, `eligibleForNotificationPrompt`, xin quyền đúng 1 lần ở
+buổi thứ 3 không hỏi lại kể cả khi bị từ chối, gửi Notification đúng điều
+kiện + không gửi trùng trong ngày + không có Notification API thì không ném
+lỗi — toàn bộ dùng `vi.stubGlobal('Notification', …)`, không cần trình duyệt
+thật) và 1 test tích hợp mới trong `tests/user.store.test.js` (gọi `toggleDay`
+thật 4 lần xen kẽ 2 khóa, xác nhận `requestPermission` được gọi đúng 1 lần
+đúng lúc chạm buổi thứ 3). `npm test` (316/316, +15) và `npm run build` đều
+pass. Đã thử tay qua preview (route `/` không yêu cầu đăng nhập): seed
+`localStorage` với `streak:4`, `lastStudyDate` hôm qua, `reminder-hour:0` →
+banner hiện đúng chữ; đổi `reminder-hour` sang `23` rồi reload → banner biến
+mất; đổi lại `0` rồi reload → hiện lại; dùng `preview_fill` đổi `<select>`
+sang `22` (giờ hiện tại của máy < 22h) → banner biến mất ngay lập tức không
+cần reload, `localStorage` cập nhật đúng giá trị mới. Chưa thử tay được mức 2
+bằng Notification thật của hệ điều hành (sandbox preview không có quyền cấp
+notification qua CDP để bấm "Allow") — đã xác nhận đủ qua 14 test unit dùng
+`vi.stubGlobal` mô phỏng đúng API thật.
 
 **Việc cần làm (mức tăng dần, làm mức 1 trước):**
 1. **Mức 1 — trong app:** nếu hôm nay chưa học và giờ hiện tại ≥ 20h, Home hiện banner "🔥 Streak N ngày sắp đứt — 1 buổi 15' là giữ được". Kèm mục "giờ học quen thuộc" đơn giản (localStorage).
@@ -1072,27 +1229,275 @@ nhiều bước trước) nên phần lớn được xác nhận qua đọc kỹ
 
 ### Bước 5.1 — Leaderboard tuần (opt-in)
 
-- [ ] Chưa làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Xác nhận với người dùng đã có ≥2 người học thật
+trước khi làm (đúng điều kiện kế hoạch đặt ra).
+
+Phát hiện khi khảo sát: `progress.xp` chỉ là **tổng cộng dồn**, không có cách
+nào suy ra "XP kiếm được trong tuần này" — phải thêm bộ đếm riêng. Thêm
+`weekXp`/`weekXpKey` vào `progressSlice.js` (khóa tuần dạng ISO `"YYYY-Wnn"`,
+helper mới `isoWeekKey()` trong `helpers.js`, khớp định dạng SQL
+`to_char(now(),'IYYY-"W"IW')`). Thay **mọi** nơi cộng XP trực tiếp
+(`this.xp += ...` ở progressSlice/srsSlice/quizSlice/vocabSlice/missionSlice —
+6 chỗ) bằng gọi `this.addXp(amount)` (và `this.subtractXp(amount)` cho lượt
+hoàn XP khi bỏ đánh dấu buổi) — 2 action này là nơi DUY NHẤT vừa cộng `xp` tổng
+vừa cộng `weekXp`, tự rollover về 0 khi sang tuần ISO mới. Nhờ vậy chỉ sửa 1
+chỗ mà mọi nguồn XP hiện có (buổi học, SRS, quiz, shadowing, mission, real
+talk, `QuizTool.vue`/`CodePlayground.vue` gọi `addXp` sẵn có) đều tự động tính
+đúng vào leaderboard, không phải rà từng nơi thưởng XP thêm lần nữa sau này.
+
+**Không mở rộng RLS của bảng `progress`** để tránh lộ dữ liệu người khác (XP
+tổng, badges, srs...): thêm hàm SQL `security definer` `leaderboard_weekly()`
+(cùng khuôn với `is_admin()` có sẵn) — bỏ qua RLS, chỉ trả đúng 3 cột
+(`display_name`, `week_xp`, `is_me`) của các dòng đã tự nguyện
+`leaderboard_opt_in = true`, ẩn danh khi chưa đặt tên
+(`coalesce(nullif(trim(name),''), 'Học viên ẩn danh')`), và trả `0` XP-tuần
+cho ai có `week_xp_key` không khớp tuần ISO hiện tại (thiết bị của họ chưa mở
+app/đồng bộ lại từ đầu tuần) — tránh hiện nhầm XP của tuần trước.
+`grant execute ... to authenticated` (khách không gọi được). Cột mới trong
+`supabase/schema.sql`: `week_xp`, `week_xp_key`, `leaderboard_opt_in`,
+`leaderboard_name`.
+
+Slice mới `src/stores/user/leaderboardSlice.js`: state `leaderboardOptIn`/
+`leaderboardName` (2 field đồng bộ cloud) + `leaderboardRows`/`leaderboardStatus`
+(cache lần fetch, không đồng bộ — chỉ hiển thị), action `setLeaderboardOptIn`
+(cắt tên tối đa 40 ký tự) + `fetchLeaderboard` (gọi RPC qua `supabase.rpc(...)`,
+no-op ở chế độ khách/chưa đăng nhập). Hợp nhất đa thiết bị: `mergeWeekXp`
+(cùng tuần lấy lớn hơn; khác tuần thì tuần MỚI HƠN thắng toàn bộ, không cộng
+dồn nhầm XP tuần cũ) trong `progressSlice.js`, `mergeLeaderboardPrefs` (OR
+opt-in, tên ưu tiên bên non-empty) trong `leaderboardSlice.js` — cả hai nối
+vào `mergeSnapshots()` (`syncSupabase.js`) như các field cloud khác.
+
+UI: tab mới **🏆 Bảng xếp hạng tuần** trong `/tools` (`data/tools.js` +
+`ToolsView.vue` + component mới `LeaderboardTool.vue`) — theo đúng khuôn tool
+khác (không cần `ctx` bài học). Chế độ khách/chưa đăng nhập: chỉ hiện lời nhắc
+đăng nhập (không có gì để bật ở chế độ khách — không thêm nút đăng nhập trực
+tiếp trong tool vì các tool khác trong `components/tools|day` đều không gọi
+`authStore`, đăng nhập chỉ có ở header, giữ đúng quy ước đó). Đã đăng nhập:
+switch "Tham gia bảng xếp hạng tuần" + ô tên hiển thị (chỉ hiện khi đã tham
+gia) + danh sách xếp hạng (số thứ tự, tên, XP tuần, dòng của mình có viền tím
++ nhãn "(bạn)") + nút "🔄 Làm mới". Phát hiện lúc thử tay: nếu dùng `ref` cục
+bộ khởi tạo 1 lần từ store lúc mount thì form sẽ "đứng im" khi tùy chọn đổi từ
+NGOÀI (vd `pullAndMerge` kéo tùy chọn từ thiết bị khác về sau khi component đã
+mount) — thêm 2 `watch(() => user.leaderboardOptIn/leaderboardName, ...)` để
+đồng bộ lại ô nhập mỗi khi store đổi từ nguồn khác ngoài chính form này.
+
+**Kiểm chứng:** `npm test` (333/333, +26: `isoWeekKey` 3 test, `weekXp`/
+`addXp`/`subtractXp` rollover 4 test, `mergeWeekXp` 3 test, `pullAndMerge`
+weekXp + leaderboard prefs 3 test, action `setLeaderboardOptIn`/
+`fetchLeaderboard` 4 test — còn lại là test đã có tiếp tục pass sau khi đổi 6
+chỗ cộng XP sang gọi `addXp`) và `npm run build` đều pass. Thử tay qua preview
+route `/tools/leaderboard` (route này KHÔNG yêu cầu đăng nhập, khác các bước
+trước): chế độ khách hiện đúng lời nhắc đăng nhập, không lỗi console; giả lập
+đã đăng nhập + đã tham gia bằng cách gán trực tiếp state qua
+`import('/src/stores/user.js')` trong console trình duyệt (không đăng nhập
+Google thật được trong sandbox — cùng hạn chế đã ghi ở các bước 1.2/1.3/2.x)
+→ hiện đúng switch đã bật, ô tên, danh sách 2 dòng xếp hạng đúng thứ tự XP
+giảm dần, dòng của mình có nhãn "(bạn)"; bấm tắt switch trên UI thật (không
+qua console) → xác nhận `user.leaderboardOptIn` đổi đúng thành `false` trong
+store. Không gọi được RPC `leaderboard_weekly()` thật trên Supabase (cần chạy
+lại `schema.sql` trên project thật của máy này trước khi dùng tính năng này ở
+môi trường đó — giống các bước SQL trước).
 
 Bảng xếp hạng XP tuần giữa những người học (Supabase đã có bảng user + XP). Ẩn danh mặc định (tên tự đặt), opt-in mới xuất hiện. View trong `/tools` hoặc Home. Cần bảng/view SQL tổng XP theo tuần + RLS chỉ đọc được phần đã opt-in. Cân nhắc kỹ: chỉ làm nếu có ≥ 2 người dùng thật.
 
 ### Bước 5.2 — Chạy code Java thật trong CodePlayground
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-`CodePlayground.vue` hiện chỉ highlight. Tích hợp API thực thi công khai (Piston API — free, không cần key) qua Netlify Function mới `run-java.js` (proxy + giới hạn tần suất). Hiện stdout/stderr, timeout 10s. (Ngoài trọng tâm tiếng Anh — làm cuối.)
+**Ghi chú (2026-07-05):** Kế hoạch gốc định dùng Piston API — gọi thử thật lúc
+làm bước này thì phát hiện public Piston API đã chuyển **whitelist-only từ
+15/2/2026** (trả thẳng lỗi "Public Piston API is now whitelist only..."), nên
+kế hoạch không còn khả thi nguyên văn. Đã thử thêm **Wandbox** (cũng free/không
+key) nhưng API đó luôn ép file chính thành `prog.java` bất kể tên class thật
+trong code (`public class Main` bị từ chối biên dịch vì "should be declared in
+a file named Main.java") — sẽ phải regex-rewrite tên class người học gõ, rủi ro
+vỡ code hợp lệ. Chọn thay bằng **Judge0 CE** (`https://ce.judge0.com`) — demo
+API công khai chính chủ của Judge0, cũng miễn phí/không cần key, và xử lý đúng
+tên class Java bất kỳ (đã xác nhận bằng gọi thật qua `curl`/`node` trước khi
+code: biên dịch/chạy thành công, lỗi biên dịch, lỗi runtime chia-0, timeout
+vòng lặp vô hạn đều trả đúng cấu trúc `status.id` mong đợi).
+
+**Phát hiện thêm khi thử thật:** `base64_encoded=false` (mặc định) của Judge0
+từ chối thẳng HTTP 400 với source chứa ký tự ngoài ASCII — code mẫu của khoá
+học có tiếng Việt + emoji (`"Xin chào devleap! 🐱"` trong
+`data/tools.js#defaultCode`). Chuyển sang `base64_encoded=true`: mã hoá
+`source_code` trước khi gửi, giải mã `stdout`/`stderr`/`compile_output` từ
+base64 khi nhận về (`Buffer` — Netlify Function chạy Node) — đã xác nhận lại
+bằng gọi thật với đúng chuỗi có emoji, ra đúng kết quả UTF-8.
+
+**Kiến trúc:** [`netlify/functions/_codeRunner.js`](../netlify/functions/_codeRunner.js)
+(module phụ trợ, không deploy riêng — cùng quy ước với `_llm.js`/`_shadowing.js`):
+hàm `runJavaCode({code, ip})` — validate code rỗng/quá dài (>20.000 ký tự) →
+`bad_request`; giới hạn tần suất **best-effort** 6 lượt/IP/60s (module-level
+`Map`, chỉ có tác dụng trong lúc instance function còn "ấm" vì Netlify Function
+là serverless — ghi rõ giới hạn thật trong comment, cùng tinh thần rate-limit
+best-effort của Bước 1.4); gọi Judge0 với `cpu_time_limit: 10` (đúng yêu cầu
+kế hoạch), timeout tổng 20s qua `AbortController`; phân loại kết quả theo
+`status.id` (3=Accepted, 5=Time Limit Exceeded, 6=Compilation Error, còn lại là
+lỗi runtime — dùng `stderr` thật của chương trình nếu có, fallback bảng thông
+điệp tiếng Việt theo mã trạng thái). Lỗi hạ tầng (mạng/429/5xx/timeout) ném
+`RunCodeError` có `.code`, `errorResponse()` map ra HTTP status — cùng khuôn
+với `_llm.js`. [`netlify/functions/run-java.js`](../netlify/functions/run-java.js)
+là Function thật (POST, nhận `{code}`, trả `{ok, stage, stdout, stderr}`) +
+thêm vào dev proxy `netlifyFunctionDevPlugin` trong `vite.config.js` (không
+cần env var nào, khác chat/shadowing).
+
+**Client:** [`src/lib/runJava.js`](../src/lib/runJava.js) (`runJavaCode(code)`
++ `friendlyRunError(err)`) — cùng pattern `aiChat.js`/`aiError.js`.
+`CodePlayground.vue`: bỏ hẳn mô phỏng bằng regex bắt `System.out.println(...)`
+cũ, `run()` giờ `async` gọi Netlify Function thật; console hiện đúng
+stdout/stderr thật (kể cả lỗi biên dịch/runtime), banner lỗi hạ tầng riêng
+(`.run-error`) tái dùng câu tiếng Việt từ `friendlyRunError`. Nút "Chạy code"
+disable + đổi nhãn "🔌 Cần có mạng" khi offline (`useOnlineStatus`, cùng pattern
+Bước 4.3 — code giờ cần mạng thật nên hợp lý gate như chat/writing/shadowing).
+**Khác hành vi cũ có chủ đích:** XP (+15) giờ chỉ thưởng khi code **thật sự**
+biên dịch + chạy thành công (`result.ok`), không còn thưởng vô điều kiện chỉ
+cần bấm nút — vì giờ biết chắc kết quả thật, thưởng vô điều kiện sẽ vô nghĩa
+(và có thể bị hiểu nhầm là "chạy thành công" ngay cả khi code có lỗi biên dịch).
+
+**Kiểm chứng:** test mới `tests/codeRunner.test.js` (15 test, mock `fetch` toàn
+cục — Accepted/Compilation Error/Time Limit Exceeded/Runtime Error NZEC/lỗi
+runtime không rõ nguyên nhân, HTTP 429/5xx, lỗi mạng, timeout 20s, JSON thiếu
+`status`, code rỗng/quá dài không gọi mạng, giới hạn tần suất đúng ngưỡng theo
+từng IP, `errorResponse` map đúng status) và `tests/runJava.test.js` (5 test
+cho client lib, cùng khuôn `tests/aiChatError.test.js`). `npm test` (353/353,
++20) và `npm run build` đều pass. Đã thử tay qua preview thật (route
+`/tools/playground` không yêu cầu đăng nhập) với server dev thật (không mock):
+bấm "▶ Chạy code" với code mẫu mặc định (có tiếng Việt + emoji) → gọi thật
+`ce.judge0.com`, in đúng 3 dòng + "✓ Chạy thành công · +15 XP"; gọi trực tiếp
+`runJavaCode()` qua console với code thiếu dấu `;` → đúng lỗi biên dịch
+`Main.java:1: error: ';' expected...`; giả lập offline (`window.dispatchEvent`)
+→ nút đổi "🔌 Cần có mạng" + disable ngay, bật lại online → nút trở lại bình
+thường. Chưa thử tay được nhánh Time Limit Exceeded/rate-limit thật (không
+muốn tốn hạn ngạch dùng chung của Judge0 CE demo bằng vòng lặp vô hạn/spam
+request thật) — đã xác nhận đủ qua 15 test unit mock.
+
+**Việc cần làm (kế hoạch gốc, đã hoàn thành với sai khác nêu trên — xem "Ghi chú"):**
+
+`CodePlayground.vue` hiện chỉ highlight. ~~Tích hợp API thực thi công khai (Piston API — free, không cần key)~~ qua Netlify Function mới `run-java.js` (proxy + giới hạn tần suất). Hiện stdout/stderr, timeout 10s. (Ngoài trọng tâm tiếng Anh — làm cuối.)
 
 ### Bước 5.3 — Nghe chép chính tả từ clip thật (nối dài thang nghe)
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-Tuần 7–8: `ListeningDictation` thêm chế độ lấy 5 câu từ clip shadowing của tuần (đã curate ở 1.3) thay vì TTS — nghe giọng thật, chép, chấm text như cũ. Phát đoạn start–end của câu từ YouTube player (logic tương tự đã có trong `ShadowingPlayer.vue`). **Phụ thuộc:** 1.3.
+**Ghi chú (2026-07-05):** Xác nhận trước khi code: chỉ tuần **≥7** (`listeningStageOf()`
+trong `src/data/ieltsListeningStage.js` trả `'native'`) mới cần đổi; tuần 4-6 ở
+giai đoạn `tts`/`semi` giữ nguyên câu mẫu TTS như cũ. Khảo sát checklist thật của
+Tuần 7-8 (`planFromChecklist`) phát hiện hiện tại chỉ **Tuần 7 Buổi 5** thật sự
+bật khối `ListeningDictation` (Tuần 8 chưa có buổi nào gắn cờ `listening` trong
+checklist) — code vẫn viết tổng quát theo đúng điều kiện tuần (không hard-code
+buổi cụ thể) để tự động áp dụng nếu chương trình học sau này thêm buổi nghe ở
+Tuần 8.
+
+Thêm [`src/lib/dictationClip.js`](../src/lib/dictationClip.js) (hàm thuần, test
+được không cần mock trình duyệt): `clipSentenceList(clip)` (chấp cả 2 dạng lưu
+trữ clip — mảng phẳng hoặc `{ai,original}`, ưu tiên bản `ai`), `pickDictationSentences(clip,n)`
+(rút tối đa n câu đầu có đủ `start`/`end` thật), và `dictationClipForWeek(week,n)`
+(gọi `fetchClipsByWeek`/`fetchClip` có sẵn của `shadowingRepo.js` — lấy CLIP ĐẦU
+TIÊN đã curate cho tuần, trả `null` nếu tuần chưa có clip nào để rơi về TTS như
+cũ, không phải lỗi).
+
+`ListeningDictation.vue`: thêm nhánh "clip thật" song song nhánh TTS gốc (không
+xóa nhánh cũ) — khi `listeningStageOf(week)==='native'`, gọi `dictationClipForWeek`
+lúc mount/đổi tuần; có clip thì `items` đổi từ mảng chuỗi TTS sang mảng
+`{text,start,end}` lấy từ clip, ẩn hẳn phần TTS. Dựng 1 `YT.Player` ẩn trong
+khung video nhỏ (220px, cùng cơ chế `loadYouTubeApi()`/đệm `PAD=0.15`/theo dõi
+`setInterval` dừng đúng cuối câu mà `ShadowingPlayer.vue` đã dùng — không viết
+lại thuật toán, chỉ tái dùng cùng công thức `startOf/endOf`); nút "🐢 Chậm" đổi
+`setPlaybackRate(0.75)` thay vì tốc độ TTS `*0.68` cũ (YouTube không nhận tốc độ
+tùy ý ngoài tập rời rạc). Khi đang tải clip thật, `items` tạm để rỗng (ẩn cả
+khối) thay vì hiện câu TTS trước rồi đổi giữa chừng — tránh mất chữ người học
+đã gõ nếu lỡ gõ đúng lúc tải xong. Logic chấm điểm `words()/check()/marked()`
+**không đổi 1 dòng nào**, chỉ đổi input từ `items.value[i]` (chuỗi) sang
+`items.value[i].text` — chấm chữ thường/bỏ dấu câu như cũ nên không bị ảnh
+hưởng bởi chữ hoa/thường bất thường của transcript heuristic (Bước 1.3 đã ghi
+chú 8/10 clip chưa được AI polish). Không có clip nào cho tuần đó (hoặc lỗi
+mạng) → `realClip=null` → rơi thẳng về nhánh TTS gốc, hành vi y hệt trước khi
+làm bước này.
+
+**Kiểm chứng:** test mới `tests/dictationClip.test.js` (12 test — `clipSentenceList`
+cả 2 dạng lưu trữ + ưu tiên `ai` + rỗng, `pickDictationSentences` cắt đúng n
+câu + bỏ câu thiếu `text`/`start`/`end` + clip rỗng, `dictationClipForWeek` mock
+`shadowingRepo` — tuần chưa curate → null, `fetchClip` trả null → null, câu
+không đủ start/end → null, lấy đúng clip đầu tiên + đúng n câu + giữ videoId/title).
+`npm test` (365/365, +12) và `npm run build` đều pass. Route buổi học yêu cầu
+đăng nhập Google — không đăng nhập được trong sandbox preview (Supabase thật,
+cùng hạn chế đã ghi ở rất nhiều bước trước) nên đã mount thẳng
+`ListeningDictation.vue` qua console trình duyệt (`createApp` độc lập, component
+này không cần Pinia): `week=7` → đúng hiện banner "🎥 Đoạn nghe lấy từ clip thật:
+Asking FRIENDS in BRIGHTON…", đúng 5 câu, khung video nhúng đúng
+`youtube.com/embed/fEacJtQbTko`, nút "▶ Nghe" bật ngay khi player sẵn sàng; bấm
+nghe + gõ đúng nguyên văn câu 1 (lấy từ chính `public/data/shadowing-clips.json`)
+→ chấm ra đúng "100% đúng" — xác nhận chuỗi test text khớp đúng dữ liệu thật, không
+phải giả lập. `week=2` (giai đoạn TTS) → không có khung video/banner, nút nghe
+vẫn bật bình thường như hành vi cũ, không hồi quy. Không có lỗi console ở cả 2
+lần mount.
 
 ### Bước 5.4 — Trợ lý ôn sổ lỗi
 
-- [ ] Chưa làm
+- [x] Đã làm
 
-Mỗi tuần 1 lần, gom các lỗi trong Error Ledger + câu quiz sai (`quizScores[].wrong`) gửi AI sinh 5 câu bài tập cá nhân hóa đúng lỗi của chính người học (dạng điền/sửa câu, render bằng `QuizTool.vue` mode practice). Nút "🩺 Bài tập từ lỗi của em" trong buổi cuối tuần. Cần thêm 1 prompt builder trong `netlify/functions/_llm.js`.
+**Ghi chú (2026-07-05):** Không dựng Netlify Function mới — tái dùng thẳng
+endpoint `/.netlify/functions/chat` sẵn có bằng cách thêm `mode: 'errorDrill'`
+vào `runChat()` (`netlify/functions/_llm.js`) + prompt builder mới
+`buildErrorDrillPrompt(context)` (nhúng danh sách lỗi `{wrong,right,note}` trực
+tiếp vào system prompt, không cần qua `messages`), rơi vào đúng nhánh parse
+JSON chung đã có sẵn cho `correct`/`feedback`/`coach`/`roleplay` — không viết
+lại logic parse. Trả về `{ questions: [{type:'cloze'|'error', q, answer, ex}] }`
+đúng khuôn `QuizTool.vue`.
+
+Thêm [`src/lib/errorDrillStats.js`](../src/lib/errorDrillStats.js) (hàm thuần,
+test được): `writingErrorsOfWeek` (lỗi từ bài viết AI đã chữa của MỌI buổi
+trong tuần — không chỉ buổi hôm nay, quét `user.writings` theo tiền tố
+`course:week:`), `manualErrorsOfWeek` (lỗi tự ghi trong Sổ lỗi
+`ErrorLedger.vue`, đọc localStorage `error-ledger-w{week}-d{day}` từng buổi —
+nhận hàm đọc tiêm vào để test không cần mock trình duyệt, mặc định đọc thật),
+`quizErrorsOfWeek` (câu sai của bài kiểm tra tuần + 2 cổng ngày ngữ pháp/từ
+vựng cùng tuần, từ `user.quizScores`), `collectWeekErrors` (gộp cả 3 nguồn,
+khử trùng lặp không phân biệt hoa/thường, cắt tối đa 15 mục tránh prompt AI
+quá dài), và `sanitizeDrillQuestions` (lọc câu AI trả về đúng khuôn cloze/error
+hợp lệ, cắt tối đa 5 — phòng AI trả sai định dạng làm vỡ `QuizTool`).
+
+Client: `generateErrorDrill(errors, context)` trong `src/lib/aiChat.js` (cùng
+khuôn `correctWriting`/`reFeedback`).
+
+UI: nút **"🩺 Bài tập từ lỗi của em"** thêm vào cuối
+[`WeekTestSection.vue`](../src/components/day/WeekTestSection.vue) (đúng chỗ
+kế hoạch nêu — buổi cuối tuần), chỉ hiện khi `weekComplete` (đã xong cả tuần,
+cùng điều kiện mở bài kiểm tra tuần). Bấm nút → gom lỗi qua
+`collectWeekErrors` (đọc trực tiếp `useUserStore()` theo đúng nguyên tắc Bước
+3.1 "computed chỉ dùng nội bộ 1 khối thì đọc/ghi store trực tiếp trong
+component con") → `generateErrorDrill` → `sanitizeDrillQuestions` → render
+`<QuizTool :questions="..." mode="practice" embedded />` (không mở nhánh
+practice riêng — tái dùng nguyên component, kể cả +10 XP/câu đúng có sẵn của
+chế độ practice). Có nút "🔄 Soạn bộ khác" để gọi lại AI. Gate offline giống
+`WritingSection.vue` (`useOnlineStatus`, disable + đổi nhãn "🔌 Cần có mạng"),
+lỗi AI hiện qua `friendlyAiError()`. Không tự chạy khi chưa bấm (đúng tinh
+thần "mỗi tuần 1 lần" của kế hoạch — người học tự bấm khi muốn, không tốn
+lượt gọi Groq miễn phí vô ích).
+
+**Kiểm chứng:** test mới `tests/errorDrillStats.test.js` (12 test — từng hàm
+gom lỗi lọc đúng course/tuần/trạng thái, khử trùng lặp, cắt số lượng, sanitize
+bỏ mục hỏng) và `tests/errorDrillPrompt.test.js` (6 test — prompt nhúng đúng
+danh sách lỗi, an toàn khi thiếu lỗi/context, `runChat` parse đúng JSON kể cả
+khi AI kèm chữ thừa quanh khối JSON, ném lỗi khi AI trả sai định dạng). `npm
+test` (383/383, +18) và `npm run build` đều pass. Route buổi học yêu cầu đăng
+nhập Google — không đăng nhập được trong sandbox preview (Supabase thật, cùng
+hạn chế đã ghi ở rất nhiều bước trước); đã xác nhận bằng cách gọi THẬT endpoint
+`/.netlify/functions/chat` với `mode:'errorDrill'` qua console trình duyệt
+(máy này có `GROQ_API_KEY` thật) — AI trả đúng 5 câu bám sát lỗi mẫu "ngôi 3 số
+ít thiếu -s" đưa vào; và mount thẳng `WeekTestSection.vue` (tạo Vue app +
+Pinia + Router riêng qua console, cùng kiểu mount đã dùng ở Bước 3.1/3.3) với
+`day.totalDays=weekDoneCount=7` (đã xong tuần) + seed 1 lỗi thật vào
+`localStorage` Sổ lỗi → khối "🩺 Bài tập từ lỗi của em" hiện đúng cạnh khối
+"Bài kiểm tra Tuần 5"; bấm nút → gọi AI thật → ra đúng 5 bài tập
+`QuizTool` (câu 1 "He _____ to school every day." khớp đúng dạng lỗi ngôi 3
+số ít đã seed); gõ "goes" → chấm đúng, qua câu 2 ("🔧 Sửa câu sai"), không có
+lỗi console. Chưa thử tay được qua điều hướng thật (login) và chưa thử được
+nhánh lỗi mạng/AI thật (không muốn ép lỗi trên Groq free tier dùng chung) —
+đã xác nhận đủ qua test unit mock.
 
 ---
 
@@ -1115,9 +1520,12 @@ Mỗi tuần 1 lần, gom các lỗi trong Error Ledger + câu quiz sai (`quizSc
 | 3.4 | Test bổ sung | 0.5 buổi | ✅ |
 | 4.1 | Home dashboard | 1 buổi | ✅ |
 | 4.2 | Dark mode | 1–2 buổi | ✅ |
-| 4.3 | PWA offline | 1–2 buổi | ⬜ |
-| 4.4 | Nhắc học | 0.5–1 buổi | ⬜ |
-| 5.1–5.4 | Mở rộng | tùy chọn | ⬜ |
+| 4.3 | PWA offline | 1–2 buổi | ✅ |
+| 4.4 | Nhắc học | 0.5–1 buổi | ✅ |
+| 5.1 | Leaderboard tuần | 1 buổi | ✅ |
+| 5.2 | Chạy code Java thật | 1 buổi | ✅ |
+| 5.3 | Nghe chép từ clip thật | 0.5 buổi | ✅ |
+| 5.4 | Trợ lý ôn sổ lỗi | 0.5–1 buổi | ✅ |
 
 **Quy tắc chung cho mọi bước (AI thực hiện phải tuân thủ):**
 1. Trước khi code: đọc file liên quan nêu trong bước, xác nhận tên hàm/biến thật (kế hoạch mô tả theo khảo sát 2026-07-04, code có thể đã trôi).

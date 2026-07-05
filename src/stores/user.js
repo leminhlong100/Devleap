@@ -6,6 +6,7 @@ import * as missionSlice from './user/missionSlice'
 import * as vocabSlice from './user/vocabSlice'
 import * as writingSlice from './user/writingSlice'
 import * as speakingSlice from './user/speakingSlice'
+import * as leaderboardSlice from './user/leaderboardSlice'
 import * as localPrefs from './user/localPrefsSlice'
 import * as sync from './user/syncSupabase'
 
@@ -42,6 +43,7 @@ export const useUserStore = defineStore('user', {
     ...vocabSlice.state(),
     ...writingSlice.state(),
     ...speakingSlice.state(),
+    ...leaderboardSlice.state(),
     ...localPrefs.state(),
     ...sync.state(),
   }),
@@ -54,6 +56,7 @@ export const useUserStore = defineStore('user', {
     ...vocabSlice.getters,
     ...writingSlice.getters,
     ...speakingSlice.getters,
+    ...leaderboardSlice.getters,
   },
 
   actions: {
@@ -64,6 +67,7 @@ export const useUserStore = defineStore('user', {
     ...vocabSlice.actions,
     ...writingSlice.actions,
     ...speakingSlice.actions,
+    ...leaderboardSlice.actions,
     ...localPrefs.actions,
     ...sync.actions,
 
@@ -79,6 +83,7 @@ export const useUserStore = defineStore('user', {
         ...vocabSlice.pick(this),
         ...writingSlice.pick(this),
         ...speakingSlice.pick(this),
+        ...leaderboardSlice.pick(this),
       }
     },
 
@@ -91,6 +96,7 @@ export const useUserStore = defineStore('user', {
       Object.assign(this, vocabSlice.applyDefaults(s))
       Object.assign(this, writingSlice.applyDefaults(s))
       Object.assign(this, speakingSlice.applyDefaults(s))
+      Object.assign(this, leaderboardSlice.applyDefaults(s))
     },
 
     persist() {

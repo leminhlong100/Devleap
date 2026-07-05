@@ -20,3 +20,11 @@ useUserStore(pinia).hydrate()
 useAuthStore(pinia).init()
 
 app.mount('#app')
+
+// Chỉ đăng ký ở production build — dev server (Vite HMR) không cần và service
+// worker sẽ chỉ gây nhiễu cache trong lúc code đang đổi liên tục.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}

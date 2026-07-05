@@ -1231,6 +1231,7 @@ onBeforeUnmount(() => {
   font-size: 14.5px;
   line-height: 1.5;
   color: var(--ink);
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.25);
   border-radius: 10px;
   padding: 8px 10px;

@@ -93,7 +93,7 @@ export const actions = {
     }
     this.shadowingScores[videoId] = entry
     if (!wasPassed && entry.passed) {
-      this.xp += XP_SHADOWING_PASS
+      this.addXp(XP_SHADOWING_PASS)
       this.badges += 1
     }
     this.bumpStreak()

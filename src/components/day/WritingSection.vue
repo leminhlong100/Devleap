@@ -4,11 +4,13 @@ import { useUserStore } from '@/stores/user'
 import { correctWriting } from '@/lib/aiChat'
 import { friendlyAiError } from '@/lib/aiError'
 import { requiredSentencesFor } from '@/lib/dayPlan'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 // Chỉ mount khi cha đã xác nhận `plan.writing && writingTask` (xem IeltsDayView.vue)
 // nên trong component này `writingTask` luôn tồn tại.
 const props = defineProps({ day: { type: Object, required: true } })
 const user = useUserStore()
+const { isOnline } = useOnlineStatus()
 
 const writingTask = computed(() => props.day.writingTask)
 const requiredSentences = computed(() => requiredSentencesFor(writingTask.value?.prompt))
@@ -59,7 +61,7 @@ function appendWord(w) {
 }
 // Nộp bài -> nhờ AI chữa từng câu; chữa xong mới tính là hoàn thành bài viết.
 async function askAiCorrect() {
-  if (!writingMet.value || reviewing.value) return
+  if (!writingMet.value || reviewing.value || !isOnline.value) return
   reviewing.value = true
   reviewError.value = ''
   try {
@@ -162,11 +164,12 @@ function svHtml(l) {
       <span class="write-count" :class="{ ok: writingMet }">✍️ {{ writtenCount }}/{{ requiredSentences }} câu</span>
       <button
         class="green-btn"
-        :class="{ locked: !writingMet || reviewing }"
-        :disabled="!writingMet || reviewing"
+        :class="{ locked: !writingMet || reviewing || !isOnline }"
+        :disabled="!writingMet || reviewing || !isOnline"
+        :title="!isOnline && writingMet ? 'Cần có mạng để AI chữa bài' : undefined"
         @click="askAiCorrect"
       >
-        {{ reviewing ? '🤖 AI đang chữa…' : writingDone ? '↻ Nhờ AI chữa lại' : writingMet ? '🤖 Nhờ AI chữa bài' : `Cần thêm ${Math.max(0, requiredSentences - writtenCount)} câu` }}
+        {{ reviewing ? '🤖 AI đang chữa…' : !isOnline && writingMet ? '🔌 Cần có mạng' : writingDone ? '↻ Nhờ AI chữa lại' : writingMet ? '🤖 Nhờ AI chữa bài' : `Cần thêm ${Math.max(0, requiredSentences - writtenCount)} câu` }}
       </button>
     </div>
     <div v-if="reviewError" class="rev-error">⚠️ {{ reviewError }}</div>

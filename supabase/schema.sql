@@ -17,6 +17,10 @@ create table if not exists public.progress (
   saved_words    jsonb       not null default '{}'::jsonb,
   shadowing_scores jsonb     not null default '{}'::jsonb,
   week_feedback  jsonb       not null default '{}'::jsonb,
+  week_xp          integer   not null default 0,
+  week_xp_key      text,
+  leaderboard_opt_in boolean not null default false,
+  leaderboard_name text,
   updated_at     timestamptz not null default now()
 );
 
@@ -39,6 +43,17 @@ alter table public.progress
 -- Nâng cấp DB đã tạo trước khi có khảo sát cuối tuần: thêm cột cảm nhận Dễ/Vừa/Khó.
 alter table public.progress
   add column if not exists week_feedback jsonb not null default '{}'::jsonb;
+
+-- Nâng cấp DB đã tạo trước khi có leaderboard tuần (Bước 5.1): thêm cột XP
+-- tính riêng theo tuần ISO hiện tại + tùy chọn tham gia/tên hiển thị.
+alter table public.progress
+  add column if not exists week_xp integer not null default 0;
+alter table public.progress
+  add column if not exists week_xp_key text;
+alter table public.progress
+  add column if not exists leaderboard_opt_in boolean not null default false;
+alter table public.progress
+  add column if not exists leaderboard_name text;
 
 -- Bật RLS: mặc định chặn hết, chỉ mở đúng các policy bên dưới.
 alter table public.progress enable row level security;
@@ -92,6 +107,38 @@ stable
 as $$
   select exists (select 1 from public.admins a where a.user_id = auth.uid());
 $$;
+
+-- ============================================================================
+-- Leaderboard tuần (Bước 5.1) — opt-in, ẩn danh mặc định.
+-- ============================================================================
+
+-- Hàm `security definer` (chạy với quyền của người tạo, bỏ qua RLS của
+-- `progress`) để KHÔNG phải mở thêm policy select cho bảng `progress` (vốn chỉ
+-- cho đọc dòng của chính mình) — chỉ trả về đúng 3 cột cần cho bảng xếp hạng,
+-- và CHỈ những dòng đã tự nguyện `leaderboard_opt_in = true`. Nếu
+-- `week_xp_key` của một người không khớp tuần ISO hiện tại (thiết bị của họ
+-- chưa mở app/đồng bộ lại từ đầu tuần) thì hiện 0 — đúng thực tế "chưa có XP
+-- được ghi nhận cho tuần này", tránh hiện nhầm XP tuần trước.
+create or replace function public.leaderboard_weekly()
+returns table (display_name text, week_xp integer, is_me boolean)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select
+    coalesce(nullif(trim(p.leaderboard_name), ''), 'Học viên ẩn danh') as display_name,
+    case when p.week_xp_key = to_char(now(), 'IYYY-"W"IW') then p.week_xp else 0 end as week_xp,
+    p.user_id = auth.uid() as is_me
+  from public.progress p
+  where p.leaderboard_opt_in = true
+  order by week_xp desc
+  limit 50;
+$$;
+
+-- Chỉ người đã đăng nhập mới gọi được (không lộ ra khách chưa đăng nhập).
+revoke all on function public.leaderboard_weekly() from public;
+grant execute on function public.leaderboard_weekly() to authenticated;
 
 -- Kho clip shadowing — thay cho file tĩnh src/data/shadowing/clips/*.json.
 create table if not exists public.shadowing_clips (

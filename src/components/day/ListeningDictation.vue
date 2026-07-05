@@ -1,15 +1,45 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { speak, canSpeak, wpmRateForWeek } from '@/lib/speak'
+import { listeningStageOf } from '@/data/ieltsListeningStage'
+import { dictationClipForWeek } from '@/lib/dictationClip'
+import { loadYouTubeApi } from '@/lib/youtube'
 
 const props = defineProps({
-  sentences: { type: Array, default: () => [] }, // câu mẫu đúng để nghe-chép
+  sentences: { type: Array, default: () => [] }, // câu mẫu đúng để nghe-chép (giai đoạn TTS)
   week: { type: [String, Number], default: null }, // tuần hiện tại -> chỉnh tốc độ TTS theo thang WPM
 })
 const emit = defineEmits(['done'])
 
-// Tối đa 5 câu/buổi cho vừa sức.
-const items = computed(() => props.sentences.filter(Boolean).slice(0, 5))
+// —— Giai đoạn nghe "clip gốc" (Tuần 7+, xem ieltsListeningStage.js): lấy 5 câu
+// từ clip shadowing THẬT đã curate cho tuần (Bước 1.3) thay vì câu TTS mặc định.
+// Không có clip curate cho tuần đó -> rơi về TTS như cũ (an toàn ngược).
+const useReal = computed(() => listeningStageOf(props.week) === 'native')
+const realClip = ref(null) // { videoId, title, sentences } | null
+const realLoading = ref(false)
+async function loadReal(week) {
+  if (!useReal.value) {
+    realClip.value = null
+    return
+  }
+  realLoading.value = true
+  try {
+    realClip.value = await dictationClipForWeek(week, 5)
+  } catch {
+    realClip.value = null
+  } finally {
+    realLoading.value = false
+  }
+}
+watch(() => props.week, (w) => loadReal(w), { immediate: true })
+
+// Tối đa 5 câu/buổi cho vừa sức. Khi đang tải clip thật thì để rỗng (tránh chớp
+// đổi từ câu TTS sang câu thật giữa chừng nếu người học gõ trước lúc tải xong).
+const items = computed(() => {
+  if (useReal.value && realLoading.value) return []
+  if (realClip.value) return realClip.value.sentences.map((s) => ({ text: s.text, start: s.start, end: s.end }))
+  return props.sentences.filter(Boolean).slice(0, 5).map((text) => ({ text, start: null, end: null }))
+})
 const speakable = canSpeak()
 const baseRate = computed(() => wpmRateForWeek(props.week))
 
@@ -24,8 +54,67 @@ watch(
   { immediate: true },
 )
 
-function play(text, slow) {
-  if (speakable) speak(text, slow ? baseRate.value * 0.68 : baseRate.value)
+// ---- Phát đoạn start–end thật từ YouTube player (cùng cách ShadowingPlayer.vue
+// dùng) — chỉ dựng player khi có clip thật, giữ nguyên nhánh TTS cũ khi không có. ----
+const mountEl = ref(null)
+let player = null
+const playerReady = ref(false)
+let watcher = null
+const PAD = 0.15
+const startOf = (item) => Math.max(0, item.start - PAD)
+const endOf = (item) => item.end + PAD
+function clearWatcher() {
+  if (watcher) {
+    clearInterval(watcher)
+    watcher = null
+  }
+}
+async function ensurePlayer(videoId) {
+  if (player) {
+    if (playerReady.value) player.loadVideoById(videoId)
+    return
+  }
+  const YT = await loadYouTubeApi()
+  player = new YT.Player(mountEl.value, {
+    videoId,
+    playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+    events: { onReady: () => (playerReady.value = true) },
+  })
+}
+watch(realClip, async (c) => {
+  if (!c) return
+  await nextTick()
+  ensurePlayer(c.videoId)
+})
+function playReal(item, slow) {
+  if (!player || !playerReady.value) return
+  clearWatcher()
+  player.setPlaybackRate(slow ? 0.75 : 1)
+  player.seekTo(startOf(item), true)
+  player.playVideo()
+  watcher = setInterval(() => {
+    const t = player.getCurrentTime?.() ?? 0
+    if (t >= endOf(item) - 0.05) {
+      player.pauseVideo()
+      clearWatcher()
+    }
+  }, 80)
+}
+onBeforeUnmount(() => {
+  clearWatcher()
+  player?.destroy?.()
+})
+
+function canPlay(i) {
+  const item = items.value[i]
+  if (!item) return false
+  return item.start != null ? playerReady.value : speakable
+}
+function play(i, slow) {
+  const item = items.value[i]
+  if (!item) return
+  if (item.start != null) playReal(item, slow)
+  else if (speakable) speak(item.text, slow ? baseRate.value * 0.68 : baseRate.value)
 }
 
 // Chuẩn hóa: bỏ dấu câu, về chữ thường, tách từ.
@@ -38,7 +127,7 @@ function words(s) {
 }
 
 function check(i) {
-  const correct = words(items.value[i])
+  const correct = words(items.value[i]?.text)
   const got = words(answers.value[i])
   if (!got.length) return
   let hit = 0
@@ -58,7 +147,7 @@ function check(i) {
 function marked(i) {
   if (results.value[i] === null) return []
   const got = new Set(words(answers.value[i]))
-  return words(items.value[i]).map((w) => ({ w, ok: got.has(w) }))
+  return words(items.value[i]?.text).map((w) => ({ w, ok: got.has(w) }))
 }
 
 const doneCount = computed(() => results.value.filter((r) => r !== null && r >= 60).length)
@@ -79,16 +168,18 @@ function markDone() {
       </div>
       <span class="wt-badge" :class="{ ok: allDone }">{{ doneCount }}/{{ items.length }}</span>
     </div>
-    <p v-if="!speakable" class="quiz-intro warn">⚠️ Trình duyệt chưa hỗ trợ phát âm. Hãy dùng Chrome/Edge để nghe.</p>
+    <p v-if="!realClip && !speakable" class="quiz-intro warn">⚠️ Trình duyệt chưa hỗ trợ phát âm. Hãy dùng Chrome/Edge để nghe.</p>
+    <p v-if="realClip" class="quiz-intro real">🎥 Đoạn nghe lấy từ clip thật: <b>{{ realClip.title }}</b> — giọng tự nhiên, khó hơn TTS một chút.</p>
     <p class="quiz-intro">Bấm ▶ để nghe (🐢 = chậm), gõ lại đúng câu em nghe được rồi bấm <b>Kiểm tra</b>. Đạt ≥60% từ là qua.</p>
+    <div v-if="realClip" class="ld-real-video"><div ref="mountEl"></div></div>
 
     <div class="ld-list">
       <div v-for="(s, i) in items" :key="i" class="ld-row">
         <div class="ld-num">{{ i + 1 }}</div>
         <div class="ld-body">
           <div class="ld-controls">
-            <button class="ld-play" @click="play(s, false)" :disabled="!speakable">▶ Nghe</button>
-            <button class="ld-play slow" @click="play(s, true)" :disabled="!speakable">🐢 Chậm</button>
+            <button class="ld-play" @click="play(i, false)" :disabled="!canPlay(i)">▶ Nghe</button>
+            <button class="ld-play slow" @click="play(i, true)" :disabled="!canPlay(i)">🐢 Chậm</button>
             <span v-if="results[i] !== null" class="ld-score" :class="{ ok: results[i] >= 60 }">{{ results[i] }}% đúng</span>
           </div>
           <div class="ld-input-row">
@@ -224,5 +315,26 @@ function markDone() {
 }
 .quiz-intro.warn {
   color: var(--text-warning);
+}
+.quiz-intro.real {
+  color: var(--text-secondary);
+}
+.ld-real-video {
+  width: 220px;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 14px;
+}
+.ld-real-video > div {
+  width: 100%;
+  height: 100%;
+}
+.ld-real-video :deep(iframe) {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 </style>

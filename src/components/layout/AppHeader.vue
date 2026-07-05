@@ -31,10 +31,9 @@ const syncLabel = computed(
 )
 
 const menuOpen = ref(false)
-const navOpen = ref(false)
-// Đóng menu mobile khi chuyển trang.
+// Đóng menu tài khoản khi chuyển trang.
 watch(activeKey, () => {
-  navOpen.value = false
+  menuOpen.value = false
 })
 async function signIn() {
   await auth.signInWithGoogle()
@@ -48,29 +47,19 @@ async function signOut() {
 <template>
   <header class="header">
     <div class="header-inner">
-      <button
-        class="nav-toggle"
-        :class="{ open: navOpen }"
-        :aria-expanded="navOpen"
-        aria-label="Mở menu"
-        @click="navOpen = !navOpen"
-      >
-        <span></span><span></span><span></span>
-      </button>
-
       <RouterLink :to="{ name: 'home' }" class="logo">
         <MascotLogo :width="50" :height="50" uid="hdr" />
         <span class="logo-text">Dev<span class="brand-text">leap</span></span>
       </RouterLink>
 
-      <nav class="nav" :class="{ open: navOpen }">
+      <!-- Điều hướng ngang — chỉ hiện ở desktop (>720px); mobile dùng BottomNav ở đáy màn hình -->
+      <nav class="nav">
         <RouterLink
           v-for="item in nav"
           :key="item.name"
           :to="item.to"
           class="nav-link"
           :class="{ active: isActive(item) }"
-          @click="navOpen = false"
         >
           {{ item.name }}
         </RouterLink>
@@ -187,37 +176,6 @@ async function signOut() {
   gap: 6px;
   margin-left: 6px;
   flex: none;
-}
-/* Nút hamburger — chỉ hiện trên mobile (bật ở media query bên dưới) */
-.nav-toggle {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 40px;
-  height: 40px;
-  padding: 0 9px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  border-radius: 11px;
-  cursor: pointer;
-  flex: none;
-}
-.nav-toggle span {
-  display: block;
-  height: 2.5px;
-  border-radius: 2px;
-  background: var(--purple);
-  transition: transform 0.2s, opacity 0.2s;
-}
-.nav-toggle.open span:nth-child(1) {
-  transform: translateY(7.5px) rotate(45deg);
-}
-.nav-toggle.open span:nth-child(2) {
-  opacity: 0;
-}
-.nav-toggle.open span:nth-child(3) {
-  transform: translateY(-7.5px) rotate(-45deg);
 }
 .nav-link {
   padding: 9px 15px;
@@ -485,40 +443,17 @@ async function signOut() {
   .logo-text {
     font-size: 20px;
   }
-  .nav-toggle {
-    display: flex;
-  }
-  /* Nav trở thành panel xổ xuống dưới header, ẩn mặc định */
+  /* Điều hướng chính đã chuyển xuống BottomNav ở đáy màn hình — ẩn hẳn nav ngang trên mobile */
   .nav {
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-    margin-left: 0;
-    padding: 10px 18px 16px;
-    background: var(--header-bg-solid);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 16px 32px rgba(108, 92, 231, 0.12);
-  }
-  .nav.open {
-    display: flex;
-  }
-  .nav-link {
-    padding: 12px 14px;
-    font-size: 16px;
   }
   .header-right {
-    gap: 10px;
+    gap: 8px;
   }
-  /* Mobile: chỉ giữ search + avatar; streak/XP chuyển vào dropdown.
-     Vẫn giữ chip hiển thị để avatar (nút mở menu) còn truy cập được. */
+  /* Mobile: giữ streak gọn (yếu tố giữ lửa) + search + avatar; Lv/XP chi tiết chuyển vào dropdown. */
   .streak {
-    display: none;
+    padding: 6px 9px;
+    font-size: 12px;
   }
   .xp-chip {
     padding: 0;

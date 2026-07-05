@@ -10,6 +10,7 @@ defineProps({
   listening: { type: Boolean, default: false },
   listenable: { type: Boolean, default: false },
   answerTimer: { type: Number, default: 0 },
+  online: { type: Boolean, default: true },
 })
 defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
 </script>
@@ -37,7 +38,12 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
       @input="$emit('update:modelValue', $event.target.value)"
       @click.stop
     />
-    <button type="submit" class="send-btn" :disabled="loading || !modelValue.trim()">Gửi →</button>
+    <button
+      type="submit"
+      class="send-btn"
+      :disabled="loading || !modelValue.trim() || !online"
+      :title="!online ? 'Cần có mạng để gửi cho AI' : undefined"
+    >{{ online ? 'Gửi →' : '🔌 Offline' }}</button>
   </form>
 </template>
 

@@ -26,3 +26,16 @@ export const laterDate = (a, b) => {
   if (!b) return a
   return new Date(a).getTime() >= new Date(b).getTime() ? a : b
 }
+
+// Khóa tuần ISO 8601 dạng "YYYY-Wnn" (Thứ 2 là đầu tuần) — khớp định dạng SQL
+// `to_char(now(), 'IYYY-"W"IW')` dùng ở hàm `leaderboard_weekly()` (schema.sql),
+// để so khớp "tuần hiện tại" giữa client và server. So sánh lexicographic đúng
+// thứ tự thời gian nhờ pad 2 số cho tuần.
+export const isoWeekKey = (d) => {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+  const dow = date.getUTCDay() || 7 // Chủ nhật (0) -> 7, để Thứ 2 = 1
+  date.setUTCDate(date.getUTCDate() + 4 - dow) // dịch về Thứ 5 của tuần ISO
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7)
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
+}

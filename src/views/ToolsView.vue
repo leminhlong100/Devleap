@@ -7,6 +7,7 @@ import CodePlayground from '@/components/tools/CodePlayground.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import SavedTool from '@/components/tools/SavedTool.vue'
 import AiChat from '@/components/day/AiChat.vue'
+import LeaderboardTool from '@/components/tools/LeaderboardTool.vue'
 import LessonPicker from '@/components/tools/LessonPicker.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -21,6 +22,7 @@ const componentMap = {
   quiz: QuizTool,
   saved: SavedTool,
   chat: AiChat,
+  leaderboard: LeaderboardTool,
 }
 
 const active = computed(() => {

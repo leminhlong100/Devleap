@@ -61,7 +61,7 @@ export const actions = {
       at: ymd(new Date()),
     }
     if (!wasDone && this.missions[key].done) {
-      this.xp += XP_MISSION
+      this.addXp(XP_MISSION)
       this.badges += 1
       this.bumpStreak()
     }
@@ -83,7 +83,7 @@ export const actions = {
       at: ymd(new Date()),
     }
     if (!wasDone && this.realTalks[key].done) {
-      this.xp += XP_REAL_TALK
+      this.addXp(XP_REAL_TALK)
       this.bumpStreak()
     }
     this.persist()

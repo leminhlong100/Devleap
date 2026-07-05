@@ -1,17 +1,22 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import { defaultCode } from '@/data/tools'
+import { runJavaCode, friendlyRunError } from '@/lib/runJava'
 import CodeEditor from '@/components/tools/CodeEditor.vue'
 
 // Khi mở từ một ngày học, view truyền code mẫu của ngày đó vào.
 const props = defineProps({ initial: { type: Object, default: null } })
 
 const user = useUserStore()
+const { isOnline } = useOnlineStatus()
 const startCode = () => props.initial?.code || defaultCode
 const fileName = computed(() => props.initial?.file || 'Main.java')
 const code = ref(startCode())
-const output = ref([])
+const output = ref(null) // { ok, stage: 'compile'|'run', stdout, stderr } | null
+const running = ref(false)
+const runError = ref('')
 const hasRun = ref(false)
 const rewarded = ref(false)
 
@@ -20,31 +25,38 @@ watch(
   () => props.initial,
   () => {
     code.value = startCode()
-    output.value = []
+    output.value = null
+    runError.value = ''
     hasRun.value = false
   },
 )
 
-// Mô phỏng chạy: bắt các System.out.print(ln) và in ra chuỗi literal.
-function run() {
-  const src = code.value || ''
-  const re = /System\.out\.print(?:ln)?\s*\(\s*"((?:[^"\\]|\\.)*)"\s*\)/g
-  const out = []
-  let m
-  while ((m = re.exec(src)) !== null) {
-    out.push(m[1].replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"'))
-  }
-  if (out.length === 0) out.push('(không có System.out.println nào — thử thêm một dòng in nhé!)')
-  output.value = out
-  hasRun.value = true
-  if (!rewarded.value) {
-    user.addXp(15)
-    rewarded.value = true
+// Chạy THẬT qua Netlify Function run-java.js (Judge0 CE) — không còn mô phỏng bằng regex.
+async function run() {
+  if (running.value || !isOnline.value) return
+  running.value = true
+  runError.value = ''
+  output.value = null
+  try {
+    const result = await runJavaCode(code.value)
+    output.value = result
+    hasRun.value = true
+    // Chỉ thưởng XP khi code THẬT SỰ chạy thành công (biên dịch + chạy không lỗi) — khác
+    // hành vi mô phỏng cũ (luôn thưởng chỉ cần bấm Chạy), vì giờ ta biết chắc kết quả thật.
+    if (!rewarded.value && result.ok) {
+      user.addXp(15)
+      rewarded.value = true
+    }
+  } catch (e) {
+    runError.value = friendlyRunError(e)
+  } finally {
+    running.value = false
   }
 }
 function reset() {
   code.value = startCode()
-  output.value = []
+  output.value = null
+  runError.value = ''
   hasRun.value = false
 }
 </script>
@@ -70,10 +82,18 @@ function reset() {
 
       <div class="console">
         <div class="console-label">KẾT QUẢ / CONSOLE</div>
-        <template v-if="hasRun">
-          <div v-for="(ln, i) in output" :key="i" class="line"><span class="caret">›</span> {{ ln }}</div>
-          <div class="ok">✓ Chạy thành công · +15 XP</div>
+        <div v-if="runError" class="run-error">⚠️ {{ runError }}</div>
+        <template v-else-if="hasRun && output">
+          <div v-if="output.stage === 'compile'" class="compile-tag">🛑 Lỗi biên dịch</div>
+          <pre v-if="output.stdout" class="line">{{ output.stdout }}</pre>
+          <pre v-if="output.stderr" class="line err-line">{{ output.stderr }}</pre>
+          <div v-if="!output.stdout && !output.stderr" class="line">(chương trình chạy xong, không có gì được in ra)</div>
+          <div v-if="output.ok" class="ok">✓ Chạy thành công · +15 XP</div>
         </template>
+        <div v-else-if="running" class="empty">
+          <span class="cat-emoji">⏳</span>
+          <span>Đang chạy code thật trên máy chủ…</span>
+        </div>
         <div v-else class="empty">
           <span class="cat-emoji">🐱</span>
           <span>Bấm <b>▶ Chạy code</b> để xem<br />chương trình của bạn in ra gì.</span>
@@ -83,7 +103,14 @@ function reset() {
 
     <div class="pg-cta">
       <button class="reset" @click="reset">↺ Đặt lại</button>
-      <button class="run" @click="run">▶ Chạy code</button>
+      <button
+        class="run"
+        :disabled="running || !isOnline"
+        :title="!isOnline ? 'Cần có mạng để chạy code' : undefined"
+        @click="run"
+      >
+        {{ running ? '⏳ Đang chạy…' : isOnline ? '▶ Chạy code' : '🔌 Cần có mạng' }}
+      </button>
     </div>
   </div>
 </template>
@@ -187,9 +214,20 @@ function reset() {
 .line {
   color: #d6f5e6;
   white-space: pre-wrap;
+  font-family: var(--mono);
+  margin: 0 0 6px;
 }
-.caret {
-  color: var(--green);
+.err-line {
+  color: #ff8a80;
+}
+.compile-tag {
+  color: #ff8a80;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.run-error {
+  color: #ffb03a;
+  line-height: 1.6;
 }
 .ok {
   color: var(--green);
@@ -246,6 +284,11 @@ function reset() {
 }
 .run:hover {
   transform: translateY(-2px);
+}
+.run:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 @media (max-width: 760px) {
   .pg-grid {

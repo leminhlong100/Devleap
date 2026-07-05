@@ -79,7 +79,7 @@ export const actions = {
     const wasDue = isDue(prev)
     this.srs[id] = schedule(prev, grade)
     if (wasDue && grade !== 'again') {
-      this.xp += XP_REVIEW[grade] || 0
+      this.addXp(XP_REVIEW[grade] || 0)
       this.bumpStreak()
     }
     this.persist()

@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 // —— Mock lớp Supabase: bật cloud, điều khiển dữ liệu remote & bắt upsert ——
 const mockMaybeSingle = vi.fn()
 const mockUpsert = vi.fn(() => Promise.resolve({ error: null }))
+const mockRpc = vi.fn(() => Promise.resolve({ data: [], error: null }))
 const fromChain = {
   select: vi.fn(() => fromChain),
   eq: vi.fn(() => fromChain),
@@ -12,10 +13,12 @@ const fromChain = {
 }
 vi.mock('@/lib/supabase', () => ({
   isCloudEnabled: true,
-  supabase: { from: vi.fn(() => fromChain) },
+  supabase: { from: vi.fn(() => fromChain), rpc: (...a) => mockRpc(...a) },
 }))
 
 import { useUserStore } from '@/stores/user'
+import { isoWeekKey } from '@/stores/user/helpers'
+import { mergeWeekXp } from '@/stores/user/progressSlice'
 
 // 'YYYY-M-D' giống hàm ymd nội bộ của store (không pad số 0).
 const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
@@ -142,6 +145,20 @@ describe('user store — toggleDay', () => {
     s.toggleDay('ielts', 2, 3)
     const saved = JSON.parse(localStorage.getItem('devleap:user:v2'))
     expect(saved.completed.ielts).toContain('2:3')
+  })
+
+  it('xin quyền Notification đúng lúc vừa đủ buổi thứ 3 (gộp cả 2 khóa), không hỏi ở buổi 1-2', () => {
+    const requestPermission = vi.fn(() => Promise.resolve('granted'))
+    vi.stubGlobal('Notification', { permission: 'default', requestPermission })
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1)
+    s.toggleDay('java', 1, 1)
+    expect(requestPermission).not.toHaveBeenCalled()
+    s.toggleDay('ielts', 1, 2) // buổi thứ 3 gộp cả 2 khóa
+    expect(requestPermission).toHaveBeenCalledTimes(1)
+    s.toggleDay('java', 1, 2)
+    expect(requestPermission).toHaveBeenCalledTimes(1) // không hỏi lại
+    vi.unstubAllGlobals()
   })
 })
 
@@ -855,5 +872,193 @@ describe('user store — pullAndMerge weekFeedback', () => {
 
     expect(s.weekFeedbackOf('ielts', 1).rating).toBe('hard')
     expect(s.weekFeedbackOf('ielts', 2).rating).toBe('easy')
+  })
+})
+
+describe('isoWeekKey (khóa tuần ISO cho leaderboard Bước 5.1)', () => {
+  // Thứ 2 của tuần chứa `d`, không phụ thuộc vào isoWeekKey đang được kiểm.
+  const mondayOf = (d) => {
+    const dow = d.getDay() || 7
+    const m = new Date(d)
+    m.setDate(d.getDate() - dow + 1)
+    return m
+  }
+
+  it('dạng "YYYY-Wnn"', () => {
+    expect(isoWeekKey(new Date(2026, 5, 21))).toMatch(/^\d{4}-W\d{2}$/)
+  })
+
+  it('mọi ngày trong cùng 1 tuần (Thứ 2 -> Chủ nhật) ra cùng 1 khóa', () => {
+    const mon = mondayOf(new Date(2026, 5, 18))
+    const sun = new Date(mon)
+    sun.setDate(mon.getDate() + 6)
+    expect(isoWeekKey(mon)).toBe(isoWeekKey(sun))
+  })
+
+  it('nhiều tuần liên tiếp luôn tăng dần (so sánh chuỗi), kể cả qua năm mới', () => {
+    const base = mondayOf(new Date(2025, 11, 20))
+    const keys = Array.from({ length: 4 }, (_, i) => {
+      const d = new Date(base)
+      d.setDate(base.getDate() + i * 7)
+      return isoWeekKey(d)
+    })
+    for (let i = 1; i < keys.length; i++) expect(keys[i] > keys[i - 1]).toBe(true)
+  })
+})
+
+describe('user store — weekXp (Bước 5.1, XP theo tuần cho leaderboard)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('addXp cộng cả xp tổng và weekXp, gán đúng weekXpKey của tuần hiện tại', () => {
+    vi.setSystemTime(new Date(2026, 5, 15, 9, 0, 0))
+    const s = useUserStore()
+    s.addXp(50)
+    expect(s.xp).toBe(50)
+    expect(s.weekXp).toBe(50)
+    expect(s.weekXpKey).toBe(isoWeekKey(new Date(2026, 5, 15)))
+  })
+
+  it('sang tuần ISO mới thì weekXp reset về 0, tổng xp vẫn cộng dồn', () => {
+    vi.setSystemTime(new Date(2026, 5, 15, 9, 0, 0))
+    const s = useUserStore()
+    s.addXp(50)
+    vi.setSystemTime(new Date(2026, 5, 23, 9, 0, 0)) // +8 ngày, chắc chắn qua tuần khác
+    s.addXp(20)
+    expect(s.xp).toBe(70)
+    expect(s.weekXp).toBe(20)
+  })
+
+  it('subtractXp trừ cả xp tổng và weekXp, kẹp ở 0', () => {
+    vi.setSystemTime(new Date(2026, 5, 15, 9, 0, 0))
+    const s = useUserStore()
+    s.addXp(30)
+    s.subtractXp(50)
+    expect(s.xp).toBe(0)
+    expect(s.weekXp).toBe(0)
+  })
+
+  it('hoàn thành buổi (toggleDay) cũng cộng weekXp; bỏ đánh dấu thì trừ lại', () => {
+    vi.setSystemTime(new Date(2026, 5, 15, 9, 0, 0))
+    const s = useUserStore()
+    s.toggleDay('ielts', 1, 1)
+    expect(s.weekXp).toBe(50)
+    s.toggleDay('ielts', 1, 1) // bỏ đánh dấu lại
+    expect(s.weekXp).toBe(0)
+    expect(s.xp).toBe(0)
+  })
+})
+
+describe('mergeWeekXp (hợp nhất XP-tuần đa thiết bị)', () => {
+  it('cùng tuần: lấy weekXp lớn hơn', () => {
+    expect(mergeWeekXp({ weekXpKey: '2026-W25', weekXp: 30 }, { weekXpKey: '2026-W25', weekXp: 50 })).toEqual({
+      weekXpKey: '2026-W25',
+      weekXp: 50,
+    })
+  })
+
+  it('khác tuần: tuần MỚI HƠN thắng toàn bộ (tuần cũ bị bỏ, không cộng dồn)', () => {
+    expect(mergeWeekXp({ weekXpKey: '2026-W24', weekXp: 999 }, { weekXpKey: '2026-W25', weekXp: 10 })).toEqual({
+      weekXpKey: '2026-W25',
+      weekXp: 10,
+    })
+  })
+
+  it('một bên chưa từng có khóa (null/thiếu) thì lấy bên có', () => {
+    expect(mergeWeekXp({}, { weekXpKey: '2026-W25', weekXp: 10 })).toEqual({ weekXpKey: '2026-W25', weekXp: 10 })
+    expect(mergeWeekXp({ weekXpKey: '2026-W25', weekXp: 10 }, {})).toEqual({ weekXpKey: '2026-W25', weekXp: 10 })
+  })
+})
+
+describe('user store — pullAndMerge weekXp + tùy chọn leaderboard', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    mockMaybeSingle.mockReset()
+    mockUpsert.mockClear()
+    mockUpsert.mockResolvedValue({ error: null })
+  })
+
+  it('cùng tuần: hợp nhất weekXp lấy giá trị lớn hơn', async () => {
+    const s = useUserStore()
+    s.applySnapshot({ weekXp: 30, weekXpKey: '2026-W25' })
+    mockMaybeSingle.mockResolvedValue({ data: { week_xp: 80, week_xp_key: '2026-W25' }, error: null })
+
+    await s.pullAndMerge('user-wx-a')
+
+    expect(s.weekXp).toBe(80)
+    expect(s.weekXpKey).toBe('2026-W25')
+  })
+
+  it('khác tuần: tuần mới hơn thắng, không cộng dồn XP tuần cũ', async () => {
+    const s = useUserStore()
+    s.applySnapshot({ weekXp: 999, weekXpKey: '2026-W20' })
+    mockMaybeSingle.mockResolvedValue({ data: { week_xp: 5, week_xp_key: '2026-W25' }, error: null })
+
+    await s.pullAndMerge('user-wx-b')
+
+    expect(s.weekXp).toBe(5)
+    expect(s.weekXpKey).toBe('2026-W25')
+  })
+
+  it('opt-in leaderboard: OR giữa 2 thiết bị, ưu tiên tên local khi khác rỗng', async () => {
+    const s = useUserStore()
+    s.applySnapshot({ leaderboardOptIn: false, leaderboardName: 'Tên máy A' })
+    mockMaybeSingle.mockResolvedValue({ data: { leaderboard_opt_in: true, leaderboard_name: '' }, error: null })
+
+    await s.pullAndMerge('user-lb-a')
+
+    expect(s.leaderboardOptIn).toBe(true) // remote đã bật -> OR ra true
+    expect(s.leaderboardName).toBe('Tên máy A') // local non-empty được giữ
+  })
+})
+
+describe('user store — leaderboard tuần (Bước 5.1)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+    mockRpc.mockClear()
+    mockRpc.mockResolvedValue({ data: [], error: null })
+  })
+
+  it('setLeaderboardOptIn lưu trạng thái + tên, cắt tối đa 40 ký tự', () => {
+    const s = useUserStore()
+    s.setLeaderboardOptIn(true, 'A'.repeat(50))
+    expect(s.leaderboardOptIn).toBe(true)
+    expect(s.leaderboardName).toHaveLength(40)
+  })
+
+  it('fetchLeaderboard: no-op khi chưa đăng nhập (chế độ khách)', async () => {
+    const s = useUserStore()
+    await s.fetchLeaderboard()
+    expect(mockRpc).not.toHaveBeenCalled()
+    expect(s.leaderboardStatus).toBe('idle')
+  })
+
+  it('fetchLeaderboard: nạp danh sách khi đã đăng nhập', async () => {
+    const s = useUserStore()
+    s.cloudUserId = 'user-lb-x'
+    mockRpc.mockResolvedValue({
+      data: [{ display_name: 'Học viên ẩn danh', week_xp: 100, is_me: true }],
+      error: null,
+    })
+
+    await s.fetchLeaderboard()
+
+    expect(s.leaderboardStatus).toBe('loaded')
+    expect(s.leaderboardRows).toEqual([{ displayName: 'Học viên ẩn danh', weekXp: 100, isMe: true }])
+  })
+
+  it('fetchLeaderboard: lỗi truy vấn -> leaderboardStatus = error, không ném ra ngoài', async () => {
+    const s = useUserStore()
+    s.cloudUserId = 'user-lb-y'
+    mockRpc.mockResolvedValue({ data: null, error: new Error('boom') })
+
+    await expect(s.fetchLeaderboard()).resolves.toBeUndefined()
+    expect(s.leaderboardStatus).toBe('error')
   })
 })

@@ -71,7 +71,7 @@
 }
 .grammar-drill {
   margin-top: 18px;
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid rgba(108, 92, 231, 0.12);
   border-radius: 16px;
   padding: 18px 20px;
