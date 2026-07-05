@@ -275,7 +275,12 @@ watch(() => props.questions, restart, { immediate: true })
       <template v-else-if="isOrder">
         <span class="qtype order">🧩 Sắp xếp câu</span>
         <h2 class="question">{{ current.q }}</h2>
-        <div class="order-answer" :class="{ ok: checked && textCorrect, bad: checked && !textCorrect }">
+        <TransitionGroup
+          tag="div"
+          name="chip-fly"
+          class="order-answer"
+          :class="{ ok: checked && textCorrect, bad: checked && !textCorrect }"
+        >
           <button
             v-for="(t, i) in orderPicked"
             :key="'p' + t.id"
@@ -285,13 +290,13 @@ watch(() => props.questions, restart, { immediate: true })
           >
             {{ t.w }}
           </button>
-          <span v-if="!orderPicked.length" class="order-placeholder">Chạm các từ bên dưới để xếp thành câu…</span>
-        </div>
-        <div class="order-pool">
+          <span v-if="!orderPicked.length" key="ph" class="order-placeholder">Chạm các từ bên dưới để xếp thành câu…</span>
+        </TransitionGroup>
+        <TransitionGroup tag="div" name="chip-fly" class="order-pool">
           <button v-for="(t, i) in orderPool" :key="'o' + t.id" class="chip" :disabled="checked" @click="pickWord(i)">
             {{ t.w }}
           </button>
-        </div>
+        </TransitionGroup>
         <div v-if="checked" class="verdict-line" :class="{ ok: textCorrect }">
           {{ textCorrect ? '✓ Chính xác!' : `✕ Đáp án đúng: ${current.answer[0]}` }}
         </div>
@@ -505,6 +510,7 @@ watch(() => props.questions, restart, { immediate: true })
 }
 /* dạng sắp xếp câu */
 .order-answer {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 9px;
@@ -532,6 +538,7 @@ watch(() => props.questions, restart, { immediate: true })
   color: var(--muted-2);
 }
 .order-pool {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 9px;
@@ -566,6 +573,25 @@ watch(() => props.questions, restart, { immediate: true })
 .chip:disabled {
   cursor: default;
   opacity: 0.85;
+}
+/* bay lên/xuống khi chạm để chọn/bỏ chọn từ (order) — chỉ fade + dịch nhẹ, không cần lib */
+.chip-fly-enter-active,
+.chip-fly-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.chip-fly-enter-from {
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+}
+.chip-fly-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.9);
+}
+.chip-fly-leave-active {
+  position: absolute;
+}
+.chip-fly-move {
+  transition: transform 0.18s ease;
 }
 .question .wrong {
   text-decoration: line-through;

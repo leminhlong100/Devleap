@@ -309,6 +309,15 @@ select {
   }
 }
 
+/* FlashcardTool mobile: thẻ đã lật hiện thanh chấm điểm dính đáy (.fc-mobile-actions,
+   nằm ngoài cây .card-3d vì transform tạo containing block riêng) — cũng phải đẩy
+   BackToTop lên cao hơn để khỏi bị che, cùng cơ chế body-class như trên. */
+@media (max-width: 720px) {
+  body.has-fc-actions .back-to-top {
+    bottom: calc(160px + var(--safe-bottom)) !important;
+  }
+}
+
 .brand-text {
   background: var(--grad-brand);
   -webkit-background-clip: text;

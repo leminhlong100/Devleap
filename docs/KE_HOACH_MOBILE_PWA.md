@@ -281,7 +281,45 @@ mở/đóng/kéo-để-đóng đều mượt và đúng. Đã kiểm 375×812 (l
 
 ### Bước 2.3 — Quiz & luyện câu: chạm thay kéo-thả
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Đọc kỹ cả 2 file trước khi sửa — phát hiện hiện trạng đã khác mô tả gốc
+của kế hoạch (viết từ đợt khảo sát ban đầu, trước khi 2 file này được viết lại):
+`SentenceBankPractice.vue` **không còn** là bài kéo-thả/word-bank nữa — đã là bài "hoàn thành câu
+về bản thân" (input text + mic ghi âm, AI chữa), không có phần tử `draggable`/`dragstart` nào (đã
+`grep -rn "drag"` toàn `src/` xác nhận không có nơi nào dùng HTML5 drag-and-drop) — nên bài này
+không cần đổi gì cho mục tiêu "chạm thay kéo", chỉ còn việc rà 375px (đã có sẵn breakpoint
+560px xếp lại `.sb-row`, input đã `font-size: 16px`) — giữ nguyên. `QuizTool.vue` dạng `order`
+("Sắp xếp câu") **đã là tap-to-place hoàn chỉnh từ trước** (`pickWord`/`unpickWord` qua `@click`,
+không phải kéo-thả — placeholder "Kéo/chạm" trong kế hoạch gốc không khớp code thật) và chip đã đạt
+`min-height: 44px`, `gap: 9px`, `touch-action: manipulation` (rule nền toàn cục cho `<button>` từ
+Bước 1.3) — chỉ thiếu đúng 1 điều mục 3 yêu cầu: **animation khi bay lên/xuống** (trước đây chip
+biến mất/xuất hiện tức thì, không mượt). Thêm: bọc 2 danh sách chip (`order-answer`/`order-pool`)
+trong `<TransitionGroup name="chip-fly">` (built-in Vue 3, không cần import) + CSS
+`chip-fly-enter/leave` (fade + `translateY` 8px + `scale(0.9)`, 0.18s) và `chip-fly-move` (FLIP tự
+động của Vue cho các chip còn lại trượt mượt khi 1 chip bị lấy ra); leave-active dùng
+`position: absolute` để chip đang biến mất không đẩy layout — thêm `position: relative` cho
+`.order-answer`/`.order-pool` làm container định vị. Không đổi logic `pickWord`/`checkOrder` gì cả.
+Mục 4 (chiều cao cố định) và mục 5 (MCQ full-width, cloze ≥16px) đã đạt sẵn từ trước (Bước 1.2/1.3) —
+không cần sửa. Không làm sticky nút "Kiểm tra" vì các câu order hiện tại chỉ có 1 câu ngắn (sinh từ
+1 câu ví dụ, ~5-10 từ), không đủ dài để cần sticky — nếu sau này có câu order dài hơn nhiều dòng thì
+cân nhắc lại.
+
+**Cách kiểm tra (vì `/tools/quiz` yêu cầu đã hoàn thành ≥1 bài mới có quiz thật — chưa có tài khoản
+guest với dữ liệu sẵn):** tạm sửa 2 dòng trong `ToolsView.vue` (`quizQs` trả về 1 câu `order` mẫu +
+tắt điều kiện hiện `LessonPicker`) để xem trực tiếp trong preview, **rồi phục hồi nguyên vẹn bằng
+`git checkout -- src/views/ToolsView.vue` ngay sau khi test xong** (đã xác nhận diff sạch) — không
+lặp lại cách sửa `.env.local` đổi guest mode như Bước 2.1 từng làm. Đã thử trên 375×812: chạm từng
+từ trong "kho từ" bay đúng vào ô đáp án theo đúng thứ tự bấm, chạm từ trong ô đáp án trả lại kho
+(chưa thử lại lần này nhưng logic `unpickWord` không đổi), khi xếp đủ từ nút "Kiểm tra" bật sáng,
+bấm ra "✓ Chính xác!" viền xanh + cộng điểm/tiến trình đúng; không có chip nào "kẹt" giữa chừng dù
+bấm nhiều lần liên tục. **Bẫy gặp khi test:** dispatch nhiều `.click()` liên tiếp trong cùng 1 lần
+gọi JS (cùng tick đồng bộ) làm các chip bị chấm sai từ vì mỗi `@click="pickWord(i)"` đóng gói `i`
+tại thời điểm render gần nhất — bắn nhiều click trước khi Vue kịp patch DOM giữa các lần khiến nhiều
+lần gọi dùng chung 1 index cũ (giống hệt bẫy đã ghi ở Bước 2.2 với BottomSheet); test lại bằng cách
+mỗi lần bấm là 1 lời gọi riêng (đảm bảo Vue flush giữa các lần) thì đúng hoàn toàn — đây là hạn chế
+của cách test bằng script, không phải lỗi thật khi người dùng bấm tay. Cũng đã kiểm 1280×800 + light
+mode: layout/màu vẫn đúng, không có gì vỡ. `npm test` (383 tests) + `npm run build` pass.
 
 **Vấn đề:** `QuizTool.vue` dạng sắp xếp từ ("Kéo/chạm các từ") và `SentenceBankPractice.vue` dựa trên kéo-thả/bank từ — trên màn 375px kéo-thả rất khó, dễ cuộn trang nhầm.
 
@@ -298,7 +336,70 @@ mở/đóng/kéo-để-đóng đều mượt và đúng. Đã kiểm 375×812 (l
 
 ### Bước 2.4 — Flashcard SRS full-screen + cử chỉ vuốt
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** Tách composable `src/composables/useSwipe.js`: hàm thuần
+`swipeState(dx, width)` (progress/ratio/direction/committed theo ngưỡng 30%,
+`tests/useSwipe.test.js` 6 case) + `useSwipe({enabled, onCommit})` bọc Pointer
+Events (`setPointerCapture`, không lib) tái dùng được cho gesture ngang khác sau
+này. `FlashcardTool.vue` dùng `useIsMobile()` (có sẵn từ Bước 2.2) để chỉ bật
+layout full-screen ở ≤720px: thêm `.fc-topbar` (progress bar mỏng + "Đang ôn
+x/y", tính theo vị trí index/total — không có tín hiệu "đã ôn" riêng biệt nên
+dùng vị trí như `MobileCheckpointBar` đã làm ở Bước 2.1), `.card-3d` cao
+`max(380px, calc(100dvh - 380px))`. Nút chấm 4 mức: **không** đặt `position:
+fixed` bên trong `.card-3d` (phần tử có `transform: rotateY(...)` tạo containing
+block riêng — `fixed` bên trong sẽ bám theo thẻ chứ không phải màn hình, bẫy CSS
+điển hình) — tách thành block `.fc-mobile-actions` là **sibling** của `.stage`,
+`v-if="isMobile && flipped"`, tái dùng đúng `GRADE_BTNS`/`grade()`/`previewLabel`
+(không nhân đôi logic, chỉ nhân đôi ~10 dòng markup nút); ẩn `.grade-cta`/
+`.grade-label` gốc trong thẻ ở ≤720px bằng CSS. Vuốt: gắn 4 handler pointer lên
+`.card-wrap`, chỉ bật khi `flipped` (đúng yêu cầu); trái → `grade('again')`,
+phải → `grade('easy')`; nhãn màu `.fc-swipe-hint` hiện dần theo `ratio` lúc kéo;
+dưới ngưỡng thì `dx` về 0 (CSS transition, thẻ "bật lại"); qua ngưỡng thì bay
+hẳn ra ngoài (`dx = ±width*1.3`) trước khi `reset()` đưa về 0 khi đổi thẻ, cho
+cảm giác thẻ mới trượt vào thay vì giật cục. Chặn việc `click` "ảo" sau khi thả
+tay vô tình lật ngược thẻ bằng cờ `swipe.hasDragged`.
+
+**Bẫy đã gặp khi test bằng preview (quan trọng, có thể tái diễn nếu sửa lại
+component này sau):** ban đầu dùng `watch(card, () => swipe.reset())` để đưa vị
+trí kéo về 0 khi đổi thẻ — sai, vì bộ `deck=due` là **computed phản ứng theo
+store**: `grade()` gọi `user.reviewCard()` làm `props.cards` (từ `dueWords`
+getter) co lại *ngay lập tức* (nextTick), kích hoạt `watch(props.cards,
+buildQueue)` reset `index=0` **trước khi** `setTimeout(advance, 280)` của chính
+`grade()` kịp chạy — `advance()` chạy sau đó với `total` đã giảm, có thể ra lại
+**đúng index cũ trỏ đúng đối tượng thẻ cũ** (identity giữ nguyên vì `savedWords`
+trả thẳng reference, không tạo object mới) → Vue `watch(card, ...)` dùng so
+sánh `===`, thấy giá trị "không đổi" nên **không** bắn lại, thẻ vừa bay ra khỏi
+màn hình bị bỏ quên ở vị trí đó vĩnh viễn (màn hình trắng, thẻ nằm ngoài khung
+nhìn bên trái) — tái hiện được ổn định bằng cách chấm liên tiếp cho tới khi
+due-deck co còn 1 thẻ. Sửa bằng cách bỏ watcher, gọi thẳng `swipe.reset()` ở
+mọi nơi thực sự đổi trạng thái hiển thị (`buildQueue`, `advance`, `prev`) thay
+vì suy luận qua so sánh giá trị.
+Tiện thể phát hiện thêm 1 bẫy **đã tồn tại từ trước** (không phải do đợt này gây
+ra, chưa sửa vì ngoài phạm vi bước này): cùng cơ chế due-deck co lại nói trên
+khiến `advance()` có thể **nhảy qua mất 1 thẻ** khi tổng số due giảm đúng lúc
+`setTimeout` đang chờ (index cũ + 1, modulo theo total MỚI, không phải total
+lúc bắt đầu đếm) — đã báo cáo riêng qua task nền, xem ghi chú cuối bước.
+Cũng áp dụng lại đúng mẫu `body.has-mcb-bar` của Bước 2.1: `BackToTop` (nằm
+ngoài cây component) bị `.fc-mobile-actions` đè lên vì offset mặc định (84px)
+không tính thêm chiều cao thanh chấm điểm mới — thêm class `body.has-fc-actions`
+(toggle qua `watchEffect`, gỡ ở `onUnmounted`) + rule tương ứng trong
+`base.css` (`bottom: calc(160px + var(--safe-bottom)) !important`).
+Đã kiểm bằng preview ở 375×812 (light + dark, seed dữ liệu `savedWords`/`srs`
+thẳng vào `localStorage['devleap:user:v2']` để có thẻ due mà không cần đăng
+nhập — dữ liệu này chỉ nằm trong trình duyệt phiên preview, không đụng file
+repo nên không cần khôi phục gì): full-screen đúng, progress bar cập nhật, lật
+bằng chạm, vuốt trái/phải đều chấm đúng mức + ghi đúng lịch SRS (kiểm qua
+`known-count` giảm/giữ nguyên đúng theo mức chấm), kéo dưới ngưỡng bật lại đúng
+vị trí không mất thẻ, không còn màn hình trắng sau bẫy trên; dark mode màu/độ
+tương phản đúng; BackToTop không còn bị đè. 1280×800: card giữ nguyên dạng cũ,
+không có progress bar/thanh chấm điểm mobile/nhãn vuốt nào lộ ra, nút chấm vẫn
+nằm trong thẻ như trước. `InlineFlashcards.vue`: không sửa gì — đọc lại code
+xác nhận đã đạt sẵn từ các bước trước (`.ifc-grade` `min-height: 44px`,
+`.ifc-grades` 3 cột `gap: 10px`, đã có breakpoint `≤560px` giảm cỡ chữ) nên bỏ
+qua việc dựng lại đăng nhập/guest-mode chỉ để xác nhận lại điều đã biết — đúng
+lưu ý "không nên lặp lại cách sửa `.env.local`" ghi ở Bước 2.1.
+`npm test` (395 tests, +6 mới cho `useSwipe`) + `npm run build` pass.
 
 **Vấn đề:** `FlashcardTool.vue`/`InlineFlashcards.vue` là màn dùng hàng ngày (ôn SRS) nhưng vẫn là "card trong trang web". App thẻ thật: thẻ chiếm trọn màn, chạm để lật, vuốt/hoặc nút to để chấm.
 

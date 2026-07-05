@@ -1,9 +1,13 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { previewInterval, intervalLabel, daysUntil } from '@/lib/srs'
 import { speak, canSpeak } from '@/lib/speak'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useSwipe } from '@/composables/useSwipe'
 import VocabIllustration from '@/components/common/VocabIllustration.vue'
+
+const { matches: isMobile } = useIsMobile()
 
 const speakable = canSpeak()
 function sayTerm() {
@@ -33,6 +37,17 @@ function removeWord() {
 const index = ref(0)
 const flipped = ref(false)
 
+// Vuốt ngang (chỉ sau khi đã lật thẻ): trái = mức thấp nhất (Quên), phải = mức
+// cao nhất (Dễ). Nút bấm vẫn là đường chính — vuốt chỉ là lối tắt bổ sung. Khai
+// báo trước `buildQueue` vì bộ due-deck có thể tự rút gọn về ĐÚNG thẻ+vị trí cũ
+// (cùng object reference, cùng index) sau khi chấm điểm — lúc đó không có gì
+// "thay đổi" để một watcher phát hiện, nên phải tự gọi `swipe.reset()` ở mọi nơi
+// đổi thẻ (buildQueue/advance/prev) thay vì watch một giá trị có thể đứng yên.
+const swipe = useSwipe({
+  enabled: () => flipped.value,
+  onCommit: (direction) => grade(direction === 'right' ? 'easy' : 'again'),
+})
+
 // Hàng đợi ôn: thẻ đến hạn / thẻ mới xếp lên trước (quá hạn lâu nhất đứng đầu),
 // các thẻ chưa tới hạn xếp sau. Cố định thứ tự trong suốt phiên để khỏi nhảy thẻ.
 const ordered = ref([])
@@ -46,6 +61,7 @@ function buildQueue() {
   ordered.value = [...(props.cards || [])].sort((a, b) => dueRank(a) - dueRank(b))
   index.value = 0
   flipped.value = false
+  swipe.reset()
 }
 // Đổi bộ thẻ (đổi ngày học) -> dựng lại hàng đợi.
 watch(() => props.cards, buildQueue, { immediate: true })
@@ -81,15 +97,39 @@ function flip() {
 function advance() {
   index.value = (index.value + 1) % total.value
   flipped.value = false
+  swipe.reset()
 }
 function prev() {
   index.value = (index.value - 1 + total.value) % total.value
   flipped.value = false
+  swipe.reset()
 }
 function grade(g) {
   user.reviewCard(card.value.srsId, g)
   setTimeout(advance, 280)
 }
+
+function onCardClick() {
+  // Vừa vuốt xong thì bỏ qua click "ảo" mà trình duyệt bắn sau khi thả tay,
+  // tránh vừa chấm điểm vừa lật ngược thẻ lại.
+  if (swipe.hasDragged.value) return
+  flip()
+}
+const cardWrapStyle = computed(() => ({
+  transform: `translateX(${swipe.dx.value}px) rotate(${swipe.dx.value / 24}deg)`,
+  transition: swipe.dragging.value ? 'none' : 'transform 0.25s ease',
+}))
+const leftHintOpacity = computed(() => (swipe.state.value.direction === 'left' ? swipe.state.value.ratio : 0))
+const rightHintOpacity = computed(() => (swipe.state.value.direction === 'right' ? swipe.state.value.ratio : 0))
+
+const progressPct = computed(() => (total.value ? Math.round(((index.value + 1) / total.value) * 100) : 0))
+
+// BackToTop (nút nổi toàn site, ngoài cây component này) phải nhường chỗ khi
+// thanh chấm điểm mobile đang hiện — cùng cơ chế body-class với MobileCheckpointBar.
+watchEffect(() => {
+  document.body.classList.toggle('has-fc-actions', isMobile.value && flipped.value)
+})
+onUnmounted(() => document.body.classList.remove('has-fc-actions'))
 function dotColor(i) {
   if (i === index.value) return '#6C5CE7'
   const s = user.srsOf(cards.value[i]?.srsId)
@@ -133,8 +173,23 @@ function dotColor(i) {
       🎉 Bạn đã ôn hết các thẻ đến hạn hôm nay! Có thể ôn thêm tùy thích.
     </div>
 
-    <div class="stage">
-      <div class="card-wrap" @click="flip">
+    <div class="stage" :class="{ 'stage-mobile': isMobile }">
+      <div v-if="isMobile" class="fc-topbar">
+        <div class="fc-progressbar"><div class="fc-progressbar-fill" :style="{ width: progressPct + '%' }"></div></div>
+        <span class="fc-progress-label">Đang ôn {{ index + 1 }}/{{ total }}</span>
+      </div>
+
+      <div
+        class="card-wrap"
+        :style="cardWrapStyle"
+        @click="onCardClick"
+        @pointerdown="swipe.onPointerDown"
+        @pointermove="swipe.onPointerMove"
+        @pointerup="swipe.onPointerUp"
+        @pointercancel="swipe.onPointerCancel"
+      >
+        <span class="fc-swipe-hint fc-swipe-hint-left" :style="{ opacity: leftHintOpacity }">❌ Quên</span>
+        <span class="fc-swipe-hint fc-swipe-hint-right" :style="{ opacity: rightHintOpacity }">⚡ Dễ</span>
         <div class="card-3d" :style="{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }">
           <!-- FRONT -->
           <div class="face front">
@@ -193,6 +248,21 @@ function dotColor(i) {
         </div>
         <button class="nav" @click="advance">→</button>
       </div>
+    </div>
+
+    <!-- Mobile: nút chấm dính đáy — tách khỏi .card-3d vì transform tạo containing
+         block riêng, position:fixed bên trong nó sẽ bám theo thẻ chứ không phải màn hình -->
+    <div v-if="isMobile && flipped" class="fc-mobile-actions">
+      <button
+        v-for="b in GRADE_BTNS"
+        :key="'m-' + b.grade"
+        class="grade-btn mobile"
+        :class="b.cls"
+        @click="grade(b.grade)"
+      >
+        <span class="g-name">{{ b.label }}</span>
+        <span class="g-when">{{ previewLabel(b.grade) }}</span>
+      </button>
     </div>
     </template>
   </div>
@@ -276,10 +346,12 @@ function dotColor(i) {
   align-items: center;
 }
 .card-wrap {
+  position: relative;
   perspective: 1400px;
   width: 100%;
   max-width: 540px;
   cursor: pointer;
+  touch-action: pan-y;
 }
 .card-3d {
   position: relative;
@@ -287,6 +359,84 @@ function dotColor(i) {
   height: 450px;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.fc-topbar {
+  width: 100%;
+  max-width: 540px;
+  margin-bottom: 14px;
+}
+.fc-progressbar {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.fc-progressbar-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 99px;
+  transition: width 0.25s ease;
+}
+.fc-progress-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+  text-align: center;
+}
+.fc-swipe-hint {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 99px;
+  pointer-events: none;
+  transition: opacity 0.08s linear;
+}
+.fc-swipe-hint-left {
+  left: 14px;
+  background: rgba(255, 71, 87, 0.9);
+  color: #fff;
+}
+.fc-swipe-hint-right {
+  right: 14px;
+  background: rgba(108, 92, 231, 0.9);
+  color: #fff;
+}
+@media (max-width: 720px) {
+  .card-tool {
+    padding: 18px 14px;
+  }
+  .stage-mobile .card-wrap {
+    max-width: 100%;
+  }
+  .stage-mobile .card-3d {
+    height: max(380px, calc(100dvh - 380px));
+  }
+  /* Nút chấm đã chuyển xuống thanh dính đáy .fc-mobile-actions */
+  .stage-mobile .grade-label,
+  .stage-mobile .grade-cta {
+    display: none;
+  }
+}
+.fc-mobile-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(72px + var(--safe-bottom));
+  z-index: 45;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-top: 1px solid rgba(108, 92, 231, 0.14);
+  box-shadow: 0 -8px 24px rgba(20, 16, 50, 0.08);
+}
+.grade-btn.mobile {
+  min-height: 52px;
 }
 .face {
   position: absolute;
