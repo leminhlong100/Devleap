@@ -372,14 +372,18 @@ function dotColor(i) {
   font-size: 13px;
   font-weight: 700;
   padding: 6px 14px;
+  min-height: 44px;
   border-radius: 99px;
   cursor: pointer;
   transition: background 0.15s, transform 0.12s;
 }
-.speak-fc:hover {
-  background: rgba(255, 255, 255, 0.3);
+@media (hover: hover) {
+  .speak-fc:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 .speak-fc:active {
+  background: rgba(255, 255, 255, 0.3);
   transform: scale(0.96);
 }
 .srs-status {
@@ -474,10 +478,16 @@ function dotColor(i) {
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 14px;
+  min-height: 44px;
   border-radius: 10px;
   transition: background 0.15s;
 }
-.remove-saved:hover {
+@media (hover: hover) {
+  .remove-saved:hover {
+    background: var(--bg-danger);
+  }
+}
+.remove-saved:active {
   background: var(--bg-danger);
 }
 .grade-label {
@@ -497,16 +507,23 @@ function dotColor(i) {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   cursor: pointer;
   padding: 10px 6px;
+  min-height: 44px;
   border-radius: 13px;
   border: 1.5px solid transparent;
   background: var(--surface);
   transition: all 0.15s;
 }
-.grade-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .grade-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.grade-btn:active {
+  transform: scale(0.97);
 }
 .g-name {
   font-size: 14px;
@@ -556,8 +573,14 @@ function dotColor(i) {
   align-items: center;
   justify-content: center;
 }
-.nav:hover {
+@media (hover: hover) {
+  .nav:hover {
+    background: var(--purple-soft);
+  }
+}
+.nav:active {
   background: var(--purple-soft);
+  transform: scale(0.96);
 }
 .dots {
   display: flex;

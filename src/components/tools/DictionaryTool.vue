@@ -118,7 +118,13 @@ const results = computed(() => {
   padding: 18px 20px;
   transition: all 0.15s;
 }
-.entry:hover {
+@media (hover: hover) {
+  .entry:hover {
+    border-color: rgba(108, 92, 231, 0.25);
+    background: var(--surface);
+  }
+}
+.entry:active {
   border-color: rgba(108, 92, 231, 0.25);
   background: var(--surface);
 }

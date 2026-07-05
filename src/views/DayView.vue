@@ -364,7 +364,12 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   cursor: pointer;
   transition: all 0.15s;
 }
-.day-chip:hover {
+@media (hover: hover) {
+  .day-chip:hover {
+    background: var(--purple-soft);
+  }
+}
+.day-chip:active {
   background: var(--purple-soft);
 }
 .day-chip.on {
@@ -453,7 +458,12 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   background: var(--surface);
   transition: background 0.15s;
 }
-.ghost-btn:hover {
+@media (hover: hover) {
+  .ghost-btn:hover {
+    background: var(--purple-soft);
+  }
+}
+.ghost-btn:active {
   background: var(--purple-soft);
 }
 
@@ -770,15 +780,25 @@ const weekTest = computed(() => (d.value ? user.quizOf('java', `week:${d.value.w
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.green-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .green-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.green-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 .green-btn.locked {
   background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
-.green-btn.locked:hover {
+@media (hover: hover) {
+  .green-btn.locked:hover {
+    transform: none;
+  }
+}
+.green-btn.locked:active {
   transform: none;
 }
 .wt-lock-hint {

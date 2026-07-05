@@ -133,11 +133,18 @@ watch(() => user.leaderboardName, (v) => { name.value = v })
   font-size: 13.5px;
   font-weight: 800;
   padding: 11px 16px;
+  min-height: 44px;
   border-radius: 12px;
   transition: transform 0.12s, box-shadow 0.15s;
 }
-.study-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .study-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+  }
+}
+.study-btn:active:not(:disabled) {
+  transform: scale(0.97);
   box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
 }
 .study-btn:disabled {

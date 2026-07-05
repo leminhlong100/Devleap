@@ -90,6 +90,7 @@ function sayExample() {
   letter-spacing: -0.2px;
 }
 .speak {
+  position: relative;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -105,13 +106,21 @@ function sayExample() {
   padding: 0;
   transition: transform 0.12s;
 }
-.speak:hover {
-  transform: scale(1.12);
+.speak::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+}
+@media (hover: hover) {
+  .speak:hover {
+    transform: scale(1.12);
+  }
 }
 .speak:active {
   transform: scale(0.95);
 }
 .speak-ex {
+  position: relative;
   border: none;
   background: none;
   cursor: pointer;
@@ -122,7 +131,17 @@ function sayExample() {
   vertical-align: middle;
   opacity: 0.75;
 }
-.speak-ex:hover {
+.speak-ex::after {
+  content: '';
+  position: absolute;
+  inset: -16px;
+}
+@media (hover: hover) {
+  .speak-ex:hover {
+    opacity: 1;
+  }
+}
+.speak-ex:active {
   opacity: 1;
 }
 .vipa {

@@ -91,18 +91,25 @@ function readAloud() {
   flex-wrap: wrap;
 }
 .rc-listen {
+  position: relative;
   border: 1px solid rgba(0, 214, 143, 0.35);
   background: var(--surface);
   color: var(--text-success);
   border-radius: 99px;
   padding: 5px 13px;
+  min-height: 44px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s;
 }
-.rc-listen:hover {
+@media (hover: hover) {
+  .rc-listen:hover {
+    background: #e6fbf2;
+  }
+}
+.rc-listen:active {
   background: #e6fbf2;
 }
 .rc-listen:disabled {

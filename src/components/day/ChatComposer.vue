@@ -77,7 +77,12 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
   cursor: pointer;
   transition: all 0.15s;
 }
-.mic-btn:hover {
+@media (hover: hover) {
+  .mic-btn:hover {
+    background: #e6fbf2;
+  }
+}
+.mic-btn:active {
   background: #e6fbf2;
 }
 .mic-btn.live {
@@ -120,13 +125,19 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
   font-weight: 800;
   color: #fff;
   padding: 13px 20px;
+  min-height: 44px;
   border-radius: 14px;
   background: linear-gradient(135deg, #00d68f, #00a86f);
   box-shadow: 0 10px 22px rgba(0, 214, 143, 0.28);
   transition: transform 0.15s;
 }
-.send-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .send-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+}
+.send-btn:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.98);
 }
 .send-btn:disabled {
   opacity: 0.5;

@@ -724,6 +724,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 800;
   padding: 5px 12px;
+  min-height: 44px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -741,8 +742,8 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 12px;
   border: 1px solid rgba(108, 92, 231, 0.18);
   background: var(--surface);
@@ -753,8 +754,14 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: all 0.15s;
 }
-.sh-ctrl:hover:not(:disabled) {
+@media (hover: hover) {
+  .sh-ctrl:hover:not(:disabled) {
+    background: var(--purple-soft);
+  }
+}
+.sh-ctrl:active:not(:disabled) {
   background: var(--purple-soft);
+  transform: scale(0.95);
 }
 .sh-ctrl:disabled {
   opacity: 0.35;
@@ -785,7 +792,7 @@ onBeforeUnmount(() => {
   margin-left: auto;
 }
 .sh-rate-toggle {
-  height: 40px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -798,7 +805,13 @@ onBeforeUnmount(() => {
   border-radius: 11px;
   cursor: pointer;
 }
-.sh-rate-toggle:hover,
+@media (hover: hover) {
+  .sh-rate-toggle:hover {
+    background: var(--purple-soft);
+    border-color: var(--purple);
+  }
+}
+.sh-rate-toggle:active,
 .sh-rate-toggle.open {
   background: var(--purple-soft);
   border-color: var(--purple);
@@ -829,11 +842,17 @@ onBeforeUnmount(() => {
   font-size: 13px;
   font-weight: 700;
   padding: 7px 12px;
+  min-height: 44px;
   border-radius: 8px;
   cursor: pointer;
   text-align: center;
 }
-.sh-rate:hover {
+@media (hover: hover) {
+  .sh-rate:hover {
+    background: var(--purple-soft);
+  }
+}
+.sh-rate:active {
   background: var(--purple-soft);
 }
 .sh-rate.on {
@@ -889,8 +908,11 @@ onBeforeUnmount(() => {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   border: 1px solid rgba(108, 92, 231, 0.25);
   background: var(--purple-soft);
@@ -898,8 +920,14 @@ onBeforeUnmount(() => {
   font-size: 17px;
   cursor: pointer;
 }
-.sh-mic:hover {
+@media (hover: hover) {
+  .sh-mic:hover {
+    background: var(--surface);
+  }
+}
+.sh-mic:active {
   background: var(--surface);
+  transform: scale(0.95);
 }
 .sh-mic.listening {
   background: var(--purple);
@@ -1114,10 +1142,16 @@ onBeforeUnmount(() => {
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 11px;
+  min-height: 44px;
   border-radius: 10px;
   cursor: pointer;
 }
-.sh-tool-btn:hover {
+@media (hover: hover) {
+  .sh-tool-btn:hover {
+    background: var(--purple-soft);
+  }
+}
+.sh-tool-btn:active {
   background: var(--purple-soft);
 }
 .sh-tool-btn.on {
@@ -1157,7 +1191,13 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: all 0.12s;
 }
-.sh-row-btn:hover {
+@media (hover: hover) {
+  .sh-row-btn:hover {
+    border-color: rgba(108, 92, 231, 0.3);
+    background: var(--surface-1);
+  }
+}
+.sh-row-btn:active {
   border-color: rgba(108, 92, 231, 0.3);
   background: var(--surface-1);
 }
@@ -1253,6 +1293,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 700;
   padding: 6px 11px;
+  min-height: 44px;
   border-radius: 9px;
   cursor: pointer;
 }

@@ -126,7 +126,12 @@ function open(c) {
   cursor: pointer;
   transition: all 0.15s;
 }
-.filter:hover {
+@media (hover: hover) {
+  .filter:hover {
+    background: var(--purple-soft);
+  }
+}
+.filter:active {
   background: var(--purple-soft);
 }
 .filter.on {
@@ -149,8 +154,14 @@ function open(c) {
   flex-direction: column;
   transition: all 0.18s;
 }
-.course-card:hover {
-  transform: translateY(-5px);
+@media (hover: hover) {
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 48px rgba(108, 92, 231, 0.15);
+  }
+}
+.course-card:active {
+  transform: translateY(-1px) scale(0.99);
   box-shadow: 0 22px 48px rgba(108, 92, 231, 0.15);
 }
 .banner {

@@ -234,7 +234,12 @@ function removeManual(i) {
   cursor: pointer;
   white-space: nowrap;
 }
-.el-fix-btn:hover {
+@media (hover: hover) {
+  .el-fix-btn:hover {
+    background: var(--purple-deep, #4b3bc4);
+  }
+}
+.el-fix-btn:active {
   background: var(--purple-deep, #4b3bc4);
 }
 .el-fb {
@@ -336,7 +341,12 @@ function removeManual(i) {
   font-size: 14px;
   padding: 6px;
 }
-.el-del:hover {
+@media (hover: hover) {
+  .el-del:hover {
+    color: var(--text-danger);
+  }
+}
+.el-del:active {
   color: var(--text-danger);
 }
 </style>

@@ -248,6 +248,7 @@ function saveWordFromPop() {
   border-bottom-left-radius: 5px;
 }
 .wordchip {
+  position: relative;
   font: inherit;
   color: inherit;
   border: none;
@@ -258,8 +259,18 @@ function saveWordFromPop() {
   border-bottom: 1.5px dotted rgba(108, 92, 231, 0.4);
   transition: background 0.12s;
 }
-.wordchip:hover {
-  background: rgba(108, 92, 231, 0.16);
+.wordchip::after {
+  content: '';
+  position: absolute;
+  inset: -12px -3px;
+}
+@media (hover: hover) {
+  .wordchip:hover {
+    background: rgba(108, 92, 231, 0.16);
+  }
+}
+.wordchip:active {
+  background: rgba(108, 92, 231, 0.28);
 }
 .wordchip.saved {
   background: rgba(0, 168, 111, 0.16);
@@ -270,6 +281,7 @@ function saveWordFromPop() {
   border-bottom-color: transparent;
 }
 .speak-mini {
+  position: relative;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -278,7 +290,17 @@ function saveWordFromPop() {
   opacity: 0.6;
   padding: 0;
 }
-.speak-mini:hover {
+.speak-mini::after {
+  content: '';
+  position: absolute;
+  inset: -16px -10px;
+}
+@media (hover: hover) {
+  .speak-mini:hover {
+    opacity: 1;
+  }
+}
+.speak-mini:active {
   opacity: 1;
 }
 
@@ -323,8 +345,13 @@ function saveWordFromPop() {
   cursor: pointer;
   transition: background 0.12s;
 }
-.ta:hover {
-  background: rgba(108, 92, 231, 0.16);
+@media (hover: hover) {
+  .ta:hover {
+    background: rgba(108, 92, 231, 0.16);
+  }
+}
+.ta:active {
+  background: rgba(108, 92, 231, 0.24);
 }
 .ta.saved {
   background: #6c5ce7;
@@ -527,7 +554,12 @@ function saveWordFromPop() {
   padding: 6px;
   cursor: pointer;
 }
-.wp-actions button:hover {
+@media (hover: hover) {
+  .wp-actions button:hover {
+    background: #f5f3ff;
+  }
+}
+.wp-actions button:active {
   background: #f5f3ff;
 }
 

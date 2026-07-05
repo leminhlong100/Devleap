@@ -69,8 +69,13 @@ const route = useRoute()
   color: var(--slate);
   transition: all 0.15s;
 }
-.admin-nav-link:hover {
-  background: rgba(108, 92, 231, 0.06);
+@media (hover: hover) {
+  .admin-nav-link:hover {
+    background: rgba(108, 92, 231, 0.06);
+  }
+}
+.admin-nav-link:active {
+  background: rgba(108, 92, 231, 0.1);
 }
 .admin-nav-link.active {
   color: var(--purple);

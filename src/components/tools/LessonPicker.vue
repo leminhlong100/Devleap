@@ -190,8 +190,14 @@ function pickSaved() {
 [data-theme='dark'] .saved-entry {
   background: var(--bg-success);
 }
-.saved-entry:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .saved-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 214, 143, 0.18);
+  }
+}
+.saved-entry:active {
+  transform: scale(0.99);
   box-shadow: 0 10px 24px rgba(0, 214, 143, 0.18);
 }
 .se-emoji {
@@ -286,6 +292,7 @@ function pickSaved() {
   background: none;
   border: none;
   padding: 8px 6px;
+  min-height: 44px;
   text-align: left;
 }
 .wg-chevron {
@@ -322,6 +329,7 @@ function pickSaved() {
 .wg-all {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   cursor: pointer;
   border: none;
@@ -330,11 +338,18 @@ function pickSaved() {
   font-size: 13px;
   font-weight: 800;
   padding: 9px 15px;
+  min-height: 44px;
   border-radius: 11px;
   transition: transform 0.12s, box-shadow 0.15s;
 }
-.wg-all:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .wg-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+  }
+}
+.wg-all:active {
+  transform: scale(0.97);
   box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
 }
 .wg-arrow {
@@ -359,10 +374,17 @@ function pickSaved() {
   padding: 16px 18px;
   transition: all 0.15s;
 }
-.lesson-card:hover {
+@media (hover: hover) {
+  .lesson-card:hover {
+    background: var(--purple-soft);
+    border-color: var(--purple);
+    transform: translateY(-2px);
+  }
+}
+.lesson-card:active {
   background: var(--purple-soft);
   border-color: var(--purple);
-  transform: translateY(-2px);
+  transform: scale(0.99);
 }
 .lc-emoji {
   font-size: 26px;

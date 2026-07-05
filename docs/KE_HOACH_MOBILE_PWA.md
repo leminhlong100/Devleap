@@ -119,7 +119,31 @@ từ 28px xuống 16px ở mobile và giữ 28px ở desktop, input/textarea tro
 
 ### Bước 1.3 — Chuẩn tương tác cảm ứng toàn site (tap target, :active, touch-action)
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** `base.css` thêm rule nền `button, a, [role='button'] { touch-action: manipulation;
+-webkit-tap-highlight-color: transparent; }` (an toàn, không đổi hình dạng) + utility `.tappable` (`:active { transform:
+scale(0.96); opacity: 0.85; }`, dùng khi hover cũ chỉ là lift/scale đơn giản) + `:focus-visible` outline `var(--purple)`
+cho button/a/[role=button]/input/textarea/select/.tappable. Không đặt `:active` scale toàn cục cho mọi `<a>`/`<button>`
+vì nhiều nơi đã có transform hover riêng (translateY, scale icon…) — chồng thêm sẽ đá nhau; thay vào đó đi qua toàn bộ
+104 rule `:hover` trong 38 file (`grep -rn ":hover" src/`), wrap từng rule vào `@media (hover: hover) { ... }` (chặn
+trạng thái hover "dính" trên cảm ứng khi trình duyệt mô phỏng hover lúc chạm) và thêm `:active` tương ứng ngay sau —
+tái dùng đúng hiệu ứng hover cũ (đổi màu nền/viền) hoặc viết riêng khi hover là transform (vd. `.green-btn:hover
+{translateY(-2px)}` → active `translateY(-1px) scale(0.98)`). Bump vùng chạm ≥44px cho các nút icon nhỏ nêu trong kế
+hoạch: `AppHeader` `.theme-toggle`/`.account-btn`/`.signin-btn` (38px, mở rộng bằng `::after{inset:-3px}` giữ nguyên
+icon), `BackToTop` (đã đạt), `AiChat` `.tool-toggle`, `ChatComposer` `.mic-btn`/`.send-btn`, `ChatMessages`
+`.wordchip`/`.speak-mini` (`::after` mở hit-area), `InlineFlashcards` `.ifc-reveal`/`.ifc-grade`, `PronunciationDrill`
+`.pd-btn`, `ReadingComprehension` `.rc-listen`, `VocabCard` `.speak`/`.speak-ex` (`::after`), `VoiceRecorder`
+`.vr-suggest li`, `WritingSection` `.wt-model li` (cả hai đều clickable qua `@click`, thêm `min-height:44px` +
+`:active` tint), và các nút nhỏ tương tự phát hiện thêm ở nhóm Tools (`SavedTool` `.mini` 30→44px, `ShadowingPlayer`
+`.sh-ctrl`/`.sh-mic` 40→44px, `LessonPicker` `.wg-all`/`.wg-toggle`, `QuizTool` `.chip`, `CodePlayground`
+`.reset`/`.run`, `LeaderboardTool` `.study-btn`). `AdminShadowingView` `.mini`/`.op` (padding 5-6px) cố tình bỏ qua vì
+sẽ phá layout bảng dày — trang quản trị ưu tiên desktop. Việc chia theo 4 nhóm file độc lập (Layout/Day/Tools/
+Views+Admin) làm song song; xác nhận lại bằng script Node quét toàn bộ `:hover` theo độ sâu ngoặc `{}` để đảm bảo
+100% nằm trong `@media(hover:hover)` — sau khi xử lý, quét chỉ còn 2 dòng "vi phạm" là comment tiếng Việt chứa chữ
+"hover", không phải CSS thật. Đã kiểm 375×812 + 1280×800 (dark mode) bằng preview: `touch-action: manipulation` áp
+dụng đúng, `.theme-toggle` có `::after{inset:-3px}` mở vùng chạm, bottom nav ẩn đúng ở desktop, không scroll ngang.
+`npm test` (383 tests) + `npm run build` pass.
 
 **Vấn đề:** 30+ chỗ chỉ có `:hover` (danh sách: `BackToTop`, `AiChat` `.tool-toggle`, `ChatComposer` `.mic-btn/.send-btn`, `ChatMessages` `.wordchip/.speak-mini`, `InlineFlashcards` `.ifc-reveal/.ifc-grade`, `PronunciationDrill` `.pd-btn`, `ReadingComprehension` `.rc-listen`, `VocabCard` `.speak/.speak-ex`, `VoiceRecorder` `.vr-suggest li`, `WritingSection` `.wt-model li`…). Trên cảm ứng, hover không tồn tại → bấm không có phản hồi. Nhiều nút icon 38px < chuẩn 44px.
 
@@ -383,7 +407,7 @@ từ 28px xuống 16px ở mobile và giữ 28px ở desktop, input/textarea tro
 | --- | --- | --- | --- |
 | 1.1 | Bottom tab bar + header gọn | 1 buổi | ✅ |
 | 1.2 | Safe-area, dvh, spacing/chữ | 0.5–1 buổi | ✅ |
-| 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ⬜ |
+| 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ✅ |
 | 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ⬜ |
 | 2.2 | Chat như app nhắn tin | 1–2 buổi | ⬜ |
 | 2.3 | Quiz chạm thay kéo | 1 buổi | ⬜ |

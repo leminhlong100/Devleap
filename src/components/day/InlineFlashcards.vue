@@ -208,10 +208,16 @@ function grade(g) {
   font-size: 15px;
   font-weight: 700;
   padding: 12px 28px;
+  min-height: 44px;
   border-radius: 12px;
   cursor: pointer;
 }
-.ifc-reveal:hover {
+@media (hover: hover) {
+  .ifc-reveal:hover {
+    background: var(--purple-deep, #4b3bc4);
+  }
+}
+.ifc-reveal:active {
   background: var(--purple-deep, #4b3bc4);
 }
 .ifc-grades {
@@ -229,6 +235,8 @@ function grade(g) {
   background: var(--surface);
   border-radius: 12px;
   padding: 11px 8px;
+  min-height: 44px;
+  justify-content: center;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -240,17 +248,31 @@ function grade(g) {
   font-weight: 600;
   color: var(--muted-2, #9a9ab0);
 }
-.ifc-grade.again:hover {
+@media (hover: hover) {
+  .ifc-grade.again:hover {
+    border-color: var(--red, #ff6b6b);
+    background: rgba(255, 107, 107, 0.07);
+  }
+  .ifc-grade.good:hover {
+    border-color: var(--green, #00d68f);
+    background: rgba(0, 214, 143, 0.07);
+  }
+  .ifc-grade.easy:hover {
+    border-color: var(--cyan, #00b8d9);
+    background: rgba(0, 184, 217, 0.07);
+  }
+}
+.ifc-grade.again:active {
   border-color: var(--red, #ff6b6b);
-  background: rgba(255, 107, 107, 0.07);
+  background: rgba(255, 107, 107, 0.14);
 }
-.ifc-grade.good:hover {
+.ifc-grade.good:active {
   border-color: var(--green, #00d68f);
-  background: rgba(0, 214, 143, 0.07);
+  background: rgba(0, 214, 143, 0.14);
 }
-.ifc-grade.easy:hover {
+.ifc-grade.easy:active {
   border-color: var(--cyan, #00b8d9);
-  background: rgba(0, 184, 217, 0.07);
+  background: rgba(0, 184, 217, 0.14);
 }
 .ifc-done {
   margin-top: 16px;

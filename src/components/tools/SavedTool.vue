@@ -151,11 +151,18 @@ function studyFlashcards() {
   font-size: 13.5px;
   font-weight: 800;
   padding: 11px 16px;
+  min-height: 44px;
   border-radius: 12px;
   transition: transform 0.12s, box-shadow 0.15s;
 }
-.study-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .study-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+  }
+}
+.study-btn:active {
+  transform: scale(0.97);
   box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
 }
 .search {
@@ -218,7 +225,13 @@ function studyFlashcards() {
   padding: 16px 18px;
   transition: all 0.15s;
 }
-.entry:hover {
+@media (hover: hover) {
+  .entry:hover {
+    border-color: rgba(108, 92, 231, 0.25);
+    background: var(--surface);
+  }
+}
+.entry:active {
   border-color: rgba(108, 92, 231, 0.25);
   background: var(--surface);
 }
@@ -244,15 +257,26 @@ function studyFlashcards() {
   background: rgba(108, 92, 231, 0.1);
   cursor: pointer;
   font-size: 13px;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.12s;
 }
-.mini:hover {
+@media (hover: hover) {
+  .mini:hover {
+    background: rgba(108, 92, 231, 0.2);
+  }
+  .mini.danger:hover {
+    background: var(--bg-danger);
+  }
+}
+.mini:active {
   background: rgba(108, 92, 231, 0.2);
 }
-.mini.danger:hover {
+.mini.danger:active {
   background: var(--bg-danger);
 }
 .ipa {

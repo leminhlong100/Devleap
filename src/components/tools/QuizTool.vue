@@ -414,8 +414,13 @@ watch(() => props.questions, restart, { immediate: true })
   background: var(--grad-purple);
   transition: transform 0.18s;
 }
-.restart:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .restart:hover {
+    transform: translateY(-2px);
+  }
+}
+.restart:active {
+  transform: scale(0.97);
 }
 .top {
   display: flex;
@@ -539,12 +544,19 @@ watch(() => props.questions, restart, { immediate: true })
   font-size: 15px;
   font-weight: 700;
   padding: 9px 15px;
+  min-height: 44px;
   border-radius: 11px;
   cursor: pointer;
   transition: transform 0.12s, border-color 0.12s, background 0.12s;
 }
-.chip:hover:not(:disabled) {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .chip:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--purple);
+  }
+}
+.chip:active:not(:disabled) {
+  transform: scale(0.96);
   border-color: var(--purple);
 }
 .chip.picked {
@@ -600,8 +612,10 @@ watch(() => props.questions, restart, { immediate: true })
   opacity: 0.45;
   cursor: not-allowed;
 }
-.next:disabled:hover {
-  transform: none;
+@media (hover: hover) {
+  .next:disabled:hover {
+    transform: none;
+  }
 }
 .explain-row {
   margin-top: 20px;
@@ -634,7 +648,12 @@ watch(() => props.questions, restart, { immediate: true })
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.next:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .next:hover {
+    transform: translateY(-2px);
+  }
+}
+.next:active:not(:disabled) {
+  transform: scale(0.97);
 }
 </style>

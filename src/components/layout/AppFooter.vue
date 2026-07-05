@@ -59,7 +59,12 @@ const links = ['Về chúng tôi', 'Cộng đồng', 'Liên hệ']
   cursor: pointer;
   transition: color 0.15s;
 }
-.link:hover {
+@media (hover: hover) {
+  .link:hover {
+    color: var(--purple);
+  }
+}
+.link:active {
   color: var(--purple);
 }
 </style>

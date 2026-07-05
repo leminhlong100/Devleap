@@ -377,8 +377,13 @@ function backToDay() {
   position: relative;
   transition: all 0.15s;
 }
-.tool-card:hover {
-  transform: translateY(-4px);
+@media (hover: hover) {
+  .tool-card:hover {
+    transform: translateY(-4px);
+  }
+}
+.tool-card:active {
+  transform: translateY(-1px) scale(0.98);
 }
 .tool-card.on {
   background: linear-gradient(135deg, #f5f3ff, #ffffff);

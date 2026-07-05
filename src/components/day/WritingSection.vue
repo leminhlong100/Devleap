@@ -229,13 +229,21 @@ function svHtml(l) {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 13px;
+  min-height: 44px;
+  box-sizing: border-box;
   font-size: 14px;
   color: var(--ink);
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
-.wt-model li:hover {
+@media (hover: hover) {
+  .wt-model li:hover {
+    border-color: var(--purple);
+  }
+}
+.wt-model li:active {
   border-color: var(--purple);
+  background: var(--purple-soft);
 }
 .wt-ins {
   font-size: 11.5px;
@@ -261,16 +269,27 @@ function svHtml(l) {
   font-family: inherit;
   transition: background 0.15s;
 }
-.wt-frame:hover,
-.wt-link:hover {
+@media (hover: hover) {
+  .wt-frame:hover,
+  .wt-link:hover {
+    background: var(--purple-soft);
+  }
+}
+.wt-frame:active,
+.wt-link:active {
   background: var(--purple-soft);
 }
 .wt-link {
   border-color: rgba(0, 184, 217, 0.4);
   color: #0a7c93;
 }
-.wt-link:hover {
-  background: rgba(0, 184, 217, 0.08);
+@media (hover: hover) {
+  .wt-link:hover {
+    background: rgba(0, 184, 217, 0.08);
+  }
+}
+.wt-link:active {
+  background: rgba(0, 184, 217, 0.16);
 }
 .write-foot {
   display: flex;

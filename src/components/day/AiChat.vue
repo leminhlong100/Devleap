@@ -192,17 +192,24 @@ function closePop() {
   flex: none;
 }
 .tool-toggle {
+  position: relative;
   border: 1px solid rgba(0, 214, 143, 0.3);
   background: var(--surface);
   color: var(--text-success);
   font-size: 12.5px;
   font-weight: 700;
   padding: 7px 12px;
+  min-height: 44px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s;
 }
-.tool-toggle:hover {
+@media (hover: hover) {
+  .tool-toggle:hover {
+    background: #e6fbf2;
+  }
+}
+.tool-toggle:active {
   background: #e6fbf2;
 }
 .tool-toggle.on {
@@ -214,8 +221,10 @@ function closePop() {
   opacity: 0.55;
   cursor: not-allowed;
 }
-.tool-toggle.locked:hover {
-  background: var(--surface);
+@media (hover: hover) {
+  .tool-toggle.locked:hover {
+    background: var(--surface);
+  }
 }
 
 /* —— Nhãn kịch bản Surprise mode —— */
@@ -261,7 +270,12 @@ function closePop() {
   cursor: pointer;
   transition: all 0.13s;
 }
-.pchip:hover {
+@media (hover: hover) {
+  .pchip:hover {
+    background: #f5f3ff;
+  }
+}
+.pchip:active {
   background: #f5f3ff;
 }
 .pchip.on {
@@ -317,9 +331,15 @@ function closePop() {
   font-weight: 600;
   cursor: pointer;
 }
-.chat-retry-btn:hover {
+@media (hover: hover) {
+  .chat-retry-btn:hover {
+    background: var(--danger-strong);
+    filter: brightness(0.9);
+  }
+}
+.chat-retry-btn:active {
   background: var(--danger-strong);
-  filter: brightness(0.9);
+  filter: brightness(0.85);
 }
 
 /* Toast */

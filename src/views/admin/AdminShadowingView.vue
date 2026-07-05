@@ -793,7 +793,12 @@ onBeforeUnmount(() => {
   cursor: pointer;
   white-space: nowrap;
 }
-.mini:hover {
+@media (hover: hover) {
+  .mini:hover {
+    background: var(--purple-soft);
+  }
+}
+.mini:active {
   background: var(--purple-soft);
 }
 .mini.play {
@@ -821,7 +826,12 @@ onBeforeUnmount(() => {
   border-radius: 9px;
   cursor: pointer;
 }
-.op:hover:not(:disabled) {
+@media (hover: hover) {
+  .op:hover:not(:disabled) {
+    background: var(--purple-soft);
+  }
+}
+.op:active:not(:disabled) {
   background: var(--purple-soft);
 }
 .op:disabled {
@@ -832,7 +842,12 @@ onBeforeUnmount(() => {
   color: var(--text-danger);
   border-color: rgba(214, 81, 43, 0.3);
 }
-.op.del:hover {
+@media (hover: hover) {
+  .op.del:hover {
+    background: rgba(214, 81, 43, 0.08);
+  }
+}
+.op.del:active {
   background: rgba(214, 81, 43, 0.08);
 }
 .empty {

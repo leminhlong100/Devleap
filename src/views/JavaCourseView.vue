@@ -163,8 +163,13 @@ const finalLocked = computed(() => !prog.value.allDone)
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.continue-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .continue-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.continue-btn:active {
+  transform: translateY(-1px) scale(0.98);
 }
 .strip {
   display: grid;
@@ -257,14 +262,24 @@ const finalLocked = computed(() => !prog.value.allDone)
   background: var(--grad-purple, linear-gradient(135deg, #6c5ce7, #4b3bc4));
   transition: transform 0.18s;
 }
-.final-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .final-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.final-btn:active {
+  transform: translateY(-1px) scale(0.98);
 }
 .final-btn.locked {
   background: var(--disabled-bg);
   cursor: not-allowed;
 }
-.final-btn.locked:hover {
+@media (hover: hover) {
+  .final-btn.locked:hover {
+    transform: none;
+  }
+}
+.final-btn.locked:active {
   transform: none;
 }
 .final-hint {

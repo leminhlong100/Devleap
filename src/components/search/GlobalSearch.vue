@@ -206,6 +206,7 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
 <style scoped>
 /* —— nút mở trên header —— */
 .search-trigger {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -222,7 +223,13 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
   transition: background 0.15s, border-color 0.15s;
   min-width: 230px;
 }
-.search-trigger:hover {
+@media (hover: hover) {
+  .search-trigger:hover {
+    background: var(--purple-soft, #f2f0ff);
+    border-color: rgba(108, 92, 231, 0.3);
+  }
+}
+.search-trigger:active {
   background: var(--purple-soft, #f2f0ff);
   border-color: rgba(108, 92, 231, 0.3);
 }
@@ -480,7 +487,17 @@ const isMac = computed(() => typeof navigator !== 'undefined' && /mac/i.test(nav
     display: none;
   }
   .search-trigger {
-    padding: 9px 11px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 11px;
+  }
+  /* Vùng chạm mở rộng ≥44px mà không đổi kích thước icon hiển thị (38px) */
+  .search-trigger::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
   }
 }
 @media (max-width: 720px) {

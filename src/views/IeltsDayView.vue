@@ -681,8 +681,13 @@ const aiContext = computed(() =>
   cursor: pointer;
   transition: background 0.15s;
 }
-.phrase-chip:hover {
-  background: rgba(0, 214, 143, 0.18);
+@media (hover: hover) {
+  .phrase-chip:hover {
+    background: rgba(0, 214, 143, 0.18);
+  }
+}
+.phrase-chip:active {
+  background: rgba(0, 214, 143, 0.24);
 }
 .sentence-list {
   list-style: none;
@@ -703,8 +708,14 @@ const aiContext = computed(() =>
   cursor: pointer;
   transition: border-color 0.15s;
 }
-.sentence-list li:hover {
-  border-color: rgba(0, 214, 143, 0.4);
+@media (hover: hover) {
+  .sentence-list li:hover {
+    border-color: rgba(0, 214, 143, 0.4);
+  }
+}
+.sentence-list li:active {
+  border-color: rgba(0, 214, 143, 0.6);
+  background: var(--surface-1, var(--bg));
 }
 .say-ico {
   opacity: 0.6;
@@ -722,8 +733,13 @@ const aiContext = computed(() =>
   background: var(--surface);
   transition: background 0.15s;
 }
-.ghost-btn:hover {
-  background: #e6fbf2;
+@media (hover: hover) {
+  .ghost-btn:hover {
+    background: #e6fbf2;
+  }
+}
+.ghost-btn:active {
+  background: #d3f7e6;
 }
 
 /* checkpoint */
@@ -848,8 +864,14 @@ const aiContext = computed(() =>
   cursor: pointer;
   transition: transform 0.15s, background 0.15s;
 }
-.wf-opt:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .wf-opt:hover {
+    transform: translateY(-2px);
+    background: var(--bg-accent);
+  }
+}
+.wf-opt:active {
+  transform: translateY(-1px) scale(0.98);
   background: var(--bg-accent);
 }
 .wf-emoji {

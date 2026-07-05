@@ -188,7 +188,12 @@ async function signOut() {
   white-space: nowrap;
   transition: all 0.15s;
 }
-.nav-link:hover {
+@media (hover: hover) {
+  .nav-link:hover {
+    background: var(--line-soft);
+  }
+}
+.nav-link:active {
   background: var(--line-soft);
 }
 .nav-link.active {
@@ -217,6 +222,7 @@ async function signOut() {
   font-size: 16px;
 }
 .theme-toggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -231,7 +237,18 @@ async function signOut() {
   flex: none;
   transition: background 0.15s;
 }
-.theme-toggle:hover {
+/* Vùng chạm mở rộng ≥44px mà không đổi kích thước icon hiển thị (38px) */
+.theme-toggle::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+}
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: var(--purple-soft);
+  }
+}
+.theme-toggle:active {
   background: var(--purple-soft);
 }
 .xp-chip {
@@ -279,6 +296,7 @@ async function signOut() {
 }
 /* —— đăng nhập / tài khoản —— */
 .signin-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -293,7 +311,12 @@ async function signOut() {
   box-shadow: 0 4px 14px rgba(108, 92, 231, 0.07);
   transition: background 0.15s;
 }
-.signin-btn:hover {
+@media (hover: hover) {
+  .signin-btn:hover {
+    background: var(--purple-soft);
+  }
+}
+.signin-btn:active {
   background: var(--purple-soft);
 }
 .signin-btn .g {
@@ -313,12 +336,19 @@ async function signOut() {
   flex: none;
 }
 .account-btn {
+  position: relative;
   border: none;
   background: none;
   padding: 0;
   cursor: pointer;
   border-radius: 11px;
   line-height: 0;
+}
+/* Avatar hiển thị 38px nhưng vùng chạm mở rộng lên ≥44px, không đổi hình dạng */
+.account-btn::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
 }
 .account-avatar {
   width: 38px;
@@ -410,7 +440,12 @@ async function signOut() {
   padding: 9px;
   border-radius: 10px;
 }
-.menu-admin:hover {
+@media (hover: hover) {
+  .menu-admin:hover {
+    background: rgba(108, 92, 231, 0.14);
+  }
+}
+.menu-admin:active {
   background: rgba(108, 92, 231, 0.14);
 }
 .menu-out {
@@ -425,7 +460,12 @@ async function signOut() {
   border-radius: 10px;
   cursor: pointer;
 }
-.menu-out:hover {
+@media (hover: hover) {
+  .menu-out:hover {
+    background: rgba(214, 81, 43, 0.12);
+  }
+}
+.menu-out:active {
   background: rgba(214, 81, 43, 0.12);
 }
 @media (max-width: 720px) {
@@ -476,6 +516,12 @@ async function signOut() {
     padding: 0;
     border-radius: 11px;
     justify-content: center;
+  }
+  /* Vùng chạm mở rộng ≥44px mà không đổi kích thước icon hiển thị (38px) */
+  .signin-btn::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
   }
   .signin-label {
     display: none;

@@ -248,7 +248,12 @@ function markDone() {
   cursor: pointer;
   color: var(--text-primary);
 }
-.ld-play:hover {
+@media (hover: hover) {
+  .ld-play:hover {
+    background: var(--surface-1);
+  }
+}
+.ld-play:active {
   background: var(--surface-1);
 }
 .ld-play.slow {

@@ -263,6 +263,7 @@ function reset() {
   font-size: 15px;
   font-weight: 700;
   border-radius: 13px;
+  min-height: 44px;
 }
 .reset {
   border: 1px solid rgba(108, 92, 231, 0.2);
@@ -270,7 +271,12 @@ function reset() {
   padding: 13px 22px;
   background: var(--surface);
 }
-.reset:hover {
+@media (hover: hover) {
+  .reset:hover {
+    background: var(--purple-soft);
+  }
+}
+.reset:active {
   background: var(--purple-soft);
 }
 .run {
@@ -282,8 +288,13 @@ function reset() {
   box-shadow: 0 10px 24px rgba(0, 214, 143, 0.32);
   transition: transform 0.18s;
 }
-.run:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .run:hover {
+    transform: translateY(-2px);
+  }
+}
+.run:active {
+  transform: scale(0.97);
 }
 .run:disabled {
   opacity: 0.6;

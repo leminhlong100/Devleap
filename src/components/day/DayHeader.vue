@@ -235,7 +235,12 @@ defineEmits(['go-day'])
   cursor: pointer;
   transition: all 0.15s;
 }
-.day-chip:hover {
+@media (hover: hover) {
+  .day-chip:hover {
+    background: #e6fbf2;
+  }
+}
+.day-chip:active {
   background: #e6fbf2;
 }
 .day-chip.on {
@@ -259,8 +264,10 @@ defineEmits(['go-day'])
   color: var(--muted-3);
   cursor: not-allowed;
 }
-.day-chip.locked:hover {
-  background: var(--bg-muted);
+@media (hover: hover) {
+  .day-chip.locked:hover {
+    background: var(--bg-muted);
+  }
 }
 .chip-tick {
   font-weight: 900;

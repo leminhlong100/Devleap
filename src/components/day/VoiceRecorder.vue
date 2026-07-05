@@ -333,13 +333,23 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   color: var(--ink-2);
   cursor: pointer;
   padding: 7px 11px;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   border-radius: 10px;
   border: 1px solid rgba(108, 92, 231, 0.08);
   background: var(--surface);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
-.vr-suggest li:hover {
+@media (hover: hover) {
+  .vr-suggest li:hover {
+    border-color: rgba(0, 214, 143, 0.4);
+  }
+}
+.vr-suggest li:active {
   border-color: rgba(0, 214, 143, 0.4);
+  background: rgba(0, 214, 143, 0.06);
 }
 .say-ico {
   opacity: 0.6;
@@ -412,8 +422,13 @@ onMounted(() => {}) // (nạp đã làm ở watch immediate)
   font-size: 15px;
   cursor: pointer;
 }
-.vr-del:hover {
-  background: rgba(255, 107, 107, 0.08);
+@media (hover: hover) {
+  .vr-del:hover {
+    background: rgba(255, 107, 107, 0.08);
+  }
+}
+.vr-del:active {
+  background: rgba(255, 107, 107, 0.16);
 }
 .vr-foot {
   margin-top: 14px;

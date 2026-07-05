@@ -188,6 +188,39 @@ svg {
   display: block;
 }
 
+/* ---------------- Chuẩn tương tác cảm ứng (Bước 1.3) ----------------
+   Cảm ứng không có :hover — mọi nút bấm phải phản hồi ngay, không nháy
+   300ms khi double-tap, và không tô xanh mặc định của WebKit. Chỉ đặt
+   touch-action/tap-highlight toàn cục (an toàn, không đổi hình dạng);
+   hiệu ứng scale khi bấm dùng qua class .tappable ở từng nơi cần vì
+   nhiều <a>/<button> đã có transform :hover riêng (vd. translateY) —
+   thêm scale toàn cục sẽ chồng hiệu ứng không mong muốn. */
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tappable {
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.tappable:active {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.tappable:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+}
+
 /* Chống iOS tự zoom khi focus input/textarea/select có font-size < 16px */
 input,
 textarea,
@@ -345,15 +378,23 @@ select {
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.green-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .green-btn:hover {
+    transform: translateY(-2px);
+  }
+  .green-btn.locked:hover {
+    transform: none;
+  }
+}
+.green-btn:active {
+  transform: translateY(-1px) scale(0.98);
 }
 .green-btn.locked {
   background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
-.green-btn.locked:hover {
+.green-btn.locked:active {
   transform: none;
 }
 .ghost-btn {
@@ -368,7 +409,12 @@ select {
   background: var(--surface);
   transition: background 0.15s;
 }
-.ghost-btn:hover {
+@media (hover: hover) {
+  .ghost-btn:hover {
+    background: var(--bg-success);
+  }
+}
+.ghost-btn:active {
   background: var(--bg-success);
 }
 .gate-line {

@@ -89,15 +89,25 @@
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.green-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .green-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.green-btn:active {
+  transform: translateY(-2px) scale(0.98);
 }
 .green-btn.locked {
   background: var(--disabled-bg);
   box-shadow: none;
   cursor: not-allowed;
 }
-.green-btn.locked:hover {
+@media (hover: hover) {
+  .green-btn.locked:hover {
+    transform: none;
+  }
+}
+.green-btn.locked:active {
   transform: none;
 }
 .write-area {

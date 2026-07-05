@@ -38,7 +38,7 @@ async function signIn() {
           Các khóa học chỉ dành cho thành viên đã đăng nhập — để lưu tiến độ, streak và đồng bộ trên
           mọi thiết bị.
         </p>
-        <button class="gate-btn" @click="signIn">
+        <button class="gate-btn tappable" @click="signIn">
           <span class="g">G</span> Đăng nhập / Đăng ký với Google
         </button>
         <button class="gate-later" @click="close">Để sau</button>
@@ -110,8 +110,10 @@ async function signIn() {
   box-shadow: 0 12px 26px rgba(108, 92, 231, 0.34);
   transition: transform 0.15s;
 }
-.gate-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .gate-btn:hover {
+    transform: translateY(-2px);
+  }
 }
 .gate-btn .g {
   display: inline-flex;

@@ -48,9 +48,15 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   justify-content: center;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.back-to-top:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(108, 92, 231, 0.5);
+@media (hover: hover) {
+  .back-to-top:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(108, 92, 231, 0.5);
+  }
+}
+.back-to-top:active {
+  transform: scale(0.94);
+  box-shadow: 0 6px 18px rgba(108, 92, 231, 0.45);
 }
 
 .btt-enter-active,

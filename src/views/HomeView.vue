@@ -340,9 +340,15 @@ function goRemedial() {
   background: var(--grad-purple);
   box-shadow: 0 12px 26px rgba(108, 92, 231, 0.34);
 }
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(108, 92, 231, 0.42);
+@media (hover: hover) {
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(108, 92, 231, 0.42);
+  }
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.36);
 }
 .btn-ghost {
   border: 1px solid rgba(108, 92, 231, 0.2);
@@ -350,7 +356,12 @@ function goRemedial() {
   padding: 15px 24px;
   background: var(--surface);
 }
-.btn-ghost:hover {
+@media (hover: hover) {
+  .btn-ghost:hover {
+    background: var(--purple-soft);
+  }
+}
+.btn-ghost:active {
   background: var(--purple-soft);
 }
 .hero-stats {
@@ -459,8 +470,13 @@ function goRemedial() {
   box-shadow: 0 12px 26px rgba(108, 92, 231, 0.28);
   transition: transform 0.15s;
 }
-.continue-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .continue-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.continue-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 .continue-course {
   font-size: 12px;
@@ -499,8 +515,13 @@ function goRemedial() {
 .chip-link {
   cursor: pointer;
 }
-.chip-link:hover {
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .chip-link:hover {
+    transform: translateY(-1px);
+  }
+}
+.chip-link:active {
+  transform: translateY(0) scale(0.97);
 }
 .today-mission {
   margin: 16px 0 0;
@@ -525,8 +546,13 @@ function goRemedial() {
   cursor: pointer;
   transition: transform 0.15s;
 }
-.due-card:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .due-card:hover {
+    transform: translateY(-2px);
+  }
+}
+.due-card:active {
+  transform: translateY(0) scale(0.98);
 }
 .due-emoji {
   font-size: 28px;
@@ -606,9 +632,15 @@ function goRemedial() {
   box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
   transition: all 0.18s;
 }
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(108, 92, 231, 0.12);
+@media (hover: hover) {
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(108, 92, 231, 0.12);
+  }
+}
+.feature-card:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 12px 30px rgba(108, 92, 231, 0.1);
 }
 .feature-icon {
   width: 54px;
@@ -715,8 +747,13 @@ function goRemedial() {
   box-shadow: 0 20px 50px rgba(108, 92, 231, 0.16);
   transition: transform 0.18s;
 }
-.feat-card:hover {
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .feat-card:hover {
+    transform: translateY(-3px);
+  }
+}
+.feat-card:active {
+  transform: translateY(-1px) scale(0.995);
 }
 .feat-left {
   background: linear-gradient(150deg, #6c5ce7, #4b3bc4);

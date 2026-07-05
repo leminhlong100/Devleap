@@ -45,8 +45,14 @@ import { adminModules } from './adminModules'
   padding: 22px;
   transition: all 0.15s;
 }
-.card:hover {
-  transform: translateY(-4px);
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--purple);
+  }
+}
+.card:active {
+  transform: translateY(-1px) scale(0.98);
   border-color: var(--purple);
 }
 .card-ic {

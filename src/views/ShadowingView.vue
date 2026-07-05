@@ -400,8 +400,14 @@ function pickFeatured(id) {
   cursor: pointer;
   transition: all 0.15s;
 }
-.lv-chip:hover {
+@media (hover: hover) {
+  .lv-chip:hover {
+    background: var(--track-bg);
+  }
+}
+.lv-chip:active {
   background: var(--track-bg);
+  transform: scale(0.97);
 }
 .lv-chip .dot {
   width: 8px;
@@ -445,9 +451,15 @@ function pickFeatured(id) {
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
-.clip-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(108, 92, 231, 0.14);
+@media (hover: hover) {
+  .clip-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(108, 92, 231, 0.14);
+  }
+}
+.clip-card:active {
+  transform: translateY(-2px) scale(0.99);
+  box-shadow: 0 10px 22px rgba(108, 92, 231, 0.16);
 }
 .clip-card.on {
   border-color: var(--purple);

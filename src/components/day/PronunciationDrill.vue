@@ -267,11 +267,17 @@ function markDone() {
   background: var(--surface-2);
   border-radius: 8px;
   padding: 5px 10px;
+  min-height: 44px;
   font-size: 13px;
   cursor: pointer;
   color: var(--text-primary);
 }
-.pd-btn:hover {
+@media (hover: hover) {
+  .pd-btn:hover {
+    background: var(--surface-1);
+  }
+}
+.pd-btn:active {
   background: var(--surface-1);
 }
 .pd-btn:disabled {
@@ -288,11 +294,21 @@ function markDone() {
   font-size: 12px;
   padding: 5px 8px;
 }
-.pd-btn.self-ok:hover {
+@media (hover: hover) {
+  .pd-btn.self-ok:hover {
+    background: var(--bg-success);
+    border-color: var(--border-success);
+  }
+  .pd-btn.self-bad:hover {
+    background: var(--bg-danger);
+    border-color: var(--border-danger);
+  }
+}
+.pd-btn.self-ok:active {
   background: var(--bg-success);
   border-color: var(--border-success);
 }
-.pd-btn.self-bad:hover {
+.pd-btn.self-bad:active {
   background: var(--bg-danger);
   border-color: var(--border-danger);
 }

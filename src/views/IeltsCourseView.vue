@@ -233,8 +233,13 @@ function chooseTrack(track) {
   cursor: pointer;
   transition: background 0.15s;
 }
-.track-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
+@media (hover: hover) {
+  .track-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+}
+.track-btn:active {
+  background: rgba(255, 255, 255, 0.28);
 }
 .track-btn.active {
   background: #fff;
@@ -287,8 +292,13 @@ function chooseTrack(track) {
   white-space: nowrap;
   transition: transform 0.18s;
 }
-.continue-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .continue-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.continue-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 .remedial-hint {
   margin-top: 18px;
@@ -302,8 +312,13 @@ function chooseTrack(track) {
   cursor: pointer;
   transition: background 0.15s;
 }
-.remedial-hint:hover {
-  background: rgba(255, 214, 102, 0.32);
+@media (hover: hover) {
+  .remedial-hint:hover {
+    background: rgba(255, 214, 102, 0.32);
+  }
+}
+.remedial-hint:active {
+  background: rgba(255, 214, 102, 0.38);
 }
 .strip {
   display: grid;
@@ -387,9 +402,15 @@ function chooseTrack(track) {
   box-shadow: 0 10px 30px rgba(108, 92, 231, 0.06);
   transition: all 0.18s;
 }
-.explain-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(108, 92, 231, 0.12);
+@media (hover: hover) {
+  .explain-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(108, 92, 231, 0.12);
+  }
+}
+.explain-card:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 12px 30px rgba(108, 92, 231, 0.1);
 }
 .explain-icon {
   width: 50px;
@@ -578,14 +599,24 @@ function chooseTrack(track) {
   background: linear-gradient(135deg, #00d68f, #00a86f);
   transition: transform 0.18s;
 }
-.final-btn:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .final-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+.final-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 .final-btn.locked {
   background: var(--disabled-bg);
   cursor: not-allowed;
 }
-.final-btn.locked:hover {
+@media (hover: hover) {
+  .final-btn.locked:hover {
+    transform: none;
+  }
+}
+.final-btn.locked:active {
   transform: none;
 }
 .final-hint {
