@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChatEngine, PERSONAS } from '@/composables/useChatEngine'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
+import { useKeyboardOpen } from '@/composables/useKeyboardOpen'
 import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 import ChatMessages from './ChatMessages.vue'
 import ChatComposer from './ChatComposer.vue'
@@ -27,6 +28,15 @@ const router = useRouter()
 const user = useUserStore()
 const chatMessages = ref(null)
 const { isOnline } = useOnlineStatus()
+const { isKeyboardOpen, keyboardInset } = useKeyboardOpen()
+
+// Bàn phím ảo mở lên: composer dán ngay mép bàn phím (không bị che khuất — xem
+// useKeyboardOpen.js) + cuộn tin nhắn xuống cuối để thấy ngay tin mới nhất.
+watch(isKeyboardOpen, async (open) => {
+  if (!open) return
+  await nextTick()
+  chatMessages.value?.scrollToEnd()
+})
 
 const {
   messages,
@@ -72,7 +82,7 @@ function closePop() {
 </script>
 
 <template>
-  <section class="step-card ai-chat" @click="closePop">
+  <section class="step-card ai-chat" :class="{ 'kb-open': isKeyboardOpen }" @click="closePop">
     <div class="step-head">
       <div>
         <div class="eyebrow">LUYỆN GIAO TIẾP</div>
@@ -158,16 +168,18 @@ function closePop() {
       <button v-if="retry" type="button" class="chat-retry-btn" @click="retry?.()">🔄 Thử lại</button>
     </div>
 
-    <ChatComposer
-      v-model="input"
-      :loading="loading"
-      :listening="listening"
-      :listenable="listenable"
-      :answer-timer="answerTimer"
-      :online="isOnline"
-      @submit="send"
-      @toggle-mic="toggleMic"
-    />
+    <div class="composer-dock" :style="isKeyboardOpen ? { bottom: keyboardInset + 'px' } : null">
+      <ChatComposer
+        v-model="input"
+        :loading="loading"
+        :listening="listening"
+        :listenable="listenable"
+        :answer-timer="answerTimer"
+        :online="isOnline"
+        @submit="send"
+        @toggle-mic="toggleMic"
+      />
+    </div>
 
     <Transition name="toast">
       <div v-if="savedToast" class="save-toast">{{ savedToast }}</div>
@@ -190,6 +202,13 @@ function closePop() {
   display: flex;
   gap: 8px;
   flex: none;
+}
+@media (max-width: 720px) {
+  /* 4 nút (Nói ngay/Đọc/Bất ngờ/Mới) không vừa 1 hàng ở 375px — xuống hàng riêng dưới tiêu đề rồi tự bọc. */
+  .head-tools {
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 .tool-toggle {
   position: relative;
@@ -366,5 +385,33 @@ function closePop() {
 .toast-leave-to {
   opacity: 0;
   transform: translate(-50%, 8px);
+}
+
+/* —— Composer dính đáy trên mobile —— */
+@media (max-width: 720px) {
+  .composer-dock {
+    position: sticky;
+    /* Mặc định dán ngay trên BottomNav; trang buổi học có thêm MobileCheckpointBar
+       (xem body.has-mcb-bar bên dưới) nên phải chừa thêm chỗ. Khi bàn phím ảo mở,
+       AiChat.vue ghi đè bằng inline style `bottom: keyboardInset` (JS) để dán sát
+       mép bàn phím thay vì bị bàn phím che (xem useKeyboardOpen.js). */
+    bottom: calc(72px + var(--safe-bottom));
+    z-index: 40;
+    margin: 12px calc(-1 * var(--space-page-x)) calc(-1 * var(--space-page-x));
+    padding: 10px var(--space-page-x) calc(10px + var(--safe-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(14px);
+  }
+  body.has-mcb-bar .composer-dock {
+    bottom: calc(128px + var(--safe-bottom));
+  }
+  /* Bàn phím mở: nhường chỗ cho tin nhắn + ô nhập bằng cách gọn phần đầu thẻ lại */
+  .ai-chat.kb-open .scenario-tag,
+  .ai-chat.kb-open .persona-bar,
+  .ai-chat.kb-open .saved-pill,
+  .ai-chat.kb-open .hint {
+    display: none;
+  }
 }
 </style>

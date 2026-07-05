@@ -144,4 +144,13 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
   cursor: not-allowed;
   box-shadow: none;
 }
+
+@media (max-width: 720px) {
+  /* Voice-first: mic là hành động chính của chat trên mobile — mở rộng vùng chạm */
+  .mic-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 21px;
+  }
+}
 </style>

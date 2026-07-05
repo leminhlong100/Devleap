@@ -4,7 +4,9 @@ import { translateWord } from '@/lib/aiChat'
 import { cardsFromTerms } from '@/data/tools'
 import { VOCAB_GLOSSARY } from '@/data/vocabGlossary'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { PERSONAS } from '@/composables/useChatEngine'
+import BottomSheet from '@/components/common/BottomSheet.vue'
 
 /**
  * Render danh sách tin nhắn của AiChat.vue + tra/lưu từ khi chạm vào tin nhắn.
@@ -28,8 +30,11 @@ const props = defineProps({
 })
 
 const user = useUserStore()
+const { matches: isMobile } = useIsMobile()
 
 // —— Tra/lưu/đánh dấu sao TỪ tại chỗ ——
+// Mobile (≤720px): mở BottomSheet (chạm dễ hơn, không cần tính toạ độ). Desktop:
+// giữ popover định vị theo clientX/Y như cũ.
 const pop = reactive({ open: false, word: '', vi: '', ipa: '', loading: false, x: 0, y: 0 })
 
 const scroller = ref(null)
@@ -77,7 +82,7 @@ async function tapWord(word, ev) {
 function closePop() {
   pop.open = false
 }
-defineExpose({ closePop })
+defineExpose({ closePop, scrollToEnd })
 
 // Lưu từ trong popover vào danh sách flashcard (kèm nghĩa đã có).
 function saveWordFromPop() {
@@ -183,8 +188,8 @@ function saveWordFromPop() {
     </div>
   </div>
 
-  <!-- Popover tra từ -->
-  <div v-if="pop.open" class="word-pop" :style="{ left: pop.x + 'px', top: pop.y + 'px' }" @click.stop>
+  <!-- Popover tra từ — desktop (định vị theo toạ độ chạm) -->
+  <div v-if="pop.open && !isMobile" class="word-pop" :style="{ left: pop.x + 'px', top: pop.y + 'px' }" @click.stop>
     <div class="wp-head">
       <b>{{ pop.word }}</b>
       <span v-if="pop.ipa" class="wp-ipa">{{ pop.ipa }}</span>
@@ -194,6 +199,17 @@ function saveWordFromPop() {
       <button @click.stop="saveWordFromPop">{{ user.isWordSaved(pop.word) ? '✓ Đã lưu' : '💾 Lưu từ' }}</button>
     </div>
   </div>
+
+  <!-- Tra từ — mobile (BottomSheet, dễ chạm hơn popover theo toạ độ) -->
+  <BottomSheet :model-value="pop.open && isMobile" @update:model-value="closePop">
+    <div class="ws-head">
+      <b>{{ pop.word }}</b>
+      <span v-if="pop.ipa" class="ws-ipa">{{ pop.ipa }}</span>
+      <button v-if="speakable" class="speak-mini" title="Nghe" @click.stop="replay(pop.word)">🔊</button>
+    </div>
+    <div class="ws-vi">{{ pop.loading ? 'Đang dịch…' : pop.vi || '(chưa có nghĩa)' }}</div>
+    <button class="ws-save" @click.stop="saveWordFromPop">{{ user.isWordSaved(pop.word) ? '✓ Đã lưu' : '💾 Lưu từ' }}</button>
+  </BottomSheet>
 </template>
 
 <style scoped>
@@ -560,6 +576,42 @@ function saveWordFromPop() {
   }
 }
 .wp-actions button:active {
+  background: #f5f3ff;
+}
+
+/* Tra từ — nội dung BottomSheet mobile */
+.ws-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ws-head b {
+  font-size: 19px;
+  color: var(--ink);
+}
+.ws-ipa {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.ws-vi {
+  margin-top: 6px;
+  font-size: 16px;
+  color: #00805a;
+  font-weight: 600;
+}
+.ws-save {
+  margin-top: 14px;
+  width: 100%;
+  min-height: 48px;
+  font-size: 14.5px;
+  font-weight: 800;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  background: var(--surface-1);
+  color: var(--purple);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.ws-save:active {
   background: #f5f3ff;
 }
 

@@ -224,7 +224,45 @@ cần xem giao diện buổi học khi chưa đăng nhập, hỏi người dùng
 
 ### Bước 2.2 — Chat AI như app nhắn tin: composer dính đáy, bàn phím ảo, bottom sheet nghĩa từ
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-05):** `AiChat.vue` dùng trong 2 ngữ cảnh khác nhau (`IeltsDayView.vue`, có
+`MobileCheckpointBar` dính đáy; `ToolsView.vue` route `/tools/chat`, không có) — quyết định dùng
+**`position: sticky`** (không phải `fixed`) cho `.composer-dock` (bọc `ChatComposer`): sticky tự
+"dán" vào đáy màn hình trong lúc cuộn qua thẻ `.ai-chat` rồi tự cuộn đi cùng nội dung khi qua khỏi
+thẻ — không cần `IntersectionObserver` để ẩn/hiện thủ công, và không đè lên các phần khác của
+trang buổi học dài (nhiều `step-card` khác). Offset mặc định `bottom: calc(72px + var(--safe-bottom))`
+(dán ngay trên BottomNav); khi `body.has-mcb-bar` (đang ở trang buổi học, xem `MobileCheckpointBar.vue`)
+cộng thêm 56px (cùng con số đã dùng cho `BackToTop` ở Bước 2.1) → `calc(128px + var(--safe-bottom))`.
+Bàn phím ảo mở: mở rộng `useKeyboardOpen.js` thêm `keyboardInset` (px chênh lệch visualViewport,
+0 khi đóng) — vì `position: sticky/fixed` tính theo layout viewport trong khi bàn phím chỉ thu hẹp
+visual viewport, nếu không bù trừ thì composer sẽ nằm khuất sau bàn phím trên Android/iOS (không
+phải desktop DevTools nên khó thấy khi test). `AiChat.vue` ghi đè `style="bottom: keyboardInset px"`
+khi `isKeyboardOpen` (đã kiểm bằng cách mock `visualViewport.height` + dispatch `resize` trong
+preview — composer nhảy đúng theo px chênh lệch). Cùng lúc bàn phím mở: ẩn bớt phần đầu thẻ
+(`scenario-tag`, `persona-bar`, `saved-pill`, `hint`) qua class `.kb-open` để nhường chỗ cho tin
+nhắn + ô nhập (giống app nhắn tin thật thu gọn header khi gõ), và tự cuộn tin nhắn xuống cuối
+(`ChatMessages` expose thêm `scrollToEnd` bên cạnh `closePop` có sẵn). `BottomNav` đã tự ẩn khi bàn
+phím mở từ Bước 1.1 (`v-show="!isKeyboardOpen"`) — xác nhận vẫn đúng, không phải sửa.
+
+Tạo `src/components/common/BottomSheet.vue` dùng chung (Teleport tới `body`, overlay mờ, kéo tay
+cầm xuống >80px hoặc bấm overlay để đóng — pointer events + `setPointerCapture` tự viết, không lib).
+`ChatMessages.vue`: thêm composable `src/composables/useMediaQuery.js` (singleton theo query, cùng
+pattern `useOnlineStatus`/`useTheme`; export thêm `useIsMobile()` cho ngưỡng ≤720px dùng lại được ở
+các bước sau) để chọn UI theo viewport **runtime** (không chỉ ẩn/hiện bằng CSS) — mobile mở
+BottomSheet (nghĩa/IPA/nút 🔊 dùng lại `replay` prop có sẵn/nút Lưu từ, cỡ chữ to hơn popover cũ),
+desktop giữ nguyên popover định vị theo toạ độ như cũ; cả hai dùng chung state `pop` nên không nhân
+đôi logic tra/lưu từ. `ChatComposer.vue`: mic-btn 46px → 52px ở ≤720px (hành động chính voice-first).
+`AiChat.vue`: `.head-tools` (4 nút Nói ngay/Đọc/Bất ngờ/Mới) thêm `flex-wrap: wrap` + `width: 100%`
+ở ≤720px — 4 nút không vừa 1 hàng ở 375px, trước đây tràn ngang; giờ tự xuống 2 hàng gọn trong thẻ.
+
+**Lưu ý khi test bằng preview_eval:** dispatch nhiều sự kiện click mở/đóng BottomSheet liên tiếp
+trong <200ms (nhanh hơn phản xạ người dùng thật) làm gián đoạn transition Vue giữa chừng, có lúc kẹt
+class enter/leave (phần tử không gỡ khỏi DOM dù đã đóng) — đây là do ngắt animation quá nhanh bằng
+script, không phải lỗi thật; test lại với thao tác đơn + chờ đủ (~500-1000ms) giữa các bước thì
+mở/đóng/kéo-để-đóng đều mượt và đúng. Đã kiểm 375×812 (light/dark, cả 2 route `/tools/chat` và có
+`body.has-mcb-bar` giả lập) + resize về 1280×800 (desktop giữ popover cũ, composer không sticky).
+`npm test` (383 tests) + `npm run build` pass.
 
 **Phụ thuộc:** Bước 1.1 (composable `useKeyboardOpen`), 1.2.
 
@@ -451,7 +489,7 @@ cần xem giao diện buổi học khi chưa đăng nhập, hỏi người dùng
 | 1.2 | Safe-area, dvh, spacing/chữ | 0.5–1 buổi | ✅ |
 | 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ✅ |
 | 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ✅ |
-| 2.2 | Chat như app nhắn tin | 1–2 buổi | ⬜ |
+| 2.2 | Chat như app nhắn tin | 1–2 buổi | ✅ |
 | 2.3 | Quiz chạm thay kéo | 1 buổi | ⬜ |
 | 2.4 | Flashcard full-screen + vuốt | 1 buổi | ⬜ |
 | 2.5 | Shadowing/nghe chép mobile | 1 buổi | ⬜ |
