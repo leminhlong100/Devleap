@@ -3,7 +3,7 @@ import { union, laterDate } from './helpers'
 import { mergeSrs } from './srsSlice'
 import { mergeQuiz } from './quizSlice'
 import { mergeMissions, mergeWeekFeedback } from './missionSlice'
-import { mergeSaved, mergeShadowing } from './vocabSlice'
+import { mergeSaved, mergeShadowing, mergeTopics } from './vocabSlice'
 import { mergeWritings } from './writingSlice'
 import { mergeChecklists, mergeWeekXp } from './progressSlice'
 import { mergeSpeakingLog } from './speakingSlice'
@@ -73,7 +73,7 @@ export const actions = {
       const { data, error } = await supabase
         .from('progress')
         .select(
-          'xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, shadowing_scores, week_feedback, week_xp, week_xp_key, leaderboard_opt_in, leaderboard_name',
+          'xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, topics, shadowing_scores, week_feedback, week_xp, week_xp_key, leaderboard_opt_in, leaderboard_name',
         )
         .eq('user_id', userId)
         .maybeSingle()
@@ -91,6 +91,7 @@ export const actions = {
           completed: data.completed || {},
           quizScores: data.quiz_scores || {},
           savedWords: data.saved_words || {},
+          topics: data.topics || [],
           shadowingScores: data.shadowing_scores || {},
           weekFeedback: data.week_feedback || {},
           weekXp: data.week_xp || 0,
@@ -153,6 +154,7 @@ export const actions = {
           completed: s.completed,
           quiz_scores: s.quizScores,
           saved_words: s.savedWords,
+          topics: s.topics,
           shadowing_scores: s.shadowingScores,
           week_feedback: s.weekFeedback,
           week_xp: s.weekXp,
@@ -196,6 +198,7 @@ export function mergeSnapshots(local, remote) {
     },
     quizScores: mergeQuiz(local.quizScores, remote.quizScores),
     savedWords: mergeSaved(local.savedWords, remote.savedWords),
+    topics: mergeTopics(local.topics, remote.topics),
     shadowingScores: mergeShadowing(local.shadowingScores, remote.shadowingScores),
     writings: mergeWritings(local.writings, remote.writings),
     missions: mergeMissions(local.missions, remote.missions),

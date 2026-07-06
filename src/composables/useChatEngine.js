@@ -324,7 +324,7 @@ export function useChatEngine(props) {
     try {
       const vi = await translateToVi(s)
       const base = cardsFromTerms([s], 'saved')[0]
-      user.saveWord({ ...base, vi, cat: 'Câu', kind: 'sentence' })
+      user.saveWord({ ...base, vi, cat: 'Câu', kind: 'sentence', topic: user.convoPrefs.activeSaveTopic })
       flashToast('✓ Đã lưu câu')
     } catch {
       flashToast('⚠️ Không dịch được, thử lại nhé')

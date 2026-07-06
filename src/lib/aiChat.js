@@ -138,11 +138,12 @@ export async function translateToVi(text) {
 }
 
 /**
- * Tự tạo IPA/nghĩa/câu ví dụ cho MỘT từ mới (dùng khi người học tự thêm thẻ
- * flashcard và để trống các ô này). Ảnh minh họa KHÔNG qua AI — tự động lấy
- * theo từ ở VocabIllustration.vue, không cần sinh/chọn ảnh ở đây.
+ * Tự tạo loại từ (danh/động/tính/trạng từ...)/IPA/nghĩa/câu ví dụ cho MỘT từ
+ * mới (dùng khi người học tự thêm thẻ flashcard và để trống các ô này). Ảnh
+ * minh họa KHÔNG qua AI — tự động lấy theo từ ở VocabIllustration.vue, không
+ * cần sinh/chọn ảnh ở đây.
  * @param {string} word
- * @returns {Promise<{ipa: string, vi: string, ex: string}>}
+ * @returns {Promise<{pos: string, ipa: string, vi: string, ex: string}>}
  */
 export async function generateCard(word) {
   const reply = await sendChat({
@@ -151,6 +152,7 @@ export async function generateCard(word) {
   })
   const r = reply && typeof reply === 'object' ? reply : {}
   return {
+    pos: String(r.pos || '').trim(),
     ipa: String(r.ipa || '').trim(),
     vi: String(r.vi || '').trim(),
     ex: String(r.ex || '').trim(),

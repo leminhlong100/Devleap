@@ -136,6 +136,19 @@ function closePop() {
       >{{ p.label }}</button>
     </div>
 
+    <!-- Chủ đề đang lưu từ/câu vào (tạo chủ đề ở 🔖 Từ vựng & câu đã lưu) -->
+    <div v-if="user.topicList.length" class="topic-bar" @click.stop>
+      <span class="topic-bar-label">💾 Lưu vào chủ đề:</span>
+      <select
+        class="topic-bar-select"
+        :value="user.convoPrefs.activeSaveTopic"
+        @change="user.setConvoPrefs({ activeSaveTopic: $event.target.value })"
+      >
+        <option value="">— Không chủ đề —</option>
+        <option v-for="t in user.topicList" :key="t" :value="t">{{ t }}</option>
+      </select>
+    </div>
+
     <!-- ———————————— HỘI THOẠI ———————————— -->
     <button v-if="user.savedCount" class="saved-pill" @click.stop="openSavedDeck">
       📚 {{ user.savedCount }} từ đã lưu — học bằng Flashcard →
@@ -301,6 +314,34 @@ function closePop() {
   background: #6c5ce7;
   border-color: transparent;
   color: #fff;
+}
+
+/* —— Chọn chủ đề đang lưu từ/câu vào —— */
+.topic-bar {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.topic-bar-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+.topic-bar-select {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1.5px solid rgba(108, 92, 231, 0.2);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+}
+.topic-bar-select:focus {
+  border-color: var(--purple);
 }
 
 /* —— Lối tắt & gợi ý —— */

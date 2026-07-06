@@ -93,7 +93,7 @@ function saveWordFromPop() {
     return
   }
   const card = cardsFromTerms([w], 'saved')[0]
-  user.saveWord({ ...card, vi: card.vi || pop.vi, ipa: card.ipa || pop.ipa })
+  user.saveWord({ ...card, vi: card.vi || pop.vi, ipa: card.ipa || pop.ipa, topic: user.convoPrefs.activeSaveTopic })
   props.flashToast(`✓ Đã lưu “${w}”`)
 }
 </script>

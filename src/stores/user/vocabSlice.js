@@ -1,4 +1,4 @@
-import { ymd, laterDate } from './helpers'
+import { ymd, laterDate, union } from './helpers'
 
 /** Slice từ đã lưu (chat AI) + kết quả luyện shadowing. */
 
@@ -10,9 +10,14 @@ const XP_SHADOWING_PASS = 120
 export function state() {
   return {
     // từ vựng người học tự lưu khi trò chuyện với AI, khóa theo từ (thường hóa):
-    // { [key]: { term, ipa, vi, ex, cat, srsId, context, savedAt } }. Dùng làm
-    // một bộ flashcard riêng (srsId dạng "saved:từ" để có lịch ôn độc lập).
+    // { [key]: { term, ipa, vi, ex, cat, topic, srsId, context, savedAt } }. Dùng
+    // làm một bộ flashcard riêng (srsId dạng "saved:từ" để có lịch ôn độc lập).
+    // `topic` (chủ đề, vd "Bài 1"/"Học tập"/"Làm việc") là tùy chọn, để nhóm từ
+    // lại học riêng — rỗng nghĩa là chưa xếp vào chủ đề nào.
     savedWords: {},
+    // Danh sách chủ đề người học tự tạo để nhóm từ đã lưu — mảng tên (string),
+    // tạo trước rồi mới gắn từ vào (xem createTopic). Không phải "loại từ" (cat).
+    topics: [],
     // kết quả luyện shadowing, khóa theo videoId:
     // { [videoId]: { best, passed, attempts, lastAt, sentences: { [id]: bestPct } } }
     // best = điểm trung bình các câu; `sentences` lưu điểm tốt nhất TỪNG CÂU để
@@ -29,6 +34,8 @@ export const getters = {
   savedCount: (s) => Object.keys(s.savedWords).length,
   /** Một từ đã được lưu chưa? Dùng: user.isWordSaved('inheritance'). */
   isWordSaved: (s) => (term) => !!s.savedWords[String(term).trim().toLowerCase()],
+  /** Danh sách chủ đề, sắp xếp theo bảng chữ cái tiếng Việt để hiện lên UI. */
+  topicList: (s) => [...s.topics].sort((a, b) => a.localeCompare(b, 'vi')),
   /** Kết quả shadowing một bài (null nếu chưa luyện). Dùng: user.shadowingOf(videoId). */
   shadowingOf: (s) => (videoId) => s.shadowingScores[videoId] || null,
   /** Đã hoàn thành (đủ số câu đạt mốc) một bài shadowing chưa? */
@@ -60,6 +67,53 @@ export const actions = {
     const key = String(term || '').trim().toLowerCase()
     if (!this.savedWords[key]) return
     delete this.savedWords[key]
+    this.persist()
+  },
+
+  /**
+   * Sửa lại thông tin một từ đã lưu (nghĩa/câu ví dụ/loại từ/IPA...) — giữ
+   * nguyên từ gốc, srsId và ngày lưu ban đầu.
+   * @param {string} term
+   * @param {object} patch  các field cần cập nhật, vd { vi, ex, cat }
+   * @returns {boolean} true nếu sửa thành công (từ có tồn tại)
+   */
+  updateSavedWord(term, patch) {
+    const key = String(term || '').trim().toLowerCase()
+    if (!this.savedWords[key]) return false
+    this.savedWords[key] = { ...this.savedWords[key], ...patch }
+    this.persist()
+    return true
+  },
+
+  /**
+   * Tạo một chủ đề mới để nhóm từ đã lưu (vd "Bài 1", "Học tập", "Làm việc").
+   * Bỏ qua nếu tên rỗng hoặc đã có (không phân biệt hoa/thường).
+   * @returns {boolean} true nếu tạo thành công.
+   */
+  createTopic(name) {
+    const n = String(name || '').trim()
+    if (!n || this.topics.some((t) => t.toLowerCase() === n.toLowerCase())) return false
+    this.topics.push(n)
+    this.persist()
+    return true
+  },
+
+  /** Đổi tên một chủ đề — các từ đang gắn chủ đề này cũng đổi theo. */
+  renameTopic(oldName, newName) {
+    const n = String(newName || '').trim()
+    const i = this.topics.indexOf(oldName)
+    if (i === -1 || !n) return false
+    this.topics[i] = n
+    for (const w of Object.values(this.savedWords)) if (w.topic === oldName) w.topic = n
+    this.persist()
+    return true
+  },
+
+  /** Xóa một chủ đề — các từ đang gắn chủ đề này trở về "chưa phân loại" (giữ nguyên từ, chỉ bỏ tag). */
+  deleteTopic(name) {
+    if (!this.topics.includes(name)) return
+    this.topics = this.topics.filter((t) => t !== name)
+    for (const w of Object.values(this.savedWords)) if (w.topic === name) w.topic = ''
     this.persist()
   },
 
@@ -103,12 +157,13 @@ export const actions = {
 }
 
 export function pick(s) {
-  return { savedWords: s.savedWords, shadowingScores: s.shadowingScores }
+  return { savedWords: s.savedWords, topics: s.topics, shadowingScores: s.shadowingScores }
 }
 
 export function applyDefaults(s = {}) {
   return {
     savedWords: s.savedWords && typeof s.savedWords === 'object' ? s.savedWords : {},
+    topics: Array.isArray(s.topics) ? s.topics : [],
     shadowingScores: s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {},
   }
 }
@@ -122,6 +177,9 @@ export function mergeSaved(a = {}, b = {}) {
   }
   return out
 }
+
+// Hợp nhất danh sách chủ đề giữa 2 thiết bị: gộp không trùng tên.
+export const mergeTopics = union
 
 // Gộp điểm từng câu giữa 2 thiết bị: mỗi câu giữ điểm cao nhất.
 function mergeSentenceScores(a = {}, b = {}) {

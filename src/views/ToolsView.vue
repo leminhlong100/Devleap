@@ -35,8 +35,15 @@ const active = computed(() => {
 const lessonOnly = (id) => id === 'flashcard' || id === 'quiz'
 
 // Chế độ ôn bộ "từ đã lưu" (lưu khi chat AI) — mở qua ?deck=saved ở tab flashcard.
+// Có thể kèm ?topic=<tên chủ đề> để chỉ ôn riêng một chủ đề (xem SavedTool.vue).
 const savedMode = computed(() => active.value === 'flashcard' && route.query.deck === 'saved')
-const savedCards = computed(() => (user.savedWordList.length ? user.savedWordList : null))
+const savedTopic = computed(() => (savedMode.value ? String(route.query.topic || '') : ''))
+const savedCards = computed(() => {
+  const list = savedTopic.value
+    ? user.savedWordList.filter((w) => w.topic === savedTopic.value)
+    : user.savedWordList
+  return list.length ? list : savedTopic.value ? [] : null
+})
 // Chế độ ôn nhanh mọi thẻ đến hạn hôm nay — mở qua ?deck=due (banner "N từ đến
 // hạn ôn" ở Home/course). Không cần tải dữ liệu khóa: store tự tra ngược nghĩa.
 const dueMode = computed(() => active.value === 'flashcard' && route.query.deck === 'due')
@@ -132,7 +139,7 @@ const chatContext = computed(() =>
 const activeProps = computed(() => {
   if (active.value === 'flashcard')
     return savedMode.value
-      ? { cards: savedCards.value, deck: 'saved' }
+      ? { cards: savedCards.value, deck: 'saved', topicLabel: savedTopic.value }
       : dueMode.value
         ? { cards: dueCards.value, deck: 'due' }
         : { cards: flashCards.value }
@@ -151,9 +158,10 @@ async function scrollToWorkspace() {
 }
 
 function select(id) {
-  // Đổi tool thì bỏ cờ deck=saved (chỉ áp dụng cho flashcard).
+  // Đổi tool thì bỏ cờ deck=saved/topic (chỉ áp dụng cho flashcard).
   const q = { ...route.query }
   delete q.deck
+  delete q.topic
   if (id === active.value) {
     // Bấm lại chức năng đang mở: không điều hướng, chỉ cuộn xuống vùng làm bài.
     scrollToWorkspace()
@@ -164,6 +172,7 @@ function select(id) {
 function exitSaved() {
   const q = { ...route.query }
   delete q.deck
+  delete q.topic
   router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: q })
 }
 function exitDue() {
@@ -205,13 +214,15 @@ function backToDay() {
       </div>
     </div>
 
-    <!-- Banner ngữ cảnh: đang ôn bộ từ đã lưu khi chat với AI -->
+    <!-- Banner ngữ cảnh: đang ôn bộ từ đã lưu khi chat với AI (có thể lọc theo chủ đề) -->
     <div v-if="savedMode" class="ctx-banner saved-banner">
       <div class="ctx-info">
-        <span class="ctx-emoji">📚</span>
+        <span class="ctx-emoji">{{ savedTopic ? '🗂️' : '📚' }}</span>
         <div>
-          <div class="ctx-eyebrow">ĐANG ÔN TỪ VỰNG ĐÃ LƯU</div>
-          <div class="ctx-title">{{ user.savedCount }} từ bạn đã lưu khi trò chuyện với AI</div>
+          <div class="ctx-eyebrow">{{ savedTopic ? `CHỦ ĐỀ: ${savedTopic.toUpperCase()}` : 'ĐANG ÔN TỪ VỰNG ĐÃ LƯU' }}</div>
+          <div class="ctx-title">
+            {{ savedTopic ? `${(savedCards || []).length} từ trong chủ đề này` : `${user.savedCount} từ bạn đã lưu khi trò chuyện với AI` }}
+          </div>
         </div>
       </div>
       <div class="ctx-cta">

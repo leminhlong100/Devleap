@@ -6,7 +6,9 @@ import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
  * persona chat + từ đánh dấu sao, track khóa IELTS nền tảng.
  */
 const CONVO_KEY = 'devleap:convo:v1'
-const DEFAULT_CONVO = { persona: 'cotnha' }
+// `activeSaveTopic`: chủ đề đang chọn để gắn vào từ/câu lưu khi chat với AI
+// (xem vocabSlice.js#createTopic) — chỉ local, không đồng bộ cloud.
+const DEFAULT_CONVO = { persona: 'cotnha', activeSaveTopic: '' }
 
 export function state() {
   return {

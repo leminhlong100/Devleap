@@ -15,6 +15,7 @@ create table if not exists public.progress (
   completed      jsonb       not null default '{"java":[],"ielts":[]}'::jsonb,
   quiz_scores    jsonb       not null default '{}'::jsonb,
   saved_words    jsonb       not null default '{}'::jsonb,
+  topics         jsonb       not null default '[]'::jsonb,
   shadowing_scores jsonb     not null default '{}'::jsonb,
   week_feedback  jsonb       not null default '{}'::jsonb,
   week_xp          integer   not null default 0,
@@ -35,6 +36,10 @@ alter table public.progress
 -- Nâng cấp DB đã tạo trước khi có "từ vựng đã lưu": thêm cột danh sách lưu.
 alter table public.progress
   add column if not exists saved_words jsonb not null default '{}'::jsonb;
+
+-- Nâng cấp DB đã tạo trước khi có "chủ đề" nhóm từ đã lưu: thêm cột danh sách chủ đề.
+alter table public.progress
+  add column if not exists topics jsonb not null default '[]'::jsonb;
 
 -- Nâng cấp DB đã tạo trước khi có Shadowing: thêm cột kết quả luyện shadowing.
 alter table public.progress

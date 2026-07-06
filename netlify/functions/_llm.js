@@ -404,6 +404,7 @@ export function buildCardPrompt() {
     'The user sends ONE English word or short phrase.',
     'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
     '{',
+    '  "pos": "the word\'s part of speech, in Vietnamese, EXACTLY one of: Danh từ, Động từ, Tính từ, Trạng từ, Cụm từ, Giới từ, Liên từ, Thán từ (pick the single closest match; use \\"Cụm từ\\" for multi-word phrases/idioms)",',
     '  "ipa": "IPA pronunciation with slashes, e.g. /dɪˈplɔɪ/ (empty string if unsure)",',
     '  "vi": "concise Vietnamese meaning, a few words only",',
     '  "ex": "one short natural English example sentence that uses the word"',

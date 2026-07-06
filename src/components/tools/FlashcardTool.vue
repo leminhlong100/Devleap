@@ -19,6 +19,8 @@ function sayTerm() {
 const props = defineProps({
   cards: { type: Array, default: null },
   deck: { type: String, default: '' },
+  // Khi deck='saved' và đang lọc theo 1 chủ đề (xem SavedTool.vue) — chỉ để hiển thị.
+  topicLabel: { type: String, default: '' },
 })
 
 const user = useUserStore()
@@ -141,7 +143,12 @@ function dotColor(i) {
 <template>
   <div class="card-tool">
     <!-- CHƯA CÓ THẺ THEO BÀI -->
-    <div v-if="!hasCards && isSaved" class="empty-tool">
+    <div v-if="!hasCards && isSaved && topicLabel" class="empty-tool">
+      <div class="empty-emoji">🗂️</div>
+      <h2>Chủ đề “{{ topicLabel }}” chưa có từ nào</h2>
+      <p>Vào <b>🔖 Từ vựng &amp; câu đã lưu</b>, thêm từ mới hoặc sửa từ có sẵn để gắn vào chủ đề này.</p>
+    </div>
+    <div v-else-if="!hasCards && isSaved" class="empty-tool">
       <div class="empty-emoji">📚</div>
       <h2>Chưa có từ nào được lưu</h2>
       <p>Vào <b>💬 Trò chuyện với AI</b>, bật <b>📌 Lưu từ</b> rồi chạm vào từ trong câu trả lời để thêm vào đây.</p>
@@ -160,7 +167,7 @@ function dotColor(i) {
     <template v-else>
     <div class="tool-head">
       <div>
-        <h2 class="tool-title">{{ isSaved ? '📚 Từ vựng đã lưu' : isDueDeck ? '📆 Từ đến hạn ôn hôm nay' : '🃏 Flashcard từ vựng IT' }}</h2>
+        <h2 class="tool-title">{{ isSaved ? (topicLabel ? `🗂️ Chủ đề: ${topicLabel}` : '📚 Từ vựng đã lưu') : isDueDeck ? '📆 Từ đến hạn ôn hôm nay' : '🃏 Flashcard từ vựng IT' }}</h2>
         <p class="tool-sub">Lật thẻ, rồi tự chấm mức nhớ. Lịch ôn giãn cách tự xếp ngày ôn lại.</p>
       </div>
       <div class="known">
