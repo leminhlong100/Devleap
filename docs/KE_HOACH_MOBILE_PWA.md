@@ -484,7 +484,57 @@ gian hợp lý — phần này chỉ xuất hiện ở một số buổi cụ th
 
 ### Bước 2.6 — Quét nốt các màn còn lại: Home, Courses, Tools, Progress, Leaderboard, CodePlayground, Assessment
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-06):** Đi từng view ở 375×812 (light + dark) bằng preview thật (server
+`devleap`, guest mode — Supabase vẫn tắt tạm trong `.env.local` như các bước trước đã ghi chú,
+không đổi gì thêm). Kết quả: **hầu hết các màn đã đạt sẵn** nhờ nền `clamp()`/breakpoint đã làm
+ở Bước 1.2/1.3 áp dụng toàn cục — không phải làm lại từ đầu như dự đoán ban đầu của kế hoạch.
+Cụ thể từng màn (không màn nào có scroll ngang — xác nhận bằng
+`document.documentElement.scrollWidth === 375` ở mọi trang):
+- `HomeView.vue`: đã đạt — `.features-grid`/`.steps-grid`/`.feat-card` tự sập 1 cột ở ≤560-900px,
+  hero/today-card không tràn dù padding cố định (chữ tự xuống dòng). Không sửa.
+- `CoursesView.vue`: đã đạt — `.grid` 3→2→1 cột đúng breakpoint, filter chip wrap, card đọc
+  được hết. Không sửa.
+- `JavaCourseView.vue`/`IeltsCourseView.vue` (route `/courses/java`, `/courses/ielts` — không có
+  tên trong danh sách gốc của bước nhưng là màn "khóa học" người dùng thấy ngay sau CoursesView,
+  nên kiểm luôn cho trọn bộ): đã đạt sẵn — timeline dọc + card tự co, stat card 2 cột, không tràn.
+  Không sửa.
+- `ShadowingView.vue` (trang chọn chủ đề trước khi vào `ShadowingPlayer` — khác với player đã
+  làm ở Bước 2.5): đã đạt — ô dán link YouTube + nút tải xếp hàng gọn, chip cấp độ A1-C2 wrap 2
+  hàng, lưới video 1 cột. Không sửa.
+- `ToolsView.vue`: đã đạt — `.tool-grid` 2 cột sẵn ở ≤460px (ẩn mô tả, thu icon — làm từ trước).
+  Banner ngữ cảnh (`.ctx-banner`) wrap đúng. Không sửa.
+- `LeaderboardTool.vue`: đã đạt — trạng thái khách (khóa) và form opt-in/tên hiển thị đọc tốt ở
+  375px; `.row` (rank/tên/XP) dùng flex + ellipsis nên không tràn dù tên dài. **Chưa xác nhận trực
+  tiếp** bảng xếp hạng có dữ liệu thật trên UI (Supabase tắt nên `cloudReady` luôn false ở máy
+  test) — đã đọc kỹ code, cấu trúc giống hệt pattern đã kiểm ở các list khác.
+- `CodePlayground.vue`: layout đã đạt (`.pg-grid` xếp dọc ≤760px, padding đã `clamp()` từ Bước
+  1.2, nút Chạy/Đặt lại ≥44px). **Sửa 1 chỗ thật:** `CodeEditor.vue` font-size CodeMirror đang
+  `13.5px` — dưới ngưỡng "≥14px" nghiệm thu của bước này — đổi thành `14px`
+  ([CodeEditor.vue:56](src/components/tools/CodeEditor.vue:56)). Không thêm sticky cho nút Chạy:
+  nút đã nằm ngay dưới console (không phải cuộn xa), và kế hoạch gốc tự ghi chú Java là "track
+  phụ trên mobile — chỉ cần dùng được, không cần tối ưu sâu" nên không đánh đổi thêm diện tích
+  màn hình cố định cho một thanh sticky ít giá trị ở đây.
+- `ProgressView.vue`: đã đạt — `.overview-grid` 4→2 cột ở ≤800px, biểu đồ SVG có `viewBox` +
+  `width:100%` nên tự co, không tràn dù chưa có dữ liệu thật để xem đồ thị đầy (đã đọc code xác
+  nhận cơ chế co giãn đúng).
+- `MilestonesView.vue`: đã đạt — `.clip-grid`/`.badge-grid` 3→1 cột ở ≤800px, audio player
+  `width:100%`.
+- `AssessmentView.vue`: đã đạt — `.assess` dùng `var(--space-page-x)` từ Bước 1.2; đã seed tạm
+  `completed.java` vào `localStorage['devleap:user:v2']` trong phiên preview (không đụng file
+  repo) để mở khóa bài kiểm tra Tuần 1 và xem thật giao diện câu hỏi — `QuizTool` bên trong đã
+  đúng chuẩn full-width từ Bước 2.3.
+- `GlobalSearch.vue`: đã có breakpoint ≤860/720px (thu nút thành icon, giảm padding overlay).
+  **Quyết định khác kế hoạch gốc:** kế hoạch đề nghị mở "dạng full-screen" ở mobile, nhưng bảng
+  lệnh hiện tại (card giữa màn, `max-height: min(72vh,620px)`, bo góc) đã đọc được đầy đủ, không
+  tràn, mỗi dòng kết quả đủ cao để chạm — đổi sang full-bleed thật sẽ mất thẩm mỹ "command
+  palette" mà không giải quyết vấn đề thật nào; giữ nguyên.
+- Đã kiểm dark mode cho Home/Courses/Tools/Progress/GlobalSearch — màu sắc/tương phản đúng theo
+  biến `--surface`/`--ink` sẵn có, không có vùng nào bị lệch theme.
+
+`npm test` (390 tests) + `npm run build` pass (không có lỗi mới; cảnh báo chunk >500kB đã có từ
+trước, để dành cho Bước 4.3).
 
 **Phụ thuộc:** nên làm cuối Đợt 2 (các pattern BottomSheet/sticky/clamp đã có sẵn để tái dùng).
 
@@ -646,7 +696,7 @@ gian hợp lý — phần này chỉ xuất hiện ở một số buổi cụ th
 | 2.3 | Quiz chạm thay kéo | 1 buổi | ✅ |
 | 2.4 | Flashcard full-screen + vuốt | 1 buổi | ✅ |
 | 2.5 | Shadowing/nghe chép mobile | 1 buổi | ✅ |
-| 2.6 | Quét nốt các màn còn lại | 1–2 buổi | ⬜ |
+| 2.6 | Quét nốt các màn còn lại | 1–2 buổi | ✅ |
 | 3.1 | Manifest + install prompt | 1 buổi | ⬜ |
 | 3.2 | Luồng update SW | 0.5–1 buổi | ⬜ |
 | 3.3 | Offline sâu + self-host font | 1 buổi | ⬜ |

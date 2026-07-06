@@ -53,7 +53,7 @@ const highlight = HighlightStyle.define([
 // Theme khớp khung editor hiện có (nền tối, font mono dự án).
 const theme = EditorView.theme(
   {
-    '&': { backgroundColor: '#1e1e2e', color: '#e6e6f0', fontSize: '13.5px' },
+    '&': { backgroundColor: '#1e1e2e', color: '#e6e6f0', fontSize: '14px' },
     '.cm-content': {
       fontFamily: 'var(--mono)',
       padding: '16px 0',
