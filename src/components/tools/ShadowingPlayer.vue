@@ -5,7 +5,11 @@ import { recognitionSupported, recognizeOnce } from '@/lib/speechRecognize'
 import { scoreTranscript, scoreVerdict } from '@/lib/pronounceScore'
 import { fetchSentenceIpa } from '@/lib/ipa'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
+import BottomSheet from '@/components/common/BottomSheet.vue'
+
+const isMobile = useIsMobile()
 
 // Một clip = { videoId, title, level, topic, sentences } với sentences là:
 //  - mảng [{id,text,start,end}] (clip gợi ý có sẵn), HOẶC
@@ -65,6 +69,7 @@ const loop = ref(false)
 const RATES = [0.5, 0.75, 1]
 const rate = ref(1)
 const rateMenuOpen = ref(false)
+const rateSheetOpen = ref(false) // mobile: BottomSheet thay cho dropdown (dễ tràn khi ở thanh dính đáy)
 const ratesEl = ref(null)
 
 // Đệm đầu/cuối mỗi câu (giây): phụ đề YouTube hay lệch nhẹ nên lùi điểm bắt đầu
@@ -262,11 +267,18 @@ async function scrollToActive() {
   const row = rowEls[activeId.value]
   const list = listEl.value
   if (!row || !list) return
-  const listRect = list.getBoundingClientRect()
-  const rowRect = row.getBoundingClientRect()
-  // đưa câu vào giữa khung danh sách
-  const delta = rowRect.top - listRect.top - (list.clientHeight - rowRect.height) / 2
-  list.scrollTo({ top: list.scrollTop + delta, behavior: 'smooth' })
+  // Desktop (≥960px) và ≤720px cũ: .sh-list tự cuộn riêng (overflow-y: auto) ->
+  // đưa câu vào giữa khung danh sách bằng cách tính delta thủ công.
+  if (list.scrollHeight > list.clientHeight + 1) {
+    const listRect = list.getBoundingClientRect()
+    const rowRect = row.getBoundingClientRect()
+    const delta = rowRect.top - listRect.top - (list.clientHeight - rowRect.height) / 2
+    list.scrollTo({ top: list.scrollTop + delta, behavior: 'smooth' })
+    return
+  }
+  // Mobile (video dính trên, danh sách nằm trong luồng cuộn cả trang): cuộn cả
+  // trang để đưa câu vào giữa, không có khung riêng để tính delta.
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 // ---- Một lần "Nói thử": vừa THU (để nghe lại) vừa CHẤM (so khớp văn bản) ----
@@ -414,6 +426,9 @@ onMounted(() => {
   initPlayer()
   document.addEventListener('click', onDocClick)
   document.addEventListener('keydown', onKeydown)
+  // Đánh dấu để BackToTop (nằm ngoài cây component) nhường chỗ cho thanh điều
+  // khiển dính đáy mobile — xem rule .has-shp-bar trong base.css.
+  document.body.classList.add('has-shp-bar')
 })
 
 // Đổi clip -> nạp video mới, reset trạng thái.
@@ -448,6 +463,7 @@ onBeforeUnmount(() => {
   stopAttempt()
   document.removeEventListener('click', onDocClick)
   document.removeEventListener('keydown', onKeydown)
+  document.body.classList.remove('has-shp-bar')
   Object.values(recordings).forEach((url) => URL.revokeObjectURL(url))
   player?.destroy?.()
 })
@@ -480,17 +496,20 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="sh-controls">
-            <button class="sh-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="step(-1)">⏮</button>
-            <button v-if="!playing" class="sh-ctrl primary" :disabled="!activeSentence" title="Phát lại câu" @click="replay">▶</button>
-            <button v-else class="sh-ctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
-            <button class="sh-ctrl" :disabled="activeIndex < 0 || activeIndex >= sentences.length - 1" title="Câu sau" @click="step(1)">⏭</button>
-            <button class="sh-ctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁</button>
-            <div ref="ratesEl" class="sh-rates">
-              <button class="sh-rate-toggle" :class="{ open: rateMenuOpen }" title="Tốc độ phát" @click="rateMenuOpen = !rateMenuOpen">
-                {{ rate }}× <span class="sh-rate-caret">▾</span>
-              </button>
-              <div v-if="rateMenuOpen" class="sh-rate-menu">
-                <button v-for="r in RATES" :key="r" class="sh-rate" :class="{ on: rate === r }" @click="setRate(r)">{{ r }}×</button>
+            <!-- ≤720px: cụm phát/lặp/tốc độ chuyển xuống thanh dính đáy (.sh-mobile-bar) -->
+            <div class="sh-ctrl-group">
+              <button class="sh-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="step(-1)">⏮</button>
+              <button v-if="!playing" class="sh-ctrl primary" :disabled="!activeSentence" title="Phát lại câu" @click="replay">▶</button>
+              <button v-else class="sh-ctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
+              <button class="sh-ctrl" :disabled="activeIndex < 0 || activeIndex >= sentences.length - 1" title="Câu sau" @click="step(1)">⏭</button>
+              <button class="sh-ctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁</button>
+              <div ref="ratesEl" class="sh-rates">
+                <button class="sh-rate-toggle" :class="{ open: rateMenuOpen }" title="Tốc độ phát" @click="rateMenuOpen = !rateMenuOpen">
+                  {{ rate }}× <span class="sh-rate-caret">▾</span>
+                </button>
+                <div v-if="rateMenuOpen" class="sh-rate-menu">
+                  <button v-for="r in RATES" :key="r" class="sh-rate" :class="{ on: rate === r }" @click="setRate(r)">{{ r }}×</button>
+                </div>
               </div>
             </div>
             <button class="sh-ctrl chip" :class="{ on: ipaOn }" title="Phiên âm IPA" @click="ipaOn = !ipaOn">IPA</button>
@@ -612,6 +631,35 @@ onBeforeUnmount(() => {
         </ol>
       </div>
     </div>
+
+    <!-- ≤720px: thanh điều khiển dính đáy (thay cụm .sh-ctrl-group ẩn ở trên) -->
+    <div v-if="isMobile" class="sh-mobile-bar">
+      <button class="sh-mctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="step(-1)">⏮</button>
+      <button v-if="!playing" class="sh-mctrl primary" :disabled="!activeSentence" title="Phát lại câu" @click="replay">▶</button>
+      <button v-else class="sh-mctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
+      <button class="sh-mctrl" :disabled="activeIndex < 0 || activeIndex >= sentences.length - 1" title="Câu sau" @click="step(1)">⏭</button>
+      <button class="sh-mctrl toggle" :class="{ on: loop }" title="Lặp lại câu" @click="loop = !loop">🔁</button>
+      <button class="sh-mctrl" title="Tốc độ phát" @click="rateSheetOpen = true">{{ rate }}×</button>
+      <button
+        class="sh-mctrl mic"
+        :class="{ listening: attemptingId === activeId }"
+        :disabled="!activeSentence"
+        :title="attemptingId === activeId ? 'Dừng' : 'Nói thử'"
+        @click="attemptingId === activeId ? stopAttempt() : attempt(activeSentence)"
+      >🎤</button>
+    </div>
+    <BottomSheet v-model="rateSheetOpen">
+      <h3 class="sh-sheet-title">Tốc độ phát</h3>
+      <div class="sh-sheet-rates">
+        <button
+          v-for="r in RATES"
+          :key="r"
+          class="sh-sheet-rate"
+          :class="{ on: rate === r }"
+          @click="setRate(r); rateSheetOpen = false"
+        >{{ r }}×</button>
+      </div>
+    </BottomSheet>
   </div>
 </template>
 
@@ -665,6 +713,23 @@ onBeforeUnmount(() => {
     top: 78px;
   }
 }
+@media (max-width: 720px) {
+  /* .sh-left chỉ là khung bọc cho desktop (sticky cả cột trái) — ở mobile "tháo"
+     nó ra bằng display:contents để .sh-video (con của .sh-left) sticky được XUYÊN
+     SUỐT toàn bộ nội dung của .sh-stage (kể cả .sh-right/danh sách câu bên dưới)
+     thay vì chỉ trong phạm vi ngắn của .sh-left (video+panel+tổng kết). Không mất
+     style vì .sh-left vốn không có style riêng nào ngoài sticky ở ≥960px. */
+  .sh-left {
+    display: contents;
+  }
+  .sh-panel,
+  .sh-clip-sum,
+  .sh-congrats {
+    /* .sh-stage đã có gap:18px giữa các item khi .sh-left là display:contents —
+       bỏ margin-top riêng để khỏi cộng dồn thành khoảng cách quá lớn. */
+    margin-top: 0;
+  }
+}
 
 /* —— Video —— */
 .sh-video {
@@ -674,6 +739,14 @@ onBeforeUnmount(() => {
   border-radius: 16px;
   overflow: hidden;
   background: #000;
+}
+@media (max-width: 720px) {
+  .sh-video {
+    /* Dính trên đỉnh (dưới header) trong lúc cuộn danh sách câu bên dưới. */
+    position: sticky;
+    top: 64px;
+    z-index: 20;
+  }
 }
 .sh-iframe,
 .sh-video :deep(iframe) {
@@ -737,6 +810,22 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.sh-ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  /* Cụm phát/lặp/tốc độ chuyển xuống .sh-mobile-bar dính đáy — chỉ giữ IPA ở đây. */
+  .sh-ctrl-group {
+    display: none;
+  }
+  .sh-controls {
+    justify-content: flex-end;
+  }
 }
 .sh-ctrl {
   display: inline-flex;
@@ -879,6 +968,12 @@ onBeforeUnmount(() => {
   gap: 6px 14px;
   padding-right: 46px;
 }
+@media (max-width: 720px) {
+  /* Mic tròn trong thẻ trùng với nút 🎤 ở .sh-mobile-bar dính đáy — ẩn bớt 1 chỗ. */
+  .sh-current-text {
+    padding-right: 0;
+  }
+}
 .sh-cw {
   display: inline-flex;
   flex-direction: column;
@@ -934,6 +1029,11 @@ onBeforeUnmount(() => {
   color: #fff;
   border-color: var(--purple);
   animation: sh-pulse 1s infinite;
+}
+@media (max-width: 720px) {
+  .sh-mic {
+    display: none;
+  }
 }
 @keyframes sh-pulse {
   50% {
@@ -1316,9 +1416,116 @@ onBeforeUnmount(() => {
   .sh-cw-text {
     font-size: 17px;
   }
-  .sh-list {
-    max-height: 56vh;
-    overflow-y: auto;
+}
+
+/* —— Thanh điều khiển dính đáy (mobile) —— */
+@media (max-width: 720px) {
+  .sh-player {
+    /* Chừa chỗ cho .sh-mobile-bar dính đáy (~64px cao) + BottomNav bên dưới nó. */
+    padding-bottom: 96px;
   }
+}
+.sh-mobile-bar {
+  display: none;
+}
+@media (max-width: 720px) {
+  .sh-mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(72px + var(--safe-bottom));
+    z-index: 45;
+    padding: 10px var(--space-page-x);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(14px);
+  }
+}
+.sh-mctrl {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 11px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sh-mctrl:active:not(:disabled) {
+  background: var(--purple-soft);
+  transform: scale(0.95);
+}
+.sh-mctrl:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.sh-mctrl.primary {
+  min-width: 52px;
+  height: 52px;
+  font-size: 17px;
+  color: #fff;
+  background: var(--grad-purple);
+  border: none;
+}
+.sh-mctrl.toggle.on {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+}
+.sh-mctrl.mic {
+  min-width: 52px;
+  height: 52px;
+  font-size: 19px;
+  color: var(--purple);
+  background: var(--purple-soft);
+}
+.sh-mctrl.mic.listening {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  animation: sh-pulse 1s infinite;
+}
+
+/* —— BottomSheet chọn tốc độ (mobile) —— */
+.sh-sheet-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.sh-sheet-rates {
+  display: flex;
+  gap: 10px;
+}
+.sh-sheet-rate {
+  flex: 1;
+  height: 52px;
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.sh-sheet-rate:active {
+  background: var(--purple-soft);
+}
+.sh-sheet-rate.on {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
 }
 </style>

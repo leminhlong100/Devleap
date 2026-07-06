@@ -318,6 +318,14 @@ select {
   }
 }
 
+/* ShadowingPlayer mobile: thanh điều khiển dính đáy (.sh-mobile-bar) cũng đè lên
+   BackToTop nếu không đẩy lên — cùng cơ chế body-class như 2 rule trên. */
+@media (max-width: 720px) {
+  body.has-shp-bar .back-to-top {
+    bottom: calc(140px + var(--safe-bottom)) !important;
+  }
+}
+
 .brand-text {
   background: var(--grad-brand);
   -webkit-background-clip: text;

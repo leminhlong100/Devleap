@@ -416,7 +416,59 @@ lưu ý "không nên lặp lại cách sửa `.env.local`" ghi ở Bước 2.1.
 
 ### Bước 2.5 — Shadowing & nghe chép: video dính trên, điều khiển trong tầm ngón cái
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-06):** `ShadowingPlayer.vue`: ở ≤720px, `.sh-video` chuyển
+`position: sticky; top: 64px` (dưới header, cùng chuẩn `AgendaRail`'s `.rail-h`).
+**Bẫy quan trọng:** containing block của phần tử sticky là khối cha GẦN NHẤT của
+nó trong luồng — video nằm trong `.sh-left` (chỉ gồm video+panel+tổng kết, NGẮN
+hơn nhiều so với `.sh-right`/danh sách 58 câu bên dưới); nếu giữ nguyên cấu trúc,
+video sẽ "nhả" dính ngay khi cuộn hết `.sh-left`, biến mất trước khi cuộn hết
+danh sách — sai hoàn toàn mục tiêu "video luôn thấy khi cuộn danh sách". Sửa bằng
+`@media (max-width:720px) { .sh-left { display: contents; } }`: gỡ `.sh-left`
+khỏi cây layout (không mất style vì nó vốn không có style riêng ngoài sticky ở
+desktop), biến video/panel/tổng kết thành item ngang hàng với `.sh-right` trong
+`.sh-stage` (flex column) — containing block của video giờ là `.sh-stage`, trải
+dài hết toàn bộ nội dung nên sticky đúng suốt quá trình cuộn. Gỡ `margin-top`
+riêng của `.sh-panel`/`.sh-clip-sum`/`.sh-congrats` (đổi về 0) vì `.sh-stage` đã
+có `gap:18px` áp cho các item ngang hàng mới, tránh cộng dồn khoảng cách.
+Cụm điều khiển (prev/play/next/lặp/tốc độ) bọc trong `.sh-ctrl-group` mới, ẩn ở
+≤720px (chỉ giữ chip IPA trong `.sh-controls`); thay bằng `.sh-mobile-bar` dính
+đáy (`position:fixed; bottom:calc(72px + var(--safe-bottom))`, cùng pattern
+`MobileCheckpointBar`/`.fc-mobile-actions` các bước trước) gồm prev/play-pause/
+next/lặp/tốc độ/🎤 nói thử — tái dùng nguyên hàm `step`/`replay`/`pause`/`attempt`/
+`stopAttempt`, chỉ nhân đôi markup nút. Nút mic tròn cũ trong `.sh-current` ẩn ở
+mobile (trùng nút mic mới trong bar). Menu tốc độ: giữ dropdown absolute cũ cho
+desktop, thêm `BottomSheet` (component có sẵn từ Bước 2.2) cho mobile — dropdown
+absolute mở xuống dưới sẽ tràn/khuất khi nút nằm trong thanh dính đáy sát mép
+màn hình dưới. Thêm `body.has-shp-bar` (mount/unmount) + rule đẩy `BackToTop` lên
+`calc(140px + var(--safe-bottom))` ở base.css, cùng cơ chế 3 bước trước.
+`scrollToActive()`: bản mobile không còn `.sh-list` overflow riêng (đã gỡ rule cũ
+`max-height:56vh` vì giờ page cuộn xuyên suốt) nên hàm cũ (tính delta theo
+`list.scrollTop`) sẽ không tác dụng gì — thêm nhánh: còn overflow nội bộ (desktop
+≥960px, `.sh-list` vẫn `max-height/overflow-y:auto` như cũ) thì giữ cách tính cũ;
+không còn overflow (mobile) thì dùng `row.scrollIntoView({block:'center'})` cuộn
+cả trang — an toàn vì `activeId` chỉ đổi do người dùng bấm, không có
+IntersectionObserver phản hồi ngược (khác bẫy scrollIntoView đã gặp ở Bước 2.1).
+`ListeningDictation.vue`: `.ld-input` font-size 14px→16px (bị bỏ sót ở đợt rà
+16px của Bước 1.2 vì component này không có mặt trong danh sách hôm đó); `.ld-play`/
+`.ld-check` thêm `min-height:44px` + `touch-action:manipulation`; `.ld-controls`
+thêm `flex-wrap:wrap` phòng tràn; `.ld-real-video` đổi từ width cố định 220px
+sang `width:100%; max-width:320px` cho dễ nhìn hơn ở mobile. Không đổi vị trí cụm
+nút phát/chậm/lặp vì đã đúng yêu cầu từ trước (nằm ngay trên input, không phải
+đầu trang).
+**Đã kiểm bằng preview** ở chế độ khách — Supabase đang bị tắt tạm thời trong
+`.env.local` để test (nhớ bật lại khi cần đồng bộ cloud thật): 375×812 light+dark —
+video dính đúng vị trí xuyên suốt khi cuộn qua cả 58 câu, thanh dính đáy hoạt
+động (prev/play/next/lặp/tốc độ mở BottomSheet đúng/mic), không scroll ngang,
+BackToTop không bị che. 1280×800 — layout 2 cột giữ nguyên y hệt cũ (sticky cả
+cột trái, dropdown tốc độ mở đúng vị trí, không có thanh mobile nào lộ ra).
+**Không xác nhận trực tiếp được `ListeningDictation` trên UI thật** (không tìm
+được nhanh buổi học có kích hoạt phần "nghe-chép" ở tài khoản khách trong thời
+gian hợp lý — phần này chỉ xuất hiện ở một số buổi cụ thể tùy nội dung MD) —
+đã rà kỹ code, thay đổi chỉ là CSS chuẩn (font-size/min-height) giống hệt pattern
+đã áp dụng thành công cho 12 component khác ở Bước 1.2. `npm test` (390 tests) +
+`npm run build` pass.
 
 **Vấn đề:** `ShadowingPlayer.vue` dùng 2 cột ở ≥960px, `max-height: calc(100vh - 130px)`; ở mobile danh sách câu và nút điều khiển (play/tốc độ/ghi âm) rải rác — vừa xem video vừa bấm rất khó. `ListeningDictation.vue` chưa có xử lý mobile.
 
@@ -591,9 +643,9 @@ lưu ý "không nên lặp lại cách sửa `.env.local`" ghi ở Bước 2.1.
 | 1.3 | Chuẩn cảm ứng (:active, 44px) | 1 buổi | ✅ |
 | 2.1 | DayView + AgendaRail mobile | 1–2 buổi | ✅ |
 | 2.2 | Chat như app nhắn tin | 1–2 buổi | ✅ |
-| 2.3 | Quiz chạm thay kéo | 1 buổi | ⬜ |
-| 2.4 | Flashcard full-screen + vuốt | 1 buổi | ⬜ |
-| 2.5 | Shadowing/nghe chép mobile | 1 buổi | ⬜ |
+| 2.3 | Quiz chạm thay kéo | 1 buổi | ✅ |
+| 2.4 | Flashcard full-screen + vuốt | 1 buổi | ✅ |
+| 2.5 | Shadowing/nghe chép mobile | 1 buổi | ✅ |
 | 2.6 | Quét nốt các màn còn lại | 1–2 buổi | ⬜ |
 | 3.1 | Manifest + install prompt | 1 buổi | ⬜ |
 | 3.2 | Luồng update SW | 0.5–1 buổi | ⬜ |

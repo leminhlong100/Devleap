@@ -237,6 +237,7 @@ function markDone() {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 8px;
 }
 .ld-play {
@@ -244,9 +245,11 @@ function markDone() {
   background: var(--surface-2);
   border-radius: 8px;
   padding: 5px 12px;
+  min-height: 44px;
   font-size: 13px;
   cursor: pointer;
   color: var(--text-primary);
+  touch-action: manipulation;
 }
 @media (hover: hover) {
   .ld-play:hover {
@@ -277,10 +280,11 @@ function markDone() {
 }
 .ld-input {
   flex: 1;
+  min-width: 0;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 7px 11px;
-  font-size: 14px;
+  font-size: 16px;
   background: var(--surface-2);
   color: var(--text-primary);
   outline: none;
@@ -295,9 +299,14 @@ function markDone() {
   color: #fff;
   border-radius: 8px;
   padding: 7px 14px;
+  min-height: 44px;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
+  touch-action: manipulation;
+}
+.ld-check:active {
+  opacity: 0.85;
 }
 .ld-answer {
   margin-top: 8px;
@@ -325,8 +334,8 @@ function markDone() {
   color: var(--text-secondary);
 }
 .ld-real-video {
-  width: 220px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 320px;
   aspect-ratio: 16 / 9;
   border-radius: 10px;
   overflow: hidden;
