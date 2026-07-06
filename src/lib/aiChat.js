@@ -136,3 +136,23 @@ export async function translateToVi(text) {
   // Bỏ ngoặc kép bao quanh nếu model lỡ thêm vào.
   return String(reply || '').trim().replace(/^["“”']+|["“”']+$/g, '')
 }
+
+/**
+ * Tự tạo IPA/nghĩa/câu ví dụ cho MỘT từ mới (dùng khi người học tự thêm thẻ
+ * flashcard và để trống các ô này). Ảnh minh họa KHÔNG qua AI — tự động lấy
+ * theo từ ở VocabIllustration.vue, không cần sinh/chọn ảnh ở đây.
+ * @param {string} word
+ * @returns {Promise<{ipa: string, vi: string, ex: string}>}
+ */
+export async function generateCard(word) {
+  const reply = await sendChat({
+    messages: [{ role: 'user', text: String(word || '').trim() }],
+    mode: 'card',
+  })
+  const r = reply && typeof reply === 'object' ? reply : {}
+  return {
+    ipa: String(r.ipa || '').trim(),
+    vi: String(r.vi || '').trim(),
+    ex: String(r.ex || '').trim(),
+  }
+}

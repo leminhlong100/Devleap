@@ -392,6 +392,26 @@ export function buildErrorDrillPrompt(context = {}) {
     .join('\n')
 }
 
+/**
+ * Dựng system prompt cho chế độ CARD: người học tự tạo 1 thẻ flashcard mới
+ * (chỉ gõ từ, để trống nghĩa/ví dụ) — AI điền nốt IPA/nghĩa/câu ví dụ trong
+ * MỘT lần gọi duy nhất. Ảnh minh họa KHÔNG qua AI (đã tự động lấy từ Wikipedia
+ * theo từ, xem VocabIllustration.vue).
+ */
+export function buildCardPrompt() {
+  return [
+    'You are a bilingual English-Vietnamese dictionary helping a Vietnamese learner create a vocabulary flashcard.',
+    'The user sends ONE English word or short phrase.',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "ipa": "IPA pronunciation with slashes, e.g. /dɪˈplɔɪ/ (empty string if unsure)",',
+    '  "vi": "concise Vietnamese meaning, a few words only",',
+    '  "ex": "one short natural English example sentence that uses the word"',
+    '}',
+    'Output JSON only.',
+  ].join('\n')
+}
+
 /** Dựng system prompt cho các chế độ phụ trợ trả TEXT ngắn. */
 export function buildSystemPrompt(context = {}) {
   const mode = context.mode
@@ -505,6 +525,10 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
     system = buildErrorDrillPrompt(context)
     temperature = 0.5
     maxTokens = 900
+  } else if (m === 'card') {
+    system = buildCardPrompt()
+    temperature = 0.4
+    maxTokens = 250
   } else {
     system = m === 'feedback' ? buildFeedbackPrompt(context, persona) : buildCoachPrompt(context, persona)
     // Persona "gắt" cần thêm chất lầy/biến hóa — nâng nhiệt để bớt ra giọng nhạt, lặp.

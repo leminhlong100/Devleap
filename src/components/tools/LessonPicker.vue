@@ -287,6 +287,7 @@ function pickSaved() {
   min-width: 0;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   cursor: pointer;
   background: none;
@@ -312,19 +313,26 @@ function pickSaved() {
   padding: 3px 10px;
   border-radius: 99px;
   margin-left: 4px;
+  white-space: nowrap;
+  flex: none;
 }
 .wg-emoji {
   font-size: 18px;
+  flex: none;
 }
 .wg-course {
   font-size: 12px;
   font-weight: 800;
   color: var(--purple);
+  white-space: nowrap;
+  flex: none;
 }
 .wg-week {
   font-size: 16px;
   font-weight: 800;
   color: var(--ink);
+  white-space: nowrap;
+  flex: none;
 }
 .wg-all {
   display: inline-flex;
@@ -340,6 +348,8 @@ function pickSaved() {
   padding: 9px 15px;
   min-height: 44px;
   border-radius: 11px;
+  white-space: nowrap;
+  flex: none;
   transition: transform 0.12s, box-shadow 0.15s;
 }
 @media (hover: hover) {
@@ -436,6 +446,13 @@ function pickSaved() {
 @media (max-width: 640px) {
   .lesson-grid {
     grid-template-columns: 1fr;
+  }
+  .wg-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .wg-all {
+    width: 100%;
   }
 }
 </style>
