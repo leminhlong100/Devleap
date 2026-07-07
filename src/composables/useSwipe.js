@@ -34,6 +34,10 @@ export function useSwipe({ onCommit, enabled = () => true } = {}) {
 
   function onPointerDown(e) {
     if (!enabled()) return
+    // Bấm vào nút bên trong (chấm điểm, nghe phát âm, bỏ lưu...) thì không bắt
+    // đầu vuốt/giữ pointer capture — nếu không, capture sẽ "nuốt" luôn click của
+    // nút đó (mouseup/click bị chuyển hướng về phần tử giữ capture).
+    if (e.target?.closest?.('button, a, input, select, textarea')) return
     startX = e.clientX
     width = e.currentTarget?.offsetWidth || 1
     pointerId = e.pointerId

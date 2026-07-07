@@ -584,9 +584,11 @@ function dotColor(i) {
   border: 2px solid var(--green);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 30px 34px;
   box-shadow: 0 16px 40px rgba(0, 214, 143, 0.18);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .back-label {
   font-size: 13px;
@@ -640,12 +642,17 @@ function dotColor(i) {
 .family-ex,
 .colloc-ex {
   border-left-color: var(--orange, #e08a2c);
+  margin-top: 10px;
+  padding: 10px 14px;
 }
 .family-list {
   font-style: normal;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.family-item {
+  white-space: nowrap;
 }
 .family-pos {
   color: var(--muted-2);
