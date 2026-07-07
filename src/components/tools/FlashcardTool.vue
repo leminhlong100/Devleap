@@ -228,6 +228,18 @@ function dotColor(i) {
               <div class="ex-label">💬 KHI CHAT VỚI AI</div>
               <div class="ex-text">{{ card.context }}</div>
             </div>
+            <div v-if="card.family && card.family.length" class="ex family-ex">
+              <div class="ex-label">🌳 HỌ TỪ</div>
+              <div class="ex-text family-list">
+                <span v-for="f in card.family" :key="f.word" class="family-item">
+                  <b>{{ f.word }}</b><span v-if="f.pos" class="family-pos"> ({{ f.pos }})</span><span v-if="f.vi"> — {{ f.vi }}</span>
+                </span>
+              </div>
+            </div>
+            <div v-if="card.collocations && card.collocations.length" class="ex colloc-ex">
+              <div class="ex-label">🔗 CỤM TỪ HAY DÙNG</div>
+              <div class="ex-text">{{ card.collocations.join(' · ') }}</div>
+            </div>
             <button v-if="isSaved" class="remove-saved" title="Bỏ từ này khỏi danh sách" @click.stop="removeWord">
               🗑 Bỏ lưu từ này
             </button>
@@ -624,6 +636,23 @@ function dotColor(i) {
 }
 .ctx-ex .ex-label {
   color: #00966a;
+}
+.family-ex,
+.colloc-ex {
+  border-left-color: var(--orange, #e08a2c);
+}
+.family-list {
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.family-pos {
+  color: var(--muted-2);
+  font-style: italic;
+}
+.colloc-ex .ex-text {
+  font-style: normal;
 }
 .remove-saved {
   display: block;

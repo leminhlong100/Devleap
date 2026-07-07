@@ -143,7 +143,7 @@ export async function translateToVi(text) {
  * minh họa KHÔNG qua AI — tự động lấy theo từ ở VocabIllustration.vue, không
  * cần sinh/chọn ảnh ở đây.
  * @param {string} word
- * @returns {Promise<{pos: string, ipa: string, vi: string, ex: string}>}
+ * @returns {Promise<{pos: string, ipa: string, vi: string, ex: string, family: Array<{word:string,pos:string,vi:string}>, collocations: string[]}>}
  */
 export async function generateCard(word) {
   const reply = await sendChat({
@@ -151,10 +151,24 @@ export async function generateCard(word) {
     mode: 'card',
   })
   const r = reply && typeof reply === 'object' ? reply : {}
+  const family = Array.isArray(r.family)
+    ? r.family
+        .map((f) => ({
+          word: String(f?.word || '').trim(),
+          pos: String(f?.pos || '').trim(),
+          vi: String(f?.vi || '').trim(),
+        }))
+        .filter((f) => f.word)
+    : []
+  const collocations = Array.isArray(r.collocations)
+    ? r.collocations.map((c) => String(c || '').trim()).filter(Boolean)
+    : []
   return {
     pos: String(r.pos || '').trim(),
     ipa: String(r.ipa || '').trim(),
     vi: String(r.vi || '').trim(),
     ex: String(r.ex || '').trim(),
+    family,
+    collocations,
   }
 }

@@ -407,7 +407,9 @@ export function buildCardPrompt() {
     '  "pos": "the word\'s part of speech, in Vietnamese, EXACTLY one of: Danh từ, Động từ, Tính từ, Trạng từ, Cụm từ, Giới từ, Liên từ, Thán từ (pick the single closest match; use \\"Cụm từ\\" for multi-word phrases/idioms)",',
     '  "ipa": "IPA pronunciation with slashes, e.g. /dɪˈplɔɪ/ (empty string if unsure)",',
     '  "vi": "concise Vietnamese meaning, a few words only",',
-    '  "ex": "one short natural English example sentence that uses the word"',
+    '  "ex": "one short natural English example sentence that uses the word",',
+    '  "family": [ { "word": "related word form", "pos": "n/v/adj/adv", "vi": "short Vietnamese meaning" } ] (2-4 word-family members with a DIFFERENT part of speech than the original word; empty array if the word has no useful related forms; skip for multi-word phrases)',
+    '  "collocations": [ "common collocation or phrase using the word" ] (2-3 short natural collocations/phrases learners would actually use; empty array if none fit)',
     '}',
     'Output JSON only.',
   ].join('\n')
@@ -529,7 +531,7 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
   } else if (m === 'card') {
     system = buildCardPrompt()
     temperature = 0.4
-    maxTokens = 250
+    maxTokens = 500
   } else {
     system = m === 'feedback' ? buildFeedbackPrompt(context, persona) : buildCoachPrompt(context, persona)
     // Persona "gắt" cần thêm chất lầy/biến hóa — nâng nhiệt để bớt ra giọng nhạt, lặp.

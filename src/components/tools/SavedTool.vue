@@ -5,13 +5,15 @@ import { useUserStore } from '@/stores/user'
 import { speak, canSpeak } from '@/lib/speak'
 import { cardsFromTerms } from '@/data/tools'
 import { generateCard } from '@/lib/aiChat'
+import WordDraftFields from '@/components/common/WordDraftFields.vue'
 
 /**
  * Xem lại danh sách từ vựng & câu người học đã lưu khi trò chuyện với AI.
  * Tách 2 mục: Từ vựng (kind != 'sentence') và Câu (kind == 'sentence').
  * Có tìm kiếm, nghe phát âm, bỏ lưu, sửa lại, và lối tắt học lại bằng Flashcard.
- * Ngoài ra cho phép TỰ THÊM một thẻ mới (từ + nghĩa + câu ví dụ + loại từ +
- * chủ đề) — ô nào bỏ trống thì AI tự điền; hình minh họa luôn tự động lấy
+ * Ngoài ra cho phép TỰ THÊM một thẻ mới: gõ từ -> AI tạo nháp (nghĩa/IPA/ví dụ/
+ * loại từ/họ từ/cụm từ) -> xem lại, sửa/xóa/thêm tùy ý (WordDraftFields.vue)
+ * rồi mới lưu, không lưu thẳng "mù" theo AI. Hình minh họa luôn tự động lấy
  * theo từ (không cần chọn/tạo ảnh thủ công), xem VocabIllustration.vue.
  *
  * "Chủ đề" (topic) khác với "Loại từ" (cat = danh/động/tính từ...): chủ đề là
@@ -50,18 +52,21 @@ function studyFlashcards(topic) {
   router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query })
 }
 
-// —— Tự thêm thẻ mới ——
+// —— Tự thêm thẻ mới —— (2 bước: gõ từ -> AI tạo nháp -> xem/sửa/xóa/thêm rồi mới lưu)
 const showCreate = ref(false)
-const form = reactive({ term: '', vi: '', ex: '', cat: '', topic: '' })
+const createStep = ref('form') // 'form' | 'review'
+const form = reactive({ term: '', topic: '' })
+const createDraft = reactive({ vi: '', ex: '', ipa: '', cat: '', family: [], collocations: [] })
 const creating = ref(false)
 const createError = ref('')
 
 function toggleCreate() {
   showCreate.value = !showCreate.value
+  createStep.value = 'form'
   createError.value = ''
 }
 
-async function submitCreate() {
+async function genCreateDraft() {
   const term = form.term.trim()
   if (!term) return
   if (user.isWordSaved(term)) {
@@ -71,26 +76,22 @@ async function submitCreate() {
   creating.value = true
   createError.value = ''
   try {
-    // Từ đã có sẵn trong kho IT/glossary IELTS -> dùng luôn, khỏi tốn lượt gọi AI.
+    // Từ đã có sẵn trong kho IT/glossary IELTS -> dùng luôn nghĩa/ví dụ, khỏi tốn
+    // lượt gọi AI cho phần đó — nhưng vẫn hỏi AI để có thêm họ từ + cụm từ đi kèm.
     const base = cardsFromTerms([term], 'saved')[0]
-    let vi = form.vi.trim() || base.vi
-    let ex = form.ex.trim() || base.ex
-    let ipa = base.ipa
-    let cat = form.cat.trim()
-    if (!vi || !ex || !cat) {
-      const gen = await generateCard(term)
-      vi = vi || gen.vi
-      ex = ex || gen.ex
-      ipa = ipa || gen.ipa
-      cat = cat || gen.pos
+    let gen = { pos: '', ipa: '', vi: '', ex: '', family: [], collocations: [] }
+    try {
+      gen = await generateCard(term)
+    } catch {
+      // AI không phản hồi được -> vẫn cho xem/sửa tay với dữ liệu có sẵn (nếu có).
     }
-    user.saveWord({ ...base, vi, ex, ipa, cat: cat || DEFAULT_CAT, topic: form.topic })
-    form.term = ''
-    form.vi = ''
-    form.ex = ''
-    form.cat = ''
-    form.topic = ''
-    showCreate.value = false
+    createDraft.vi = base.vi || gen.vi
+    createDraft.ex = base.ex || gen.ex
+    createDraft.ipa = base.ipa || gen.ipa
+    createDraft.cat = gen.pos && POS_OPTIONS.includes(gen.pos) ? gen.pos : ''
+    createDraft.family = gen.family.map((f) => ({ ...f }))
+    createDraft.collocations = [...gen.collocations]
+    createStep.value = 'review'
   } catch {
     createError.value = 'Không tạo được thẻ, thử lại nhé.'
   } finally {
@@ -98,26 +99,65 @@ async function submitCreate() {
   }
 }
 
+function backToCreateForm() {
+  createStep.value = 'form'
+  createError.value = ''
+}
+
+function confirmCreate() {
+  const term = form.term.trim()
+  if (!term) return
+  const base = cardsFromTerms([term], 'saved')[0]
+  const family = createDraft.family
+    .map((f) => ({ word: f.word.trim(), pos: f.pos.trim(), vi: f.vi.trim() }))
+    .filter((f) => f.word)
+  const collocations = createDraft.collocations.map((c) => c.trim()).filter(Boolean)
+  user.saveWord({
+    ...base,
+    vi: createDraft.vi.trim(),
+    ex: createDraft.ex.trim(),
+    ipa: createDraft.ipa.trim(),
+    cat: createDraft.cat || DEFAULT_CAT,
+    topic: form.topic,
+    family,
+    collocations,
+  })
+  form.term = ''
+  form.topic = ''
+  showCreate.value = false
+  createStep.value = 'form'
+}
+
 // —— Sửa lại một thẻ đã lưu ——
 const editingKey = ref('')
-const editForm = reactive({ vi: '', ex: '', cat: '', topic: '' })
+const editForm = reactive({ vi: '', ex: '', ipa: '', cat: '', topic: '', family: [], collocations: [] })
 
 function startEdit(w) {
   editingKey.value = keyOf(w.term)
   editForm.vi = w.vi || ''
   editForm.ex = w.ex || ''
+  editForm.ipa = w.ipa || ''
   editForm.cat = w.cat || ''
   editForm.topic = w.topic || ''
+  editForm.family = (w.family || []).map((f) => ({ ...f }))
+  editForm.collocations = [...(w.collocations || [])]
 }
 function cancelEdit() {
   editingKey.value = ''
 }
 function saveEdit(w) {
+  const family = editForm.family
+    .map((f) => ({ word: f.word.trim(), pos: f.pos.trim(), vi: f.vi.trim() }))
+    .filter((f) => f.word)
+  const collocations = editForm.collocations.map((c) => c.trim()).filter(Boolean)
   user.updateSavedWord(w.term, {
     vi: editForm.vi.trim(),
     ex: editForm.ex.trim(),
+    ipa: editForm.ipa.trim(),
     cat: editForm.cat.trim() || DEFAULT_CAT,
     topic: editForm.topic,
+    family,
+    collocations,
   })
   editingKey.value = ''
 }
@@ -192,25 +232,10 @@ function remove(term) {
       <button class="create-toggle" @click="toggleCreate">
         {{ showCreate ? '✕ Đóng' : '➕ Thêm từ / câu mới' }}
       </button>
-      <form v-if="showCreate" class="create-form" @submit.prevent="submitCreate">
+      <form v-if="showCreate && createStep === 'form'" class="create-form" @submit.prevent="genCreateDraft">
         <div class="field">
           <label for="cf-term">Từ vựng *</label>
           <input id="cf-term" v-model="form.term" placeholder="vd: resilience" :disabled="creating" autofocus />
-        </div>
-        <div class="field">
-          <label for="cf-vi">Nghĩa tiếng Việt <span class="opt">(để trống để AI tự dịch)</span></label>
-          <input id="cf-vi" v-model="form.vi" placeholder="vd: khả năng phục hồi" :disabled="creating" />
-        </div>
-        <div class="field">
-          <label for="cf-ex">Câu ví dụ <span class="opt">(để trống để AI tự tạo)</span></label>
-          <input id="cf-ex" v-model="form.ex" placeholder="vd: She showed great resilience after the setback." :disabled="creating" />
-        </div>
-        <div class="field">
-          <label for="cf-cat">Loại từ <span class="opt">(để trống để AI tự nhận diện)</span></label>
-          <select id="cf-cat" v-model="form.cat" :disabled="creating">
-            <option value="">— Để AI tự chọn —</option>
-            <option v-for="p in POS_OPTIONS" :key="p" :value="p">{{ p }}</option>
-          </select>
         </div>
         <div class="field">
           <label for="cf-topic">Chủ đề <span class="opt">(tùy chọn)</span></label>
@@ -219,12 +244,24 @@ function remove(term) {
             <option v-for="t in user.topicList" :key="t" :value="t">{{ t }}</option>
           </select>
         </div>
-        <p class="create-hint">🖼️ Hình minh họa tự động lấy theo từ vựng — không cần chọn ảnh.</p>
+        <p class="create-hint">🤖 AI sẽ tạo nháp nghĩa/IPA/ví dụ/họ từ/cụm từ — bạn xem & sửa trước khi lưu.</p>
         <p v-if="createError" class="create-error">{{ createError }}</p>
         <button type="submit" class="create-submit" :disabled="creating || !form.term.trim()">
-          {{ creating ? 'Đang tạo…' : '✓ Tạo thẻ' }}
+          {{ creating ? 'AI đang tạo…' : '🤖 Để AI tạo nháp' }}
         </button>
       </form>
+
+      <div v-else-if="showCreate" class="create-form">
+        <h4 class="review-title">👀 Xem lại “{{ form.term }}”</h4>
+        <p class="create-hint">AI đã tạo nháp — sửa lại, xóa hoặc thêm tùy ý trước khi lưu.</p>
+        <WordDraftFields :draft="createDraft" :pos-options="POS_OPTIONS" />
+        <p class="create-hint">🖼️ Hình minh họa tự động lấy theo từ vựng — không cần chọn ảnh.</p>
+        <p v-if="createError" class="create-error">{{ createError }}</p>
+        <div class="review-actions">
+          <button type="button" class="edit-cancel" @click="backToCreateForm">← Sửa từ khác</button>
+          <button type="button" class="create-submit" @click="confirmCreate">✓ Lưu thẻ này</button>
+        </div>
+      </div>
     </section>
 
     <!-- Chưa lưu gì -->
@@ -280,21 +317,7 @@ function remove(term) {
 
             <!-- Đang sửa -->
             <div v-if="editingKey === keyOf(w.term)" class="edit-form">
-              <div class="field">
-                <label>Nghĩa tiếng Việt</label>
-                <input v-model="editForm.vi" placeholder="vd: khả năng phục hồi" />
-              </div>
-              <div class="field">
-                <label>Câu ví dụ</label>
-                <input v-model="editForm.ex" placeholder="vd: She showed great resilience after the setback." />
-              </div>
-              <div class="field">
-                <label>Loại từ</label>
-                <select v-model="editForm.cat">
-                  <option value="">— Không rõ —</option>
-                  <option v-for="p in POS_OPTIONS" :key="p" :value="p">{{ p }}</option>
-                </select>
-              </div>
+              <WordDraftFields :draft="editForm" :pos-options="POS_OPTIONS" />
               <div class="field">
                 <label>Chủ đề</label>
                 <select v-model="editForm.topic">
@@ -314,6 +337,12 @@ function remove(term) {
               <div v-if="w.vi" class="vi">{{ w.vi }}</div>
               <div v-else class="vi vi-empty">(chưa có nghĩa)</div>
               <p v-if="w.context || w.ex" class="ctx">“{{ w.context || w.ex }}”</p>
+              <p v-if="w.family && w.family.length" class="family-preview">
+                🌳 <span v-for="(f, i) in w.family" :key="f.word">{{ f.word }}<span v-if="i < w.family.length - 1">, </span></span>
+              </p>
+              <p v-if="w.collocations && w.collocations.length" class="colloc-preview">
+                🔗 {{ w.collocations.join(' · ') }}
+              </p>
             </template>
           </div>
         </div>
@@ -634,6 +663,14 @@ function remove(term) {
   font-size: 13px;
   color: var(--muted-2);
 }
+.review-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+.review-actions {
+  display: flex;
+  gap: 10px;
+}
 .create-error {
   font-size: 13px;
   font-weight: 700;
@@ -851,6 +888,12 @@ function remove(term) {
   color: var(--muted);
   font-style: italic;
   margin-top: 8px;
+}
+.family-preview,
+.colloc-preview {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin-top: 6px;
 }
 .sent-list {
   display: flex;

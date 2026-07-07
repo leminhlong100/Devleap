@@ -4,6 +4,7 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import LoginGate from '@/components/layout/LoginGate.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
+import QuickAddWord from '@/components/common/QuickAddWord.vue'
 import OfflineBanner from '@/components/common/OfflineBanner.vue'
 import UpdateToast from '@/components/common/UpdateToast.vue'
 </script>
@@ -24,6 +25,7 @@ import UpdateToast from '@/components/common/UpdateToast.vue'
     <BottomNav />
     <LoginGate />
     <BackToTop />
+    <QuickAddWord />
   </div>
 </template>
 

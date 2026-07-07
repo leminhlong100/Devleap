@@ -10,7 +10,9 @@ const XP_SHADOWING_PASS = 120
 export function state() {
   return {
     // từ vựng người học tự lưu khi trò chuyện với AI, khóa theo từ (thường hóa):
-    // { [key]: { term, ipa, vi, ex, cat, topic, srsId, context, savedAt } }. Dùng
+    // { [key]: { term, ipa, vi, ex, cat, topic, srsId, context, savedAt, family?, collocations? } }.
+    // `family` (mảng {word,pos,vi}) và `collocations` (mảng string) là gợi ý AI
+    // sinh thêm khi tạo thẻ — tùy chọn, hiện khi ôn flashcard nếu có. Dùng
     // làm một bộ flashcard riêng (srsId dạng "saved:từ" để có lịch ôn độc lập).
     // `topic` (chủ đề, vd "Bài 1"/"Học tập"/"Làm việc") là tùy chọn, để nhóm từ
     // lại học riêng — rỗng nghĩa là chưa xếp vào chủ đề nào.

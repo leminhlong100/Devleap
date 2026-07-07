@@ -778,8 +778,8 @@ API thật, khó mock có ý nghĩa hơn việc đã xác minh bằng preview th
 | 2.4 | Flashcard full-screen + vuốt | 1 buổi | ✅ |
 | 2.5 | Shadowing/nghe chép mobile | 1 buổi | ✅ |
 | 2.6 | Quét nốt các màn còn lại | 1–2 buổi | ✅ |
-| 3.1 | Manifest + install prompt | 1 buổi | ⬜ |
-| 3.2 | Luồng update SW | 0.5–1 buổi | ⬜ |
+| 3.1 | Manifest + install prompt | 1 buổi | ✅ |
+| 3.2 | Luồng update SW | 0.5–1 buổi | ✅ |
 | 3.3 | Offline sâu + self-host font | 1 buổi | ⬜ |
 | 3.4 | Badge + nhắc học standalone | 0.5 buổi | ⬜ |
 | 4.1 | Chuyển động & haptic | 0.5–1 buổi | ⬜ |
