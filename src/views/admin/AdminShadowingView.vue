@@ -568,22 +568,19 @@ onBeforeUnmount(() => {
 }
 .editor-top {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: column;
   gap: 16px;
-  flex-wrap: wrap;
 }
 .meta-grid {
   display: grid;
   grid-template-columns: 1.3fr 1.3fr auto auto 1fr;
   gap: 12px;
-  flex: 1;
-  min-width: 260px;
 }
 .field {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 .field > span {
   font-size: 12px;
@@ -594,14 +591,17 @@ onBeforeUnmount(() => {
   min-width: 90px;
 }
 .vid {
+  display: block;
   font-size: 13px;
   padding: 11px 12px;
   background: var(--chip-bg);
   border-radius: 10px;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 .actions {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 .sec-head {
@@ -868,6 +868,14 @@ onBeforeUnmount(() => {
   border-collapse: collapse;
   font-size: 14px;
 }
+.tbl th:nth-child(2),
+.tbl td:nth-child(2) {
+  width: 90px;
+}
+.tbl th:nth-child(3),
+.tbl td:nth-child(3) {
+  width: 90px;
+}
 .tbl th {
   text-align: left;
   font-size: 12px;
@@ -892,12 +900,14 @@ onBeforeUnmount(() => {
   margin-top: 2px;
 }
 .lvl {
+  display: inline-block;
   font-size: 11.5px;
   font-weight: 800;
   color: var(--purple);
   background: var(--purple-soft);
   padding: 3px 10px;
   border-radius: 99px;
+  white-space: nowrap;
 }
 .row-actions {
   white-space: nowrap;
