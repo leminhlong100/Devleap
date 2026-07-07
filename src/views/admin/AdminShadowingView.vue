@@ -575,7 +575,7 @@ onBeforeUnmount(() => {
 }
 .meta-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr auto auto;
+  grid-template-columns: 1.3fr 1.3fr auto auto 1fr;
   gap: 12px;
   flex: 1;
   min-width: 260px;
@@ -921,6 +921,9 @@ onBeforeUnmount(() => {
 @media (max-width: 700px) {
   .meta-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .meta-grid .field:last-child {
+    grid-column: 1 / -1;
   }
 }
 </style>
