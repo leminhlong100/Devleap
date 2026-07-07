@@ -557,7 +557,30 @@ trước, để dành cho Bước 4.3).
 
 ### Bước 3.1 — Hoàn thiện manifest + luồng cài đặt (install prompt + hướng dẫn iOS)
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-07):** Icon maskable sinh 1 lần trong scratchpad (nội dung logo thu vào safe-zone
+80%, nền `#6c5ce7` phủ kín — không để trong suốt vì Android sẽ crop hình tròn) rồi commit thẳng PNG
+kết quả vào `public/icons/`; 3 screenshot `390x844` chụp Home/Courses/Tools lưu `public/screenshots/`.
+`manifest.webmanifest` thêm `categories`, `screenshots` (`form_factor: narrow`), `shortcuts` (Học tiếp
+→ `/courses`, Ôn flashcard → `/tools/flashcard?deck=due`), giữ nguyên 2 icon `any` cũ. Tách logic thuần
+ra `src/lib/installPrompt.js` (`eligibleToShowInstallCard` nhận `now` truyền vào để test không phụ
+thuộc đồng hồ thật, `isStandaloneDisplay` gộp cả `navigator.standalone` của iOS, `isIosDevice` regex
+UA) — cùng pattern tách logic của `studyReminder.js`; `tests/installPrompt.test.js` 9 case (đủ điều
+kiện/đã cài/đã "để sau" trong 7 ngày/đã hết hạn snooze/thiếu ≥1 buổi đã học). `useInstallPrompt.js` là
+composable singleton (theo đúng pattern `useOnlineStatus`/`useTheme`): 1 listener `beforeinstallprompt`
+module-level dù gọi composable ở nhiều component, giữ `deferredEvent` để gọi `.prompt()` sau; thêm
+`appinstalled` listener để tắt thẻ mời ngay khi cài xong (không cần đợi reload). `HomeView.vue`: thẻ mời
+cài chỉ hiện khi đã hoàn thành ≥1 buổi (`user.completed.java.length + ielts.length`), bấm "Cài đặt" trên
+Android/desktop gọi thẳng `promptInstall()`, trên iOS mở `BottomSheet` (tái dùng component có sẵn từ
+Bước 2.2) hướng dẫn 2 bước Chia sẻ → Thêm vào MH chính; "Để sau" ghi `localStorage` qua
+`markInstallDismissed` (snooze 7 ngày) + ẩn ngay trong phiên hiện tại bằng `ref` cục bộ (không cần đợi
+tính lại điều kiện). Đã kiểm 375×812 + 1280×800 (light/dark) bằng preview: thẻ mời hiện đúng điều kiện
+(giả lập `totalSessions=0` → ẩn, `=1` → hiện), bấm "Để sau" ẩn thẻ ngay, iOS (giả UA) mở đúng bottom
+sheet 2 bước; desktop Chrome không có `beforeinstallprompt` thật trong DevTools nên chỉ xác nhận qua
+test đơn vị + đọc lại code, không giả lập được `.prompt()` thật. `npm test` (399 tests) + `npm run
+build` pass; DevTools Application → Manifest hiển thị đủ 4 icon (2 any + 2 maskable), 3 screenshot, 2
+shortcuts, không có cảnh báo.
 
 **Vấn đề:** Manifest thiếu icon `maskable` (Android mới sẽ crop icon `any` vào khung tròn — viền trắng xấu), thiếu `screenshots`/`shortcuts`. Không bắt `beforeinstallprompt` nên không bao giờ chủ động mời cài; iOS không có `beforeinstallprompt` — cần hướng dẫn thủ công "Chia sẻ → Thêm vào MH chính".
 
@@ -574,7 +597,65 @@ trước, để dành cho Bước 4.3).
 
 ### Bước 3.2 — Luồng cập nhật service worker ("Có bản mới — Tải lại")
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-07):** `public/sw.js`: bỏ `self.skipWaiting()` tự động trong
+`install` (comment giải thích rõ vì sao — SW mới phải chờ ở "waiting" tới khi
+trang chủ động gửi `SKIP_WAITING`; lần cài đầu tiên chưa có controller thì trình
+duyệt tự activate ngay, không cần chờ gì, nên UX không đổi cho người dùng mới)
++ thêm listener `message` gọi `self.skipWaiting()` khi nhận `{type:
+'SKIP_WAITING'}`; `CACHE_VERSION` đổi thành `'devleap-' + '__BUILD_ID__'` (nối
+chuỗi 2 vế thay vì 1 literal — tránh 1 bẫy nhỏ gặp khi build thử: comment phía
+trên từng nhắc placeholder `` `__BUILD_ID__` `` bằng backtick, `replaceAll`
+trong plugin build vô tình thay luôn cả chữ trong comment làm nó đọc vô nghĩa
+sau build — sửa bằng cách đổi wording comment, không còn chứa literal token đó
+nữa). `vite.config.js` thêm plugin `swBuildIdPlugin` (`apply: 'build'`, hook
+`closeBundle` — chạy sau khi Vite tự copy `public/` sang `dist/`): đọc
+`dist/sw.js`, `replaceAll('__BUILD_ID__', Date.now())`, ghi đè lại — xác nhận
+bằng cách build 2 lần liên tiếp, `grep` ra 2 `CACHE_VERSION` khác nhau
+(`devleap-1783416813693` vs `devleap-1783416826662`).
+`src/composables/useServiceWorkerUpdate.js` (mới, singleton module-level cùng
+pattern `useOnlineStatus.js`): `registerServiceWorkerUpdates()` gọi 1 lần từ
+`main.js` lúc `window.load` — đăng ký SW, gắn `updatefound` trên registration
+(mỗi khi có worker mới `installing`, theo dõi `statechange` của chính worker đó
+để bắt đúng thời điểm `state === 'installed'`), chỉ bật `updateAvailable` khi
+**đã có `navigator.serviceWorker.controller`** (phân biệt "cài mới lần đầu"
+với "thay thế bản đang chạy" — đúng yêu cầu chỉ mời tải lại ở trường hợp thứ
+2); cũng xử lý case tab mở sẵn từ trước lúc bản mới deploy xong và đã có sẵn
+`reg.waiting` khi register() resolve. `visibilitychange` → `registration
+.update()` khi quay lại tab (đáp ứng "kiểm tra định kỳ khi mở lại từ
+background" — dùng sự kiện có sẵn của trang thay vì tự đặt `setInterval`, nhẹ
+hơn và đúng lúc người dùng thực sự đang nhìn app). Chặn lặp reload bằng cờ
+module-level `reloading` trước khi gọi `location.reload()` trong handler
+`controllerchange`. `applyUpdate()` (expose qua `useServiceWorkerUpdate()`) chỉ
+`postMessage` cho `registration.waiting` — không tự gọi lại `skipWaiting` phía
+trang (SW mới tự quyết định qua message, tách đúng trách nhiệm 2 phía).
+`src/components/common/UpdateToast.vue` (mới): banner full-width đặt trong luồng
+tài liệu (không `position: fixed`) ngay dưới `OfflineBanner` trong `App.vue` —
+chọn cách này thay vì toast nổi để không phải tính lại offset với hệ thống
+`body.has-*-bar` (`MobileCheckpointBar`, `FlashcardTool` mobile actions,
+`ChatComposer` sticky…) đã dựng ở Đợt 2, vì đây là banner hiếm khi hiện và
+không cần che nội dung — đủ để thấy và bấm. Nút "Tải lại" `min-height: 44px`
+theo chuẩn tap-target của kế hoạch. `main.js`: thay lời gọi
+`navigator.serviceWorker.register` cũ bằng `registerServiceWorkerUpdates`.
+**Kiểm bằng preview thật (không chỉ đọc code):** dựng server `devleap-preview`
+(serve `dist/`, cấu hình có sẵn trong `.claude/launch.json`) vì luồng SW chỉ
+chạy ở production build; mở trang → xác nhận SW đầu tiên activate + chiếm
+quyền kiểm soát ngay (`controller: true`, `waiting: false`, không skipWaiting
+thủ công nhưng vẫn đúng như lý thuyết spec). Sửa `dist/sw.js` (đổi 1 dòng, mô
+phỏng deploy mới — `dist/` không nằm trong git) rồi gọi `registration.update()`
+qua `preview_eval`: `waiting` chuyển `true`, banner "✨ Có bản cập nhật mới"
+hiện đúng trong DOM (xác nhận qua `preview_snapshot`). Bấm nút "Tải lại" qua
+`preview_click` → trang tự reload đúng 1 lần (xác nhận qua `preview_network`
+chỉ thấy 2 lần tải `/` — 1 lần tôi tự reload lúc đầu + 1 lần do
+`controllerchange`, không có vòng lặp), sau reload `controller: true`,
+`waiting: false`, banner biến mất. Đo `.update-btn` bằng `preview_eval`
+(`getBoundingClientRect`) ra đúng 44px cao ở 375×812; nền gradient tím giữ
+đúng màu ở cả light/dark (không phụ thuộc biến theo theme nên không vỡ ở chế
+độ nào); 1280×800 banner full-width căn giữa, không vỡ layout. `npm test`
+(399 tests, không thêm test mới — luồng này phụ thuộc browser Service Worker
+API thật, khó mock có ý nghĩa hơn việc đã xác minh bằng preview thật ở trên)
++ `npm run build` pass (build 2 lần ra `CACHE_VERSION` khác nhau, xem trên).
 
 **Vấn đề:** `public/sw.js` dùng `CACHE_VERSION = 'devleap-v1'` cố định + `skipWaiting()` ngay khi install — deploy bản mới, tab đang mở vẫn chạy JS cũ mà không hề biết; cache cũ chỉ bị dọn khi đổi tên version thủ công.
 

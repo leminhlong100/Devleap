@@ -1,13 +1,15 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MascotLogo from '@/components/common/MascotLogo.vue'
+import BottomSheet from '@/components/common/BottomSheet.vue'
 import { useUserStore } from '@/stores/user'
 import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
 import { javaStages } from '@/data/courses'
 import { pendingWeekMission } from '@/lib/missionStats'
 import { useStudyReminder } from '@/composables/useStudyReminder'
+import { useInstallPrompt } from '@/composables/useInstallPrompt'
 
 const router = useRouter()
 const user = useUserStore()
@@ -61,6 +63,27 @@ function goDueReview() {
 }
 function goRemedial() {
   if (remedial.value) router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${remedial.value.week}` } })
+}
+
+// Bước 3.1 — mời cài PWA sau khi đã học xong ≥1 buổi (tránh làm phiền khách mới).
+const { isIos, shouldShowInstallCard, promptInstall, dismissInstall } = useInstallPrompt()
+const totalSessions = computed(() => user.completed.java.length + user.completed.ielts.length)
+const installDismissedNow = ref(false)
+const showInstallCard = computed(() => !installDismissedNow.value && shouldShowInstallCard(totalSessions.value))
+const showIosInstallSheet = ref(false)
+
+async function handleInstallClick() {
+  if (isIos) {
+    showIosInstallSheet.value = true
+    return
+  }
+  await promptInstall()
+}
+
+function handleInstallDismiss() {
+  dismissInstall()
+  installDismissedNow.value = true
+  showIosInstallSheet.value = false
 }
 </script>
 
@@ -185,6 +208,29 @@ function goRemedial() {
         <span class="due-arrow">→</span>
       </div>
     </section>
+
+    <!-- MỜI CÀI PWA (Bước 3.1) -->
+    <section v-if="showInstallCard" class="container due-wrap">
+      <div class="due-card install-card">
+        <span class="due-emoji">📲</span>
+        <div class="due-text">
+          <b>Cài Devleap vào màn hình chính</b>
+          <span>Mở nhanh hơn, học được cả khi mất mạng</span>
+        </div>
+        <div class="install-actions">
+          <button class="install-btn install-btn-ghost" @click="handleInstallDismiss">Để sau</button>
+          <button class="install-btn install-btn-primary" @click="handleInstallClick">Cài đặt</button>
+        </div>
+      </div>
+    </section>
+    <BottomSheet v-model="showIosInstallSheet">
+      <h3 class="ios-sheet-title">📲 Cài vào màn hình chính</h3>
+      <ol class="ios-sheet-steps">
+        <li>Bấm nút <b>Chia sẻ</b> <span class="ios-share-icon">⬆️</span> ở thanh dưới Safari</li>
+        <li>Chọn <b>"Thêm vào Màn hình chính"</b> trong danh sách hiện ra</li>
+      </ol>
+      <button class="install-btn install-btn-primary ios-sheet-close" @click="handleInstallDismiss">Đã hiểu</button>
+    </BottomSheet>
 
     <!-- VALUE PROPS -->
     <section class="container section">
@@ -592,6 +638,72 @@ function goRemedial() {
   color: var(--ink);
   padding: 3px 8px;
   font-size: 13px;
+}
+
+/* mời cài PWA */
+.install-card {
+  cursor: default;
+  flex-wrap: wrap;
+}
+.install-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+.install-btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  min-height: 44px;
+  touch-action: manipulation;
+  transition: transform 0.15s;
+}
+.install-btn:active {
+  transform: scale(0.96);
+}
+.install-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.install-btn-primary {
+  color: #fff;
+  background: var(--grad-purple);
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.28);
+}
+.ios-sheet-title {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 6px 0 16px;
+}
+.ios-sheet-steps {
+  margin: 0 0 20px;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+.ios-share-icon {
+  font-size: 14px;
+}
+.ios-sheet-close {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .install-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .install-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .install-btn {
+    flex: 1;
+  }
 }
 
 /* sections */

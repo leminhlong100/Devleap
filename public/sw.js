@@ -6,16 +6,22 @@
 // Netlify Functions (AI) và Supabase (đăng nhập/đồng bộ) KHÔNG được cache — luôn
 // cần mạng sống, để lỗi rơi đúng vào friendlyAiError()/luồng pending-sync có sẵn
 // thay vì trả về dữ liệu cũ giả vờ thành công.
-const CACHE_VERSION = 'devleap-v1'
+// CACHE_VERSION đổi mỗi lần build — plugin `swBuildIdPlugin` trong vite.config.js
+// ghi đè placeholder bên dưới bằng timestamp lúc build ra dist/sw.js — bản mới
+// luôn dọn sạch cache của bản cũ.
+const CACHE_VERSION = 'devleap-' + '__BUILD_ID__'
 const PRECACHE_URLS = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting()),
-  )
+  // KHÔNG tự skipWaiting() ở đây: SW mới phải chờ ở trạng thái "waiting" cho tới
+  // khi trang gửi SKIP_WAITING (sau khi người học bấm "Tải lại" ở UpdateToast) —
+  // tránh đổi JS đang chạy dở dưới chân tab đang mở. Lần cài đầu tiên (chưa có
+  // SW nào đang kiểm soát) trình duyệt tự activate ngay, không cần chờ gì.
+  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(PRECACHE_URLS)))
+})
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {

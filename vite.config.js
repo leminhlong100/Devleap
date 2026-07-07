@@ -1,9 +1,36 @@
 import { fileURLToPath, URL } from 'node:url'
+import fs from 'node:fs'
+import path from 'node:path'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import chatHandler from './netlify/functions/chat.js'
 import shadowingHandler from './netlify/functions/shadowing.js'
 import runJavaHandler from './netlify/functions/run-java.js'
+
+/**
+ * `public/sw.js` chứa placeholder `__BUILD_ID__` thay vì version cố định — sau
+ * khi Vite copy nguyên `public/` sang `outDir` (bước có sẵn của Vite, chạy
+ * trước `closeBundle`), plugin này ghi đè `dist/sw.js` với 1 build id thật
+ * (timestamp) để mỗi lần build ra 1 `CACHE_VERSION` khác nhau — nhờ đó
+ * `UpdateToast` phát hiện được bản mới qua `registration.updatefound`.
+ */
+function swBuildIdPlugin() {
+  let outDir = 'dist'
+  return {
+    name: 'sw-build-id',
+    apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir
+    },
+    closeBundle() {
+      const swPath = path.join(outDir, 'sw.js')
+      if (!fs.existsSync(swPath)) return
+      const buildId = String(Date.now())
+      const content = fs.readFileSync(swPath, 'utf-8').replaceAll('__BUILD_ID__', buildId)
+      fs.writeFileSync(swPath, content)
+    },
+  }
+}
 
 /**
  * Plugin dev dùng chung: mô phỏng một Netlify Function (v2, handler nhận
@@ -52,6 +79,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      swBuildIdPlugin(),
       netlifyFunctionDevPlugin('chat', chatHandler, env),
       netlifyFunctionDevPlugin('shadowing', shadowingHandler, env),
       netlifyFunctionDevPlugin('run-java', runJavaHandler, env),

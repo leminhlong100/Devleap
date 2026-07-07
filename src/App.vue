@@ -5,12 +5,14 @@ import BottomNav from '@/components/layout/BottomNav.vue'
 import LoginGate from '@/components/layout/LoginGate.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
 import OfflineBanner from '@/components/common/OfflineBanner.vue'
+import UpdateToast from '@/components/common/UpdateToast.vue'
 </script>
 
 <template>
   <div class="app-shell">
     <AppHeader />
     <OfflineBanner />
+    <UpdateToast />
     <main class="app-main">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
