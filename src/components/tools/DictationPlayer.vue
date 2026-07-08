@@ -4,6 +4,7 @@ import { loadYouTubeApi } from '@/lib/youtube'
 import { clipSentenceList } from '@/lib/dictationClip'
 import { useUserStore } from '@/stores/user'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import BottomSheet from '@/components/common/BottomSheet.vue'
 
 const isMobile = useIsMobile()
 const user = useUserStore()
@@ -27,6 +28,7 @@ const playing = ref(false)
 const RATES = [0.5, 0.75, 1, 1.25, 1.5]
 const rate = ref(1)
 const rateMenuOpen = ref(false)
+const rateSheetOpen = ref(false) // mobile: BottomSheet thay cho dropdown (dễ tràn ở màn hẹp)
 const ratesEl = ref(null)
 
 const PAD = 0.15
@@ -267,8 +269,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="dc-player">
     <div class="dc-head">
-      <span class="dc-crumbs">Topics <span class="dc-sep">›</span> {{ clip.topic }} <span class="dc-sep">›</span> {{ clip.title }}</span>
-      <span class="dc-level">{{ clip.level }}</span>
+      <div class="dc-head-top">
+        <span class="dc-crumbs">Topics <span class="dc-sep">›</span> {{ clip.topic }} <span class="dc-sep">›</span> {{ clip.title }}</span>
+        <span class="dc-level">{{ clip.level }}</span>
+      </div>
       <div class="dc-head-tools">
         <button class="dc-head-btn" :class="{ off: !showMedia }" @click="showMedia = !showMedia">
           {{ showMedia ? '👁 Ẩn media' : '👁 Hiện media' }}
@@ -297,11 +301,13 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="dc-controls">
-          <button class="dc-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="jumpTo(activeIndex - 1)">‹</button>
-          <button class="dc-ctrl" title="Làm mới câu" @click="typed = ''">↺</button>
-          <button v-if="!playing" class="dc-ctrl primary" title="Phát" @click="replay">▶</button>
-          <button v-else class="dc-ctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
-          <button class="dc-ctrl" :disabled="activeIndex >= sentences.length - 1" title="Câu sau" @click="jumpTo(activeIndex + 1)">›</button>
+          <div class="dc-ctrl-group">
+            <button class="dc-ctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="jumpTo(activeIndex - 1)">‹</button>
+            <button class="dc-ctrl" title="Làm mới câu" @click="typed = ''">↺</button>
+            <button v-if="!playing" class="dc-ctrl primary" title="Phát" @click="replay">▶</button>
+            <button v-else class="dc-ctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
+            <button class="dc-ctrl" :disabled="activeIndex >= sentences.length - 1" title="Câu sau" @click="jumpTo(activeIndex + 1)">›</button>
+          </div>
           <div ref="ratesEl" class="dc-rates">
             <button class="dc-rate-toggle" :class="{ open: rateMenuOpen }" title="Tốc độ phát" @click="rateMenuOpen = !rateMenuOpen">
               {{ rate }}× <span class="dc-rate-caret">▾</span>
@@ -374,14 +380,27 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- ≤720px: thanh điều khiển dính đáy -->
+    <!-- ≤720px: thanh điều khiển dính đáy (thay .dc-controls ẩn ở trên) -->
     <div v-if="isMobile" class="dc-mobile-bar">
       <button class="dc-mctrl" :disabled="activeIndex <= 0" title="Câu trước" @click="jumpTo(activeIndex - 1)">⏮</button>
+      <button class="dc-mctrl" title="Làm mới câu" @click="typed = ''">↺</button>
       <button v-if="!playing" class="dc-mctrl primary" title="Phát" @click="replay">▶</button>
       <button v-else class="dc-mctrl primary" title="Tạm dừng" @click="pause">❚❚</button>
       <button class="dc-mctrl" :disabled="activeIndex >= sentences.length - 1" title="Câu sau" @click="jumpTo(activeIndex + 1)">⏭</button>
-      <button class="dc-mctrl" title="Tốc độ phát" @click="rateMenuOpen = !rateMenuOpen">{{ rate }}×</button>
+      <button class="dc-mctrl" title="Tốc độ phát" @click="rateSheetOpen = true">{{ rate }}×</button>
     </div>
+    <BottomSheet v-model="rateSheetOpen">
+      <h3 class="dc-sheet-title">Tốc độ phát</h3>
+      <div class="dc-sheet-rates">
+        <button
+          v-for="r in RATES"
+          :key="r"
+          class="dc-sheet-rate"
+          :class="{ on: rate === r }"
+          @click="setRate(r); rateSheetOpen = false"
+        >{{ r }}×</button>
+      </div>
+    </BottomSheet>
   </div>
 </template>
 
@@ -395,22 +414,29 @@ onBeforeUnmount(() => {
 }
 .dc-head {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.dc-head-top {
+  display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
 }
 .dc-crumbs {
   font-size: 13.5px;
   color: var(--muted-2);
   flex: 1;
-  min-width: 0;
+  /* KHÔNG min-width:0 — nếu không flexbox sẽ ép span này co gần về 0 khi
+     .dc-head-tools chiếm hết chỗ, làm chữ xuống dòng từng chữ một (lỗi màn hẹp). */
 }
 .dc-sep {
   color: var(--muted-2);
   margin: 0 2px;
 }
 .dc-level {
+  flex: none;
   font-size: 11.5px;
   font-weight: 800;
   color: var(--purple);
@@ -421,9 +447,11 @@ onBeforeUnmount(() => {
 .dc-head-tools {
   display: flex;
   gap: 8px;
-  flex: none;
+  flex-wrap: wrap;
 }
 .dc-head-btn {
+  flex: 1;
+  min-width: 128px;
   border: 1px solid rgba(108, 92, 231, 0.2);
   background: var(--surface);
   color: var(--ink);
@@ -437,6 +465,23 @@ onBeforeUnmount(() => {
 .dc-head-btn.off {
   color: var(--muted-2);
   background: var(--chip-bg);
+}
+@media (min-width: 640px) {
+  .dc-head {
+    flex-direction: row;
+    align-items: center;
+  }
+  .dc-head-top {
+    flex: 1;
+    min-width: 0;
+  }
+  .dc-head-tools {
+    flex: none;
+  }
+  .dc-head-btn {
+    flex: none;
+    min-width: 0;
+  }
 }
 
 .dc-stage {
@@ -514,6 +559,18 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   margin-bottom: 14px;
+}
+.dc-ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  /* ≤720px: cụm phát/lặp + tốc độ chuyển xuống .dc-mobile-bar dính đáy, tránh
+     lặp 2 bộ điều khiển trên cùng 1 màn hẹp. */
+  .dc-controls {
+    display: none;
+  }
 }
 .dc-ctrl {
   display: inline-flex;
@@ -911,7 +968,8 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
     position: fixed;
     left: 0;
     right: 0;
@@ -948,6 +1006,46 @@ onBeforeUnmount(() => {
     color: #fff;
     background: var(--grad-purple);
     border: none;
+  }
+}
+
+/* —— BottomSheet chọn tốc độ (mobile) —— */
+.dc-sheet-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.dc-sheet-rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.dc-sheet-rate {
+  flex: 1;
+  min-width: 64px;
+  height: 52px;
+  border: 1px solid rgba(108, 92, 231, 0.2);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.dc-sheet-rate:active {
+  background: var(--purple-soft);
+}
+.dc-sheet-rate.on {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+}
+
+/* —— Màn rất hẹp (≤380px): tránh badge tổng kết bị bóp méo —— */
+@media (max-width: 380px) {
+  .dc-clip-sum {
+    flex-wrap: wrap;
   }
 }
 </style>
