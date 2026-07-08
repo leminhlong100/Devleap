@@ -6,6 +6,8 @@ import { ymd, laterDate, union } from './helpers'
 // do component tính theo SỐ CÂU đạt mốc cá nhân (xem ShadowingPlayer.vue), không
 // suy từ một ngưỡng điểm trung bình ở đây.
 const XP_SHADOWING_PASS = 120
+// Cùng mức thưởng với shadowing — dictation cũng là một bài luyện nghe đầy đủ.
+const XP_DICTATION_PASS = 120
 
 export function state() {
   return {
@@ -25,6 +27,9 @@ export function state() {
     // best = điểm trung bình các câu; `sentences` lưu điểm tốt nhất TỪNG CÂU để
     // tải lại không mất tiến độ.
     shadowingScores: {},
+    // kết quả luyện nghe-viết chính tả (dictation), cùng khóa/hình dạng như
+    // shadowingScores — xem DictationPlayer.vue.
+    dictationScores: {},
   }
 }
 
@@ -46,6 +51,25 @@ export const getters = {
   shadowingPassedCount: (s) => Object.values(s.shadowingScores).filter((v) => v.passed).length,
   /** Map điểm tốt nhất từng câu của một bài: { [sentenceId]: bestPct }. */
   shadowingSentences: (s) => (videoId) => s.shadowingScores[videoId]?.sentences || {},
+
+  /** Kết quả dictation một bài (null nếu chưa luyện). Dùng: user.dictationOf(videoId). */
+  dictationOf: (s) => (videoId) => s.dictationScores[videoId] || null,
+  /** Đã hoàn thành (đủ số câu đạt mốc) một bài dictation chưa? */
+  dictationPassed: (s) => (videoId) => !!s.dictationScores[videoId]?.passed,
+  /** Số bài dictation đã đạt (để hiện huy hiệu/tiến độ). */
+  dictationPassedCount: (s) => Object.values(s.dictationScores).filter((v) => v.passed).length,
+  /** Map điểm tốt nhất từng câu của một bài dictation: { [sentenceId]: bestPct }. */
+  dictationSentences: (s) => (videoId) => s.dictationScores[videoId]?.sentences || {},
+  /**
+   * Chế độ được luyện gần nhất cho một clip ('shadowing' | 'dictation' | null)
+   * — dùng để gắn nhãn "ĐANG HỌC" trong modal chọn chế độ.
+   */
+  lastModeOf: (s) => (videoId) => {
+    const sh = s.shadowingScores[videoId]?.lastAt || ''
+    const dc = s.dictationScores[videoId]?.lastAt || ''
+    if (!sh && !dc) return null
+    return dc > sh ? 'dictation' : 'shadowing'
+  },
 }
 
 export const actions = {
@@ -156,10 +180,48 @@ export const actions = {
     this.persist()
     return entry
   },
+
+  /**
+   * Ghi kết quả luyện một bài dictation (nghe-viết chính tả) — cùng cơ chế với
+   * recordShadowing (xem docblock ở trên), chỉ khác slice lưu trữ.
+   */
+  recordDictation(videoId, pct, passed = false, sentences = null) {
+    if (!videoId) return null
+    const prev = this.dictationScores[videoId]
+    const wasPassed = !!prev?.passed
+    const best = Math.max(prev?.best || 0, Math.round(pct))
+    const sent = { ...(prev?.sentences || {}) }
+    if (sentences) {
+      for (const [id, v] of Object.entries(sentences)) {
+        const n = Math.round(Number(v))
+        if (Number.isFinite(n) && n > (sent[id] || 0)) sent[id] = n
+      }
+    }
+    const entry = {
+      best,
+      passed: wasPassed || !!passed,
+      attempts: (prev?.attempts || 0) + 1,
+      lastAt: ymd(new Date()),
+      sentences: sent,
+    }
+    this.dictationScores[videoId] = entry
+    if (!wasPassed && entry.passed) {
+      this.addXp(XP_DICTATION_PASS)
+      this.badges += 1
+    }
+    this.bumpStreak()
+    this.persist()
+    return entry
+  },
 }
 
 export function pick(s) {
-  return { savedWords: s.savedWords, topics: s.topics, shadowingScores: s.shadowingScores }
+  return {
+    savedWords: s.savedWords,
+    topics: s.topics,
+    shadowingScores: s.shadowingScores,
+    dictationScores: s.dictationScores,
+  }
 }
 
 export function applyDefaults(s = {}) {
@@ -167,6 +229,7 @@ export function applyDefaults(s = {}) {
     savedWords: s.savedWords && typeof s.savedWords === 'object' ? s.savedWords : {},
     topics: Array.isArray(s.topics) ? s.topics : [],
     shadowingScores: s.shadowingScores && typeof s.shadowingScores === 'object' ? s.shadowingScores : {},
+    dictationScores: s.dictationScores && typeof s.dictationScores === 'object' ? s.dictationScores : {},
   }
 }
 
@@ -190,9 +253,10 @@ function mergeSentenceScores(a = {}, b = {}) {
   return out
 }
 
-// Hợp nhất kết quả shadowing: mỗi bài giữ điểm cao nhất, OR trạng thái đạt,
-// lấy số lần thử & ngày lớn hơn (đủ cho đồng bộ đa thiết bị cá nhân).
-export function mergeShadowing(a = {}, b = {}) {
+// Hợp nhất kết quả một bài luyện có chấm theo câu (shadowing/dictation): mỗi
+// bài giữ điểm cao nhất, OR trạng thái đạt, lấy số lần thử & ngày lớn hơn (đủ
+// cho đồng bộ đa thiết bị cá nhân).
+function mergeClipScores(a = {}, b = {}) {
   const out = { ...a }
   for (const [k, v] of Object.entries(b)) {
     const cur = out[k]
@@ -210,3 +274,5 @@ export function mergeShadowing(a = {}, b = {}) {
   }
   return out
 }
+export const mergeShadowing = mergeClipScores
+export const mergeDictation = mergeClipScores

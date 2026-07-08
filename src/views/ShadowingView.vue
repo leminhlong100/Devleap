@@ -3,6 +3,8 @@ import { ref, shallowRef, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchClipList, fetchClip } from '@/lib/shadowingRepo'
 import ShadowingPlayer from '@/components/tools/ShadowingPlayer.vue'
+import DictationPlayer from '@/components/tools/DictationPlayer.vue'
+import ClipModeModal from '@/components/common/ClipModeModal.vue'
 import { parseVideoId } from '@/lib/youtube'
 import { useUserStore } from '@/stores/user'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
@@ -25,6 +27,28 @@ const selectedId = ref(null)
 const clip = shallowRef(null)
 const loading = ref(false)
 const listLoading = ref(true)
+const mode = ref('shadowing') // 'shadowing' | 'dictation' — chế độ học đang mở
+
+// —— Modal "Chọn chế độ học" (hiện khi bấm vào 1 clip) ——
+const modeModalOpen = ref(false)
+const pendingId = ref(null) // videoId của clip thư viện đang chờ chọn chế độ
+const pendingUrlClip = ref(null) // clip vừa tải từ URL, chờ chọn chế độ
+const modalLastMode = computed(() => {
+  const id = pendingId.value || pendingUrlClip.value?.videoId
+  return id ? user.lastModeOf(id) : null
+})
+function chooseMode(m) {
+  mode.value = m
+  if (pendingUrlClip.value) {
+    selectedId.value = null
+    clip.value = pendingUrlClip.value
+    pendingUrlClip.value = null
+    nextTick(() => document.getElementById('sh-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  } else if (pendingId.value) {
+    selectedId.value = pendingId.value
+    pendingId.value = null
+  }
+}
 
 // Nạp danh mục clip (Supabase, fallback file tĩnh). KHÔNG tự mở clip nào —
 // để người dùng tự chọn từ thư viện cho gọn.
@@ -121,16 +145,15 @@ async function loadFromUrl() {
       const err = data?.error
       throw new Error((err && typeof err === 'object' ? err.message : err) || 'Không tải được bài.')
     }
-    selectedId.value = null // bỏ chọn clip gợi ý để player nhận clip URL
-    clip.value = {
+    pendingId.value = null
+    pendingUrlClip.value = {
       videoId: data.videoId,
       title: data.title,
       level: 'YouTube',
       topic: data.author || 'Tự tải',
       sentences: data.sentences, // { ai, original }
     }
-    await nextTick()
-    document.getElementById('sh-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    modeModalOpen.value = true
   } catch (e) {
     loadError.value = e?.message || 'Không tải được bài. Thử lại hoặc chọn clip gợi ý.'
   } finally {
@@ -140,7 +163,9 @@ async function loadFromUrl() {
 
 function pickFeatured(id) {
   loadError.value = ''
-  selectedId.value = id
+  pendingUrlClip.value = null
+  pendingId.value = id
+  modeModalOpen.value = true
 }
 </script>
 
@@ -254,8 +279,11 @@ function pickFeatured(id) {
 
     <div id="sh-player">
       <div v-if="loading" class="loading">Đang tải clip…</div>
-      <ShadowingPlayer v-else-if="clip" :clip="clip" :key="clip.videoId" />
+      <ShadowingPlayer v-else-if="clip && mode === 'shadowing'" :clip="clip" :key="`sh-${clip.videoId}`" />
+      <DictationPlayer v-else-if="clip && mode === 'dictation'" :clip="clip" :key="`dc-${clip.videoId}`" />
     </div>
+
+    <ClipModeModal v-model="modeModalOpen" :last-mode="modalLastMode" @choose="chooseMode" />
   </div>
 </template>
 

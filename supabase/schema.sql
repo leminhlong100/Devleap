@@ -17,6 +17,7 @@ create table if not exists public.progress (
   saved_words    jsonb       not null default '{}'::jsonb,
   topics         jsonb       not null default '[]'::jsonb,
   shadowing_scores jsonb     not null default '{}'::jsonb,
+  dictation_scores jsonb     not null default '{}'::jsonb,
   week_feedback  jsonb       not null default '{}'::jsonb,
   week_xp          integer   not null default 0,
   week_xp_key      text,
@@ -44,6 +45,10 @@ alter table public.progress
 -- Nâng cấp DB đã tạo trước khi có Shadowing: thêm cột kết quả luyện shadowing.
 alter table public.progress
   add column if not exists shadowing_scores jsonb not null default '{}'::jsonb;
+
+-- Nâng cấp DB đã tạo trước khi có Dictation (nghe-viết chính tả): thêm cột kết quả luyện.
+alter table public.progress
+  add column if not exists dictation_scores jsonb not null default '{}'::jsonb;
 
 -- Nâng cấp DB đã tạo trước khi có khảo sát cuối tuần: thêm cột cảm nhận Dễ/Vừa/Khó.
 alter table public.progress
