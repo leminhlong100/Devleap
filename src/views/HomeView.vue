@@ -10,6 +10,7 @@ import { javaStages } from '@/data/courses'
 import { pendingWeekMission } from '@/lib/missionStats'
 import { useStudyReminder } from '@/composables/useStudyReminder'
 import { useInstallPrompt } from '@/composables/useInstallPrompt'
+import { prefetchNextLesson } from '@/lib/prefetchNextLesson'
 
 const router = useRouter()
 const user = useUserStore()
@@ -42,6 +43,8 @@ const reminderHourOptions = [18, 19, 20, 21, 22]
 onMounted(() => {
   // Mức 2: kiểm tra ngay khi mở app — gửi Notification nếu đã có quyền & đủ điều kiện.
   if (hasProgress.value) checkReminderNotification(user.streak, user.studiedToday())
+  // Bước 3.3 — khi rảnh, warm trước chunk buổi kế tiếp để mở được offline.
+  prefetchNextLesson(user)
 })
 
 // Bài kiểm tra tuần IELTS đang học chưa đạt (chỉ IELTS có gate theo tuần).
@@ -171,7 +174,7 @@ function handleInstallDismiss() {
         <span class="due-emoji">🔥</span>
         <div class="due-text">
           <b>Streak {{ user.streak }} ngày sắp đứt — 1 buổi 15' là giữ được</b>
-          <span>Học ngay tối nay để không mất công sức đã tích lũy</span>
+          <span>Học ngay tối nay để không mất công sức đã tích lũy<template v-if="user.dueTodayCount > 0"> · {{ user.dueTodayCount }} từ cũng đang chờ ôn</template></span>
         </div>
         <span class="due-arrow">→</span>
       </div>

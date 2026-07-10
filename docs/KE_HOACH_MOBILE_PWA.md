@@ -729,7 +729,33 @@ giá trị test thấp, đã xác minh logic chọn khóa qua đọc code + gett
 
 ### Bước 3.4 — Badge app + nâng cấp nhắc học cho standalone
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-10):** **Badge (mục 1):** `src/lib/appBadge.js` (mới) — hàm thuần
+`badgeCount(dueTodayCount)` (làm tròn xuống, số âm/NaN/0 → 0 = xóa badge) tách khỏi 3 wrapper
+`setAppBadge`/`clearAppBadge`/`updateAppBadge` (feature-detect `navigator.setAppBadge`, nuốt cả lỗi
+đồng bộ lẫn promise reject — nhiều thiết bị/iOS-ngoài-standalone không hỗ trợ), cùng pattern
+tách-logic-thuần của `installPrompt.js`/`studyReminder.js`. `tests/appBadge.test.js` 7 case (badge
+number + feature-detect + updateAppBadge >0 đặt số / =0 xóa). Wire ở **`App.vue`** (không phải store)
+để chạy suốt vòng đời app: `watch(() => user.dueTodayCount, n => updateAppBadge(n), { immediate:
+true })` — cập nhật ngay khi mở app và mỗi khi số từ đến hạn đổi (ôn xong 1 thẻ / lưu từ mới khi chat).
+`dueTodayCount` là getter Pinia sẵn có (`srsSlice.js`), gộp cả thẻ đã có lịch đến hạn + savedWords
+chưa ôn lần nào. **Nhắc học standalone (mục 2):** thẻ nhắc buổi tối in-app (`showEveningReminder` ở
+`HomeView`) **đã tồn tại từ Bước 4.4 cũ và luôn hiện cho mọi chế độ** (không chỉ standalone) — vốn đã
+là superset của yêu cầu "standalone cũng phải có card vì Notification không khả dụng trong standalone
+iOS", nên không cần thêm nhánh `isStandaloneDisplay()` riêng (thêm sẽ làm card *biến mất* ở trình
+duyệt thường — kém đi). Chỉ **gộp thêm số từ đến hạn vào nội dung** card đúng như mục 2 yêu cầu: dòng
+phụ nối thêm "· N từ cũng đang chờ ôn" khi `dueTodayCount > 0`. **Quyết định khác kế hoạch:** không
+đụng `studyReminder.js` (kế hoạch gợi ý sửa ở đây) vì cơ chế hiển thị card nằm ở `HomeView` +
+`useStudyReminder`, không phải trong lib thuần; sửa 1 dòng template ở đúng nơi render gọn hơn là thêm
+API mới vào lib. **Web Push (mục 3): cố tình KHÔNG làm** — đúng ghi chú "chỉ làm khi có nhu cầu thật,
+tách kế hoạch riêng". **Kiểm bằng preview** (server `devleap`, 375×812, guest): app mount sạch không
+lỗi console sau khi thêm `watch` store vào `App.vue`; `navigator.setAppBadge` là `function` ngay trong
+Chromium preview (feature-detect chạy đúng nhánh có hỗ trợ, guest `dueTodayCount=0` → gọi
+`clearAppBadge`, không lỗi). Thẻ nhắc buổi tối cần streak>0 + quá giờ + chưa học nên không dựng được ở
+guest — thay đổi chỉ là 1 dòng template, đã xác nhận qua build. `npm test` (406 tests, +7 mới) + `npm
+run build` pass. *(Commit này gộp luôn 1 dòng wiring `prefetchNextLesson(user)` trong `HomeView` bị
+sót chưa commit ở Bước 3.3.)*
 
 **Vấn đề:** Nhắc học hiện chỉ bắn Notification khi tab đang mở (`src/lib/studyReminder.js`). Khi đã cài PWA, có thêm 2 công cụ nhẹ không cần server: **Badging API** (chấm số trên icon app — số từ đến hạn ôn) và notification bắn lúc mở app. Web Push thật (server đẩy khi app đóng) cần VAPID + backend — để **tùy chọn** cuối kế hoạch, không bắt buộc.
 
@@ -823,7 +849,7 @@ giá trị test thấp, đã xác minh logic chọn khóa qua đọc code + gett
 | 3.1 | Manifest + install prompt | 1 buổi | ✅ |
 | 3.2 | Luồng update SW | 0.5–1 buổi | ✅ |
 | 3.3 | Offline sâu + self-host font | 1 buổi | ✅ |
-| 3.4 | Badge + nhắc học standalone | 0.5 buổi | ⬜ |
+| 3.4 | Badge + nhắc học standalone | 0.5 buổi | ✅ |
 | 4.1 | Chuyển động & haptic | 0.5–1 buổi | ⬜ |
 | 4.2 | Kiểm định media standalone | 0.5 buổi + thiết bị thật | ⬜ |
 | 4.3 | Hiệu năng + Lighthouse | 1 buổi | ⬜ |
