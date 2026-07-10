@@ -3,6 +3,7 @@ import { ref, computed, watch, watchEffect, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { previewInterval, intervalLabel, daysUntil } from '@/lib/srs'
 import { speak, canSpeak } from '@/lib/speak'
+import { hapticLight } from '@/lib/haptics'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useSwipe } from '@/composables/useSwipe'
 import VocabIllustration from '@/components/common/VocabIllustration.vue'
@@ -107,6 +108,7 @@ function prev() {
   swipe.reset()
 }
 function grade(g) {
+  hapticLight() // gõ nhẹ xác nhận đã chấm (nút bấm lẫn vuốt đều qua đây)
   user.reviewCard(card.value.srsId, g)
   setTimeout(advance, 280)
 }

@@ -774,7 +774,39 @@ sót chưa commit ở Bước 3.3.)*
 
 ### Bước 4.1 — Chuyển động & haptic mức app
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-10):** **Transition có hướng** — tạo `src/composables/useRouteTransition.js`
+(singleton như `useOnlineStatus`) với 2 hàm thuần `pathDepth(path)` (đếm đoạn path khác rỗng: `/`→0,
+`/courses/ielts/week/2/day/3`→6) + `directionFor(to, from)` (sâu hơn→`forward`, nông hơn→`back`,
+bằng→`none`). Không gắn `meta.depth` cho từng route như kế hoạch gợi ý vì đo bằng độ sâu path tự nhiên
+đủ dùng và không phải sửa 12 route. `router.afterEach` (chỉ chạy khi điều hướng đã xác nhận, khác
+`beforeEach` có thể bị hủy) gọi `setRouteDirection`. `App.vue` chọn tên transition qua computed: **chỉ**
+trượt khi `useIsMobile()` (≤720px) **và không** `prefers-reduced-motion` (dùng `useMediaQuery`) — desktop
++ người yêu cầu giảm chuyển động đều giữ `fade` cũ. CSS `slide-fwd`/`slide-back` thêm vào `base.css` cạnh
+`.fade-*` (mode `out-in`: mới trượt vào từ phải/trái + fade, cũ rời ngược lại, 0.2s). Vì fallback về `fade`
+khi reduced-motion nên không cần media query tắt riêng trong CSS.
+
+**Haptic** — `src/lib/haptics.js` theo đúng khuôn `appBadge.js`: hàm thuần `vibrationPattern(kind)`
+(`light`=12ms chấm đúng/chấm thẻ, `success`=[14,45,26] hoàn thành buổi, `error`=[22,55,22] trả lời sai;
+loại lạ→0) tách khỏi `haptic(kind)` (feature-detect `navigator.vibrate` + tôn trọng toggle + nuốt lỗi,
+iOS tự bỏ qua) + `isHapticEnabled`/`setHapticEnabled` (mặc định BẬT, nhớ `localStorage['devleap:haptics']`).
+Gắn `hapticLight()/hapticError()` vào cả 3 điểm chấm của `QuizTool.vue` (`select` MCQ, `checkText` cloze,
+`checkOrder` sắp xếp câu); `hapticLight()` vào `grade()` của `FlashcardTool.vue` (nút bấm lẫn vuốt đều qua
+đây); `hapticSuccess()` vào `markDone()` của cả `IeltsDayView.vue` và `DayView.vue` (Java). **Toggle** đặt
+trong dropdown tài khoản của `AppHeader.vue` (switch "📳 Rung phản hồi", dùng `role="switch"` + biến theme
+sẵn có) — đây là chỗ "cài đặt" duy nhất repo có; guest chưa đăng nhập không thấy toggle nhưng haptic vẫn
+mặc định bật, chấp nhận được vì đây chỉ là polish (kế hoạch cho phép "mặc định bật").
+
+**Mục 3 (skeleton loading) — cố tình BỎ QUA** đúng tinh thần "chỉ thêm nếu thực tế có flash trắng khi
+throttle Slow 3G, không bày vẽ thừa": các view đã lazy-load qua `import()` route-level, nhưng việc dựng
+`SkeletonBlock` + đo flash thật cần throttle mạng trên thiết bị/DevTools — để lại cho Bước 4.3 (hiệu năng)
+đo Lighthouse rồi quyết, tránh thêm component suy đoán chưa chứng minh cần.
+
+Thêm 2 file test thuần: `tests/haptics.test.js` (9 case — pattern, toggle, feature-detect, nuốt lỗi) và
+`tests/routeTransition.test.js` (5 case — `pathDepth`/`directionFor`). Đã kiểm preview 375×812 light+dark:
+home + bottom nav nguyên vẹn, điều hướng Home↔Công cụ (forward/back) không lỗi console, CSS
+`slide-fwd-enter-from` đo được `translateX(26px)`. `npm test` (420 tests, +14 mới) + `npm run build` pass.
 
 **Vấn đề:** Chuyển route chỉ có fade chung; thao tác đúng/sai trong quiz không có phản hồi xúc giác. Mức "cảm giác app" còn thiếu một lớp polish.
 
@@ -850,7 +882,7 @@ sót chưa commit ở Bước 3.3.)*
 | 3.2 | Luồng update SW | 0.5–1 buổi | ✅ |
 | 3.3 | Offline sâu + self-host font | 1 buổi | ✅ |
 | 3.4 | Badge + nhắc học standalone | 0.5 buổi | ✅ |
-| 4.1 | Chuyển động & haptic | 0.5–1 buổi | ⬜ |
+| 4.1 | Chuyển động & haptic | 0.5–1 buổi | ✅ |
 | 4.2 | Kiểm định media standalone | 0.5 buổi + thiết bị thật | ⬜ |
 | 4.3 | Hiệu năng + Lighthouse | 1 buổi | ⬜ |
 | 4.4 | Tổng kiểm thử + chốt | 0.5 buổi + thiết bị thật | ⬜ |

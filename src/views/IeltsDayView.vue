@@ -25,6 +25,7 @@ import { getIeltsDay } from '@/data/courseIelts'
 import { planFromChecklist, requiredSentencesFor } from '@/lib/dayPlan'
 import { listeningStageOf, listeningStageInfo } from '@/data/ieltsListeningStage'
 import { speak } from '@/lib/speak'
+import { hapticSuccess } from '@/lib/haptics'
 
 function say(text) {
   speak(text)
@@ -136,6 +137,7 @@ function markDone() {
     const { week, nextDay } = d.value
     const vocabTerms = [...d.value.vocab, ...d.value.reviewVocab].map((v) => v.term)
     user.toggleDay('ielts', week, d.value.n, d.value.totalDays, vocabTerms)
+    hapticSuccess() // rung nhẹ ăn mừng hoàn thành buổi
     // Vừa xong buổi CUỐI CÙNG của tuần -> hỏi cảm nhận (chỉ 1 lần/tuần).
     if (!nextDay && !user.weekFeedbackOf('ielts', week)) showWeekSurvey.value = true
   }

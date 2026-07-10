@@ -8,8 +8,17 @@ import MascotLogo from '@/components/common/MascotLogo.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
+import { isHapticEnabled, setHapticEnabled } from '@/lib/haptics'
 
 const { theme, toggleTheme } = useTheme()
+
+// Toggle rung phản hồi (Bước 4.1) — chỉ tác dụng trên máy hỗ trợ vibrate (Android);
+// iOS tự bỏ qua. Đặt trong menu tài khoản vì đây là chỗ "cài đặt" sẵn có.
+const hapticOn = ref(isHapticEnabled())
+function toggleHaptic() {
+  hapticOn.value = !hapticOn.value
+  setHapticEnabled(hapticOn.value)
+}
 const { isOnline } = useOnlineStatus()
 const route = useRoute()
 const user = useUserStore()
@@ -115,6 +124,10 @@ async function signOut() {
                     <div class="xp-track"><div class="xp-fill" :style="{ width: xpPct + '%' }"></div></div>
                   </div>
                   <div v-if="syncLabel" class="menu-sync" :class="syncStatus">{{ syncLabel }}</div>
+                  <button class="menu-toggle" type="button" role="switch" :aria-checked="hapticOn" @click="toggleHaptic">
+                    <span>📳 Rung phản hồi</span>
+                    <span class="menu-switch" :class="{ on: hapticOn }"><span class="menu-knob"></span></span>
+                  </button>
                   <RouterLink
                     v-if="isAdmin"
                     :to="{ name: 'admin-home' }"
@@ -436,6 +449,56 @@ async function signOut() {
 }
 .menu-sync.error {
   color: var(--danger-strong);
+}
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 12px;
+  min-height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .menu-toggle:hover {
+    background: var(--line-soft);
+  }
+}
+.menu-toggle:active {
+  background: var(--line-soft);
+}
+.menu-switch {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 99px;
+  background: var(--track-bg);
+  transition: background 0.15s;
+}
+.menu-switch.on {
+  background: var(--purple);
+}
+.menu-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.menu-switch.on .menu-knob {
+  transform: translateX(16px);
 }
 .menu-admin {
   display: block;

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { hapticLight, hapticError } from '@/lib/haptics'
 
 // Hai chế độ:
 //  - practice (mặc định): quiz nhanh theo từng ngày, +10 XP mỗi câu đúng.
@@ -85,8 +86,10 @@ function select(i) {
   selected.value = i
   if (i === current.value.correct) {
     score.value++
+    hapticLight()
     if (!isAssessment.value) user.addXp(10) // bài kiểm tra thưởng theo kết quả cuối
   } else {
+    hapticError()
     wrongList.value.push({ q: current.value.q, correct: current.value.opts[current.value.correct], ex: current.value.ex })
   }
 }
@@ -130,8 +133,10 @@ function checkText() {
   textCorrect.value = ok
   if (ok) {
     score.value++
+    hapticLight()
     if (!isAssessment.value) user.addXp(10)
   } else {
+    hapticError()
     wrongList.value.push({ q: current.value.q, correct: accepted[0], ex: current.value.ex })
   }
 }
@@ -159,8 +164,10 @@ function checkOrder() {
   textCorrect.value = ok
   if (ok) {
     score.value++
+    hapticLight()
     if (!isAssessment.value) user.addXp(10)
   } else {
+    hapticError()
     wrongList.value.push({ q: current.value.q, correct: accepted[0], ex: current.value.ex })
   }
 }

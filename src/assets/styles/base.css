@@ -379,6 +379,32 @@ select {
   opacity: 0;
 }
 
+/* Bước 4.1 — chuyển trang có hướng trên mobile (mode out-in: cũ rời rồi mới vào).
+   Đi sâu (slide-fwd): mới trượt vào từ phải, cũ rời sang trái. Lùi ngược lại.
+   Chỉ dùng khi không bật prefers-reduced-motion (App.vue tự chọn tên transition). */
+.slide-fwd-enter-active,
+.slide-fwd-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.slide-fwd-enter-from {
+  opacity: 0;
+  transform: translateX(26px);
+}
+.slide-fwd-leave-to {
+  opacity: 0;
+  transform: translateX(-26px);
+}
+.slide-back-enter-from {
+  opacity: 0;
+  transform: translateX(-26px);
+}
+.slide-back-leave-to {
+  opacity: 0;
+  transform: translateX(26px);
+}
+
 /* ============================================================
    Lesson UI — class dùng chung cho các component buổi học.
    Định nghĩa global để component con (InlineFlashcards, ListeningDictation,

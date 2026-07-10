@@ -8,6 +8,7 @@ import ProgressRing from '@/components/common/ProgressRing.vue'
 import CodeEditor from '@/components/tools/CodeEditor.vue'
 import { getJavaDay } from '@/data/course'
 import { useSectionScrollSpy } from '@/composables/useSectionScrollSpy'
+import { hapticSuccess } from '@/lib/haptics'
 
 const props = defineProps({ week: [String, Number], day: [String, Number] })
 const router = useRouter()
@@ -23,7 +24,10 @@ const weekDoneCount = computed(() => (d.value ? d.value.days.filter((dd) => isDo
 const ringPct = computed(() => (d.value ? Math.round((weekDoneCount.value / d.value.totalDays) * 100) : 0))
 
 function markDone() {
-  if (d.value && !done.value) user.toggleDay('java', d.value.week, d.value.n, d.value.totalDays)
+  if (d.value && !done.value) {
+    user.toggleDay('java', d.value.week, d.value.n, d.value.totalDays)
+    hapticSuccess() // rung nhẹ ăn mừng hoàn thành buổi
+  }
 }
 function unmark() {
   if (d.value && done.value) user.toggleDay('java', d.value.week, d.value.n, d.value.totalDays)

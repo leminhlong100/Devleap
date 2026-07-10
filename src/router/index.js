@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { setRouteDirection } from '@/composables/useRouteTransition'
 
 const routes = [
   { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
@@ -113,5 +114,9 @@ router.beforeEach(async (to) => {
 
   return { name: 'home', query: { login: 'required', redirect: to.fullPath } }
 })
+
+// Ghi hướng chuyển trang (đi sâu/lùi) sau khi điều hướng đã xác nhận — App.vue
+// dùng để chọn transition trượt có hướng trên mobile (Bước 4.1).
+router.afterEach((to, from) => setRouteDirection(to, from))
 
 export default router
