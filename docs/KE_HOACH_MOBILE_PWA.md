@@ -836,7 +836,40 @@ home + bottom nav nguyên vẹn, điều hướng Home↔Công cụ (forward/bac
 
 ### Bước 4.3 — Hiệu năng mobile + Lighthouse ≥ 90
 
-- [ ] Đã làm
+- [~] Một phần (2026-07-10) — xong tối ưu code đo được; **còn lại chạy Lighthouse thật + facade YouTube** (cần Chrome/thiết bị, gộp với 4.2/4.4).
+
+**Ghi chú (2026-07-10):**
+- **Tách chunk (mục 3 — tác động lớn nhất):** thêm `build.rollupOptions.output.manualChunks` vào
+  `vite.config.js`. Trước: **1 file `index` 1749 kB** (gzip 527 kB) tải hết ở lần mở đầu vì `AppHeader`
+  → `GlobalSearch` → `searchIndex` và Pinia store (`progressSlice`/`localPrefsSlice`) **đều import tĩnh**
+  dữ liệu khóa học. Sau: `index` **65.8 kB** (gzip 22 kB) + `vue-vendor` 110 kB + `vendor` 258 kB +
+  `course-data` 248 kB + `course-content` 1085 kB (chuỗi markdown tuần + Base_English). Mỗi chunk hash
+  riêng → đổi mã app không bắt tải lại 1 MB nội dung khóa học (lợi cho lần vào lại + mỗi lần deploy).
+  CodeMirror giữ nguyên chunk lazy theo route `CodeEditor` (loại trừ trong manualChunks để không bị kéo
+  vào entry). Đã build + `vite preview` thật (cổng 5182): home render đủ (parse được "84 bài học/12 tuần"
+  từ `course-content` tách rời), route lazy `/tools/flashcard` nạp đúng, 0 lỗi console, mọi chunk 200.
+- **Đã đạt sẵn từ bước trước (xác nhận lại, không phải làm):** route-level code splitting — **mọi** route
+  trong `router/index.js` đã là `() => import()`; `loading="lazy"` + `decoding="async"` + kích thước cố
+  định (chống CLS) đã có trong `VocabIllustration.vue`; preload 2 woff2 chính + self-host font đã làm ở
+  Bước 3.3 (`index.html`).
+- **Giới hạn còn lại (ghi rõ, chưa làm):**
+  1. **`course-content` (1085 kB) vẫn `modulepreload` ở home** vì store luôn-nạp cần cấu trúc tuần (suy ra
+     từ parse markdown) để tính tiến độ + thẻ "học tiếp". Đẩy hẳn ra khỏi first-paint cần **manifest cấu
+     trúc build-time** (một Vite plugin/prebuild parse `weeks/*.md` → JSON nhỏ nums/titles/day-counts cho
+     store; `getJavaDay`/`getIeltsDay` full-content mới lazy theo route DayView). Đây là refactor tầng dữ
+     liệu (getter Pinia đồng bộ → cần cẩn thận), để riêng một đợt — vượt ngân sách rủi ro của 1 bước.
+  2. **Facade YouTube** (mục 2, ý đầu) — `ShadowingPlayer`/`DictationPlayer` tạo player ngay `onMounted`.
+     Làm facade đúng phải xếp hàng ý định play tới `onReady` (nhiều điểm phát: playSentence/replay/step/
+     watcher auto-loop), sửa sâu vào 2 component media ~1400 dòng **cần kiểm trên thiết bị thật** (luật
+     autoplay/getUserMedia iOS standalone) — đúng phạm vi **Bước 4.2**, nên gộp làm cùng lúc để test 1 lần.
+     `ListeningDictation` đã chỉ nạp YT khi có clip thật (watch `realClip`) — không cần facade.
+  3. **Nén PNG icon/screenshot** (`icon-512` 344 kB, `favicon` 104 kB) — cần bộ mã hóa ảnh (pngquant/sharp),
+     mà repo cấm thêm dependency; favicon không chặn first-paint (tải priority thấp). Để lại, làm thủ công
+     khi có công cụ ngoài.
+  4. **Chạy Lighthouse thật** (mục 1 + 4, tiêu chí nghiệm thu) — môi trường AI không có Lighthouse CLI;
+     cần chủ repo chạy trên Chrome DevTools / `dist` đã serve. Số chunk ở trên là proxy đo được tạm thời.
+
+`npm test` (420 tests) + `npm run build` pass; đã verify `vite preview` production như trên. Commit riêng.
 
 **Vấn đề:** Chưa từng đo Lighthouse mobile. Mạng 4G yếu + máy Android tầm trung là môi trường thật của app học. YouTube iframe, ảnh minh họa từ vựng, chunk lớn có thể kéo điểm xuống.
 
@@ -884,7 +917,7 @@ home + bottom nav nguyên vẹn, điều hướng Home↔Công cụ (forward/bac
 | 3.4 | Badge + nhắc học standalone | 0.5 buổi | ✅ |
 | 4.1 | Chuyển động & haptic | 0.5–1 buổi | ✅ |
 | 4.2 | Kiểm định media standalone | 0.5 buổi + thiết bị thật | ⬜ |
-| 4.3 | Hiệu năng + Lighthouse | 1 buổi | ⬜ |
+| 4.3 | Hiệu năng + Lighthouse | 1 buổi | 🟡 Một phần (tách chunk xong; Lighthouse+facade chờ thiết bị) |
 | 4.4 | Tổng kiểm thử + chốt | 0.5 buổi + thiết bị thật | ⬜ |
 
 **Quy tắc chung cho mọi bước (AI thực hiện phải tuân thủ):**

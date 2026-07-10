@@ -89,6 +89,29 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          // Bước 4.3 — tách chunk để không còn 1 file entry khổng lồ: thư viện
+          // (vue/pinia/router) và dữ liệu khóa học nặng (markdown tuần + IELTS
+          // input) nằm chunk riêng, cache độc lập với mã app qua mỗi lần deploy.
+          // CodeMirror đã tự tách theo route (CodeEditor lazy) nên không đụng tới.
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('/@codemirror/') || id.includes('/codemirror/') || id.includes('/@lezer/')) return
+              if (id.includes('/vue/') || id.includes('/@vue/') || id.includes('/pinia/') || id.includes('/vue-router/')) {
+                return 'vue-vendor'
+              }
+              return 'vendor'
+            }
+            // Nội dung khóa học (chuỗi markdown thô nhúng qua import.meta.glob) —
+            // phần nặng nhất; tách khỏi mã app để đổi bài không phải tải lại app.
+            if (id.includes('/weeks/') || id.includes('/Base_English/')) return 'course-content'
+            if (id.includes('/src/data/')) return 'course-data'
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       open: true,
