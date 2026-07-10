@@ -671,7 +671,49 @@ API thật, khó mock có ý nghĩa hơn việc đã xác minh bằng preview th
 
 ### Bước 3.3 — Offline sâu hơn: self-host font, precache dữ liệu học, trạng thái offline từng tính năng
 
-- [ ] Đã làm
+- [x] Đã làm
+
+**Ghi chú (2026-07-10):** **Self-host font (mục 1):** Plus Jakarta Sans hóa ra là *variable
+font* — Google Fonts CSS chỉ có 4 subset (cyrillic-ext, vietnamese, latin-ext, latin), mỗi subset
+**1 file woff2 duy nhất** chứa cả trục weight 400–800 (không phải 1 file/weight như kế hoạch dự
+đoán → chỉ cần 3 file thay vì 15). Tải 3 subset cần dùng (bỏ cyrillic-ext) về `public/fonts/`
+(`plus-jakarta-sans-{vietnamese,latin-ext,latin}.woff2`, tổng ~57KB) bằng `curl` trong scratchpad
+(không thêm dependency). `base.css` khai 3 `@font-face` với `font-weight: 400 800` (khoảng biến
+thiên, khai 1 lần thay vì 5) + `font-display: swap` + `unicode-range` copy nguyên từ Google CSS.
+`index.html` bỏ `<link>` Google Fonts + 2 `preconnect`, thay bằng 2 `<link rel="preload">` cho
+subset latin + vietnamese (dùng ngay ở màn đầu). `sw.js` thêm cả 3 file vào `PRECACHE_URLS` để
+offline chắc chắn có đủ (kể cả latin-ext chưa từng chạm tới). **Bẫy build quan trọng đã gặp & sửa:**
+build fail ở PostCSS `Unknown word vẫn` tại comment alias token trong `:root`
+(`--surface-*/--text-*/--border-*`) — chuỗi `*/` bên trong `--surface-*/` **đóng comment sớm** làm
+phần còn lại thành CSS sống. Comment này **có sẵn từ trước** (HEAD cũng chứa) nhưng chưa lộ vì
+Vite chỉ chạy PostCSS parse nghiêm khi CSS có `url()` cần rewrite asset — trước Bước này base.css
+không có `url()` nào nên Vite bỏ qua; thêm `@font-face { src: url(...) }` mới kích hoạt parse
+nghiêm và phơi bày bug cũ. Sửa bằng cách chèn dấu cách: `--surface-* / --text-* / --border-*`
+(comment, đổi text vô hại). **Precache buổi kế (mục 2):** phát hiện nội dung bài học được Vite
+nhúng thẳng vào chunk JS qua `import.meta.glob(..., { eager: true })` (xem `src/data/course.js`,
+`courseIelts.js`) — KHÔNG fetch `.md` rời lúc chạy; nên "precache buổi kế" = warm chunk route trang
+buổi học. `src/lib/prefetchNextLesson.js` (mới): khi rảnh (`requestIdleCallback`) + đang online,
+đọc getter `user.nextLesson` (là **thuộc tính** trả mảng, không phải hàm — xem HomeView dùng
+`.find`), rồi `import('@/views/IeltsDayView.vue')`/`import('@/views/DayView.vue')` cho đúng khóa
+đang học dở → SW (stale-while-revalidate) tự giữ chunk. Gọi từ `HomeView.onMounted`. Nuốt mọi lỗi
+(tối ưu thuần). **Offline từng tính năng (mục 3):** hầu hết đã có sẵn từ trước (`useOnlineStatus`
+dùng ở AiChat/ChatComposer, WritingSection, SentenceBankPractice, WeekTestSection, CodePlayground
+chạy Java, ShadowingView tải video) — bổ sung 2 chỗ còn thiếu: `LeaderboardTool` nút "Làm mới"
+disabled + đổi nhãn "🔌 Offline" khi mất mạng; nút "Đăng nhập / Đăng ký" trong `AppHeader` disabled
++ nhãn "Cần có mạng" + style `:disabled` khi offline. **TTS offline (mục 4):** `speak.js` bọc thân
+`speak()` trong try/catch (một số máy dùng giọng tải qua mạng / trình duyệt chặn khi chưa có
+gesture) và trả `true/false` thay vì để ngoại lệ nổi lên (backward-compatible — nơi gọi cũ bỏ qua
+giá trị trả). **Kiểm bằng preview** (server `devleap`, dev, guest): `document.fonts.ready` báo cả 3
+face `Plus Jakarta Sans 400 800 loaded`, 3 request woff2 đều về từ `localhost/fonts/`, **0 request
+tới gstatic/googleapis**; body dùng đúng `Plus Jakarta Sans`; chữ có dấu tiếng Việt + heading đậm
+render đúng ở 375×812 (light) và desktop (dark) qua screenshot; dispatch `offline`/`online` event →
+OfflineBanner hiện/ẩn đúng (chứng minh `isOnline` reactive, cùng ref điều khiển 2 nút mới); console
+không lỗi. `npm test` (399 tests) + `npm run build` pass; grep `dist/` xác nhận không còn link
+googleapis (chỉ còn 1 dòng comment nhắc tên miền), `dist/fonts/` có đủ 3 woff2, CSS build tham
+chiếu đúng 3 file. **Chưa làm (ngoài phạm vi khả thi ở máy dev):** chưa test thực tế offline mở buổi
+CHƯA từng mở trên thiết bị thật cài PWA (cần môi trường standalone — để lại cho Bước 4.2/4.4);
+prefetch không viết unit test vì chỉ là wrapper mỏng quanh `requestIdleCallback` + dynamic import,
+giá trị test thấp, đã xác minh logic chọn khóa qua đọc code + getter thật.
 
 **Vấn đề:** Font Plus Jakarta Sans tải từ Google CDN (cross-origin — SW hiện chỉ cache cùng gốc) → offline mất font, FOUT mỗi lần mở. Bài học chỉ mở được offline nếu **đã từng mở** (stale-while-revalidate); buổi kế tiếp chưa mở lần nào thì offline không học được. Khi offline, các nút cần mạng (AI, chạy Java, leaderboard) mới chỉ có banner chung.
 
@@ -780,7 +822,7 @@ API thật, khó mock có ý nghĩa hơn việc đã xác minh bằng preview th
 | 2.6 | Quét nốt các màn còn lại | 1–2 buổi | ✅ |
 | 3.1 | Manifest + install prompt | 1 buổi | ✅ |
 | 3.2 | Luồng update SW | 0.5–1 buổi | ✅ |
-| 3.3 | Offline sâu + self-host font | 1 buổi | ⬜ |
+| 3.3 | Offline sâu + self-host font | 1 buổi | ✅ |
 | 3.4 | Badge + nhắc học standalone | 0.5 buổi | ⬜ |
 | 4.1 | Chuyển động & haptic | 0.5–1 buổi | ⬜ |
 | 4.2 | Kiểm định media standalone | 0.5 buổi + thiết bị thật | ⬜ |

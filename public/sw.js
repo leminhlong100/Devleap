@@ -10,7 +10,17 @@
 // ghi đè placeholder bên dưới bằng timestamp lúc build ra dist/sw.js — bản mới
 // luôn dọn sạch cache của bản cũ.
 const CACHE_VERSION = 'devleap-' + '__BUILD_ID__'
-const PRECACHE_URLS = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
+const PRECACHE_URLS = [
+  '/',
+  '/manifest.webmanifest',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  // Font self-host (Bước 3.3): precache cả 3 subset để offline không rơi về serif
+  // dù người dùng chưa từng chạm tới chữ latin-ext.
+  '/fonts/plus-jakarta-sans-latin.woff2',
+  '/fonts/plus-jakarta-sans-latin-ext.woff2',
+  '/fonts/plus-jakarta-sans-vietnamese.woff2',
+]
 
 self.addEventListener('install', (event) => {
   // KHÔNG tự skipWaiting() ở đây: SW mới phải chờ ở trạng thái "waiting" cho tới

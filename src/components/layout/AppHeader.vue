@@ -7,8 +7,10 @@ import { useAuthStore } from '@/stores/auth'
 import MascotLogo from '@/components/common/MascotLogo.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import { useTheme } from '@/composables/useTheme'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 const { theme, toggleTheme } = useTheme()
+const { isOnline } = useOnlineStatus()
 const route = useRoute()
 const user = useUserStore()
 const auth = useAuthStore()
@@ -132,10 +134,12 @@ async function signOut() {
         <button
           v-if="auth.cloudEnabled && authReady && !authUser"
           class="signin-btn"
-          title="Đăng nhập / Đăng ký"
+          :disabled="!isOnline"
+          :title="isOnline ? 'Đăng nhập / Đăng ký' : 'Cần có mạng để đăng nhập bằng Google'"
           @click="signIn"
         >
-          <span class="g">G</span> <span class="signin-label">Đăng nhập / Đăng ký</span>
+          <span class="g">G</span>
+          <span class="signin-label">{{ isOnline ? 'Đăng nhập / Đăng ký' : 'Cần có mạng' }}</span>
         </button>
       </div>
     </div>
@@ -316,8 +320,13 @@ async function signOut() {
     background: var(--purple-soft);
   }
 }
-.signin-btn:active {
+.signin-btn:active:not(:disabled) {
   background: var(--purple-soft);
+}
+.signin-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
 }
 .signin-btn .g {
   display: inline-flex;

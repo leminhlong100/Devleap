@@ -11,9 +11,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Devleap" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Font self-host (Bước 3.3): preload 2 subset dùng ngay ở màn đầu (latin cho
+         UI tiếng Anh, vietnamese cho chữ có dấu) — @font-face khai trong base.css.
+         Không còn preconnect/link tới fonts.googleapis.com: offline vẫn có font. -->
+    <link rel="preload" href="/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/plus-jakarta-sans-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
     <title>Devleap — Nền tảng học lập trình & tiếng Anh</title>
     <script>
       (function () {

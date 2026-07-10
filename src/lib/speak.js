@@ -39,25 +39,35 @@ export function wpmRateForWeek(week) {
 
 /**
  * Đọc to một từ / cụm từ tiếng Anh. Tự hủy lần đọc trước để không chồng tiếng.
+ * Bọc try/catch: một số máy dùng giọng TTS tải qua mạng (offline → phát lỗi),
+ * hoặc trình duyệt chặn `speak()` khi chưa có tương tác người dùng — thay vì để
+ * ngoại lệ nổi lên làm hỏng luồng, nuốt lỗi và trả `false` để nơi gọi (nếu cần)
+ * hiển thị thông báo nhẹ. Trả `true` khi đã phát được lệnh đọc.
  * @param {string} text
  * @param {number} rate tốc độ đọc (mặc định hơi chậm để dễ nghe)
+ * @returns {boolean}
  */
 export function speak(text, rate = 0.9) {
-  if (!canSpeak() || !text) return
-  const synth = window.speechSynthesis
-  synth.cancel() // dừng câu đang đọc dở (nếu có)
+  if (!canSpeak() || !text) return false
+  try {
+    const synth = window.speechSynthesis
+    synth.cancel() // dừng câu đang đọc dở (nếu có)
 
-  if (!voiceResolved) {
-    cachedVoice = pickEnglishVoice()
-    if (cachedVoice) voiceResolved = true
+    if (!voiceResolved) {
+      cachedVoice = pickEnglishVoice()
+      if (cachedVoice) voiceResolved = true
+    }
+
+    const u = new SpeechSynthesisUtterance(String(text))
+    u.lang = cachedVoice?.lang || 'en-US'
+    if (cachedVoice) u.voice = cachedVoice
+    u.rate = rate
+    u.pitch = 1
+    synth.speak(u)
+    return true
+  } catch {
+    return false
   }
-
-  const u = new SpeechSynthesisUtterance(String(text))
-  u.lang = cachedVoice?.lang || 'en-US'
-  if (cachedVoice) u.voice = cachedVoice
-  u.rate = rate
-  u.pitch = 1
-  synth.speak(u)
 }
 
 // Danh sách giọng có thể nạp bất đồng bộ; lắng nghe để cập nhật khi sẵn sàng.

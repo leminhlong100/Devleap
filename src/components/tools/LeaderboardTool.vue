@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { isCloudEnabled } from '@/lib/supabase'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 /**
  * Bảng xếp hạng XP tuần (Bước 5.1) — opt-in, ẩn danh mặc định. Chỉ hoạt động
@@ -9,6 +10,7 @@ import { isCloudEnabled } from '@/lib/supabase'
  * lời nhắc đăng nhập, không có gì để bật/tắt.
  */
 const user = useUserStore()
+const { isOnline } = useOnlineStatus()
 const cloudReady = computed(() => isCloudEnabled && !!user.cloudUserId)
 
 const optedIn = ref(user.leaderboardOptIn)
@@ -51,8 +53,14 @@ watch(() => user.leaderboardName, (v) => { name.value = v })
           So XP kiếm được trong tuần này với các bạn học khác — hoàn toàn tùy chọn, ẩn danh mặc định.
         </p>
       </div>
-      <button v-if="cloudReady && optedIn" class="study-btn" :disabled="loading" @click="refresh">
-        🔄 Làm mới
+      <button
+        v-if="cloudReady && optedIn"
+        class="study-btn"
+        :disabled="loading || !isOnline"
+        :title="!isOnline ? 'Cần có mạng để tải bảng xếp hạng' : undefined"
+        @click="refresh"
+      >
+        {{ isOnline ? '🔄 Làm mới' : '🔌 Offline' }}
       </button>
     </div>
 
