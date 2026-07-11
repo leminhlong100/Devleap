@@ -42,6 +42,36 @@ export function answerSecondsForWeek(week, course = '') {
 }
 
 /**
+ * Trần WPM HỢP LÝ khi nói (kế hoạch cải tiến #7 — chống điểm ảo). Người bản ngữ
+ * nói nhanh cỡ 150–160 WPM; một học viên A2 khó vượt ~200. Một lượt "nói" mà WPM
+ * vọt trên trần này thường là transcript DÀI hơn thời gian nói thật (dán chữ, hoặc
+ * STT nhả một cục dài dù chỉ bật tiếng chốc lát) -> đáng ngờ, không tính là "đã nói".
+ */
+export const SPOKEN_WPM_CEILING = 220
+
+/** Lượt nói này có tốc độ bất thường (transcript không khớp thời gian nói) không? */
+export function isSuspiciousWpm(wpm) {
+  return Number(wpm) > SPOKEN_WPM_CEILING
+}
+
+/**
+ * Đối chiếu số liệu nói với transcript để phát hiện "điểm ảo" (kế hoạch #7).
+ * @param {Array<{wpm:number}>} samples  mẫu trôi chảy đã đo bằng mic trong buổi
+ * @param {number} userTurns  tổng số lượt NGƯỜI HỌC đã gửi (cả gõ lẫn nói)
+ * @returns {{userTurns:number, voiceTurns:number, suspiciousTurns:number}}
+ *   voiceTurns = số lượt thực sự đo được bằng giọng; suspiciousTurns = số lượt WPM
+ *   vượt trần (transcript lệch thời gian nói).
+ */
+export function fluencyIntegrity(samples = [], userTurns = 0) {
+  const valid = (Array.isArray(samples) ? samples : []).filter((s) => s && Number(s.wpm) > 0)
+  return {
+    userTurns: Math.max(0, Number(userTurns) || 0),
+    voiceTurns: valid.length,
+    suspiciousTurns: valid.filter((s) => isSuspiciousWpm(s.wpm)).length,
+  }
+}
+
+/**
  * Tổng hợp các mẫu trôi chảy trong 1 buổi -> { turns, avgWpm, avgLatency, bestWpm }.
  * mỗi mẫu = { wpm, latency } (latency giây, có thể null nếu không đo được).
  * Bỏ mẫu wpm ≤ 0 (nhiễu/không nói). Trả null khi không có mẫu hợp lệ.

@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { countWords, computeWpm, answerSecondsForWeek, summarizeFluency } from '@/lib/fluencyStats'
+import {
+  countWords,
+  computeWpm,
+  answerSecondsForWeek,
+  summarizeFluency,
+  SPOKEN_WPM_CEILING,
+  isSuspiciousWpm,
+  fluencyIntegrity,
+} from '@/lib/fluencyStats'
 
 describe('fluencyStats — countWords', () => {
   it('đếm từ tách theo khoảng trắng, bỏ rỗng/thừa', () => {
@@ -71,5 +79,22 @@ describe('fluencyStats — summarizeFluency', () => {
     const s = summarizeFluency([{ wpm: 70, latency: null }])
     expect(s.avgWpm).toBe(70)
     expect(s.avgLatency).toBeNull()
+  })
+})
+
+describe('fluencyStats — chống điểm ảo (#7)', () => {
+  it('isSuspiciousWpm: chỉ true khi vượt trần hợp lý', () => {
+    expect(isSuspiciousWpm(120)).toBe(false)
+    expect(isSuspiciousWpm(SPOKEN_WPM_CEILING)).toBe(false)
+    expect(isSuspiciousWpm(SPOKEN_WPM_CEILING + 1)).toBe(true)
+    expect(isSuspiciousWpm(900)).toBe(true)
+  })
+  it('fluencyIntegrity: đếm lượt nói bằng giọng & lượt WPM bất thường', () => {
+    const r = fluencyIntegrity([{ wpm: 90 }, { wpm: 130 }, { wpm: 800 }, { wpm: 0 }], 5)
+    expect(r).toEqual({ userTurns: 5, voiceTurns: 3, suspiciousTurns: 1 })
+  })
+  it('không có mẫu giọng -> voiceTurns 0 (dấu hiệu chưa nói thật)', () => {
+    expect(fluencyIntegrity([], 3)).toEqual({ userTurns: 3, voiceTurns: 0, suspiciousTurns: 0 })
+    expect(fluencyIntegrity(null, -1)).toEqual({ userTurns: 0, voiceTurns: 0, suspiciousTurns: 0 })
   })
 })

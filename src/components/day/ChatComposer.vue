@@ -10,6 +10,8 @@ defineProps({
   listening: { type: Boolean, default: false },
   listenable: { type: Boolean, default: false },
   online: { type: Boolean, default: true },
+  // Chống điểm ảo (#7): buổi Boss yêu cầu NÓI -> khóa ô gõ + nút gửi, chỉ cho dùng mic.
+  voiceRequired: { type: Boolean, default: false },
 })
 defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
 </script>
@@ -30,16 +32,16 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
       :value="modelValue"
       type="text"
       class="composer-input"
-      :placeholder="listening ? 'Đang nghe bạn nói…' : 'Nhập câu tiếng Anh của bạn…'"
-      :disabled="loading"
+      :placeholder="voiceRequired ? '👑 Boss yêu cầu nói — bấm 🎤 để trả lời' : listening ? 'Đang nghe bạn nói…' : 'Nhập câu tiếng Anh của bạn…'"
+      :disabled="loading || voiceRequired"
       @input="$emit('update:modelValue', $event.target.value)"
       @click.stop
     />
     <button
       type="submit"
       class="send-btn"
-      :disabled="loading || !modelValue.trim() || !online"
-      :title="!online ? 'Cần có mạng để gửi cho AI' : undefined"
+      :disabled="loading || !modelValue.trim() || !online || voiceRequired"
+      :title="voiceRequired ? 'Buổi Boss yêu cầu trả lời bằng giọng' : !online ? 'Cần có mạng để gửi cho AI' : undefined"
     >{{ online ? 'Gửi →' : '🔌 Offline' }}</button>
   </form>
 </template>

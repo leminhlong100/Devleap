@@ -58,6 +58,8 @@ const {
   unlockedRoleplay,
   roleplayOn,
   currentScenario,
+  voiceRequired,
+  integrityWarning,
   deferCorrection,
   toggleDeferCorrection,
   debrief,
@@ -176,6 +178,10 @@ function closePop() {
 
     <!-- Nhãn kịch bản đang luyện ở chế độ Surprise mode -->
     <div v-if="roleplayOn && currentScenario" class="scenario-tag">{{ currentScenario.label }} — không biết trước câu hỏi kế tiếp, hãy phản xạ tự nhiên!</div>
+
+    <!-- Chống điểm ảo (#7): buổi Boss yêu cầu nói -> nhắc + cảnh báo khi lệch -->
+    <div v-if="voiceRequired" class="voice-required-tag">👑 Buổi Boss chấm khả năng NÓI — hãy trả lời bằng 🎤 (ô gõ đã khóa để điểm phản ánh đúng).</div>
+    <div v-if="integrityWarning" class="integrity-warn">{{ integrityWarning }}</div>
 
     <!-- Thanh chọn phong cách lời phê (đổi được bất cứ lúc nào) -->
     <div class="persona-bar">
@@ -315,6 +321,7 @@ function closePop() {
         :listening="listening"
         :listenable="listenable"
         :online="isOnline"
+        :voice-required="voiceRequired"
         @submit="send"
         @toggle-mic="toggleMic"
       />
@@ -401,6 +408,34 @@ function closePop() {
 [data-theme='dark'] .scenario-tag {
   background: var(--bg-warning);
   color: var(--text-warning);
+}
+
+/* —— Chống điểm ảo (#7) —— */
+.voice-required-tag {
+  margin-top: 12px;
+  background: rgba(108, 92, 231, 0.1);
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  border-left: 3px solid #6c5ce7;
+  color: #4b3bc4;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 9px 13px;
+  border-radius: 12px;
+}
+[data-theme='dark'] .voice-required-tag {
+  color: #b9aef7;
+}
+.integrity-warn {
+  margin-top: 10px;
+  background: var(--bg-warning);
+  border-left: 3px solid #ffb020;
+  color: var(--text-warning);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 9px 13px;
+  border-radius: 12px;
 }
 
 /* —— Thanh chọn phong cách lời phê —— */

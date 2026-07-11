@@ -82,6 +82,52 @@ describe('getCommDay() — ghép ngày + tình huống theo N.D', () => {
     // Buổi thường (không surprise) -> cờ tắt.
     expect(getCommDay(1, 1).scenario.surprise).toBe(false)
   })
+
+  // Đợt B — "nâng tỷ lệ cold-open" nửa sau khóa (chuyển từ thuộc lòng sang ứng biến).
+  it('Tuần 1–4: giữ hiệp 1 bám kịch bản (không cold-open)', () => {
+    const d = getCommDay(1, 2)
+    expect(d.scenario.coldOpen).toBe(false)
+    expect(d.scenario.brief).toContain('Round 1: stay on the expected script')
+    expect(d.scenario.brief).not.toContain('COLD OPEN')
+  })
+
+  it('Tuần 5–6: cold-open — bỏ hiệp 1 chậm, tung twist sớm hơn', () => {
+    const d = getCommDay(5, 1)
+    expect(d.scenario.coldOpen).toBe(true)
+    expect(d.scenario.brief).toContain('COLD OPEN')
+    expect(d.scenario.brief).not.toContain('Round 1: stay on the expected script')
+    expect(d.scenario.brief).toContain('After about 2-3 exchanges')
+  })
+
+  it('Tuần 7–8: cold-open mạnh — thêm biến cố tự do (buổi không surprise)', () => {
+    const d = getCommDay(7, 1)
+    expect(d.scenario.coldOpen).toBe(true)
+    expect(d.scenario.brief).toContain('late in the course')
+  })
+
+  it('Buổi surprise (Tuần 8) KHÔNG gắn cold-open — giữ nguyên hành vi surprise', () => {
+    const d = getCommDay(8, 1)
+    expect(d.scenario.surprise).toBe(true)
+    expect(d.scenario.coldOpen).toBe(false)
+    expect(d.scenario.brief).toContain('SURPRISE MODE')
+  })
+})
+
+describe('Đợt A — nối âm & ngữ điệu gắn theo khối (buổi 1)', () => {
+  it('tuần đầu khối (1/3/5/7) · buổi 1 có connectedSpeech + intonation', () => {
+    for (const w of [1, 3, 5, 7]) {
+      const d = getCommDay(w, 1)
+      expect(d.connectedSpeech, `Tuần ${w}`).toBeTruthy()
+      expect(d.intonation, `Tuần ${w}`).toBeTruthy()
+      expect(d.intonation.yesno.length, `Tuần ${w}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('chỉ hiện ở buổi 1 — buổi khác trả null', () => {
+    const d = getCommDay(1, 2)
+    expect(d.connectedSpeech).toBeNull()
+    expect(d.intonation).toBeNull()
+  })
 })
 
 describe('tiến độ khóa comm', () => {

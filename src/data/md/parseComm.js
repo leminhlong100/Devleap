@@ -135,8 +135,19 @@ export function parseScenarios(raw) {
  * @param {string} raw  nội dung markdown thô của tuần.
  */
 export function parsePronunciation(raw) {
+  return readLessonSection(raw, /Phát âm trọng tâm/i)
+}
+
+/**
+ * Đọc một micro-lesson dạng "đoạn dẫn + danh sách bullet mẹo" từ section H2 khớp
+ * `headingRe` -> { title, intro, tips[] } hoặc null. Dùng chung cho mục Phát âm và
+ * mục Nối âm (connected speech). Đoạn dẫn mở đầu "**Tiêu đề — ….**" được tách tiêu đề.
+ * @param {string} raw
+ * @param {RegExp} headingRe
+ */
+function readLessonSection(raw, headingRe) {
   const lines = String(raw || '').split(/\r?\n/)
-  const sec = splitByLevel(lines, 2).find((s) => /Phát âm trọng tâm/i.test(s.heading))
+  const sec = splitByLevel(lines, 2).find((s) => headingRe.test(s.heading))
   if (!sec) return null
 
   const tips = []
@@ -155,6 +166,38 @@ export function parsePronunciation(raw) {
   const intro = titleMatch ? titleMatch[2].trim() : introRaw
   if (!tips.length && !intro) return null
   return { title, intro, tips }
+}
+
+/**
+ * Đọc section "## 🔊 Nối âm & nuốt âm" (micro-lesson connected speech theo khối)
+ * -> { title, intro, tips[] } hoặc null. Dạy linking / weak forms / gonna–wanna —
+ * thứ khiến giọng nghe TỰ NHIÊN và giúp NGHE KỊP giọng thật (Đợt A #1). Dùng
+ * chung khuôn với parsePronunciation nên tách logic ra `readLessonSection`.
+ * @param {string} raw
+ */
+export function parseConnectedSpeech(raw) {
+  return readLessonSection(raw, /Nối âm|Connected speech/i)
+}
+
+/**
+ * Đọc section "## 🎵 Ngữ điệu" -> { yesno, statement } (câu mẫu lên/xuống giọng)
+ * cho "Bộ hiện ngữ điệu" (Đợt A #2). Khuôn MD:
+ *
+ *   ## 🎵 Ngữ điệu
+ *   **Lên giọng (Yes/No):** Are you coming to the party tonight?
+ *   **Xuống giọng (câu kể/WH):** I'm heading home right now.
+ *
+ * An toàn ngược: không có section / thiếu cả hai câu -> null.
+ * @param {string} raw
+ */
+export function parseIntonation(raw) {
+  const lines = String(raw || '').split(/\r?\n/)
+  const sec = splitByLevel(lines, 2).find((s) => /🎵|Ngữ điệu/i.test(s.heading))
+  if (!sec) return null
+  const yesno = fieldValue(sec.lines, 'Lên giọng.*?')
+  const statement = fieldValue(sec.lines, 'Xuống giọng.*?')
+  if (!yesno && !statement) return null
+  return { yesno, statement }
 }
 
 /**
@@ -221,6 +264,8 @@ export function parseCommWeek(raw) {
     ...week,
     scenarios: parseScenarios(raw),
     pronunciation: parsePronunciation(raw),
+    connectedSpeech: parseConnectedSpeech(raw),
+    intonation: parseIntonation(raw),
     listening: parseListening(raw),
   }
 }

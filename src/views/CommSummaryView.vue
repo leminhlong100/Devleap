@@ -6,6 +6,7 @@ import { COMM_MILESTONES } from '@/data/milestones'
 import { COMM_BADGES } from '@/data/badges'
 import { commBadgeStats, commBossScores, commSrsSummary, commMetricsSummary } from '@/lib/commStats'
 import { computeCommProgress } from '@/data/courseComm'
+import PeerRubricSheet from '@/components/day/PeerRubricSheet.vue'
 import { loadRecording, saveRecording } from '@/lib/recorder'
 import { downloadRecording, remoteRecordingExists } from '@/lib/recordingSync'
 import { isCloudEnabled } from '@/lib/supabase'
@@ -158,6 +159,12 @@ const dareDelta = computed(() =>
           <button v-else class="clip-go" @click="goDay(c.week, c.day)">🎤 Chưa ghi — mở buổi để ghi</button>
         </div>
       </div>
+    </section>
+
+    <!-- GIAO THỨC NGƯỜI THẬT CÓ PHẢN HỒI (kế hoạch cải tiến #9) -->
+    <section class="block">
+      <h2 class="block-title">🤝 Xin nhận xét từ người thật</h2>
+      <PeerRubricSheet />
     </section>
 
     <!-- THANG TỰ ĐÁNH GIÁ "MÌNH DÁM NÓI" -->

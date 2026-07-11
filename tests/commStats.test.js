@@ -6,6 +6,7 @@ import {
   commSrsSummary,
   commRevengeScene,
   commMetricsSummary,
+  commWeakPairGroups,
   COMM_SAVE_TOPIC,
 } from '@/lib/commStats'
 import { COMM_BADGES } from '@/data/badges'
@@ -128,6 +129,39 @@ describe('commMetricsSummary — WPM & phát âm gom từ các buổi', () => {
     expect(s.avgWpm).toBe(80)
     expect(s.bestWpm).toBe(100)
     expect(s.avgPron).toBe(85)
+  })
+})
+
+describe('commWeakPairGroups — âm hay lẫn thật (remediation #8)', () => {
+  const withConf = (commConfusions) => ({ convoPrefs: { commConfusions } })
+  it('chưa có dữ liệu -> rỗng', () => {
+    expect(commWeakPairGroups(withConf({}))).toEqual([])
+    expect(commWeakPairGroups({})).toEqual([])
+  })
+  it('chỉ lấy nhóm đủ số lần thử VÀ tỉ lệ lẫn cao', () => {
+    const rows = commWeakPairGroups(
+      withConf({
+        th: { attempts: 6, confused: 4 }, // rate .67 -> lấy
+        'sh-s': { attempts: 2, confused: 2 }, // chưa đủ minAttempts -> bỏ
+        'l-n': { attempts: 8, confused: 1 }, // rate .125 < ngưỡng -> bỏ
+      }),
+    )
+    expect(rows.map((r) => r.key)).toEqual(['th'])
+    expect(rows[0]).toMatchObject({ label: expect.any(String), attempts: 6, confused: 4 })
+  })
+  it('xếp theo tỉ lệ lẫn giảm dần + tôn trọng limit', () => {
+    const rows = commWeakPairGroups(
+      withConf({
+        th: { attempts: 10, confused: 4 }, // .40
+        'b-p': { attempts: 10, confused: 8 }, // .80
+        'sh-s': { attempts: 10, confused: 6 }, // .60
+      }),
+      { limit: 2 },
+    )
+    expect(rows.map((r) => r.key)).toEqual(['b-p', 'sh-s'])
+  })
+  it('bỏ qua key không thuộc pool cặp tối thiểu', () => {
+    expect(commWeakPairGroups(withConf({ 'khong-ton-tai': { attempts: 9, confused: 9 } }))).toEqual([])
   })
 })
 

@@ -23,6 +23,29 @@ import { mergeWeekXp } from '@/stores/user/progressSlice'
 // 'YYYY-M-D' giống hàm ymd nội bộ của store (không pad số 0).
 const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 
+describe('user store — recordCommConfusion (remediation #8)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('đếm dồn attempts + confused theo nhóm âm', () => {
+    const s = useUserStore()
+    s.recordCommConfusion('th', true)
+    s.recordCommConfusion('th', false)
+    s.recordCommConfusion('th', true)
+    expect(s.convoPrefs.commConfusions.th).toEqual({ attempts: 3, confused: 2 })
+  })
+
+  it('bỏ qua groupKey rỗng, tách riêng từng nhóm', () => {
+    const s = useUserStore()
+    s.recordCommConfusion('', true)
+    s.recordCommConfusion('sh-s', false)
+    expect(s.convoPrefs.commConfusions['']).toBeUndefined()
+    expect(s.convoPrefs.commConfusions['sh-s']).toEqual({ attempts: 1, confused: 0 })
+  })
+})
+
 describe('user store — recordShadowing', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

@@ -124,3 +124,31 @@ describe('minimalPairs — khóa comm (COMM_WEEK_FOCUS, course="comm")', () => {
     expect(a.pairs[0]).toEqual(['big', 'pig'])
   })
 })
+
+describe('minimalPairs — remediation cá nhân hóa (priorityKeys, #8)', () => {
+  it('focusForWeek với priorityKeys dùng ĐÚNG nhóm đó thay cho lịch tuần', () => {
+    const groups = focusForWeek(4, 'comm', ['th', 'l-n'])
+    expect(groups.map((g) => g.key)).toEqual(['th', 'l-n'])
+  })
+  it('bỏ qua key không tồn tại + dedup giữ thứ tự', () => {
+    const groups = focusForWeek(1, 'comm', ['th', 'khong-co', 'th', 'sh-s'])
+    expect(groups.map((g) => g.key)).toEqual(['th', 'sh-s'])
+  })
+  it('priorityKeys rỗng/toàn key sai -> quay về lịch tuần', () => {
+    expect(focusForWeek(4, 'comm', []).map((g) => g.key)).toEqual(COMM_WEEK_FOCUS[4])
+    expect(focusForWeek(4, 'comm', ['khong-co']).map((g) => g.key)).toEqual(COMM_WEEK_FOCUS[4])
+  })
+  it('pairsForWeek priorityKeys -> chỉ cặp của nhóm ưu tiên', () => {
+    const { pairs, groupKey } = pairsForWeek(4, [], 'comm', ['th'])
+    expect(groupKey).toBe('th')
+    expect(pairs.length).toBe(8)
+  })
+  it('pairGroups song song pairs, mỗi cặp gắn đúng key nhóm', () => {
+    const { pairs, pairGroups } = pairsForWeek(8, [], 'comm') // Tuần 8 comm trộn 2 nhóm
+    expect(pairGroups.length).toBe(pairs.length)
+    for (const g of pairGroups) expect(typeof g).toBe('string')
+    // mọi nhãn nhóm nằm trong focus của tuần
+    const focusKeys = focusForWeek(8, 'comm').map((x) => x.key)
+    for (const g of pairGroups) expect(focusKeys).toContain(g)
+  })
+})

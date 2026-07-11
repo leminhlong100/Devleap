@@ -73,6 +73,28 @@ export async function downloadRecording(userId, key) {
   }
 }
 
+/**
+ * Tạo link CHIA SẺ có hạn cho 1 bản ghi trên Storage (kế hoạch cải tiến #9 —
+ * "giao thức người thật có phản hồi"): học viên gửi link này ra cộng đồng để xin
+ * nhận xét bài self-intro. Dùng signed URL (bucket riêng tư vẫn mở được qua link,
+ * hết hạn thì thôi). Trả URL hoặc null (khách / chưa đăng nhập / lỗi / chưa có bản ghi).
+ * @param {string} userId
+ * @param {string} key  recId, vd "comm:8:5:mono"
+ * @param {number} expiresIn  số giây link còn sống (mặc định 7 ngày)
+ */
+export async function createRecordingShareLink(userId, key, expiresIn = 604800) {
+  if (!isCloudEnabled || !userId || !key) return null
+  try {
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(storagePath(userId, key), expiresIn)
+    if (error) throw error
+    return data?.signedUrl || null
+  } catch {
+    return null
+  }
+}
+
 /** Bản ghi này có mặt trên Storage không — kiểm tra rẻ (list lọc theo tên), không tải blob. */
 export async function remoteRecordingExists(userId, key) {
   if (!isCloudEnabled || !userId || !key) return false

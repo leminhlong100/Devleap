@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import { parseCommWeek, parseScenarios, parsePronunciation, parseListening } from '@/data/md/parseComm'
+import {
+  parseCommWeek,
+  parseScenarios,
+  parsePronunciation,
+  parseConnectedSpeech,
+  parseIntonation,
+  parseListening,
+} from '@/data/md/parseComm'
 import { parseIeltsWeek } from '@/data/md/parseIelts'
 
 const DIR = path.resolve(process.cwd(), 'Comm_English')
@@ -120,5 +127,43 @@ describe('parseListening() — section 🎧 Nghe (nghe-chép + nghe-hiểu)', ()
 
   it('file không có section 🎧 -> null', () => {
     expect(parseListening('# Tuần 9\n\n## 📖 Ngữ pháp\n\nx')).toBeNull()
+  })
+})
+
+describe('parseConnectedSpeech() — section 🔊 Nối âm & nuốt âm (Đợt A)', () => {
+  it('bóc được micro-lesson nối âm ở tuần đầu mỗi khối (1/3/5/7)', () => {
+    for (const w of [1, 3, 5, 7]) {
+      const cs = parseConnectedSpeech(read(`ThucChien_Tuan${w}.md`))
+      expect(cs, `Tuần ${w}`).toBeTruthy()
+      expect(cs.title, `Tuần ${w}`).toMatch(/Khối/i)
+      expect(cs.tips.length, `Tuần ${w}`).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('tuần KHÔNG phải đầu khối không có section -> null (an toàn ngược)', () => {
+    expect(parseConnectedSpeech(read('ThucChien_Tuan2.md'))).toBeNull()
+    expect(parseConnectedSpeech('# Tuần 9\n\n## 📖 Ngữ pháp\n\nx')).toBeNull()
+  })
+})
+
+describe('parseIntonation() — section 🎵 Ngữ điệu (Đợt A)', () => {
+  it('bóc đủ câu Yes/No (lên) và câu kể (xuống) ở tuần đầu khối', () => {
+    for (const w of [1, 3, 5, 7]) {
+      const it0 = parseIntonation(read(`ThucChien_Tuan${w}.md`))
+      expect(it0, `Tuần ${w}`).toBeTruthy()
+      expect(it0.yesno.length, `Tuần ${w} yesno`).toBeGreaterThan(0)
+      expect(it0.statement.length, `Tuần ${w} statement`).toBeGreaterThan(0)
+    }
+  })
+
+  it('Tuần 1 lấy đúng nội dung câu mẫu', () => {
+    const it0 = parseIntonation(read('ThucChien_Tuan1.md'))
+    expect(it0.yesno).toContain('bigger size')
+    expect(it0.statement).toContain('latte')
+  })
+
+  it('không có section 🎵 -> null', () => {
+    expect(parseIntonation(read('ThucChien_Tuan2.md'))).toBeNull()
+    expect(parseIntonation('# Tuần 9\n\n## 📖 x\n\ny')).toBeNull()
   })
 })

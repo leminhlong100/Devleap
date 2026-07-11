@@ -222,6 +222,40 @@ export function buildCoachPrompt(context = {}, persona = DEFAULT_PERSONA) {
 }
 
 /**
+ * Hành vi "ứng biến & tương tác thật" (Đợt B — vá lỗ hổng #3/#4 kế hoạch "Nói Tự
+ * Tin"): thêm 2 chất "người thật" vào roleplay, tách riêng để bật/tắt & kiểm thử.
+ *
+ *  (1) REPAIR 2 CHIỀU — thỉnh thoảng AI báo "chưa nghe rõ" ("Sorry, I didn't catch
+ *      that") để ÉP người học tự diễn đạt lại câu của MÌNH. Ngoài đời "tạch" đầu
+ *      tiên là bị nghe không hiểu; đây là kỹ năng cứu nguy 2 chiều. Tần suất tăng
+ *      dần theo tuần (nửa sau khóa dày hơn) → chuyển từ thuộc lòng sang thích ứng.
+ *  (2) BACKCHANNEL + LUÂN PHIÊN LƯỢT LỜI — AI nói như hội thoại thật: thả phản hồi
+ *      trong lúc nghe (right, I see, uh-huh) và nhường lượt rõ ràng để người học
+ *      quen tín hiệu chuyển lượt, thay vì kiểu phỏng vấn hỏi–đáp khô khan.
+ *
+ * Bật mặc định cho roleplay; tắt qua context.repair=false / context.dynamics=false.
+ */
+function interactionRules(context = {}) {
+  const rules = []
+  const week = Number(context.week) || 0
+  if (context.repair !== false) {
+    const often =
+      week >= 5
+        ? 'fairly often (roughly 1 in 4 of your turns)'
+        : 'occasionally (roughly 1 in 6 of your turns)'
+    rules.push(
+      `TWO-WAY REPAIR: ${often}, and ESPECIALLY when the learner's message is short, vague, or hard to follow, do NOT move the conversation forward. Instead reply in character that you didn't understand — e.g. "Sorry, I didn't catch that.", "Sorry, could you say that another way?", or "What do you mean by ___?" — and wait for the learner to rephrase THEMSELVES. Never do this on your very first line, never twice in a row, and keep it warm and natural (a puzzled real person, not a robot).`,
+    )
+  }
+  if (context.dynamics !== false) {
+    rules.push(
+      'CONVERSATION DYNAMICS: talk like a real person, not an interviewer. Use short natural backchannels when you acknowledge the learner (right, I see, uh-huh, oh really?, got it), and clearly hand the turn back so they know it\'s their go (end most turns with a question or "what about you?"). Every now and then take a slightly longer turn so they get to just listen and react.',
+    )
+  }
+  return rules
+}
+
+/**
  * Dựng system prompt cho SURPRISE ROLEPLAY: AI đóng vai một tình huống bất ngờ
  * (khách khó tính, người hỏi đường vội…), người học KHÔNG biết trước câu hỏi kế
  * tiếp, và AI chủ động đổi đề tài/thêm biến cố giữa chừng — mô phỏng hội thoại
@@ -248,6 +282,8 @@ export function buildRoleplayPrompt(context = {}, persona = DEFAULT_PERSONA) {
       'After a few exchanges, UNEXPECTEDLY add a small complication or a tricky follow-up, like a real conversation.',
       '',
       'IMPORTANT — do NOT correct, grade, or critique the learner during the roleplay. Just keep the conversation going warmly, even if they make mistakes, as long as you understand their meaning. Correction happens later in a separate debrief.',
+      '',
+      ...interactionRules(context),
       '',
       'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
       '{',
@@ -278,6 +314,8 @@ export function buildRoleplayPrompt(context = {}, persona = DEFAULT_PERSONA) {
     `SCENARIO — stay fully in character as this role: ${scenario}`,
     'The learner does NOT know your next line in advance. Do not preview, explain, or break character to describe the exercise.',
     'After a few exchanges, UNEXPECTEDLY change the topic, add a complication, or ask a tricky follow-up — like a real unpredictable conversation. Never announce the change.',
+    '',
+    ...interactionRules(context),
     '',
     'On EACH turn you do TWO things at once and return ONE JSON object:',
     "1) EVALUATE the learner's most recent message (their English, not their in-character choice).",
@@ -344,6 +382,14 @@ export function buildDebriefPrompt(context = {}, persona = DEFAULT_PERSONA) {
     wpm !== null
       ? `OBJECTIVE FLUENCY DATA (measured client-side): the learner spoke at about ${wpm} words per minute${latency !== null ? `, with an average of ${latency}s before starting to speak after their turn` : ''}. Reference this in the "fluency" line; ${wpm < 80 ? 'this is on the slow side — encourage building speed with time-buying phrases.' : 'this is a healthy conversational pace — praise it.'}`
       : ''
+  // Chống điểm ảo (kế hoạch cải tiến #7): buổi Boss YÊU CẦU nói bằng giọng. Nếu học
+  // viên hầu như không nói (voiceTurns thấp so với số lượt), KHÔNG được thổi phồng
+  // điểm trôi chảy/dễ hiểu — nói thẳng là cần trả lời bằng giọng để chấm đúng.
+  const integ = context.integrity && typeof context.integrity === 'object' ? context.integrity : null
+  const integrityLine =
+    context.voiceRequired && integ
+      ? `INTEGRITY CHECK — this was a voice Boss meant to be SPOKEN. Of ${integ.userTurns} learner turn(s), only ${integ.voiceTurns} were actually spoken by voice${integ.suspiciousTurns ? ` and ${integ.suspiciousTurns} had an implausibly fast speaking rate (transcript longer than the time spoken — likely pasted text)` : ''}. ${integ.voiceTurns === 0 ? 'The learner did NOT really speak: do NOT praise fluency/intelligibility, keep "fluency" empty, and in "summary" remind them the Boss must be answered by voice to earn a real score.' : integ.suspiciousTurns ? 'Be cautious: base fluency only on the genuinely spoken turns and gently note that typed/pasted answers do not count.' : 'Speaking looks genuine — assess normally.'}`
+      : ''
 
   return [
     'You are a communication coach debriefing a Vietnamese English learner (CEFR A1-B2) right after a voice roleplay exercise.',
@@ -355,6 +401,7 @@ export function buildDebriefPrompt(context = {}, persona = DEFAULT_PERSONA) {
     rubricLines,
     pronLine,
     fluencyLine,
+    integrityLine,
     '',
     `Feedback persona (giọng điệu nhận xét): ${p.label}. ${p.tone}`,
     '',

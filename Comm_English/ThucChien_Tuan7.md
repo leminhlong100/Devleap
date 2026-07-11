@@ -173,6 +173,20 @@ Thành tích cụ thể đã xong → quá khứ đơn ("I built…", "We shippe
 - **Ngữ điệu tự tin:** nói thành từng cụm ngắn có điểm nhấn, kết câu bằng giọng xuống dứt khoát; tránh cuối câu nào cũng nhấc lên (nghe như đang hỏi hoặc không chắc).
 - **Mẹo tự kiểm:** thu câu trả lời "Tell me about yourself" rồi nghe lại — nếu câu nào cũng đi lên ở cuối, luyện hạ giọng ở câu khẳng định.
 
+## 🔊 Nối âm & nuốt âm
+
+**Khối 4 — Nói theo cụm, tốc độ thật.** Ở phỏng vấn bạn muốn nghe **tự tin** chứ không "đọc bài". Bí quyết là nói theo **cụm ý** (thought group) — nối trơn trong cụm, ngắt nhẹ giữa các cụm — thay vì đều đều từng từ. Đây cũng là cách nghe kịp người phỏng vấn nói nhanh.
+
+- **Gộp cụm hỏi quen thuộc:** "What do you…" → "Whaddaya…", "Did you…" → "Didja…", "Would you…" → "Wudja…" — nghe ra là hết hoảng.
+- **Ngắt theo cụm ý, không theo từ:** "In my last project, // I led a small team // to ship a new feature." — ngắt nhẹ ở dấu //.
+- **Nhấn từ khóa mang thông tin mới:** "I'm a **back-end** developer with **three years** of **Java**."
+- **Mẹo:** thu âm self-intro rồi nghe lại — nếu nghe đều tăm tắp, gộp lại thành 3–4 cụm ý và nhấn từ khóa.
+
+## 🎵 Ngữ điệu
+
+**Lên giọng (Yes/No):** Could you tell me a bit about the team?
+**Xuống giọng (câu kể/WH):** I have three years of experience in Java.
+
 ## 🎧 Nghe
 
 **Nghe–chép:**

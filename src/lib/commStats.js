@@ -1,5 +1,8 @@
 import { commWeekStructure } from '@/data/courseComm'
 import { COMM_BADGES } from '@/data/badges'
+import { MINIMAL_PAIR_GROUPS } from '@/data/minimalPairs'
+
+const PAIR_GROUP_BY_KEY = Object.fromEntries(MINIMAL_PAIR_GROUPS.map((g) => [g.key, g]))
 
 // Chủ đề gom câu nâng cấp của khóa comm khi lưu vào SRS (khớp useChatEngine.js).
 export const COMM_SAVE_TOPIC = 'Giao tiếp thực chiến'
@@ -85,6 +88,33 @@ export function commMetricsSummary(user) {
     bestWpm: wpms.length ? Math.max(...wpms) : null,
     avgPron: prons.length ? avg(prons) : null,
   }
+}
+
+/**
+ * Nhóm âm học viên hay LẪN THẬT SỰ (kế hoạch cải tiến #8 — remediation cá nhân
+ * hóa). Suy từ `convoPrefs.commConfusions` (map groupKey -> { attempts, confused })
+ * do `PronunciationDrill` ghi lại khi cặp tối thiểu bị "nghe nhầm thành từ khác".
+ * Trả danh sách nhóm có tỉ lệ lẫn cao (≥ minRate) với đủ số lần thử (≥ minAttempts),
+ * xếp theo tỉ lệ giảm dần — dùng để ĐẨY drill cặp tối thiểu đúng chỗ yếu thay vì
+ * theo lịch tuần cứng. Kèm nhãn nhóm để hiện UI.
+ * @param {object} user  store (đọc convoPrefs.commConfusions)
+ * @param {{minAttempts?:number, minRate?:number, limit?:number}} opts
+ */
+export function commWeakPairGroups(user, { minAttempts = 3, minRate = 0.34, limit = 2 } = {}) {
+  const map = user?.convoPrefs?.commConfusions || {}
+  const rows = []
+  for (const [key, v] of Object.entries(map)) {
+    const group = PAIR_GROUP_BY_KEY[key]
+    if (!group || !v) continue
+    const attempts = Number(v.attempts) || 0
+    const confused = Number(v.confused) || 0
+    if (attempts < minAttempts) continue
+    const rate = attempts ? confused / attempts : 0
+    if (rate < minRate) continue
+    rows.push({ key, label: group.label, tip: group.tip, attempts, confused, rate })
+  }
+  rows.sort((a, b) => b.rate - a.rate || b.confused - a.confused)
+  return rows.slice(0, limit)
 }
 
 /**

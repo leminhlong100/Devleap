@@ -4,7 +4,7 @@ import { friendlyAiError } from '@/lib/aiError'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
-import { countWords, computeWpm, summarizeFluency } from '@/lib/fluencyStats'
+import { countWords, computeWpm, summarizeFluency, fluencyIntegrity } from '@/lib/fluencyStats'
 import { useUserStore } from '@/stores/user'
 
 // —— Danh sách phong cách lời phê (khớp PERSONAS ở backend _llm.js) ——
@@ -99,6 +99,26 @@ export function useChatEngine(props) {
   // —— Trôi chảy (Trục B): gom WPM + độ trễ mỗi lượt nói bằng mic ——
   const fluencySamples = ref([]) // [{ wpm, latency }]
   const fluency = computed(() => summarizeFluency(fluencySamples.value))
+
+  // —— Chống điểm ảo (kế hoạch cải tiến #7) ——
+  // Buổi Boss YÊU CẦU nói bằng giọng (voiceRequired) — chặn gõ tay để điểm phản ánh
+  // khả năng NÓI thật. Chỉ ép được khi trình duyệt có STT (listenable); Safari/iOS
+  // không có -> không khóa cứng (kẻo kẹt), nhưng vẫn cảnh báo ở debrief.
+  const voiceRequiredIntent = computed(() => isComm.value && !!props.context?.voiceRequired)
+  const voiceRequired = computed(() => voiceRequiredIntent.value && listenable)
+  // Đối chiếu số liệu nói với transcript: bao nhiêu lượt thật sự nói bằng giọng,
+  // bao nhiêu lượt WPM bất thường (transcript dài hơn thời gian nói -> nghi dán chữ).
+  const integrity = computed(() => fluencyIntegrity(fluencySamples.value, userTurnCount.value))
+  // Cảnh báo hiện cho học viên khi buổi Boss có dấu hiệu "điểm ảo".
+  const integrityWarning = computed(() => {
+    if (!voiceRequiredIntent.value) return ''
+    const { userTurns, voiceTurns, suspiciousTurns } = integrity.value
+    if (userTurns >= 2 && voiceTurns === 0)
+      return '👑 Buổi Boss chấm khả năng NÓI. Bạn chưa trả lời bằng giọng lần nào — hãy bấm 🎤 để điểm phản ánh đúng.'
+    if (suspiciousTurns > 0)
+      return `⚠️ ${suspiciousTurns} lượt có tốc độ nói bất thường (chữ dài hơn thời gian nói). Hãy nói trực tiếp bằng mic, đừng dán chữ.`
+    return ''
+  })
 
   // Bộ từ của bài (để gợi ý người học dùng trong câu trả lời).
   const vocab = computed(() => (props.context?.vocab || []).filter(Boolean))
@@ -222,12 +242,26 @@ export function useChatEngine(props) {
     )
   }
 
-  async function send() {
+  async function send(opts = {}) {
     const text = input.value.trim()
     if (!text || loading.value) return
+    // Chống điểm ảo (#7): buổi Boss yêu cầu nói -> chặn câu GÕ TAY, chỉ nhận câu
+    // đến từ mic (opts.viaVoice). Không xóa ô nhập để người học không mất câu.
+    if (voiceRequired.value && !opts.viaVoice) {
+      error.value = '👑 Buổi Boss yêu cầu trả lời bằng giọng — bấm 🎤 và nói câu của bạn.'
+      retry.value = null
+      return
+    }
     error.value = ''
     retry.value = null
-    const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
+    const userEntry = reactive({
+      role: 'user',
+      text,
+      evaluation: null,
+      persona: persona.value,
+      evaluating: true,
+      viaVoice: !!opts.viaVoice,
+    })
     messages.value.push(userEntry)
     input.value = ''
     await sendTurn(userEntry)
@@ -396,7 +430,14 @@ export function useChatEngine(props) {
       const trimmed = history.length > DEBRIEF_MAX_TURNS ? history.slice(-DEBRIEF_MAX_TURNS) : history
       const result = await debriefTurn({
         messages: trimmed,
-        context: { ...chatContext.value, rubric: fixedScenario.value?.rubric || [] },
+        context: {
+          ...chatContext.value,
+          rubric: fixedScenario.value?.rubric || [],
+          // Chống điểm ảo (#7): buổi Boss yêu cầu nói -> báo cho LLM biết học viên
+          // có thật sự NÓI hay không để không thổi phồng điểm trôi chảy/dễ hiểu.
+          voiceRequired: voiceRequiredIntent.value,
+          integrity: integrity.value,
+        },
         persona: persona.value,
       })
       // Đính kèm số khách quan của buổi để component lưu vào Tổng kết (Trục E).
@@ -488,7 +529,7 @@ export function useChatEngine(props) {
         }
         micStartedAt = 0
         micFirstSpeechAt = 0
-        if (finalText) send()
+        if (finalText) send({ viaVoice: true })
       },
     })
     if (!recognizer) return
@@ -536,6 +577,8 @@ export function useChatEngine(props) {
     unlockedRoleplay,
     roleplayOn,
     currentScenario,
+    voiceRequired,
+    integrityWarning,
     deferCorrection,
     toggleDeferCorrection,
     debrief,

@@ -27,6 +27,37 @@ describe('buildRoleplayPrompt — deferCorrection', () => {
   })
 })
 
+// Đợt B — "Ứng biến & Tương tác thật" (vá #3/#4): repair 2 chiều + backchannel/luân phiên.
+describe('buildRoleplayPrompt — repair 2 chiều & conversation dynamics', () => {
+  it('mặc định: có hướng dẫn repair ("didn\'t catch") + backchannel', () => {
+    const p = buildRoleplayPrompt({ scenario: 'You are a barista.' })
+    expect(p).toContain('TWO-WAY REPAIR')
+    expect(p.toLowerCase()).toContain("didn't catch")
+    expect(p).toContain('CONVERSATION DYNAMICS')
+    expect(p.toLowerCase()).toContain('backchannel')
+  })
+
+  it('repair bật cả trong chế độ deferCorrection (chỉ trò chuyện)', () => {
+    const p = buildRoleplayPrompt({ scenario: 'You are a barista.', deferCorrection: true })
+    expect(p).toContain('"evaluation": null')
+    expect(p).toContain('TWO-WAY REPAIR')
+    expect(p).toContain('CONVERSATION DYNAMICS')
+  })
+
+  it('tắt được qua context.repair=false / context.dynamics=false', () => {
+    const p = buildRoleplayPrompt({ scenario: 'You are a barista.', repair: false, dynamics: false })
+    expect(p).not.toContain('TWO-WAY REPAIR')
+    expect(p).not.toContain('CONVERSATION DYNAMICS')
+  })
+
+  it('tần suất repair dày hơn ở nửa sau khóa (Tuần 5+)', () => {
+    const early = buildRoleplayPrompt({ scenario: 'x', week: 2 })
+    const late = buildRoleplayPrompt({ scenario: 'x', week: 6 })
+    expect(early).toContain('1 in 6')
+    expect(late).toContain('1 in 4')
+  })
+})
+
 // Trục A/B/D — debrief giàu hơn: độ dễ hiểu, trôi chảy (số khách quan), mẹo vượt lo âu.
 describe('buildDebriefPrompt — chiều dễ hiểu / trôi chảy / vượt lo âu', () => {
   it('có các field mới trong khuôn JSON', () => {

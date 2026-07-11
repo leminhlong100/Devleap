@@ -213,8 +213,19 @@ function norm(s) {
  * Nhóm trọng tâm của 1 tuần — dùng để hiện tiêu đề "Tuần này: ...".
  * @param {number|string} week
  * @param {string} course  'comm' -> dùng COMM_WEEK_FOCUS (phủ Tuần 1–8); else WEEK_FOCUS (Tuần 2–8, kẹp về nhóm gần nhất).
+ * @param {string[]} priorityKeys  Nếu có (remediation cá nhân hóa theo confusions
+ *   THẬT của học viên — kế hoạch cải tiến #8): dùng ĐÚNG các nhóm này thay cho lịch
+ *   tuần cứng, để "vá" âm học viên hay lẫn thật sự. Bỏ qua key không tồn tại.
  */
-export function focusForWeek(week, course = '') {
+export function focusForWeek(week, course = '', priorityKeys = []) {
+  const priority = (Array.isArray(priorityKeys) ? priorityKeys : [])
+    .map((k) => GROUP_BY_KEY[k])
+    .filter(Boolean)
+  if (priority.length) {
+    // Dedup giữ thứ tự (nhóm hay lẫn nhất lên trước).
+    const seen = new Set()
+    return priority.filter((g) => (seen.has(g.key) ? false : seen.add(g.key)))
+  }
   if (course === 'comm') {
     const w = Math.min(8, Math.max(1, Number(week) || 1))
     const keys = COMM_WEEK_FOCUS[w] || ['plural-s']
@@ -232,22 +243,28 @@ export function focusForWeek(week, course = '') {
  * @param {number|string} week
  * @param {string[]} learnedTerms
  * @param {string} course  chuyển tiếp cho focusForWeek ('comm' cho khóa Giao Tiếp).
+ * @param {string[]} priorityKeys  Nhóm âm remediation (confusions thật) — nếu có,
+ *   thay cho lịch tuần cứng (kế hoạch cải tiến #8).
+ * @returns {{groupKey,groupLabel,tip,pairs,pairGroups}} `pairGroups[i]` = key nhóm
+ *   của `pairs[i]` (để quy lỗi "nghe nhầm" về đúng nhóm âm khi track confusions).
  */
-export function pairsForWeek(week, learnedTerms = [], course = '') {
-  const groups = focusForWeek(week, course)
+export function pairsForWeek(week, learnedTerms = [], course = '', priorityKeys = []) {
+  const groups = focusForWeek(week, course, priorityKeys)
   const learned = new Set((learnedTerms || []).map(norm))
-  const all = groups.flatMap((g) => g.pairs)
+  // Giữ nhãn nhóm đi kèm từng cặp để quy lỗi về đúng nhóm âm.
+  const all = groups.flatMap((g) => g.pairs.map((pair) => ({ pair, group: g.key })))
   const matched = []
   const rest = []
-  for (const pair of all) {
-    const hit = pair.some((w) => learned.has(norm(w)))
-    ;(hit ? matched : rest).push(pair)
+  for (const item of all) {
+    const hit = item.pair.some((w) => learned.has(norm(w)))
+    ;(hit ? matched : rest).push(item)
   }
   const ordered = [...matched, ...rest].slice(0, 8)
   return {
     groupKey: groups.map((g) => g.key).join('+'),
     groupLabel: groups.map((g) => g.label).join(' · '),
     tip: groups[0]?.tip || '',
-    pairs: ordered,
+    pairs: ordered.map((it) => it.pair),
+    pairGroups: ordered.map((it) => it.group),
   }
 }

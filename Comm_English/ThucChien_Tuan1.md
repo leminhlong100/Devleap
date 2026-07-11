@@ -189,6 +189,20 @@ Nơi công cộng, câu lịch sự giúp bạn được giúp đỡ nhanh hơn.
 - **Trọng âm từ:** nhấn đúng âm tiết — **COF**fee (không phải cof**FEE**), ho**TEL**, ba**NA**na. Nhấn sai chỗ, người bản xứ nghe như một từ lạ.
 - **Mẹo tự kiểm:** thu âm một câu rồi nghe lại — nếu chính bạn còn phải đoán mình nói "want" hay "wanted" thì âm cuối chưa rõ.
 
+## 🔊 Nối âm & nuốt âm
+
+**Khối 1 — Nối phụ âm sang nguyên âm.** Người bản xứ không đọc rời từng chữ; họ **nối** âm cuối của từ này sang đầu từ sau, nên cả câu nghe như *một khối*. Biết luật nối giúp bạn nghe kịp và nói mượt hơn.
+
+- **Phụ âm + nguyên âm dính nhau:** "an apple" nghe như "a-napple", "pick it up" → "pi-ki-tup". Đừng ngắt giữa các từ.
+- **Nguyên âm gặp nguyên âm chèn /w/ hoặc /j/:** "go on" → "go-won", "I ask" → "I-yask" — có âm đệm nhẹ ở giữa.
+- **Hai phụ âm giống nhau gộp làm một:** "black coffee" → "bla-coffee", "this Saturday" → "thi-Saturday".
+- **Mẹo nghe:** đừng cố nghe từng từ, nghe cả **cụm**. "What do you want?" thường bật ra như "Wha-d'you-want?".
+
+## 🎵 Ngữ điệu
+
+**Lên giọng (Yes/No):** Do you have this in a bigger size?
+**Xuống giọng (câu kể/WH):** I'd like a latte to go, please.
+
 ## 🎧 Nghe
 
 **Nghe–chép:**

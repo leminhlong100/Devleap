@@ -14,12 +14,19 @@ const CONVO_KEY = 'devleap:convo:v1'
 //   comm -> hiện tiến bộ ở trang Tổng kết. null = chưa chấm.
 // `commMetrics`: số khách quan mỗi buổi comm — map "week:day" -> { wpm, pron } để
 //   trang Tổng kết hiện tiến bộ nói nhanh hơn / rõ hơn (Trục E). Chỉ local.
+// `commConfusions`: nhóm âm học viên hay LẪN — map groupKey -> { attempts, confused }
+//   (đếm dồn qua cả khóa từ cặp tối thiểu bị nghe nhầm) -> remediation cá nhân hóa
+//   (kế hoạch cải tiến #8). Chỉ local.
+// `commPeerRubric`: bảng rubric tự chấm / người nghe chấm bài self-intro
+//   (kế hoạch cải tiến #9) — { self: {dim:1..4}, peer: {dim:1..4} }. Chỉ local.
 const DEFAULT_CONVO = {
   persona: 'cotnha',
   commPersona: 'gaubong',
   activeSaveTopic: '',
   commDare: { start: null, end: null },
   commMetrics: {},
+  commConfusions: {},
+  commPeerRubric: { self: {}, peer: {} },
 }
 
 // Kết quả khóa "Java Phỏng Vấn Cấp Tốc" — chỉ LOCAL: điểm cao nhất + báo cáo gần
@@ -69,6 +76,22 @@ export const actions = {
   setConvoPrefs(patch = {}) {
     this.convoPrefs = { ...this.convoPrefs, ...patch }
     this.persistConvo()
+  },
+
+  /**
+   * Ghi một lần THỬ cặp tối thiểu (khóa comm) vào hồ sơ "âm hay lẫn" để đẩy
+   * remediation cá nhân hóa (kế hoạch cải tiến #8). Đếm DỒN qua cả khóa: mỗi lần
+   * thử tăng `attempts`, nghe nhầm thành từ khác thì tăng thêm `confused`.
+   * @param {string} groupKey  key nhóm âm (vd 'th', 'sh-s')
+   * @param {boolean} confused  lượt này có bị nghe nhầm thành từ còn lại trong cặp không
+   */
+  recordCommConfusion(groupKey, confused) {
+    const k = String(groupKey || '').trim()
+    if (!k) return
+    const cur = this.convoPrefs.commConfusions || {}
+    const g = cur[k] || { attempts: 0, confused: 0 }
+    const next = { attempts: g.attempts + 1, confused: g.confused + (confused ? 1 : 0) }
+    this.setConvoPrefs({ commConfusions: { ...cur, [k]: next } })
   },
 
   /**

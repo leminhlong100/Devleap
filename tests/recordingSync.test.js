@@ -8,7 +8,7 @@ describe('recordingSync — đồng bộ ghi âm mốc lên Supabase Storage', (
     localStorage.clear()
   })
 
-  function mockSupabase({ cloudEnabled, upload, download, list, remove }) {
+  function mockSupabase({ cloudEnabled, upload, download, list, remove, createSignedUrl }) {
     vi.doMock('@/lib/supabase', () => ({
       isCloudEnabled: cloudEnabled,
       supabase: {
@@ -18,6 +18,8 @@ describe('recordingSync — đồng bộ ghi âm mốc lên Supabase Storage', (
             download: download || (() => Promise.resolve({ data: null, error: null })),
             list: list || (() => Promise.resolve({ data: [], error: null })),
             remove: remove || (() => Promise.resolve({ error: null })),
+            createSignedUrl:
+              createSignedUrl || (() => Promise.resolve({ data: { signedUrl: 'https://x/sig' }, error: null })),
           }),
         },
       },
@@ -123,6 +125,30 @@ describe('recordingSync — đồng bộ ghi âm mốc lên Supabase Storage', (
     mockRecorder()
     const mod2 = await import('@/lib/recordingSync')
     await expect(mod2.deleteRemoteRecording('u1', 'ielts:1:1')).resolves.toBeUndefined()
+  })
+
+  it('createRecordingShareLink: chế độ khách -> null, không ném', async () => {
+    mockSupabase({ cloudEnabled: false })
+    mockRecorder()
+    const { createRecordingShareLink } = await import('@/lib/recordingSync')
+    expect(await createRecordingShareLink('u1', 'comm:8:5:mono')).toBeNull()
+  })
+
+  it('createRecordingShareLink: trả signed URL với đúng path escape ":"', async () => {
+    const createSignedUrl = vi.fn(() => Promise.resolve({ data: { signedUrl: 'https://x/sig?token=abc' }, error: null }))
+    mockSupabase({ cloudEnabled: true, createSignedUrl })
+    mockRecorder()
+    const { createRecordingShareLink } = await import('@/lib/recordingSync')
+    const url = await createRecordingShareLink('u1', 'comm:8:5:mono', 3600)
+    expect(url).toBe('https://x/sig?token=abc')
+    expect(createSignedUrl).toHaveBeenCalledWith('u1/comm_8_5_mono.webm', 3600)
+  })
+
+  it('createRecordingShareLink: lỗi -> null, không ném', async () => {
+    mockSupabase({ cloudEnabled: true, createSignedUrl: () => Promise.reject(new Error('boom')) })
+    mockRecorder()
+    const { createRecordingShareLink } = await import('@/lib/recordingSync')
+    expect(await createRecordingShareLink('u1', 'comm:8:5:mono')).toBeNull()
   })
 
   it('flushPendingUploads: bản ghi không còn ở local (đã xóa) thì bỏ khỏi hàng chờ, không upload', async () => {

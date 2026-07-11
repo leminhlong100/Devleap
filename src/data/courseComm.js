@@ -93,18 +93,36 @@ export function getCommWeek(num) {
  * Dựng "brief" tiếng Anh cho AI đóng vai đúng kịch bản buổi. Bao gồm cả TWIST:
  * hiệp 1 bám kịch bản (nói chậm, câu ngắn), hiệp 2 tung twist sau ~4–5 lượt mà
  * không báo trước — tái dùng nguyên buildRoleplayPrompt ở backend (không cần sửa).
+ *
+ * COLD OPEN (Đợt B — "nâng tỷ lệ cold-open" nửa sau khóa): với `opts.coldOpen`
+ * (Tuần 5–8), BỎ hiệp 1 chậm rãi bám kịch bản — AI vào vai ngay ở nhịp thật và
+ * tung twist sớm hơn (~2–3 lượt). `opts.strong` (Tuần 7–8) cho AI thêm biến cố bất
+ * ngờ tự do → dịch dần từ "fluency thuộc lòng" sang "ứng biến thời gian thực".
  */
-function scenarioBrief(sc) {
+function scenarioBrief(sc, opts = {}) {
+  const { coldOpen = false, strong = false } = opts
   const parts = []
   if (sc.role) parts.push(`You play this role: ${sc.role}`)
   if (sc.setting) parts.push(`Setting: ${sc.setting}`)
   if (sc.tasks?.length) parts.push(`The learner must accomplish: ${sc.tasks.join('; ')}.`)
-  parts.push(
-    'Round 1: stay on the expected script, speak slowly with short simple sentences, and help if the learner goes quiet.',
-  )
-  if (sc.twist) {
+  if (coldOpen) {
     parts.push(
-      `After about 4-5 exchanges (Round 2), WITHOUT warning introduce this twist and make the learner react: ${sc.twist}`,
+      'COLD OPEN (second half of the course): from your very first line, drop straight into the situation at a natural, realistic pace — no slow scripted warm-up round. Use normal but still clear sentences, and only slow down or help if the learner clearly freezes. The goal is to move them from memorized fluency toward real-time adaptation.',
+    )
+  } else {
+    parts.push(
+      'Round 1: stay on the expected script, speak slowly with short simple sentences, and help if the learner goes quiet.',
+    )
+  }
+  if (sc.twist) {
+    const when = coldOpen ? 'After about 2-3 exchanges' : 'After about 4-5 exchanges (Round 2)'
+    parts.push(
+      `${when}, WITHOUT warning introduce this twist and make the learner react: ${sc.twist}`,
+    )
+  }
+  if (strong) {
+    parts.push(
+      'Since this is late in the course, feel free to add further small unexpected complications or shift direction the way a real conversation does — keep the learner adapting rather than reciting.',
     )
   }
   if (sc.surprise) {
@@ -136,6 +154,13 @@ export function getCommDay(weekNum, dayNum) {
   const week = getCommWeek(weekNum)
   const sc = (week?.scenarios || []).find((s) => s.day === base.n) || null
 
+  // Cold-open (Đợt B): Tuần 5–8 bỏ hiệp-1-bám-kịch-bản, vào nhịp thật ngay; Tuần
+  // 7–8 mạnh hơn (thêm biến cố tự do). Buổi surprise (Tuần 8) vốn đã vào vai ngay
+  // nên không cần gắn cờ này (giữ nguyên hành vi surprise). → nửa sau khóa chuyển
+  // dần từ thuộc lòng sang ứng biến.
+  const coldOpen = !!sc && weekNum >= 5 && !sc.surprise
+  const strongColdOpen = coldOpen && weekNum >= 7
+
   const scenario = sc
     ? {
         key: `comm-${sc.week}-${sc.day}`,
@@ -149,7 +174,8 @@ export function getCommDay(weekNum, dayNum) {
         rubric: sc.rubric,
         sample: sc.sample,
         surprise: !!sc.surprise,
-        brief: scenarioBrief(sc),
+        coldOpen,
+        brief: scenarioBrief(sc, { coldOpen, strong: strongColdOpen }),
       }
     : null
 
@@ -171,9 +197,14 @@ export function getCommDay(weekNum, dayNum) {
   // (Tuần 1/3/7), nên gắn vào day 1; các buổi khác trả null.
   const pronunciation = base.n === 1 ? week?.pronunciation || null : null
 
+  // Micro-lesson nối âm (connected speech) + bộ hiện ngữ điệu theo KHỐI (Đợt A):
+  // khai báo ở tuần đầu mỗi khối (1/3/5/7), hiện 1 lần/khối ở buổi 1.
+  const connectedSpeech = base.n === 1 ? week?.connectedSpeech || null : null
+  const intonation = base.n === 1 ? week?.intonation || null : null
+
   // Nghe-chép + nghe-hiểu của tuần (ListeningDictation/Comprehension); view tự
   // chọn dictation (mọi buổi có scenario) và comprehension (buổi Boss).
   const listening = week?.listening || null
 
-  return { ...base, scenario, isBoss, isMission, pronunciation, listening }
+  return { ...base, scenario, isBoss, isMission, pronunciation, connectedSpeech, intonation, listening }
 }

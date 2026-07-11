@@ -16,8 +16,14 @@ const props = defineProps({
   // Khóa học — 'comm' dùng bộ cặp tối thiểu riêng cho giao tiếp (COMM_WEEK_FOCUS)
   // và bật phần cặp tối thiểu ngay từ Tuần 1.
   course: { type: String, default: '' },
+  // Nhóm âm remediation cá nhân hóa (kế hoạch cải tiến #8): nếu có, cặp tối thiểu
+  // lấy ĐÚNG các nhóm này (âm học viên hay lẫn thật), thay cho lịch tuần cứng.
+  priorityGroups: { type: Array, default: () => [] },
+  // Chế độ CHỈ luyện cặp tối thiểu (bỏ phần đọc-to cụm) — dùng cho block "phục thù
+  // phát âm" nhắm đúng chỗ yếu, không kèm cả bộ từ vựng buổi.
+  pairsOnly: { type: Boolean, default: false },
 })
-const emit = defineEmits(['done', 'stats'])
+const emit = defineEmits(['done', 'stats', 'mpAttempt'])
 
 // —— Cặp tối thiểu (minimal pairs) — chấm âm cuối/âm khó TIN ĐƯỢC ——
 // Web Speech API tự "sửa" âm cuối khi chấm 1 từ đơn (đọc "book" vẫn ra "book"
@@ -25,10 +31,15 @@ const emit = defineEmits(['done', 'stats'])
 // đối chiếu với TỪ THỨ HAI khác chỉ ở âm cuối/âm khó, nếu đọc sai thì máy sẽ
 // nhận ra thành từ KHÁC — nhờ vậy phân biệt được 2 từ khác nhau là cách chấm
 // đáng tin cậy hơn. Nhóm + phân bổ theo tuần: src/data/minimalPairs.js.
-const mpFocus = computed(() => pairsForWeek(props.week, props.vocabTerms, props.course))
+const mpFocus = computed(() => pairsForWeek(props.week, props.vocabTerms, props.course, props.priorityGroups))
 // Khóa comm luyện cặp tối thiểu ngay từ Tuần 1; khóa Nền Tảng vẫn mở từ Tuần 2.
-const showMinimalPairs = computed(() => props.course === 'comm' || Number(props.week) >= 2)
+// Chế độ pairsOnly / có priorityGroups (remediation) thì luôn hiện cặp tối thiểu.
+const showMinimalPairs = computed(
+  () => props.pairsOnly || props.priorityGroups.length > 0 || props.course === 'comm' || Number(props.week) >= 2,
+)
 const minimalPairs = computed(() => mpFocus.value.pairs)
+// Nhãn nhóm âm của từng cặp — để quy lỗi "nghe nhầm" về đúng nhóm khi track confusions.
+const pairGroups = computed(() => mpFocus.value.pairGroups || [])
 const mpTarget = ref([]) // index (0|1) trong cặp — từ người học cần đọc
 const mpResults = ref([]) // null | { heard, ok, confused }
 watch(
@@ -61,7 +72,10 @@ async function tryMinimalPair(i) {
     // So khớp CHÍNH XÁC (không dùng includes) — mục đích chính là bắt lỗi thiếu
     // âm cuối, một match lỏng sẽ che mất đúng lỗi cần phát hiện.
     const ok = !!said && said === target
-    mpResults.value[i] = { heard: heard || '(không nghe rõ)', ok, confused: !ok && said === other }
+    const confused = !ok && said === other
+    mpResults.value[i] = { heard: heard || '(không nghe rõ)', ok, confused }
+    // Ghi 1 lần thử THẬT (đối chiếu STT) vào hồ sơ "âm hay lẫn" -> remediation (#8).
+    emit('mpAttempt', { group: pairGroups.value[i] || mpFocus.value.groupKey, confused })
   } catch {
     mpErr.value = 'Không nghe được — kiểm tra micro & dùng Chrome/Edge.'
   } finally {
@@ -147,58 +161,72 @@ function markDone() {
 </script>
 
 <template>
-  <section v-if="list.length" class="step-card" :class="{ current: !isDone }">
-    <div class="step-head">
+  <section v-if="pairsOnly ? minimalPairs.length : list.length" class="step-card" :class="{ current: !isDone && !pairsOnly, remedial: pairsOnly }">
+    <!-- Chế độ remediation "phục thù phát âm": chỉ header nhắm chỗ yếu, không đọc-to -->
+    <div v-if="pairsOnly" class="step-head">
       <div>
-        <div class="eyebrow" :class="{ green: isDone }">LUYỆN PHÁT ÂM · NGHE → NÓI</div>
-        <h2 class="step-title">🗣️ Phát âm chuẩn từng từ</h2>
-      </div>
-      <span class="wt-badge" :class="{ ok: enough }">{{ doneCount }}/{{ list.length }}</span>
-    </div>
-    <p class="quiz-intro">Bấm 🔊 nghe mẫu, rồi bấm 🎤 và đọc to. Hệ thống chấm xem em nói có trúng không. <b>{{ tip }}</b></p>
-    <SpeechSupportNote
-      :visible="!recordable"
-      text="Trình duyệt chưa hỗ trợ nhận diện giọng nói — hãy dùng Chrome/Edge để máy tự chấm. Ở đây em vẫn nghe mẫu rồi tự đánh giá bằng 2 nút bên dưới."
-    />
-    <p v-if="err" class="quiz-intro warn">⚠️ {{ err }}</p>
-
-    <div class="pd-grid">
-      <div v-for="(it, i) in list" :key="i" class="pd-card" :class="{ ok: results[i] && results[i].ok, bad: results[i] && !results[i].ok }">
-        <div class="pd-term">{{ it.term }}</div>
-        <div v-if="it.ipa" class="pd-ipa">{{ it.ipa }}</div>
-        <div class="pd-actions">
-          <button class="pd-btn" @click="play(it.term)" :disabled="!speakable" aria-label="Nghe mẫu">🔊</button>
-          <button
-            v-if="recordable"
-            class="pd-btn mic"
-            :class="{ rec: busyIndex === i }"
-            @click="tryPronounce(i)"
-            :disabled="busyIndex >= 0 && busyIndex !== i"
-            aria-label="Đọc to"
-          >
-            {{ busyIndex === i ? '● Đang nghe…' : '🎤 Đọc' }}
-          </button>
-          <template v-else>
-            <button class="pd-btn self-ok" @click="selfAssess(i, true)" aria-label="Đọc được">✅ Đọc được</button>
-            <button class="pd-btn self-bad" @click="selfAssess(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
-          </template>
-        </div>
-        <div v-if="results[i]" class="pd-feedback">
-          <span v-if="results[i].ok" class="pd-ok">✓ Tốt!</span>
-          <span v-else-if="results[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
-          <span v-else class="pd-bad">✕ Nghe ra: “{{ results[i].heard }}”</span>
-        </div>
+        <div class="eyebrow">🎯 PHỤC THÙ PHÁT ÂM · ÂM BẠN HAY LẪN</div>
+        <h2 class="step-title">Vá lại: {{ mpFocus.groupLabel }}</h2>
       </div>
     </div>
+    <p v-if="pairsOnly" class="quiz-intro">
+      Đây là âm bạn <b>hay nghe nhầm</b> qua các buổi. Luyện lại đúng nó cho tới khi máy phân biệt được —
+      đây mới là thứ khiến người nghe hiểu bạn ngay.
+    </p>
 
-    <button v-if="!isDone" class="green-btn" :class="{ locked: !enough }" @click="markDone">
-      {{ enough ? '✓ Phát âm ổn rồi, học tiếp →' : `Đọc đúng thêm ${Math.max(0, Math.ceil(list.length * 0.6) - doneCount)} từ` }}
-    </button>
-    <div v-else class="gate-line ok">✅ Đã hoàn thành phần luyện phát âm.</div>
+    <template v-if="!pairsOnly">
+      <div class="step-head">
+        <div>
+          <div class="eyebrow" :class="{ green: isDone }">LUYỆN PHÁT ÂM · NGHE → NÓI</div>
+          <h2 class="step-title">🗣️ Phát âm chuẩn từng từ</h2>
+        </div>
+        <span class="wt-badge" :class="{ ok: enough }">{{ doneCount }}/{{ list.length }}</span>
+      </div>
+      <p class="quiz-intro">Bấm 🔊 nghe mẫu, rồi bấm 🎤 và đọc to. Hệ thống chấm xem em nói có trúng không. <b>{{ tip }}</b></p>
+      <SpeechSupportNote
+        :visible="!recordable"
+        text="Trình duyệt chưa hỗ trợ nhận diện giọng nói — hãy dùng Chrome/Edge để máy tự chấm. Ở đây em vẫn nghe mẫu rồi tự đánh giá bằng 2 nút bên dưới."
+      />
+      <p v-if="err" class="quiz-intro warn">⚠️ {{ err }}</p>
+
+      <div class="pd-grid">
+        <div v-for="(it, i) in list" :key="i" class="pd-card" :class="{ ok: results[i] && results[i].ok, bad: results[i] && !results[i].ok }">
+          <div class="pd-term">{{ it.term }}</div>
+          <div v-if="it.ipa" class="pd-ipa">{{ it.ipa }}</div>
+          <div class="pd-actions">
+            <button class="pd-btn" @click="play(it.term)" :disabled="!speakable" aria-label="Nghe mẫu">🔊</button>
+            <button
+              v-if="recordable"
+              class="pd-btn mic"
+              :class="{ rec: busyIndex === i }"
+              @click="tryPronounce(i)"
+              :disabled="busyIndex >= 0 && busyIndex !== i"
+              aria-label="Đọc to"
+            >
+              {{ busyIndex === i ? '● Đang nghe…' : '🎤 Đọc' }}
+            </button>
+            <template v-else>
+              <button class="pd-btn self-ok" @click="selfAssess(i, true)" aria-label="Đọc được">✅ Đọc được</button>
+              <button class="pd-btn self-bad" @click="selfAssess(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
+            </template>
+          </div>
+          <div v-if="results[i]" class="pd-feedback">
+            <span v-if="results[i].ok" class="pd-ok">✓ Tốt!</span>
+            <span v-else-if="results[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
+            <span v-else class="pd-bad">✕ Nghe ra: “{{ results[i].heard }}”</span>
+          </div>
+        </div>
+      </div>
+
+      <button v-if="!isDone" class="green-btn" :class="{ locked: !enough }" @click="markDone">
+        {{ enough ? '✓ Phát âm ổn rồi, học tiếp →' : `Đọc đúng thêm ${Math.max(0, Math.ceil(list.length * 0.6) - doneCount)} từ` }}
+      </button>
+      <div v-else class="gate-line ok">✅ Đã hoàn thành phần luyện phát âm.</div>
+    </template>
 
     <!-- CẶP TỐI THIỂU — chấm âm khó tin được (phân biệt 2 từ khác nhau) -->
-    <div v-if="showMinimalPairs" class="pd-mp">
-      <div class="step-head">
+    <div v-if="showMinimalPairs" class="pd-mp" :class="{ solo: pairsOnly }">
+      <div v-if="!pairsOnly" class="step-head">
         <div>
           <div class="eyebrow">CẶP TỐI THIỂU · {{ mpFocus.groupLabel.toUpperCase() }}</div>
           <h2 class="step-title">🎯 Tuần này: {{ mpFocus.groupLabel }}</h2>
@@ -354,5 +382,15 @@ function markDone() {
   margin-top: 22px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
+}
+.pd-mp.solo {
+  margin-top: 14px;
+  padding-top: 0;
+  border-top: none;
+}
+/* Block remediation "phục thù phát âm" — viền cam nhạt để tách khỏi drill tuần */
+.step-card.remedial {
+  border: 1px solid rgba(255, 122, 122, 0.35);
+  background: linear-gradient(135deg, rgba(255, 122, 122, 0.05), var(--surface));
 }
 </style>

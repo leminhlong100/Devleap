@@ -6,6 +6,8 @@ import VocabCard from '@/components/day/VocabCard.vue'
 import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
 import AiChat from '@/components/day/AiChat.vue'
 import PronunciationDrill from '@/components/day/PronunciationDrill.vue'
+import IntonationTrainer from '@/components/day/IntonationTrainer.vue'
+import ShadowingBeat from '@/components/day/ShadowingBeat.vue'
 import FluencyRetell from '@/components/day/FluencyRetell.vue'
 import MonologueTask from '@/components/day/MonologueTask.vue'
 import ListeningDictation from '@/components/day/ListeningDictation.vue'
@@ -14,7 +16,9 @@ import ErrorLedger from '@/components/day/ErrorLedger.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import VoiceRecorder from '@/components/day/VoiceRecorder.vue'
 import { getCommDay } from '@/data/courseComm'
-import { commRevengeScene } from '@/lib/commStats'
+import { commReflexGroups } from '@/data/commReflexPhrases'
+import { commRevengeScene, commWeakPairGroups } from '@/lib/commStats'
+import { focusForWeek } from '@/data/minimalPairs'
 import { commMilestoneOf } from '@/data/milestones'
 import { speak } from '@/lib/speak'
 import { hapticSuccess } from '@/lib/haptics'
@@ -159,6 +163,38 @@ watch(d, () => (pron.value = { pronScore: null, confusions: 0, attempted: 0 }))
 // Cụm sống còn để luyện đọc-to: ưu tiên từ vựng của buổi (có sẵn IPA).
 const pronItems = computed(() => (d.value ? [...d.value.vocab, ...d.value.reviewVocab] : []))
 
+// —— Remediation cá nhân hóa (kế hoạch cải tiến #8) ——
+// Mỗi lượt cặp tối thiểu bị "nghe nhầm" -> ghi vào hồ sơ âm hay lẫn (dồn qua cả khóa).
+function onMpAttempt(e) {
+  if (e && e.group) user.recordCommConfusion(e.group, !!e.confused)
+}
+// Nhóm âm học viên hay lẫn THẬT SỰ. Block "phục thù phát âm" chỉ hiện các âm KHÁC
+// trọng tâm tuần (để bổ sung, không lặp drill tuần); riêng buổi mission hiện mọi
+// âm yếu để "vá" trước khi ra trận thật.
+const weakGroups = computed(() => commWeakPairGroups(user))
+const remedialGroups = computed(() => {
+  if (!d.value) return []
+  const weak = weakGroups.value
+  if (!weak.length) return []
+  if (d.value.isMission) return weak
+  const wkKeys = new Set(focusForWeek(d.value.week, 'comm').map((g) => g.key))
+  return weak.filter((g) => !wkKeys.has(g.key))
+})
+const remedialKeys = computed(() => remedialGroups.value.map((g) => g.key))
+
+// —— Shadowing chấm nhịp (Đợt A #3): 1 câu/buổi, ưu tiên câu người học sẽ NÓI
+// (dòng "B:" trong hội thoại mẫu), bỏ tiền tố người nói; rơi về câu mẫu/cụm nếu vắng.
+function stripSpeaker(line) {
+  return String(line || '').replace(/^\s*[A-B]\s*:\s*/, '').trim()
+}
+const shadowSentence = computed(() => {
+  if (!d.value?.scenario) return ''
+  const sample = d.value.scenario.sample || []
+  const bLine = sample.find((s) => /^\s*B\s*:/.test(s))
+  const pick = bLine || sample[0] || d.value.sentences?.[0] || d.value.phrases?.[0] || ''
+  return stripSpeaker(pick)
+})
+
 // —— Nghe hiểu (Trục C) ——
 // Nghe-chép: dùng câu chốt khai báo trong "🎧 Nghe" của tuần, nếu vắng thì rơi về
 // hội thoại mẫu của tình huống -> mọi buổi roleplay đều có phần luyện nghe.
@@ -168,6 +204,9 @@ const dictationSentences = computed(() => {
   const src = fromMd.length ? fromMd : d.value.scenario?.sample || []
   return src.slice(0, 2)
 })
+// Nghe thật hóa dần (Đợt A #1): buổi Boss các khối có clip curate (Tuần 4–8) kéo
+// clip giọng bản xứ THẬT thay vì TTS; không có clip -> tự rơi về câu TTS của buổi.
+const realListen = computed(() => !!d.value?.isBoss && Number(d.value.week) >= 4)
 // Nghe-hiểu: đoạn dài + câu hỏi, chỉ ở buổi Boss (nếu tuần có khai báo).
 const comprehension = computed(() => (d.value?.isBoss ? d.value.listening?.comprehension || null : null))
 
@@ -206,6 +245,8 @@ const aiContext = computed(() => {
     grammar: d.value.grammar.map((g) => g.title),
   }
   if (d.value.scenario) ctx.fixedScenario = d.value.scenario
+  // Chống điểm ảo (#7): buổi Boss chấm rubric -> BẮT BUỘC nói bằng giọng (khóa gõ tay).
+  if (d.value.isBoss) ctx.voiceRequired = true
   // Số phát âm khách quan (chỉ khi người học đã thử) -> debrief đánh giá "độ dễ hiểu".
   if (pron.value.attempted > 0) {
     ctx.pronScore = pron.value.pronScore
@@ -295,7 +336,11 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
           <p v-if="d.scenario.recall" class="brief-recall">
             🔄 <b>Ôn xoáy:</b> gần cuối hiệp 2, AI sẽ kéo lại {{ d.scenario.recall }} — hãy lôi ra cụm cũ đã học để xử lý.
           </p>
-          <p class="brief-note">
+          <p v-if="d.scenario.coldOpen" class="brief-note cold">
+            🎲 <b>Vào thẳng nhịp thật:</b> nửa sau khóa rồi — ngay câu đầu AI đã nhập vai ở tốc độ thật,
+            không còn hiệp 1 chậm rãi. Cứ phản xạ ngay; bí thì bấm 💡 dưới câu của AI.
+          </p>
+          <p v-else class="brief-note">
             ⚠️ Hiệp 2 sẽ có <b>một tình huống bất ngờ</b> — đừng chuẩn bị trước, cứ phản xạ tự nhiên.
             Bí thì bấm 💡 dưới câu của AI.
           </p>
@@ -351,6 +396,30 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
           </ul>
         </section>
 
+        <!-- 2b2) NỐI ÂM & NUỐT ÂM (connected speech) THEO KHỐI (Tuần 1/3/5/7 · buổi 1) -->
+        <section v-if="d.connectedSpeech" class="step-card pron-lesson cs-lesson">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">🔊 NỐI ÂM & NUỐT ÂM · NGHE CHO KỊP GIỌNG THẬT</div>
+              <h2 class="step-title">{{ d.connectedSpeech.title || 'Người bản xứ nối âm thế nào' }}</h2>
+            </div>
+          </div>
+          <p v-if="d.connectedSpeech.intro" class="quiz-intro">{{ d.connectedSpeech.intro }}</p>
+          <ul class="pron-tips">
+            <li v-for="(t, i) in d.connectedSpeech.tips" :key="i" @click="say(String(t).replace(/\*\*/g, ''))">
+              <span v-html="mdInline(t)"></span> <span class="say-ico">🔊</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- 2b3) BỘ HIỆN NGỮ ĐIỆU — đọc câu Yes/No vs câu kể, đo đường lên/xuống -->
+        <IntonationTrainer
+          v-if="d.intonation"
+          :key="'into-' + d.week + '-' + d.n"
+          :yesno="d.intonation.yesno"
+          :statement="d.intonation.statement"
+        />
+
         <!-- 2c) LUYỆN PHÁT ÂM — đọc-to cụm sống còn + cặp tối thiểu theo tuần -->
         <PronunciationDrill
           v-if="pronItems.length"
@@ -360,15 +429,37 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
           :vocab-terms="pronItems.map((v) => v.term)"
           course="comm"
           @stats="onPronStats"
+          @mp-attempt="onMpAttempt"
         />
 
-        <!-- 2e) NGHE–CHÉP — 1–2 câu chốt của hội thoại, rèn tai bắt âm -->
+        <!-- 2c1) PHỤC THÙ PHÁT ÂM — remediation cá nhân hóa theo âm HAY LẪN thật
+             (kế hoạch cải tiến #8): chỉ hiện khi có âm yếu ngoài trọng tâm tuần. -->
+        <PronunciationDrill
+          v-if="remedialKeys.length"
+          :key="'pron-rem-' + d.week + '-' + d.n + '-' + remedialKeys.join('')"
+          :week="d.week"
+          course="comm"
+          :priority-groups="remedialKeys"
+          pairs-only
+          @mp-attempt="onMpAttempt"
+        />
+
+        <!-- 2c2) SHADOWING CHẤM NHỊP — 1 câu/buổi, bắt chước nhịp trọng âm của mẫu -->
+        <ShadowingBeat
+          v-if="shadowSentence"
+          :key="'shb-' + d.week + '-' + d.n"
+          :sentence="shadowSentence"
+        />
+
+        <!-- 2e) NGHE–CHÉP — 1–2 câu chốt của hội thoại, rèn tai bắt âm. Buổi Boss
+             Khối 2–4 (Tuần 4–8): kéo clip giọng THẬT (nghe thật hóa dần); còn lại TTS. -->
         <ListeningDictation
           v-if="dictationSentences.length"
           :key="'dict-' + d.week + '-' + d.n"
           :sentences="dictationSentences"
           :week="d.week"
-          force-tts
+          :force-tts="!realListen"
+          :allow-real="realListen"
         />
 
         <!-- 2d) TRÔI CHẢY 4/3/2 — buổi giữa tuần, ép nói mượt hơn -->
@@ -424,6 +515,39 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
           :listening="comprehension"
           :week="d.week"
         />
+
+        <!-- 4c) PHẢN HỒI & GIỮ NHỊP HỘI THOẠI (Đợt B) — bộ "keo dán" để nghe/luân
+             phiên tự nhiên; hiện ở buổi có nhập vai, mở sẵn ở 2 tuần đầu -->
+        <section v-if="d.scenario" class="step-card reflex-card">
+          <details :open="d.week <= 2">
+            <summary class="reflex-summary">
+              <div>
+                <div class="eyebrow">ỨNG BIẾN · KEO DÁN HỘI THOẠI</div>
+                <h2 class="step-title">💬 Phản hồi & giữ nhịp hội thoại</h2>
+              </div>
+              <span class="reflex-caret">▾</span>
+            </summary>
+            <p class="quiz-intro">
+              Thả những cụm này <b>trong lúc nghe</b> và <b>khi chuyển lượt</b> để nghe tự nhiên như người bản xứ —
+              đừng chỉ hỏi–đáp khô khan. Bấm để nghe & đọc theo.
+            </p>
+            <div class="reflex-groups">
+              <div v-for="g in commReflexGroups" :key="g.key" class="reflex-group">
+                <div class="reflex-glabel">{{ g.icon }} {{ g.label }}</div>
+                <div class="reflex-ghint">{{ g.hint }}</div>
+                <div class="phrase-wrap">
+                  <span
+                    v-for="(p, i) in g.phrases"
+                    :key="i"
+                    class="phrase-chip reflex-chip"
+                    :title="p.vi"
+                    @click="say(p.en)"
+                  >{{ p.en }} 🔊</span>
+                </div>
+              </div>
+            </div>
+          </details>
+        </section>
 
         <!-- 5) NHẬP VAI VỚI AI (trục của buổi) -->
         <AiChat :key="d.week + '-' + d.n" :context="aiContext" @debrief="onDebrief" />
@@ -715,6 +839,56 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
   border-left: 3px solid #ffb020;
   border-radius: 10px;
   padding: 10px 14px;
+}
+.brief-note.cold {
+  border-left-color: #6c5ce7;
+}
+
+/* phản hồi & giữ nhịp hội thoại (Đợt B) */
+.reflex-card {
+  border: 1px solid rgba(108, 92, 231, 0.22);
+}
+.reflex-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.reflex-summary::-webkit-details-marker {
+  display: none;
+}
+.reflex-caret {
+  flex: none;
+  color: var(--muted-2);
+  font-size: 15px;
+  transition: transform 0.15s;
+}
+details[open] .reflex-caret {
+  transform: rotate(180deg);
+}
+.reflex-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 14px;
+}
+.reflex-glabel {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.reflex-ghint {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 3px 0 8px;
+}
+.reflex-chip {
+  background: rgba(108, 92, 231, 0.1);
+  border-color: rgba(108, 92, 231, 0.28);
+  color: #6c5ce7;
 }
 
 /* mission */
