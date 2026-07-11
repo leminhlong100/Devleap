@@ -4,10 +4,10 @@
  * chủ tải nhẹ — chỉ cần features/steps tĩnh, không kéo theo chunk khóa học.
  */
 export const features = [
-  { icon: '🗺️', bg: 'rgba(108,92,231,.12)', title: 'Lộ trình rõ ràng', desc: 'Biết chính xác hôm nay học gì. Mỗi tuần là một chặng, mở khóa dần như bản đồ game.' },
-  { icon: '🔥', bg: 'rgba(255,176,32,.16)', title: 'Streak giữ lửa', desc: 'Học mỗi ngày để nuôi chuỗi streak, kiếm XP, lên level và sưu tầm huy hiệu.' },
-  { icon: '🗣️', bg: 'rgba(0,214,143,.14)', title: 'Học đôi Anh ngữ', desc: 'Mỗi bài kèm từ vựng & thuật ngữ IT — vừa code giỏi vừa đọc tài liệu tiếng Anh tốt.' },
-  { icon: '🛠️', bg: 'rgba(108,92,231,.12)', title: 'Công cụ thực hành', desc: 'Code playground, flashcard, quiz và mini-game ôn tập — luyện ngay trong trình duyệt.' },
+  { icon: '🎭', bg: 'rgba(108,92,231,.12)', title: 'AI nhập vai luyện nói', desc: 'Nói chuyện với AI qua tình huống thật — công sở, phỏng vấn, kết bạn. Được nghe, nói và sửa lỗi ngay từng lượt.' },
+  { icon: '🎤', bg: 'rgba(0,214,143,.14)', title: 'Chấm phát âm & shadowing', desc: 'Đọc to hoặc nói nhại theo video ngắn có transcript — app chấm từng câu và chỉ đúng chỗ cần sửa.' },
+  { icon: '💻', bg: 'rgba(255,176,32,.16)', title: 'Code gõ tay + phỏng vấn', desc: 'Tự gõ lại code ngay trong trình duyệt và ôn hàng trăm câu phỏng vấn Java có AI chấm điểm, hỏi vặn.' },
+  { icon: '🧠', bg: 'rgba(0,184,217,.14)', title: 'Ôn thông minh, nhớ lâu', desc: 'Từ vựng tự quay lại đúng lúc bạn sắp quên (thuật toán như Anki) — học ít mà nhớ sâu.' },
 ]
 
 export const steps = [

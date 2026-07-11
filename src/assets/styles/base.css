@@ -265,6 +265,21 @@ select {
   font-family: inherit;
 }
 
+/* ---------------- Giảm chuyển động ----------------
+   Người dùng bật "Reduce motion" (OS/trình duyệt) hoặc máy yếu: tắt mọi
+   animation lặp vô tận (mascot floaty, thẻ nổi, pulse…) và rút gọn transition
+   để trang "đứng yên", đỡ hao pin và không gây chóng mặt. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------------- Animations ---------------- */
 @keyframes floaty {
   0%,

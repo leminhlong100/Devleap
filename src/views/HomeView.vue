@@ -6,7 +6,7 @@ import BottomSheet from '@/components/common/BottomSheet.vue'
 import { useUserStore } from '@/stores/user'
 import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
-import { javaStages } from '@/data/courses'
+import { javaStages, courses } from '@/data/courses'
 import { pendingWeekMission } from '@/lib/missionStats'
 import { useStudyReminder } from '@/composables/useStudyReminder'
 import { useInstallPrompt } from '@/composables/useInstallPrompt'
@@ -18,6 +18,14 @@ const user = useUserStore()
 // Tiến độ thật của khóa Java, suy từ danh sách ngày đã hoàn thành (store).
 const prog = computed(() => computeJavaProgress(user.completed.java))
 const stageCount = Object.keys(javaStages).length
+
+// Số liệu hero — dẫn xuất THẬT từ dữ liệu khóa học (không bịa "2.4k người học").
+// courses.js đã được nạp sẵn ở chunk trang chủ (qua javaStages) nên không thêm chi phí.
+const heroStats = [
+  { n: `${courses.length}`, l: 'lộ trình học' },
+  { n: `${courses.reduce((s, c) => s + (c.weeks || 0), 0)}`, l: 'tuần nội dung' },
+  { n: `${courses.reduce((s, c) => s + (c.lessons || 0), 0)}+`, l: 'bài & câu hỏi' },
+]
 const continueLabel = computed(() =>
   prog.value.allDone
     ? '🎉 Đã hoàn thành lộ trình'
@@ -134,12 +142,12 @@ function handleInstallDismiss() {
             <span class="dot"></span> Nền tảng học cho người Việt mới bắt đầu
           </div>
           <h1 class="hero-title">
-            Học lập trình &<br />tiếng Anh như<br />
-            <span class="brand-text">chơi một game</span>
+            Nói được, code được<br />— không chỉ<br />
+            <span class="brand-text">học cho biết</span>
           </h1>
           <p class="hero-sub">
-            Mỗi ngày một bước nhảy nhỏ. Lộ trình rõ ràng, công cụ thực hành và streak giữ lửa — để
-            bạn thật sự muốn mở app lên học.
+            Nhập vai nói với AI, chấm phát âm, gõ tay code và ôn thông minh — luyện mỗi ngày đến khi
+            thành phản xạ, không phải học xong rồi quên.
           </p>
           <div class="hero-cta">
             <button class="btn btn-primary" @click="router.push({ name: 'courses' })">
@@ -150,11 +158,10 @@ function handleInstallDismiss() {
             </button>
           </div>
           <div class="hero-stats">
-            <div><div class="stat-n">12+</div><div class="stat-l">tuần lộ trình</div></div>
-            <div class="sep"></div>
-            <div><div class="stat-n">2.4k</div><div class="stat-l">người đang học</div></div>
-            <div class="sep"></div>
-            <div><div class="stat-n">4.9★</div><div class="stat-l">đánh giá</div></div>
+            <template v-for="(s, i) in heroStats" :key="s.l">
+              <div class="sep" v-if="i > 0"></div>
+              <div><div class="stat-n">{{ s.n }}</div><div class="stat-l">{{ s.l }}</div></div>
+            </template>
           </div>
         </div>
 
