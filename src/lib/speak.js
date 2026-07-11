@@ -5,6 +5,46 @@
 let cachedVoice = null
 let voiceResolved = false
 
+// —— Hồ sơ giọng theo BUỔI (kế hoạch "Nói Tự Tin", Trục C) ——
+// sessionSeed: chọn giọng đa vùng (Anh/Mỹ/Úc/Ấn…) ổn định trong 1 buổi (không
+// random để test được + không đổi giọng giữa chừng). sessionRate: hệ số tốc độ
+// người học tự chỉnh (nút 0.8x/1.0x). Chỉ khóa comm bật hồ sơ này; khác giữ mặc định.
+let sessionSeed = null
+let sessionRate = 1
+
+function clampRate(x) {
+  const n = Number(x)
+  return Number.isFinite(n) && n > 0 ? Math.min(1.2, Math.max(0.4, n)) : 1
+}
+
+/** Đặt hồ sơ giọng cho buổi hiện tại (seed chọn vùng giọng, rate hệ số tốc độ). */
+export function setSpeechProfile({ seed, rate } = {}) {
+  if (seed !== undefined) sessionSeed = seed
+  if (rate !== undefined) sessionRate = clampRate(rate)
+}
+/** Xóa hồ sơ giọng (gọi khi rời khóa comm) — trả về giọng/tốc độ mặc định. */
+export function clearSpeechProfile() {
+  sessionSeed = null
+  sessionRate = 1
+}
+/** Hệ số tốc độ hiện tại (cho UI hiển thị nút 0.8x/1.0x). */
+export function getSpeechRate() {
+  return sessionRate
+}
+
+/** Danh sách giọng tiếng Anh khả dụng (rỗng khi trình duyệt/máy chưa có). */
+export function englishVoices() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return []
+  return (window.speechSynthesis.getVoices() || []).filter((v) => /^en/i.test(v.lang))
+}
+
+/** Chọn 1 phần tử theo SEED (xác định, không random) — ổn định trong buổi + test được. */
+export function pickBySeed(list, seed) {
+  if (!Array.isArray(list) || !list.length) return null
+  const n = Math.abs(Math.floor(Number(seed) || 0))
+  return list[n % list.length]
+}
+
 function pickEnglishVoice() {
   if (typeof window === 'undefined' || !window.speechSynthesis) return null
   const voices = window.speechSynthesis.getVoices()
@@ -58,10 +98,14 @@ export function speak(text, rate = 0.9) {
       if (cachedVoice) voiceResolved = true
     }
 
+    // Buổi comm có hồ sơ giọng -> chọn giọng đa vùng theo seed (ổn định trong buổi);
+    // ngược lại dùng giọng mặc định đã cache.
+    const voice = sessionSeed != null ? pickBySeed(englishVoices(), sessionSeed) || cachedVoice : cachedVoice
+
     const u = new SpeechSynthesisUtterance(String(text))
-    u.lang = cachedVoice?.lang || 'en-US'
-    if (cachedVoice) u.voice = cachedVoice
-    u.rate = rate
+    u.lang = voice?.lang || 'en-US'
+    if (voice) u.voice = voice
+    u.rate = clampRate(rate * sessionRate)
     u.pitch = 1
     synth.speak(u)
     return true

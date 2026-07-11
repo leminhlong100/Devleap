@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
@@ -15,6 +15,34 @@ const open = computed(
   () => route.query.login === 'required' && auth.cloudEnabled && authReady.value && !authUser.value,
 )
 
+// —— form email/mật khẩu ——
+const mode = ref('signin') // 'signin' | 'signup'
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const busy = ref(false)
+const error = ref('')
+const info = ref('') // thông báo tích cực (vd cần xác nhận email)
+
+// Reset trạng thái form mỗi khi mở lại hộp.
+watch(open, (v) => {
+  if (v) {
+    mode.value = 'signin'
+    name.value = ''
+    email.value = ''
+    password.value = ''
+    error.value = ''
+    info.value = ''
+    busy.value = false
+  }
+})
+
+function switchMode(m) {
+  mode.value = m
+  error.value = ''
+  info.value = ''
+}
+
 function close() {
   const q = { ...route.query }
   delete q.login
@@ -22,7 +50,34 @@ function close() {
   router.replace({ query: q })
 }
 
-async function signIn() {
+async function submitPassword() {
+  if (busy.value) return
+  error.value = ''
+  info.value = ''
+  if (!email.value.trim() || !password.value) {
+    error.value = 'Vui lòng nhập email và mật khẩu.'
+    return
+  }
+  busy.value = true
+  try {
+    if (mode.value === 'signup') {
+      const res = await auth.signUpWithPassword(email.value, password.value, name.value)
+      if (res.error) {
+        error.value = res.error
+      } else if (res.needsConfirm) {
+        info.value = 'Đã gửi email xác nhận — hãy mở hộp thư và bấm vào liên kết để kích hoạt.'
+      }
+      // Nếu không cần xác nhận, onAuthStateChange sẽ đóng hộp (open = false).
+    } else {
+      const res = await auth.signInWithPassword(email.value, password.value)
+      if (res.error) error.value = res.error
+    }
+  } finally {
+    busy.value = false
+  }
+}
+
+async function signInGoogle() {
   await auth.signInWithGoogle()
 }
 </script>
@@ -33,13 +88,73 @@ async function signIn() {
       <div class="gate-card">
         <button class="gate-close" aria-label="Đóng" @click="close">✕</button>
         <MascotLogo :width="76" :height="81" uid="gate" />
-        <h2 class="gate-title">Đăng nhập để vào học</h2>
+        <h2 class="gate-title">{{ mode === 'signup' ? 'Tạo tài khoản mới' : 'Đăng nhập để vào học' }}</h2>
         <p class="gate-sub">
           Các khóa học chỉ dành cho thành viên đã đăng nhập — để lưu tiến độ, streak và đồng bộ trên
           mọi thiết bị.
         </p>
-        <button class="gate-btn tappable" @click="signIn">
-          <span class="g">G</span> Đăng nhập / Đăng ký với Google
+
+        <!-- Chuyển giữa Đăng nhập / Đăng ký -->
+        <div class="gate-tabs" role="tablist">
+          <button
+            class="gate-tab"
+            :class="{ active: mode === 'signin' }"
+            role="tab"
+            :aria-selected="mode === 'signin'"
+            @click="switchMode('signin')"
+          >
+            Đăng nhập
+          </button>
+          <button
+            class="gate-tab"
+            :class="{ active: mode === 'signup' }"
+            role="tab"
+            :aria-selected="mode === 'signup'"
+            @click="switchMode('signup')"
+          >
+            Đăng ký
+          </button>
+        </div>
+
+        <form class="gate-form" @submit.prevent="submitPassword">
+          <input
+            v-if="mode === 'signup'"
+            v-model="name"
+            class="gate-input"
+            type="text"
+            autocomplete="name"
+            placeholder="Tên hiển thị (tùy chọn)"
+          />
+          <input
+            v-model="email"
+            class="gate-input"
+            type="email"
+            autocomplete="email"
+            placeholder="Email"
+            required
+          />
+          <input
+            v-model="password"
+            class="gate-input"
+            type="password"
+            :autocomplete="mode === 'signup' ? 'new-password' : 'current-password'"
+            placeholder="Mật khẩu"
+            minlength="6"
+            required
+          />
+
+          <p v-if="error" class="gate-error">{{ error }}</p>
+          <p v-if="info" class="gate-info">{{ info }}</p>
+
+          <button class="gate-btn primary tappable" type="submit" :disabled="busy">
+            {{ busy ? 'Đang xử lý…' : mode === 'signup' ? 'Đăng ký' : 'Đăng nhập' }}
+          </button>
+        </form>
+
+        <div class="gate-or"><span>hoặc</span></div>
+
+        <button class="gate-btn tappable" @click="signInGoogle">
+          <span class="g">G</span> Tiếp tục với Google
         </button>
         <button class="gate-later" @click="close">Để sau</button>
       </div>
@@ -91,7 +206,87 @@ async function signIn() {
   font-size: 15px;
   line-height: 1.6;
   color: var(--slate);
-  margin: 12px 0 24px;
+  margin: 12px 0 18px;
+}
+.gate-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface-2, rgba(108, 92, 231, 0.08));
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.gate-tab {
+  flex: 1;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--slate);
+  padding: 9px 0;
+  border-radius: 9px;
+  transition: all 0.15s;
+}
+.gate-tab.active {
+  background: var(--surface);
+  color: var(--text, inherit);
+  box-shadow: 0 2px 8px rgba(30, 30, 46, 0.12);
+}
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.gate-input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.gate-input:focus {
+  border-color: var(--purple, #6c5ce7);
+}
+.gate-error {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e74c3c;
+  text-align: left;
+}
+.gate-info {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #16a34a;
+  text-align: left;
+}
+.gate-or {
+  position: relative;
+  text-align: center;
+  margin: 18px 0 14px;
+}
+.gate-or::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+.gate-or span {
+  position: relative;
+  background: var(--surface);
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--muted-2);
 }
 .gate-btn {
   display: inline-flex;
@@ -99,19 +294,31 @@ async function signIn() {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  border: none;
   cursor: pointer;
   font-size: 15.5px;
   font-weight: 700;
-  color: #fff;
   padding: 14px 20px;
   border-radius: 14px;
-  background: var(--grad-purple);
-  box-shadow: 0 12px 26px rgba(108, 92, 231, 0.34);
   transition: transform 0.15s;
 }
+.gate-btn.primary {
+  border: none;
+  color: #fff;
+  background: var(--grad-purple);
+  box-shadow: 0 12px 26px rgba(108, 92, 231, 0.34);
+  margin-top: 4px;
+}
+.gate-btn:not(.primary) {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: inherit;
+}
+.gate-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 @media (hover: hover) {
-  .gate-btn:hover {
+  .gate-btn:not(:disabled):hover {
     transform: translateY(-2px);
   }
 }

@@ -21,6 +21,13 @@
       "runtimeArgs": ["run", "dev", "--", "--port", "5183", "--strictPort"],
       "autoPort": false,
       "port": 5183
+    },
+    {
+      "name": "devleap-guest",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--mode", "guest", "--port", "5190", "--strictPort"],
+      "autoPort": false,
+      "port": 5190
     }
   ]
 }

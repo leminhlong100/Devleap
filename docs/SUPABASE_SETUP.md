@@ -73,6 +73,33 @@ Toàn bộ phần code đã có sẵn — bạn chỉ cần tạo project Supaba
    của bạn cập nhật; góc header hiện **☁️ Đã đồng bộ**.
 3. Mở app trên thiết bị/khác trình duyệt → đăng nhập cùng tài khoản → tiến độ về đúng.
 
+## 6. (Tùy chọn) Bật khu quản trị `/admin`
+
+Khu quản trị cần thêm quyền đặc biệt và một khóa server (không lộ ra client).
+
+1. **Chỉ định admin**: trong SQL Editor chạy (đổi email cho đúng tài khoản của bạn):
+   ```sql
+   insert into public.admins (user_id)
+   select id from auth.users where email = 'ban@example.com'
+   on conflict do nothing;
+   ```
+2. **Khóa server cho cổng admin**: lấy ở Supabase → **Project Settings → API →
+   Project API keys → `service_role`** (khóa BÍ MẬT, bỏ qua RLS — **không bao giờ**
+   đặt ở client/`VITE_`).
+   - **Production (Netlify)**: Site settings → Environment variables, thêm
+     `SUPABASE_SERVICE_ROLE_KEY` và `SUPABASE_URL`.
+   - **Local dev**: thêm vào `.env.local`:
+     ```
+     SUPABASE_SERVICE_ROLE_KEY=<service_role key>
+     ```
+     (dev tự dùng `VITE_SUPABASE_URL` sẵn có nếu chưa đặt `SUPABASE_URL`.)
+3. Đăng nhập bằng tài khoản admin → thấy mục **Quản trị** và vào được `/admin`.
+
+> Cổng đặc quyền là Netlify Function `admin` (`netlify/functions/admin.js`): nó tự
+> xác minh người gọi là admin phía server bằng service key trước khi thực thi —
+> KHÔNG tin cờ `isAdmin` phía client. Mọi hành động thay đổi được ghi vào bảng
+> `admin_audit`.
+
 ---
 
 ## Cơ chế đồng bộ (tóm tắt)

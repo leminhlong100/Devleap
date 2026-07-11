@@ -25,6 +25,14 @@ describe('quizSets — getWeekQuiz', () => {
     expect(set.questions.every(isQuestion)).toBe(true)
   })
 
+  it('Giao Tiếp tuần 1: dùng ngân hàng đề cấp tuần (weekQuiz)', () => {
+    const set = getWeekQuiz('comm', 1)
+    expect(set).toBeTruthy()
+    expect(set.scope).toBe('week:1')
+    expect(set.course).toBe('comm')
+    expect(set.questions.every(isQuestion)).toBe(true)
+  })
+
   it('tuần không tồn tại -> null', () => {
     expect(getWeekQuiz('java', 999)).toBeNull()
   })
@@ -45,8 +53,14 @@ describe('quizSets — getFinalQuiz & getQuizSet', () => {
     expect(getQuizSet('java', 'bậy-bạ')).toBeNull()
   })
 
+  it('getQuizSet ánh xạ scope khóa comm "week-1"', () => {
+    expect(getQuizSet('comm', 'week-1')?.scope).toBe('week:1')
+    expect(getQuizSet('comm', 'week-1')?.course).toBe('comm')
+  })
+
   it('weekQuizCount đếm được số tuần có đề', () => {
     expect(weekQuizCount('java')).toBeGreaterThan(0)
     expect(weekQuizCount('ielts')).toBeGreaterThan(0)
+    expect(weekQuizCount('comm')).toBeGreaterThan(0)
   })
 })

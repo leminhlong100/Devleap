@@ -234,6 +234,41 @@ export function buildRoleplayPrompt(context = {}, persona = DEFAULT_PERSONA) {
   const scenario = context.scenario || 'You are a stranger having an everyday conversation with the learner.'
   const wantSuggest = context.suggestWords !== false
 
+  // "Communicate now, correct later" (kế hoạch "Nói Tự Tin" Trục D): trong lúc nhập
+  // vai, KHÔNG soi từng câu để giữ dòng chảy + hạ lo âu — AI chỉ đóng vai và đối
+  // thoại, luôn trả evaluation: null. Toàn bộ chấm-sửa dồn vào debrief cuối buổi.
+  if (context.deferCorrection) {
+    return [
+      'You are role-playing with a Vietnamese English learner (CEFR A1-B2) to build their speaking confidence.',
+      topic,
+      `Target vocabulary to weave in if natural: ${vocabLine}.`,
+      '',
+      `SCENARIO — stay fully in character as this role: ${scenario}`,
+      'The learner does NOT know your next line in advance. Do not preview, explain, or break character.',
+      'After a few exchanges, UNEXPECTEDLY add a small complication or a tricky follow-up, like a real conversation.',
+      '',
+      'IMPORTANT — do NOT correct, grade, or critique the learner during the roleplay. Just keep the conversation going warmly, even if they make mistakes, as long as you understand their meaning. Correction happens later in a separate debrief.',
+      '',
+      'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+      '{',
+      '  "evaluation": null,',
+      '  "next": {',
+      '    "message": "your in-character next line, 1-3 sentences, natural simple English",',
+      wantSuggest
+        ? '    "suggestedWords": ["up to 3 words (prefer the target vocabulary) the learner could use next"]'
+        : '    "suggestedWords": []',
+      '  }',
+      '}',
+      'Rules:',
+      '- "evaluation" is ALWAYS null in this mode. Never put feedback there.',
+      '- "message" is ENGLISH, in character. Keep it simple and encouraging.',
+      '- If the learner has not written anything yet, OPEN the roleplay in character with your first line.',
+      '- Output JSON only.',
+    ]
+      .filter((x) => x !== undefined)
+      .join('\n')
+  }
+
   return [
     'You are running a SURPRISE ROLEPLAY exercise for a Vietnamese English learner (CEFR A1-B2).',
     topic,
@@ -272,6 +307,75 @@ export function buildRoleplayPrompt(context = {}, persona = DEFAULT_PERSONA) {
     '- If the learner has not written anything yet, set "evaluation" to null and OPEN the roleplay in character with your first line.',
     '- Keep pushing the target vocabulary naturally, but the scenario always comes first.',
     '- Never break character in "message". Only "feedback" speaks as the coach persona.',
+    '- Output JSON only.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/**
+ * Dựng system prompt cho chế độ DEBRIEF (khóa "Giao Tiếp Thực Chiến"): sau khi
+ * nhập vai xong, AI nhận CẢ transcript (message history) và tổng kết buổi theo
+ * rubric của tình huống -> JSON { score, rubric[], errors[], upgrades[], summary }.
+ * `context.rubric` là mảng tiêu chí (tiếng Việt) khai báo trong MD của buổi; nếu
+ * rỗng thì AI tự chấm mức độ giao tiếp thành công tổng thể.
+ */
+export function buildDebriefPrompt(context = {}, persona = DEFAULT_PERSONA) {
+  const { topic } = contextLines(context)
+  const p = PERSONAS[persona] || PERSONAS[DEFAULT_PERSONA]
+  const rubric = Array.isArray(context.rubric) ? context.rubric.filter(Boolean) : []
+  const rubricLines = rubric.length
+    ? rubric.map((r, i) => `${i + 1}. ${r}`).join('\n')
+    : '(no specific rubric — judge overall communication success on a 4-point scale)'
+
+  // Số phát âm KHÁCH QUAN đo bằng đối chiếu STT ở client (PronunciationDrill) —
+  // KHÔNG phải LLM tự nghe. Chỉ đưa vào cho model viết nhận xét "độ dễ hiểu" có
+  // căn cứ thay vì đoán. Vắng (người học chưa luyện) -> bỏ qua, không bịa.
+  const pronScore = Number.isFinite(Number(context.pronScore)) ? Number(context.pronScore) : null
+  const confusions = Number.isFinite(Number(context.confusions)) ? Number(context.confusions) : null
+  const pronLine =
+    pronScore !== null
+      ? `OBJECTIVE PRONUNCIATION DATA (measured client-side by speech recognition, not by you): the learner read target phrases aloud and ${pronScore}% were recognized correctly${confusions ? `, and ${confusions} minimal-pair word(s) were misheard as a different word (a sign of unclear final sounds / hard consonants)` : ''}. Use this ONLY to write the "intelligibility" line — do not re-score their pronunciation yourself.`
+      : ''
+  // Số trôi chảy KHÁCH QUAN đo client-side từ mốc mic (không phải LLM đoán).
+  const wpm = Number.isFinite(Number(context.wpm)) && Number(context.wpm) > 0 ? Number(context.wpm) : null
+  const latency = Number.isFinite(Number(context.latency)) ? Number(context.latency) : null
+  const fluencyLine =
+    wpm !== null
+      ? `OBJECTIVE FLUENCY DATA (measured client-side): the learner spoke at about ${wpm} words per minute${latency !== null ? `, with an average of ${latency}s before starting to speak after their turn` : ''}. Reference this in the "fluency" line; ${wpm < 80 ? 'this is on the slow side — encourage building speed with time-buying phrases.' : 'this is a healthy conversational pace — praise it.'}`
+      : ''
+
+  return [
+    'You are a communication coach debriefing a Vietnamese English learner (CEFR A1-B2) right after a voice roleplay exercise.',
+    topic,
+    'The message history is the full transcript: "assistant" lines are the roleplay CHARACTER, "user" lines are the LEARNER.',
+    "Assess ONLY the LEARNER's English across the whole roleplay — not the character's lines.",
+    '',
+    'Rubric criteria (judge EACH as met / not met):',
+    rubricLines,
+    pronLine,
+    fluencyLine,
+    '',
+    `Feedback persona (giọng điệu nhận xét): ${p.label}. ${p.tone}`,
+    '',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "score": 0-100 integer overall (roughly the % of rubric criteria met, nudged by fluency & politeness),',
+    '  "rubric": [ { "criterion": "the criterion text copied in Vietnamese", "met": true|false } ],',
+    '  "errors": [ { "wrong": "an ACTUAL phrase the learner said with a mistake (English)", "right": "the corrected natural English", "note": "SHORT Vietnamese explanation of the fix" } ],',
+    '  "upgrades": [ { "en": "a natural, useful sentence from THIS scenario worth memorizing (English)", "vi": "Vietnamese meaning" } ],',
+    '  "intelligibility": "ONE short line in VIETNAMESE on how easy the learner is to UNDERSTAND (âm cuối, trọng âm, độ rõ). If objective pronunciation data is given above, ground this line on it; otherwise base it on word/grammar clarity in the transcript.",',
+    '  "fluency": "ONE short line in VIETNAMESE on how SMOOTHLY/FAST the learner spoke (nói kịp, ít khựng). If objective fluency data is given above, ground this line on it; otherwise base it on the transcript. Empty string \\"\\" if there is nothing to say.",',
+    '  "confidenceTip": "ONE short, warm line in VIETNAMESE: a concrete tip to feel less anxious / more confident next time in THIS kind of situation (e.g. a time-buying phrase to avoid freezing, or a small mindset reframe).",',
+    '  "summary": "EXACTLY 2 short lines in VIETNAMESE, warm and encouraging: line 1 = the ONE thing done well (khen cụ thể), line 2 = the ONE most important thing to improve. Do NOT pile on multiple mistakes here."',
+    '}',
+    'Rules:',
+    '- Exactly ONE entry in "rubric" per criterion above, in the SAME order.',
+    '- Up to 3 items in "errors" (the most important real mistakes). If the learner made no real mistakes, return [].',
+    '- Exactly 3 items in "upgrades" — phrases actually useful for this situation (prefer ones the learner struggled with).',
+    '- "summary" frames ONE strength + ONE fix only, warmly (the learner may be anxious).',
+    '- "wrong", "right", "en" are ENGLISH; "note", "vi", "summary", "criterion", "intelligibility", "fluency", "confidenceTip" are VIETNAMESE.',
+    '- Base everything on what the learner really said in the transcript. Do not invent mistakes they did not make.',
     '- Output JSON only.',
   ]
     .filter(Boolean)
@@ -415,6 +519,115 @@ export function buildCardPrompt() {
   ].join('\n')
 }
 
+/**
+ * Dựng system prompt cho chế độ INTERVIEW (khóa "Java Phỏng Vấn Cấp Tốc"): AI
+ * đóng vai NGƯỜI PHỎNG VẤN Java kỹ thuật. Mỗi lượt vừa CHẤM câu trả lời gần nhất
+ * vừa HỎI câu kế — trả JSON { evaluation, next } (next=null khi đủ số câu).
+ * Ngôn ngữ hỏi/chấm theo `context.lang` ('vi' | 'en'). `context.bankQuestion` (nếu
+ * có) là câu gợi ý lấy từ ngân hàng để AI hỏi tiếp (được diễn đạt lại tự nhiên).
+ */
+export function buildInterviewPrompt(context = {}) {
+  const lang = context.lang === 'en' ? 'en' : 'vi'
+  const langName = lang === 'en' ? 'English' : 'Vietnamese'
+  const topics =
+    Array.isArray(context.topics) && context.topics.length ? context.topics.join(', ') : 'general Java backend'
+  const level = context.level || 'mixed'
+  const count = Number(context.count) > 0 ? Number(context.count) : 8
+  const asked = Number(context.askedCount) || 0
+  const bankLine = context.bankQuestion
+    ? `Suggested next question (rephrase naturally, keep the topic): "${context.bankQuestion}".`
+    : 'Pick the next question yourself.'
+
+  return [
+    'You are a senior Java technical interviewer screening a candidate with ~2 years of experience for a Java backend junior role.',
+    `Focus topics for this session: ${topics}. Difficulty: ${level}.`,
+    `The whole session runs in ${langName}: ask questions and write feedback in ${langName}. Keep code snippets and technical terms in English/Java as usual.`,
+    `This session has ${count} questions total. So far ${asked} have been asked.`,
+    bankLine,
+    '',
+    'On EACH turn you do TWO things at once and return ONE JSON object:',
+    "1) EVALUATE the candidate's most recent answer (technical accuracy, completeness, clarity).",
+    '2) Provide the NEXT interview question (or finish the interview).',
+    '',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "evaluation": {',
+    '    "score": 0-100 integer for how good the answer was,',
+    `    "verdict": "one short ${langName} label like Xuất sắc | Đạt | Tạm được | Chưa đạt (use an equivalent English label if the session is English)",`,
+    `    "strengths": ["0-2 short ${langName} points the candidate got right"],`,
+    `    "gaps": ["0-3 short ${langName} points that were missing or wrong"],`,
+    `    "ideal": "a concise model answer in ${langName} (2-4 sentences) covering the key points"`,
+    '  },',
+    '  "next": {',
+    `    "question": "the next interview question in ${langName}",`,
+    '    "topic": "one topic keyword",',
+    '    "level": "easy | medium | hard"',
+    '  }',
+    '}',
+    '',
+    'Score rubric (anchor every "score" to these bands, do not grade on vibes):',
+    '- 0-39: wrong, or missing the core concept the question is actually asking about.',
+    '- 40-69: on the right track but missing a key point, or has a factual error / mixes up a related concept.',
+    '- 70-89: correct and complete for the stated level, no real gaps.',
+    '- 90-100: correct and complete, AND spontaneously mentions a trade-off, gotcha or edge case an expert would raise.',
+    '',
+    'Follow-up ladder (drill weak spots instead of always moving on):',
+    '- If the answer you just evaluated scores BELOW 60, ignore the suggested question and ask ONE deeper follow-up on the SAME topic that targets the specific gap you found (harder angle, or "can you show/explain X" about the missing point), instead of switching topics.',
+    '- Do not chain more than one follow-up in a row on the same gap — after the follow-up (regardless of that score), return to the normal topic/question plan.',
+    '- If the answer scores 60 or above, move on normally (use the suggested question or pick a new one).',
+    '',
+    'Rules:',
+    '- If the candidate has not answered yet (empty history), set "evaluation" to null and put the FIRST question in "next".',
+    `- When ${count} questions have already been asked and answered, set "next" to null to END the interview.`,
+    '- Be fair but rigorous like a real interview. Ground the score on the actual answer, do not invent what they said.',
+    '- Ask ONE question at a time. Prefer the focus topics. Vary difficulty around the requested level.',
+    '- Output JSON only.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/**
+ * Dựng system prompt cho chế độ INTERVIEW_REPORT: sau khi phỏng vấn xong, AI nhận
+ * CẢ transcript (assistant = câu hỏi/nhận xét, user = câu trả lời) và tổng kết cả
+ * buổi -> JSON { overall, verdict, byTopic[], strengths[], gaps[], advice[], summary }.
+ */
+export function buildInterviewReportPrompt(context = {}) {
+  const lang = context.lang === 'en' ? 'en' : 'vi'
+  const langName = lang === 'en' ? 'English' : 'Vietnamese'
+  const topics =
+    Array.isArray(context.topics) && context.topics.length ? context.topics.join(', ') : 'general Java backend'
+
+  return [
+    'You are a senior Java interviewer writing the final debrief after a mock technical interview.',
+    `Focus topics were: ${topics}.`,
+    'The message history is the full transcript: "assistant" lines are your questions/feedback, "user" lines are the CANDIDATE answers.',
+    `Write everything in ${langName} (keep technical terms in English).`,
+    '',
+    'Return ONLY a valid JSON object with EXACTLY this shape (no markdown, no extra text):',
+    '{',
+    '  "overall": 0-100 integer overall score across the interview,',
+    `  "verdict": "one ${langName} line: is the candidate ready for a Java junior (2y) interview? e.g. Sẵn sàng / Gần sẵn sàng / Cần ôn thêm",`,
+    '  "byTopic": [ { "topic": "topic keyword", "score": 0-100, "note": "SHORT note" } ],',
+    `  "strengths": ["2-3 short ${langName} strengths"],`,
+    `  "gaps": ["2-4 short ${langName} weaknesses to fix"],`,
+    `  "advice": ["2-4 short actionable ${langName} tips before the real interview"],`,
+    `  "summary": "2-3 short ${langName} lines summarizing performance"`,
+    '}',
+    'Score rubric (apply the SAME bands to "overall" and every "byTopic" score):',
+    '- 0-39: wrong or missing the core concept most of the time on that topic.',
+    '- 40-69: on the right track but with recurring gaps or factual errors.',
+    '- 70-89: consistently correct and complete for a 2-year Java backend candidate.',
+    '- 90-100: consistently correct AND surfaced trade-offs/gotchas unprompted.',
+    'Rules:',
+    '- Base scores on what the candidate actually answered. One entry in "byTopic" per topic that appeared.',
+    '- Be honest: low scores where answers were weak, high where strong.',
+    '- Output JSON only.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
 /** Dựng system prompt cho các chế độ phụ trợ trả TEXT ngắn. */
 export function buildSystemPrompt(context = {}) {
   const mode = context.mode
@@ -524,6 +737,10 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
   } else if (m === 'roleplay') {
     system = buildRoleplayPrompt(context, persona)
     temperature = 0.9 // cần biến hóa/bất ngờ hơn hội thoại thường
+  } else if (m === 'debrief') {
+    system = buildDebriefPrompt(context, persona)
+    temperature = 0.4 // chấm rubric cần ổn định, ít "sáng tạo"
+    maxTokens = 1000 // đủ cho rubric + 3 lỗi + 3 câu nâng cấp + tóm tắt
   } else if (m === 'errorDrill') {
     system = buildErrorDrillPrompt(context)
     temperature = 0.5
@@ -532,6 +749,14 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
     system = buildCardPrompt()
     temperature = 0.4
     maxTokens = 500
+  } else if (m === 'interview') {
+    system = buildInterviewPrompt(context)
+    temperature = 0.6
+    maxTokens = 900 // câu hỏi kế + chấm (điểm/verdict/mạnh/thiếu/đáp án mẫu)
+  } else if (m === 'interviewReport') {
+    system = buildInterviewReportPrompt(context)
+    temperature = 0.4 // tổng kết cần ổn định
+    maxTokens = 1100 // điểm tổng + theo chủ đề + mạnh/yếu/lời khuyên/tóm tắt
   } else {
     system = m === 'feedback' ? buildFeedbackPrompt(context, persona) : buildCoachPrompt(context, persona)
     // Persona "gắt" cần thêm chất lầy/biến hóa — nâng nhiệt để bớt ra giọng nhạt, lặp.

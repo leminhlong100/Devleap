@@ -8,13 +8,15 @@ import { loadYouTubeApi } from '@/lib/youtube'
 const props = defineProps({
   sentences: { type: Array, default: () => [] }, // câu mẫu đúng để nghe-chép (giai đoạn TTS)
   week: { type: [String, Number], default: null }, // tuần hiện tại -> chỉnh tốc độ TTS theo thang WPM
+  // Khóa comm: luôn dùng TTS câu của buổi, KHÔNG kéo clip shadowing IELTS (off-topic).
+  forceTts: { type: Boolean, default: false },
 })
 const emit = defineEmits(['done'])
 
 // —— Giai đoạn nghe "clip gốc" (Tuần 7+, xem ieltsListeningStage.js): lấy 5 câu
 // từ clip shadowing THẬT đã curate cho tuần (Bước 1.3) thay vì câu TTS mặc định.
 // Không có clip curate cho tuần đó -> rơi về TTS như cũ (an toàn ngược).
-const useReal = computed(() => listeningStageOf(props.week) === 'native')
+const useReal = computed(() => !props.forceTts && listeningStageOf(props.week) === 'native')
 const realClip = ref(null) // { videoId, title, sentences } | null
 const realLoading = ref(false)
 async function loadReal(week) {

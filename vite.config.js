@@ -6,6 +6,7 @@ import vue from '@vitejs/plugin-vue'
 import chatHandler from './netlify/functions/chat.js'
 import shadowingHandler from './netlify/functions/shadowing.js'
 import runJavaHandler from './netlify/functions/run-java.js'
+import adminHandler from './netlify/functions/admin.js'
 
 /**
  * `public/sw.js` chứa placeholder `__BUILD_ID__` thay vì version cố định — sau
@@ -52,9 +53,14 @@ function netlifyFunctionDevPlugin(name, handler, env, extraEnvKeys = []) {
         req.on('data', (c) => (raw += c))
         req.on('end', async () => {
           try {
+            // Chuyển tiếp Authorization (Bearer token) để function đặc quyền
+            // (admin) xác minh được người gọi ở dev — production Netlify vốn đã
+            // giữ nguyên header này.
+            const headers = { 'Content-Type': 'application/json' }
+            if (req.headers.authorization) headers.Authorization = req.headers.authorization
             const request = new Request(`http://local/.netlify/functions/${name}`, {
               method: req.method,
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: req.method === 'GET' || req.method === 'HEAD' ? undefined : raw,
             })
             const response = await handler(request)
@@ -83,6 +89,12 @@ export default defineConfig(({ mode }) => {
       netlifyFunctionDevPlugin('chat', chatHandler, env),
       netlifyFunctionDevPlugin('shadowing', shadowingHandler, env),
       netlifyFunctionDevPlugin('run-java', runJavaHandler, env),
+      netlifyFunctionDevPlugin('admin', adminHandler, env, [
+        'SUPABASE_SERVICE_ROLE_KEY',
+        'SUPABASE_URL',
+        'VITE_SUPABASE_URL',
+        'VITE_SUPABASE_ANON_KEY',
+      ]),
     ],
     resolve: {
       alias: {

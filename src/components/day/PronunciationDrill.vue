@@ -13,8 +13,11 @@ const props = defineProps({
   week: { type: [Number, String], default: 0 },
   // Từ vựng đã học trong tuần — ưu tiên chọn cặp tối thiểu chứa từ này.
   vocabTerms: { type: Array, default: () => [] },
+  // Khóa học — 'comm' dùng bộ cặp tối thiểu riêng cho giao tiếp (COMM_WEEK_FOCUS)
+  // và bật phần cặp tối thiểu ngay từ Tuần 1.
+  course: { type: String, default: '' },
 })
-const emit = defineEmits(['done'])
+const emit = defineEmits(['done', 'stats'])
 
 // —— Cặp tối thiểu (minimal pairs) — chấm âm cuối/âm khó TIN ĐƯỢC ——
 // Web Speech API tự "sửa" âm cuối khi chấm 1 từ đơn (đọc "book" vẫn ra "book"
@@ -22,7 +25,9 @@ const emit = defineEmits(['done'])
 // đối chiếu với TỪ THỨ HAI khác chỉ ở âm cuối/âm khó, nếu đọc sai thì máy sẽ
 // nhận ra thành từ KHÁC — nhờ vậy phân biệt được 2 từ khác nhau là cách chấm
 // đáng tin cậy hơn. Nhóm + phân bổ theo tuần: src/data/minimalPairs.js.
-const mpFocus = computed(() => pairsForWeek(props.week, props.vocabTerms))
+const mpFocus = computed(() => pairsForWeek(props.week, props.vocabTerms, props.course))
+// Khóa comm luyện cặp tối thiểu ngay từ Tuần 1; khóa Nền Tảng vẫn mở từ Tuần 2.
+const showMinimalPairs = computed(() => props.course === 'comm' || Number(props.week) >= 2)
 const minimalPairs = computed(() => mpFocus.value.pairs)
 const mpTarget = ref([]) // index (0|1) trong cặp — từ người học cần đọc
 const mpResults = ref([]) // null | { heard, ok, confused }
@@ -116,6 +121,25 @@ function selfAssessMp(i, ok) {
 const doneCount = computed(() => results.value.filter((r) => r && r.ok).length)
 const enough = computed(() => list.value.length > 0 && doneCount.value >= Math.ceil(list.value.length * 0.6))
 const isDone = ref(false)
+
+// —— Số khách quan cho debrief (kế hoạch "Nói Tự Tin" Trục A) ——
+// pronScore = % lần đọc-to trúng trên tổng số lần ĐÃ THỬ (cả cụm + cặp tối thiểu),
+// confusions = số lần "nghe nhầm thành từ khác" ở cặp tối thiểu (dấu hiệu âm cuối/âm
+// khó chưa rõ). Chỉ đưa số này cho LLM tham khảo khi viết nhận xét "độ dễ hiểu" —
+// KHÔNG chấm phát âm bằng LLM (Groq không nghe được âm thật).
+const pronStats = computed(() => {
+  const all = [...results.value, ...(showMinimalPairs.value ? mpResults.value : [])].filter(Boolean)
+  const attempted = all.length
+  const correct = all.filter((r) => r.ok).length
+  const confusions = mpResults.value.filter((r) => r && r.confused).length
+  return {
+    attempted,
+    confusions,
+    pronScore: attempted ? Math.round((correct / attempted) * 100) : null,
+  }
+})
+watch(pronStats, (s) => emit('stats', s), { deep: true })
+
 function markDone() {
   isDone.value = true
   emit('done')
@@ -173,7 +197,7 @@ function markDone() {
     <div v-else class="gate-line ok">✅ Đã hoàn thành phần luyện phát âm.</div>
 
     <!-- CẶP TỐI THIỂU — chấm âm khó tin được (phân biệt 2 từ khác nhau) -->
-    <div v-if="Number(week) >= 2" class="pd-mp">
+    <div v-if="showMinimalPairs" class="pd-mp">
       <div class="step-head">
         <div>
           <div class="eyebrow">CẶP TỐI THIỂU · {{ mpFocus.groupLabel.toUpperCase() }}</div>

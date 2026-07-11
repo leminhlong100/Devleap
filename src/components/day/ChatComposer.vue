@@ -1,6 +1,6 @@
 <script setup>
 /**
- * Ô nhập câu trả lời + nút mic + đồng hồ đếm ngược voice-first của AiChat.vue.
+ * Ô nhập câu trả lời + nút mic của AiChat.vue.
  * Không tự gọi API — chỉ phát ra sự kiện, logic thật (gửi câu, bật/tắt mic)
  * nằm ở useChatEngine.js.
  */
@@ -9,15 +9,12 @@ defineProps({
   loading: { type: Boolean, default: false },
   listening: { type: Boolean, default: false },
   listenable: { type: Boolean, default: false },
-  answerTimer: { type: Number, default: 0 },
   online: { type: Boolean, default: true },
 })
 defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
 </script>
 
 <template>
-  <div v-if="answerTimer > 0" class="answer-timer">⏱ Còn {{ answerTimer }}s — cứ nói tự nhiên, đừng soạn câu trước!</div>
-
   <form class="composer" @submit.prevent="$emit('submit')">
     <button
       v-if="listenable"
@@ -48,18 +45,6 @@ defineEmits(['update:modelValue', 'submit', 'toggle-mic'])
 </template>
 
 <style scoped>
-.answer-timer {
-  margin-top: 12px;
-  font-size: 12.5px;
-  font-weight: 800;
-  color: var(--text-danger);
-  background: rgba(255, 90, 90, 0.08);
-  border: 1px solid rgba(255, 107, 107, 0.25);
-  border-radius: 999px;
-  padding: 6px 13px;
-  display: inline-flex;
-  align-self: flex-start;
-}
 .composer {
   margin-top: 16px;
   display: flex;

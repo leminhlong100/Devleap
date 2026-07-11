@@ -163,6 +163,39 @@ export const VOCAB_GLOSSARY = {
   drawback: { ipa: '/ˈdrɔːbæk/', vi: 'hạn chế, bất lợi', ex: 'The main {w} is the high cost.', exVi: 'Hạn chế chính là chi phí cao.', emoji: '⚠️' },
   trend: { ipa: '/trend/', vi: 'xu hướng', ex: 'There is an upward {w} in the data.', exVi: 'Có một xu hướng tăng trong dữ liệu.', emoji: '📶' },
   evidence: { ipa: '/ˈevɪdəns/', vi: 'bằng chứng', ex: 'The chart provides clear {w}.', exVi: 'Biểu đồ cung cấp bằng chứng rõ ràng.', emoji: '🔍' },
+
+  // —— Giao Tiếp Thực Chiến · Tuần 1 (cụm sống còn nơi công cộng) ——
+  // Buổi 1.1 — Chào hỏi & small talk
+  weather: { ipa: '/ˈweðə/', vi: 'thời tiết', ex: 'Lovely {w} today, isn’t it?', exVi: 'Thời tiết hôm nay đẹp nhỉ?', emoji: '🌤️' },
+  weekend: { ipa: '/ˌwiːkˈend/', vi: 'cuối tuần', ex: 'Do you have any plans for the {w}?', exVi: 'Cuối tuần bạn có kế hoạch gì không?', emoji: '📅' },
+  stranger: { ipa: '/ˈstreɪndʒə/', vi: 'người lạ', ex: 'It’s normal to chat with a {w} in a queue.', exVi: 'Trò chuyện với người lạ khi xếp hàng là bình thường.', emoji: '🧑' },
+  queue: { ipa: '/kjuː/', vi: 'hàng người xếp; xếp hàng', ex: 'We waited in a long {w}.', exVi: 'Chúng tôi chờ trong một hàng dài.', emoji: '🚶' },
+  elevator: { ipa: '/ˈelɪveɪtə/', vi: 'thang máy', ex: 'We rode the {w} to the tenth floor.', exVi: 'Chúng tôi đi thang máy lên tầng mười.', emoji: '🛗' },
+  // Buổi 1.2 — Gọi món
+  menu: { ipa: '/ˈmenjuː/', vi: 'thực đơn', ex: 'Could I see the {w}, please?', exVi: 'Cho tôi xem thực đơn được không?', emoji: '📋' },
+  order: { ipa: '/ˈɔːdə/', vi: 'gọi món; đơn hàng', ex: 'I’d like to {w} a latte, please.', exVi: 'Tôi muốn gọi một ly latte.', emoji: '🧾' },
+  takeaway: { ipa: '/ˈteɪkəweɪ/', vi: 'đồ mang đi', ex: 'Can I get that as a {w}?', exVi: 'Cho tôi lấy mang đi được không?', emoji: '🥡' },
+  bill: { ipa: '/bɪl/', vi: 'hóa đơn', ex: 'Could we have the {w}, please?', exVi: 'Cho chúng tôi xin hóa đơn nhé?', emoji: '🧾' },
+  waiter: { ipa: '/ˈweɪtə/', vi: 'người phục vụ', ex: 'The {w} brought our drinks quickly.', exVi: 'Người phục vụ mang đồ uống ra nhanh.', emoji: '🧑‍🍳' },
+  // Buổi 1.3 — Mua sắm
+  price: { ipa: '/praɪs/', vi: 'giá cả', ex: 'What’s the {w} of this jacket?', exVi: 'Cái áo khoác này giá bao nhiêu?', emoji: '🏷️' },
+  size: { ipa: '/saɪz/', vi: 'cỡ, kích cỡ', ex: 'Do you have this in a bigger {w}?', exVi: 'Bạn có cỡ lớn hơn không?', emoji: '📏' },
+  refund: { ipa: '/ˈriːfʌnd/', vi: 'sự hoàn tiền', ex: 'Can I get a {w} for this?', exVi: 'Tôi được hoàn tiền cái này không?', emoji: '💸' },
+  exchange: { ipa: '/ɪksˈtʃeɪndʒ/', vi: 'đổi (hàng)', ex: 'I’d like to {w} this shirt for a smaller one.', exVi: 'Tôi muốn đổi áo này lấy cỡ nhỏ hơn.', emoji: '🔄' },
+  discount: { ipa: '/ˈdɪskaʊnt/', vi: 'giảm giá', ex: 'Is there any {w} on this item?', exVi: 'Món này có giảm giá không?', emoji: '🎟️' },
+  receipt: { ipa: '/rɪˈsiːt/', vi: 'biên lai', ex: 'Keep the {w} in case you return it.', exVi: 'Giữ biên lai phòng khi bạn trả hàng.', emoji: '🧾' },
+  // Buổi 1.4 — Hỏi đường & phương tiện
+  direction: { ipa: '/dəˈrekʃn/', vi: 'phương hướng, chỉ dẫn', ex: 'Could you give me {w}s to the station?', exVi: 'Bạn chỉ đường tới nhà ga giúp tôi được không?', emoji: '🧭' },
+  corner: { ipa: '/ˈkɔːnə/', vi: 'góc (đường)', ex: 'Turn left at the {w}.', exVi: 'Rẽ trái ở góc đường.', emoji: '📐' },
+  station: { ipa: '/ˈsteɪʃn/', vi: 'nhà ga, trạm', ex: 'The train {w} is near here.', exVi: 'Nhà ga tàu ở gần đây.', emoji: '🚉' },
+  platform: { ipa: '/ˈplætfɔːm/', vi: 'sân ga', ex: 'The train leaves from {w} 3.', exVi: 'Tàu rời sân ga số 3.', emoji: '🛤️' },
+  fare: { ipa: '/feə/', vi: 'tiền vé (xe/tàu)', ex: 'How much is the bus {w}?', exVi: 'Vé xe buýt giá bao nhiêu?', emoji: '🎫' },
+  // Buổi 1.5 — Cứu nguy khi không hiểu
+  repeat: { ipa: '/rɪˈpiːt/', vi: 'nhắc lại', ex: 'Could you {w} that, please?', exVi: 'Bạn nhắc lại giúp tôi được không?', emoji: '🔁' },
+  spell: { ipa: '/spel/', vi: 'đánh vần', ex: 'Could you {w} your name for me?', exVi: 'Bạn đánh vần tên giúp tôi nhé?', emoji: '🔤' },
+  understand: { ipa: '/ˌʌndəˈstænd/', vi: 'hiểu', ex: 'Sorry, I don’t quite {w}.', exVi: 'Xin lỗi, tôi chưa hiểu lắm.', emoji: '🤔' },
+  clarify: { ipa: '/ˈklærɪfaɪ/', vi: 'làm rõ', ex: 'Could you {w} what you mean?', exVi: 'Bạn làm rõ ý được không?', emoji: '💬' },
+  confirm: { ipa: '/kənˈfɜːm/', vi: 'xác nhận', ex: 'Let me {w} my order.', exVi: 'Để tôi xác nhận lại đơn của mình.', emoji: '✅' },
 }
 
 /** Tra glossary theo từ (không phân biệt hoa thường). Trả về null nếu không có. */

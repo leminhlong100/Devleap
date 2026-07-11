@@ -1,6 +1,7 @@
 import { dayKey, ymd, isoWeekKey } from './helpers'
 import { computeIeltsProgress, getIeltsDay } from '@/data/courseIelts'
 import { computeJavaProgress, getJavaDay } from '@/data/course'
+import { computeCommProgress, getCommDay } from '@/data/courseComm'
 import { maybeRequestNotificationPermission } from '@/lib/studyReminder'
 
 /**
@@ -23,7 +24,7 @@ export function state() {
     badges: 0,
     lastStudyDate: null, // 'YYYY-M-D' của lần học gần nhất (tính streak)
     knownCards: [], // (cũ) index các flashcard đã thuộc — giữ để tương thích bản trước
-    completed: { java: [], ielts: [] }, // mảng khóa "week:day" đã hoàn thành
+    completed: { java: [], ielts: [], comm: [] }, // mảng khóa "week:day" đã hoàn thành
     // tiến độ checklist "việc cần làm hôm nay", khóa theo "course:week:day":
     // { [key]: [bool, bool, …] } theo thứ tự mục. Local-only (như writings) để
     // khóa hoàn thành buổi mà không phải đổi schema bảng progress.
@@ -82,6 +83,20 @@ export const getters = {
           course: 'java',
           label: 'Java',
           route: 'java-day',
+          week: prog.continue.week,
+          day: prog.continue.day,
+          title: day?.title || '',
+        })
+      }
+    }
+    if ((this.completed.comm || []).length) {
+      const prog = computeCommProgress(this.completed.comm, (w) => this.quizPassed('comm', `week:${w}`))
+      if (!prog.allDone) {
+        const day = getCommDay(prog.continue.week, prog.continue.day)
+        out.push({
+          course: 'comm',
+          label: 'Giao tiếp',
+          route: 'comm-day',
           week: prog.continue.week,
           day: prog.continue.day,
           title: day?.title || '',
@@ -213,7 +228,7 @@ export function applyDefaults(s = {}) {
     badges: s.badges ?? 0,
     lastStudyDate: s.lastStudyDate ?? null,
     knownCards: Array.isArray(s.knownCards) ? s.knownCards : [],
-    completed: { java: [], ielts: [], ...(s.completed || {}) },
+    completed: { java: [], ielts: [], comm: [], ...(s.completed || {}) },
     checklists: s.checklists && typeof s.checklists === 'object' ? s.checklists : {},
   }
 }

@@ -197,6 +197,7 @@ export function mergeSnapshots(local, remote) {
     completed: {
       java: union(local.completed?.java, remote.completed?.java),
       ielts: union(local.completed?.ielts, remote.completed?.ielts),
+      comm: union(local.completed?.comm, remote.completed?.comm),
     },
     quizScores: mergeQuiz(local.quizScores, remote.quizScores),
     savedWords: mergeSaved(local.savedWords, remote.savedWords),

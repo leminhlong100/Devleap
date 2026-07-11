@@ -118,6 +118,31 @@ as $$
   select exists (select 1 from public.admins a where a.user_id = auth.uid());
 $$;
 
+-- ----------------------------------------------------------------------------
+-- Nhật ký kiểm toán quản trị (Đợt 0 — docs/KE_HOACH_TRANG_ADMIN.md)
+-- Function `admin` ghi 1 dòng cho MỌI hành động thay đổi (grant admin, reset,
+-- delete, xóa tên leaderboard…). Ghi CHỈ từ service function (bypass RLS);
+-- không có policy insert nên client thường không bao giờ ghi được.
+-- ----------------------------------------------------------------------------
+create table if not exists public.admin_audit (
+  id         bigint generated always as identity primary key,
+  actor_id   uuid references auth.users (id),
+  action     text not null,
+  target_id  uuid,
+  detail     jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.admin_audit enable row level security;
+
+-- Chỉ admin đọc được nhật ký (qua is_admin()). Không mở policy ghi cho client.
+drop policy if exists "audit_select_admin" on public.admin_audit;
+create policy "audit_select_admin"
+  on public.admin_audit for select
+  using (public.is_admin());
+
+create index if not exists admin_audit_created_idx on public.admin_audit (created_at desc);
+
 -- ============================================================================
 -- Leaderboard tuần (Bước 5.1) — opt-in, ẩn danh mặc định.
 -- ============================================================================

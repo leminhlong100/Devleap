@@ -95,6 +95,40 @@ export const useAuthStore = defineStore('auth', {
       })
     },
 
+    /**
+     * Đăng nhập bằng email + mật khẩu. Trả về { error } (chuỗi tiếng Việt) nếu
+     * thất bại, hoặc { error: null } nếu thành công (onAuthStateChange sẽ lo phần
+     * kéo/hợp nhất dữ liệu như OAuth). Không throw để UI tự hiển thị lỗi.
+     */
+    async signInWithPassword(email, password) {
+      if (!isCloudEnabled) return { error: 'Chưa cấu hình đăng nhập.' }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      return { error: error ? authErrorMessage(error) : null }
+    },
+
+    /**
+     * Đăng ký tài khoản mới bằng email + mật khẩu. Nếu dự án Supabase bật xác
+     * nhận email, session sẽ là null và cần bấm link trong email trước khi đăng
+     * nhập — trả về { needsConfirm: true } để UI báo cho người dùng.
+     */
+    async signUpWithPassword(email, password, name) {
+      if (!isCloudEnabled) return { error: 'Chưa cấu hình đăng nhập.' }
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { full_name: (name || '').trim() || email.trim().split('@')[0] },
+          emailRedirectTo: window.location.origin,
+        },
+      })
+      if (error) return { error: authErrorMessage(error) }
+      // Không có session ngay => cần xác nhận email.
+      return { error: null, needsConfirm: !data.session }
+    },
+
     async signOut() {
       if (!isCloudEnabled) return
       await supabase.auth.signOut()
@@ -102,3 +136,19 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 })
+
+/** Chuyển thông báo lỗi Supabase Auth sang tiếng Việt gần gũi. */
+function authErrorMessage(error) {
+  const msg = (error?.message || '').toLowerCase()
+  if (msg.includes('invalid login')) return 'Email hoặc mật khẩu không đúng.'
+  if (msg.includes('email not confirmed')) return 'Email chưa được xác nhận — hãy kiểm tra hộp thư.'
+  if (msg.includes('already registered') || msg.includes('already been registered'))
+    return 'Email này đã có tài khoản — hãy đăng nhập.'
+  if (msg.includes('password') && msg.includes('at least'))
+    return 'Mật khẩu quá ngắn (cần ít nhất 6 ký tự).'
+  if (msg.includes('unable to validate email') || msg.includes('invalid email'))
+    return 'Email không hợp lệ.'
+  if (msg.includes('rate limit') || msg.includes('too many'))
+    return 'Bạn thử quá nhiều lần — vui lòng đợi một lát.'
+  return error?.message || 'Có lỗi xảy ra, vui lòng thử lại.'
+}

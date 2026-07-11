@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 import { useAuthStore } from '@/stores/auth'
@@ -9,6 +9,7 @@ import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import { isHapticEnabled, setHapticEnabled } from '@/lib/haptics'
+import { clearLocalProgress } from '@/lib/clearProgress'
 
 const { theme, toggleTheme } = useTheme()
 
@@ -21,6 +22,7 @@ function toggleHaptic() {
 }
 const { isOnline } = useOnlineStatus()
 const route = useRoute()
+const router = useRouter()
 const user = useUserStore()
 const auth = useAuthStore()
 const { xp, streak, level, xpPct, syncStatus } = storeToRefs(user)
@@ -46,12 +48,19 @@ const menuOpen = ref(false)
 watch(activeKey, () => {
   menuOpen.value = false
 })
-async function signIn() {
-  await auth.signInWithGoogle()
+// Mở hộp đăng nhập (LoginGate) để chọn email/mật khẩu hoặc Google, thay vì
+// nhảy thẳng sang Google.
+function signIn() {
+  router.push({ query: { ...route.query, login: 'required' } })
 }
 async function signOut() {
   menuOpen.value = false
   await auth.signOut()
+  // Xóa dữ liệu tiến độ trong localStorage (giữ lại tùy chọn app: theme, haptic,
+  // nhắc học, track, cache IPA…) để không rớt lại tiến độ tài khoản vừa đăng xuất,
+  // rồi về trang chủ bằng tải lại sạch — reset luôn cả state trong bộ nhớ về khách.
+  clearLocalProgress()
+  window.location.assign(router.resolve({ name: 'home' }).href)
 }
 </script>
 
@@ -148,10 +157,9 @@ async function signOut() {
           v-if="auth.cloudEnabled && authReady && !authUser"
           class="signin-btn"
           :disabled="!isOnline"
-          :title="isOnline ? 'Đăng nhập / Đăng ký' : 'Cần có mạng để đăng nhập bằng Google'"
+          :title="isOnline ? 'Đăng nhập / Đăng ký' : 'Cần có mạng để đăng nhập'"
           @click="signIn"
         >
-          <span class="g">G</span>
           <span class="signin-label">{{ isOnline ? 'Đăng nhập / Đăng ký' : 'Cần có mạng' }}</span>
         </button>
       </div>

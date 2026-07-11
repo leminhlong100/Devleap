@@ -59,6 +59,18 @@ export async function roleplayTurn({ messages, context, persona }) {
 }
 
 /**
+ * DEBRIEF cuối buổi nhập vai (khóa "Giao Tiếp Thực Chiến"): gửi CẢ transcript +
+ * rubric của tình huống, nhận về tổng kết { score, rubric[], errors[], upgrades[],
+ * summary }. Chỉ gọi 1 lần/buổi (tiết kiệm quota) — xem useChatEngine.runDebrief.
+ * @param {{ messages, context, persona }} args  context nên có `rubric` (mảng tiêu chí).
+ */
+export async function debriefTurn({ messages, context, persona }) {
+  const reply = await sendChat({ messages, context, persona, mode: 'debrief' })
+  if (!reply || typeof reply !== 'object') throw new Error('AI trả về định dạng không hợp lệ.')
+  return reply
+}
+
+/**
  * Chấm LẠI câu cuối theo một persona khác (đổi phong cách lời phê tại chỗ).
  * @param {{ messages, context, persona }} args  messages kết thúc ở lượt user cần chấm.
  * @returns {Promise<object>} evaluation { corrected, cefr, feedback, recommended, recommendedVi }

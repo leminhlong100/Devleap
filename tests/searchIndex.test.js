@@ -28,15 +28,24 @@ describe('buildSearchIndex() — fixtures thật', () => {
 
   it('mỗi entry bài học có route điều hướng hợp lệ', () => {
     for (const e of index.filter((x) => x.type === 'lesson')) {
-      expect(['java-day', 'ielts-day']).toContain(e.route.name)
+      expect(['java-day', 'ielts-day', 'comm-day']).toContain(e.route.name)
       expect(e.route.params.week).toBeGreaterThan(0)
       expect(e.route.params.day).toBeGreaterThan(0)
     }
   })
 
-  it('số bài học khớp tổng số ngày của hai khóa (~115)', () => {
+  it('số bài học khớp tổng số ngày của ba khóa (~170)', () => {
     const lessons = index.filter((e) => e.type === 'lesson').length
     expect(lessons).toBeGreaterThanOrEqual(110)
+  })
+
+  it('có nội dung khóa Giao Tiếp: bài học comm-day + tình huống roleplay', () => {
+    const commLessons = index.filter((e) => e.course === 'comm' && e.type === 'lesson')
+    expect(commLessons.length).toBe(56)
+    // Tình huống roleplay thành term, tới đúng buổi N.D.
+    const commTerms = index.filter((e) => e.course === 'comm' && e.type === 'term')
+    expect(commTerms.length).toBeGreaterThanOrEqual(40)
+    for (const e of commTerms) expect(e.route.name).toBe('comm-day')
   })
 
   it('từ vựng được gộp trùng theo từng khóa (không lặp tiêu đề chuẩn hóa)', () => {

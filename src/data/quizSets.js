@@ -11,9 +11,11 @@
  */
 import { javaWeeksData } from './course'
 import { ieltsWeeksData } from './courseIelts'
+import { commWeeksData } from './courseComm'
 
-const dataOf = (course) => (course === 'ielts' ? ieltsWeeksData : javaWeeksData)
-const courseLabel = (course) => (course === 'ielts' ? 'IELTS' : 'Java')
+const dataOf = (course) =>
+  course === 'ielts' ? ieltsWeeksData : course === 'comm' ? commWeeksData : javaWeeksData
+const courseLabel = (course) => (course === 'ielts' ? 'IELTS' : course === 'comm' ? 'Giao Tiếp' : 'Java')
 
 // Gom các câu quiz nhanh của mọi ngày trong tuần thành một danh sách.
 const aggregateDayQuizzes = (week) => week.days.flatMap((d) => d.quiz || [])
@@ -30,8 +32,9 @@ function objectivesOf(course, week) {
 export function getWeekQuiz(course, weekNum) {
   const week = dataOf(course).find((w) => w.num === Number(weekNum))
   if (!week) return null
-  // Ngân hàng đề riêng nếu đã soạn; nếu chưa thì gom quiz các ngày.
-  const dedicated = week.weekTest?.length ? week.weekTest : course === 'ielts' && week.weekQuiz?.length ? week.weekQuiz : null
+  // Ngân hàng đề riêng nếu đã soạn (Java: weekTest; IELTS/Giao Tiếp: weekQuiz);
+  // nếu chưa thì gom quiz các ngày.
+  const dedicated = week.weekTest?.length ? week.weekTest : week.weekQuiz?.length ? week.weekQuiz : null
   const questions = dedicated || aggregateDayQuizzes(week)
   if (!questions.length) return null
   return {

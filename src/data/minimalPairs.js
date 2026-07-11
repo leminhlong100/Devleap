@@ -127,6 +127,53 @@ export const MINIMAL_PAIR_GROUPS = [
       ['risk', 'wrist'],
     ],
   },
+  // —— Nhóm "giao tiếp" — lỗi phụ âm ĐẦU người Việt hay lẫn, đổi hẳn nghĩa khi
+  // nói (dùng cho COMM_WEEK_FOCUS khóa Giao Tiếp Thực Chiến). ——
+  {
+    key: 'sh-s',
+    label: 'Âm đầu /ʃ/ (she) vs /s/ (see)',
+    tip: 'sh chu môi tròn, đẩy hơi dài; s dẹt môi, hơi ngắn — “she” và “see” là hai từ khác hẳn.',
+    pairs: [
+      ['she', 'see'],
+      ['sheet', 'seat'],
+      ['shoe', 'sue'],
+      ['show', 'so'],
+      ['shock', 'sock'],
+      ['shine', 'sign'],
+      ['shave', 'save'],
+      ['sheep', 'seep'],
+    ],
+  },
+  {
+    key: 'b-p',
+    label: 'Âm đầu /b/ (bad) vs /p/ (pad)',
+    tip: 'p bật hơi mạnh (để tay trước miệng thấy luồng hơi), b không bật hơi — “big” không phải “pig”.',
+    pairs: [
+      ['bad', 'pad'],
+      ['big', 'pig'],
+      ['back', 'pack'],
+      ['bin', 'pin'],
+      ['bear', 'pear'],
+      ['ban', 'pan'],
+      ['bull', 'pull'],
+      ['best', 'pest'],
+    ],
+  },
+  {
+    key: 'l-n',
+    label: 'Âm đầu /l/ (light) vs /n/ (night)',
+    tip: 'l đặt đầu lưỡi sau răng trên rồi hạ xuống; n để hơi thoát qua mũi — “light” khác hẳn “night”.',
+    pairs: [
+      ['light', 'night'],
+      ['lot', 'not'],
+      ['low', 'no'],
+      ['line', 'nine'],
+      ['let', 'net'],
+      ['lap', 'nap'],
+      ['lame', 'name'],
+      ['lead', 'need'],
+    ],
+  },
 ]
 
 const GROUP_BY_KEY = Object.fromEntries(MINIMAL_PAIR_GROUPS.map((g) => [g.key, g]))
@@ -142,12 +189,37 @@ export const WEEK_FOCUS = {
   8: ['th', 'finalCons'],
 }
 
+// Trọng tâm phát âm THEO TUẦN cho khóa "Giao Tiếp Thực Chiến" — độc lập với
+// WEEK_FOCUS (khóa Nền Tảng bám ngữ pháp), phủ đủ Tuần 1–8 và ưu tiên các lỗi
+// người Việt hay mắc mà ẢNH HƯỞNG NGHĨA khi nói (kế hoạch "Nói Tự Tin", Trục A):
+// âm cuối (T1-2) → th (T3) → sh/s (T4) → b/p (T5) → l/n (T6) → dài-ngắn (T7) →
+// tổng hợp khó (T8). Bám khối: Khối 1 = âm cuối, Khối 2-3 = phụ âm khó, Khối 4 = nguyên âm/tổng hợp.
+export const COMM_WEEK_FOCUS = {
+  1: ['plural-s'],
+  2: ['ed'],
+  3: ['th'],
+  4: ['sh-s'],
+  5: ['b-p'],
+  6: ['l-n'],
+  7: ['vowel-i'],
+  8: ['vowel-ae', 'finalCons'],
+}
+
 function norm(s) {
   return String(s || '').trim().toLowerCase()
 }
 
-/** Nhóm trọng tâm của 1 tuần — dùng để hiện tiêu đề "Tuần này: ...". Tuần <2 hoặc >8 dùng nhóm gần nhất. */
-export function focusForWeek(week) {
+/**
+ * Nhóm trọng tâm của 1 tuần — dùng để hiện tiêu đề "Tuần này: ...".
+ * @param {number|string} week
+ * @param {string} course  'comm' -> dùng COMM_WEEK_FOCUS (phủ Tuần 1–8); else WEEK_FOCUS (Tuần 2–8, kẹp về nhóm gần nhất).
+ */
+export function focusForWeek(week, course = '') {
+  if (course === 'comm') {
+    const w = Math.min(8, Math.max(1, Number(week) || 1))
+    const keys = COMM_WEEK_FOCUS[w] || ['plural-s']
+    return keys.map((k) => GROUP_BY_KEY[k]).filter(Boolean)
+  }
   const w = Math.min(8, Math.max(2, Number(week) || 2))
   const keys = WEEK_FOCUS[w] || ['plural-s']
   return keys.map((k) => GROUP_BY_KEY[k]).filter(Boolean)
@@ -157,9 +229,12 @@ export function focusForWeek(week) {
  * Chọn 8 cặp tối thiểu cho 1 tuần, ưu tiên cặp có từ TRÙNG với từ vựng đã học
  * trong tuần (learnedTerms) để gắn luyện phát âm với từ vừa học. Không lặp
  * cặp trong cùng 1 lần chọn. Xác định (không dùng random) để test được.
+ * @param {number|string} week
+ * @param {string[]} learnedTerms
+ * @param {string} course  chuyển tiếp cho focusForWeek ('comm' cho khóa Giao Tiếp).
  */
-export function pairsForWeek(week, learnedTerms = []) {
-  const groups = focusForWeek(week)
+export function pairsForWeek(week, learnedTerms = [], course = '') {
+  const groups = focusForWeek(week, course)
   const learned = new Set((learnedTerms || []).map(norm))
   const all = groups.flatMap((g) => g.pairs)
   const matched = []

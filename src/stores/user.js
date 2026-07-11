@@ -118,6 +118,8 @@ export const useUserStore = defineStore('user', {
       }
       // Nạp tùy chọn hội thoại (local-only).
       this.loadConvoPrefs()
+      // Nạp kết quả phỏng vấn thử Java (local-only).
+      this.loadJavaPrep()
     },
   },
 })

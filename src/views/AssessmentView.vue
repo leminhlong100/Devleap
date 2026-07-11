@@ -6,6 +6,7 @@ import QuizTool from '@/components/tools/QuizTool.vue'
 import { getQuizSet } from '@/data/quizSets'
 import { computeJavaProgress, javaWeekStructure } from '@/data/course'
 import { computeIeltsProgress } from '@/data/courseIelts'
+import { computeCommProgress } from '@/data/courseComm'
 
 // Bài kiểm tra cuối tuần/cuối khóa. Route: /courses/:course/test/:scope
 //   scope = "week-3" hoặc "final".
@@ -19,7 +20,9 @@ const set = computed(() => getQuizSet(props.course, props.scope))
 const courseDone = computed(() =>
   props.course === 'ielts'
     ? computeIeltsProgress(user.completed.ielts, (n) => user.quizPassed('ielts', `week:${n}`)).allDone
-    : computeJavaProgress(user.completed.java).allDone,
+    : props.course === 'comm'
+      ? computeCommProgress(user.completed.comm || [], (n) => user.quizPassed('comm', `week:${n}`)).allDone
+      : computeJavaProgress(user.completed.java).allDone,
 )
 const finalLocked = computed(() => props.scope === 'final' && !courseDone.value)
 
@@ -34,15 +37,16 @@ const weekLocked = computed(() => {
   return !wk.dayNums.every((d) => completed.includes(`${wk.num}:${d}`))
 })
 
+const courseRoute = computed(() => (props.course === 'ielts' ? 'ielts' : props.course === 'comm' ? 'comm' : 'java'))
+const courseLabel = computed(() => (props.course === 'ielts' ? 'IELTS' : props.course === 'comm' ? 'Giao Tiếp' : 'Java'))
+
 watchEffect(() => {
   if (finalLocked.value || weekLocked.value) {
-    router.replace({ name: props.course === 'ielts' ? 'ielts' : 'java' })
+    router.replace({ name: courseRoute.value })
   }
 })
 // Cuối khóa lấy nhiều câu hơn; tuần gọn lại để không quá dài.
 const limit = computed(() => (props.scope === 'final' ? 20 : 12))
-const courseRoute = computed(() => (props.course === 'ielts' ? 'ielts' : 'java'))
-const courseLabel = computed(() => (props.course === 'ielts' ? 'IELTS' : 'Java'))
 const best = computed(() => (set.value ? user.quizOf(props.course, set.value.scope) : null))
 const askCount = computed(() => (set.value ? Math.min(limit.value, set.value.questions.length) : 0))
 </script>

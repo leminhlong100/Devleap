@@ -150,6 +150,9 @@ function saveWordFromPop() {
 
         <div v-if="m.evaluating" class="eval-card loading">⏳ Đang chấm câu…</div>
 
+        <!-- Chế độ "chỉ trò chuyện": khen GIAO TIẾP THÀNH CÔNG thay vì soi lỗi -->
+        <div v-else-if="m.understood" class="understood-chip">🟢 Người nghe hiểu bạn</div>
+
         <div v-else-if="m.evaluation" class="eval-card">
           <div class="eval-row">
             <span class="eval-tag ok">✅ Câu đúng</span>
@@ -421,6 +424,16 @@ function saveWordFromPop() {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.understood-chip {
+  align-self: flex-end;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-success, #00966a);
+  background: rgba(0, 214, 143, 0.12);
+  border: 1px solid rgba(0, 214, 143, 0.28);
+  border-radius: 99px;
+  padding: 4px 12px;
 }
 .eval-card {
   align-self: flex-end;

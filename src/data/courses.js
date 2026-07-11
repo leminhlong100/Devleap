@@ -9,6 +9,8 @@
  */
 import { javaWeeks, javaTotals } from './course'
 import { ieltsWeeks, ieltsTotals } from './courseIelts'
+import { commTotals } from './courseComm'
+import { INTERVIEW_TOTALS } from './javaInterview'
 
 export { javaWeeks, ieltsWeeks }
 
@@ -33,6 +35,24 @@ export const courses = [
     cta: 'Tiếp tục học →',
   },
   {
+    id: 'java-prep',
+    category: '💻 Lập trình',
+    routeName: 'java-prep',
+    emoji: '🎯',
+    name: 'Java Phỏng Vấn Cấp Tốc',
+    desc: 'Ôn 2 tuần cho phỏng vấn Java backend: ngân hàng câu hỏi (Java, SQL sâu, frontend, stack thực tế), kỹ năng phỏng vấn, AI phỏng vấn thử chấm điểm, coding chạy thật.',
+    weeks: 2,
+    lessons: INTERVIEW_TOTALS.questions,
+    level: 'Junior 2 năm',
+    levelColor: '#6C5CE7',
+    banner: 'linear-gradient(135deg,#8B7CF0,#6C5CE7)',
+    tag: '🎤 MỚI',
+    progress: 0,
+    active: true,
+    locked: false,
+    cta: 'Vào ôn thi →',
+  },
+  {
     id: 'ielts',
     category: '🗣️ Tiếng Anh',
     routeName: 'ielts',
@@ -53,20 +73,20 @@ export const courses = [
   {
     id: 'comm',
     category: '🗣️ Tiếng Anh',
-    routeName: null,
+    routeName: 'comm',
     emoji: '💬',
-    name: 'Tiếng Anh Giao Tiếp',
-    desc: 'Phản xạ nói tự nhiên qua tình huống thực tế nơi công sở và đời sống hằng ngày.',
-    weeks: 6,
-    lessons: 36,
-    level: 'Cơ bản',
-    levelColor: '#00C281',
+    name: 'Giao Tiếp Thực Chiến',
+    desc: 'Nhập vai nói với AI qua tình huống thật: đời sống, kết bạn, công sở, phỏng vấn. Học để phản xạ, không học rồi mới (may ra) nói được.',
+    weeks: commTotals.weeks,
+    lessons: commTotals.lessons,
+    level: 'A2 trở lên',
+    levelColor: '#FFB020',
     banner: 'linear-gradient(135deg,#FFB020,#f59000)',
-    tag: 'SẮP RA MẮT',
+    tag: '🎭 MỚI',
     progress: 0,
-    active: false,
-    locked: true,
-    cta: '',
+    active: true,
+    locked: false,
+    cta: 'Bắt đầu nhập vai →',
   },
 ]
 

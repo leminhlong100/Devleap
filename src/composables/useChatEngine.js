@@ -1,9 +1,10 @@
-import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { coachTurn, roleplayTurn, reFeedback, getHint, getIdea, translateToVi } from '@/lib/aiChat'
+import { ref, computed, reactive, watch, onMounted } from 'vue'
+import { coachTurn, roleplayTurn, debriefTurn, reFeedback, getHint, getIdea, translateToVi } from '@/lib/aiChat'
 import { friendlyAiError } from '@/lib/aiError'
 import { speak, canSpeak } from '@/lib/speak'
 import { canListen, createRecognizer } from '@/lib/listen'
 import { cardsFromTerms } from '@/data/tools'
+import { countWords, computeWpm, summarizeFluency } from '@/lib/fluencyStats'
 import { useUserStore } from '@/stores/user'
 
 // —— Danh sách phong cách lời phê (khớp PERSONAS ở backend _llm.js) ——
@@ -41,7 +42,10 @@ const SCENARIOS = [
   },
 ]
 
-const ANSWER_SECONDS = 10
+// Chủ đề mặc định gom "cụm nâng cấp" lưu ở debrief -> học lại qua Flashcard (SRS).
+const COMM_SAVE_TOPIC = 'Giao tiếp thực chiến'
+// Debrief chỉ gửi tối đa số lượt cuối này lên backend (roleplay dài -> tiết kiệm quota).
+const DEBRIEF_MAX_TURNS = 24
 
 /**
  * Toàn bộ state phiên chat + gọi API/lịch sử/retry — tách khỏi AiChat.vue để
@@ -63,39 +67,62 @@ export function useChatEngine(props) {
   const savedToast = ref('')
   let toastTimer = null
 
-  // —— Voice-first: mặc định tự bật mic sau mỗi lượt AI, đếm ngược 10s để ép phản
-  // xạ (không kịp soạn câu trước trong đầu). Gõ chữ vẫn dùng được — chỉ là fallback.
-  const voiceFirst = ref(true)
-  const answerTimer = ref(0)
-  let answerTimerId = null
 
-  function clearAnswerTimer() {
-    if (answerTimerId) {
-      clearInterval(answerTimerId)
-      answerTimerId = null
-    }
-    answerTimer.value = 0
+  // Phong cách lời phê — nhớ lần chọn gần nhất (lưu local). Khóa comm dùng persona
+  // RIÊNG (mặc định 'gaubong' — ấm áp, hạ lo âu; kế hoạch "Nói Tự Tin" Trục D),
+  // tách khỏi persona khóa Nền Tảng để không "lây" giọng roast qua người mới ngại nói.
+  const commInit = !!props.context?.fixedScenario
+  const persona = ref(commInit ? user.convoPrefs.commPersona || 'gaubong' : user.convoPrefs.persona || 'cotnha')
+  function savePersonaPref(key) {
+    user.setConvoPrefs(commInit ? { commPersona: key } : { persona: key })
   }
-
-  // Phong cách lời phê — nhớ lần chọn gần nhất (lưu local).
-  const persona = ref(user.convoPrefs.persona || 'cotnha')
   function setPersona(key) {
     persona.value = key
-    user.setConvoPrefs({ persona: key })
+    savePersonaPref(key)
   }
 
   const speakable = canSpeak()
   const listenable = canListen()
   let recognizer = null
   let micStartedAt = 0 // mốc thời gian mic bật — đo số giây đã NÓI để tính streak nói
+  let micFirstSpeechAt = 0 // mốc bật ra tiếng đầu tiên — đo độ trễ phản hồi (latency)
+
+  // Khóa comm nhận diện qua fixedScenario -> bật thang đồng hồ trượt + đo trôi chảy.
+  const isComm = computed(() => !!props.context?.fixedScenario)
+  // "Communicate now, correct later" (Trục D): mặc định BẬT cho comm -> AI KHÔNG
+  // soi từng câu (evaluation: null), chỉ đối thoại; dồn toàn bộ chấm-sửa vào debrief
+  // cuối buổi. Người học giữ được dòng chảy + bớt lo âu. Tắt được để "vừa nói vừa soi".
+  const deferCorrection = ref(commInit)
+  function toggleDeferCorrection() {
+    deferCorrection.value = !deferCorrection.value
+  }
+  // —— Trôi chảy (Trục B): gom WPM + độ trễ mỗi lượt nói bằng mic ——
+  const fluencySamples = ref([]) // [{ wpm, latency }]
+  const fluency = computed(() => summarizeFluency(fluencySamples.value))
 
   // Bộ từ của bài (để gợi ý người học dùng trong câu trả lời).
   const vocab = computed(() => (props.context?.vocab || []).filter(Boolean))
 
   // —— Tình huống bất ngờ (Surprise mode) ——
-  const unlockedRoleplay = computed(() => Number(props.context?.week || 0) >= ROLEPLAY_UNLOCK_WEEK)
+  // Khóa "Giao Tiếp Thực Chiến" truyền vào một KỊCH BẢN CỐ ĐỊNH của buổi
+  // (context.fixedScenario = { key, label, brief, twist… }): roleplay là trục mỗi
+  // buổi nên mở khóa ngay từ buổi 1 (không đợi Tuần 4) và tự vào vai đúng kịch bản
+  // thay vì bốc ngẫu nhiên. Khóa IELTS không truyền -> giữ nguyên Surprise mode cũ.
+  const fixedScenario = computed(() => props.context?.fixedScenario || null)
+  const unlockedRoleplay = computed(
+    () => !!fixedScenario.value || Number(props.context?.week || 0) >= ROLEPLAY_UNLOCK_WEEK,
+  )
   const roleplayOn = ref(false)
   const currentScenario = ref(null)
+
+  // —— Debrief cuối buổi (khóa comm): tổng kết theo rubric -> lưu chiến lợi phẩm ——
+  const debrief = ref(null) // { score, rubric[], errors[], upgrades[], summary }
+  const debriefLoading = ref(false)
+  const debriefError = ref('')
+  // Số lượt người học đã nói — cần ≥ 2 lượt mới cho tổng kết (kẻo chấm khi chưa có gì).
+  const userTurnCount = computed(() => messages.value.filter((m) => m.role === 'user').length)
+  // Chỉ hiện nút "Kết thúc & nhận xét" cho buổi có kịch bản CỐ ĐỊNH (khóa comm).
+  const debriefAvailable = computed(() => !!fixedScenario.value && roleplayOn.value && userTurnCount.value >= 2)
 
   // Ngữ cảnh gửi lên backend.
   const chatContext = computed(() => ({
@@ -107,6 +134,14 @@ export function useChatEngine(props) {
     exam: props.context?.exam || 'none',
     suggestWords: true,
     scenario: roleplayOn.value ? currentScenario.value?.brief : undefined,
+    // Bỏ soi từng lượt khi đang nhập vai comm -> AI trả evaluation: null (chấm ở debrief).
+    deferCorrection: roleplayOn.value && deferCorrection.value,
+    // Số phát âm khách quan của buổi (nếu có) -> debrief nhận xét "độ dễ hiểu".
+    pronScore: props.context?.pronScore,
+    confusions: props.context?.confusions,
+    // Số trôi chảy khách quan của buổi (nếu đã nói bằng mic) -> debrief nhận xét fluency.
+    wpm: fluency.value?.avgWpm,
+    latency: fluency.value?.avgLatency,
   }))
 
   // Câu mở đầu tĩnh (không tốn quota) — chỉ dùng cho chế độ luyện thường.
@@ -128,11 +163,16 @@ export function useChatEngine(props) {
   // (gọi ngay 1 lượt roleplay với lịch sử rỗng, giống quy tắc "evaluation: null"
   // của coach khi người học chưa viết gì).
   async function startRoleplaySession() {
-    currentScenario.value = currentScenario.value || SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
+    // Ưu tiên kịch bản CỐ ĐỊNH của buổi (khóa comm); nếu không có thì giữ cũ (random).
+    currentScenario.value =
+      fixedScenario.value || currentScenario.value || SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]
     messages.value = []
     input.value = ''
     error.value = ''
     retry.value = null
+    debrief.value = null
+    debriefError.value = ''
+    fluencySamples.value = []
     loading.value = true
     try {
       const { next } = await roleplayTurn({ messages: [], context: chatContext.value, persona: persona.value })
@@ -143,7 +183,6 @@ export function useChatEngine(props) {
         ui: reactive({}),
       })
       if (autoSpeak.value) speak(next?.message || '')
-      maybeAutoListen()
     } catch (e) {
       error.value = friendlyAiError(e).message
       retry.value = () => {
@@ -163,8 +202,18 @@ export function useChatEngine(props) {
     else initSession()
   }
 
-  onMounted(initSession)
-  onUnmounted(clearAnswerTimer)
+  // Buổi khóa comm có kịch bản cố định -> vào thẳng roleplay (roleplay là trục buổi).
+  // Buổi thường -> câu mở đầu tĩnh như cũ.
+  function startSession() {
+    if (fixedScenario.value) {
+      roleplayOn.value = true
+      startRoleplaySession()
+    } else {
+      initSession()
+    }
+  }
+
+  onMounted(startSession)
 
   // Lịch sử gọn để gửi backend: assistant -> message, user -> text.
   function historyFor(upto = messages.value.length) {
@@ -176,7 +225,6 @@ export function useChatEngine(props) {
   async function send() {
     const text = input.value.trim()
     if (!text || loading.value) return
-    clearAnswerTimer()
     error.value = ''
     retry.value = null
     const userEntry = reactive({ role: 'user', text, evaluation: null, persona: persona.value, evaluating: true })
@@ -198,6 +246,9 @@ export function useChatEngine(props) {
       })
       userEntry.evaluation = evaluation || null
       userEntry.evaluating = false
+      // Chế độ "chỉ trò chuyện" (comm): AI đáp lại đúng ý = tín hiệu GIAO TIẾP THÀNH
+      // CÔNG. Gắn cờ để hiện chip 🟢 "được hiểu" (khen giao tiếp, không khẳng định ngữ pháp).
+      userEntry.understood = isComm.value && roleplayOn.value && deferCorrection.value && !userEntry.evaluation
       const aiEntry = {
         role: 'assistant',
         message: next?.message || '…',
@@ -206,7 +257,6 @@ export function useChatEngine(props) {
       }
       messages.value.push(aiEntry)
       if (autoSpeak.value) speak(aiEntry.message)
-      maybeAutoListen()
       error.value = ''
       retry.value = null
     } catch (e) {
@@ -226,7 +276,7 @@ export function useChatEngine(props) {
       return
     }
     persona.value = key
-    user.setConvoPrefs({ persona: key })
+    savePersonaPref(key)
     const idx = messages.value.indexOf(userEntry)
     if (idx === -1) return
     userEntry.reEvaluating = true
@@ -333,20 +383,89 @@ export function useChatEngine(props) {
     }
   }
 
+  // —— Kết thúc buổi & nhận nhận xét (debrief) ——
+  // Gửi transcript + rubric của tình huống lên backend, nhận tổng kết. KHÔNG tự
+  // lưu vào store ở đây — component (CommDayView) nghe qua watch(debrief) rồi ghi
+  // 3 lỗi vào sổ lỗi + điểm rubric của buổi Boss, để engine giữ vai trò thuần.
+  async function runDebrief() {
+    if (debriefLoading.value || userTurnCount.value < 2) return
+    debriefLoading.value = true
+    debriefError.value = ''
+    try {
+      const history = historyFor()
+      const trimmed = history.length > DEBRIEF_MAX_TURNS ? history.slice(-DEBRIEF_MAX_TURNS) : history
+      const result = await debriefTurn({
+        messages: trimmed,
+        context: { ...chatContext.value, rubric: fixedScenario.value?.rubric || [] },
+        persona: persona.value,
+      })
+      // Đính kèm số khách quan của buổi để component lưu vào Tổng kết (Trục E).
+      debrief.value = {
+        ...normalizeDebrief(result),
+        wpm: fluency.value?.avgWpm ?? null,
+        pron: Number.isFinite(Number(props.context?.pronScore)) ? Number(props.context.pronScore) : null,
+      }
+    } catch (e) {
+      debriefError.value = friendlyAiError(e).message
+    } finally {
+      debriefLoading.value = false
+    }
+  }
+
+  // Chuẩn hóa payload debrief để component không phải phòng thủ từng field.
+  function normalizeDebrief(r) {
+    const clamp = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)))
+    return {
+      score: clamp(r?.score),
+      rubric: Array.isArray(r?.rubric)
+        ? r.rubric.map((x) => ({ criterion: String(x?.criterion || '').trim(), met: !!x?.met })).filter((x) => x.criterion)
+        : [],
+      errors: Array.isArray(r?.errors)
+        ? r.errors
+            .map((x) => ({ wrong: String(x?.wrong || '').trim(), right: String(x?.right || '').trim(), note: String(x?.note || '').trim() }))
+            .filter((x) => x.wrong && x.right)
+            .slice(0, 3)
+        : [],
+      upgrades: Array.isArray(r?.upgrades)
+        ? r.upgrades.map((x) => ({ en: String(x?.en || '').trim(), vi: String(x?.vi || '').trim() })).filter((x) => x.en).slice(0, 3)
+        : [],
+      intelligibility: String(r?.intelligibility || '').trim(),
+      fluency: String(r?.fluency || '').trim(),
+      confidenceTip: String(r?.confidenceTip || '').trim(),
+      summary: String(r?.summary || '').trim(),
+    }
+  }
+
+  // Lưu MỘT "cụm nâng cấp" (đã có sẵn nghĩa VI từ debrief -> không cần dịch lại) vào
+  // danh sách từ đã lưu, gom vào chủ đề comm để học lại qua Flashcard (SRS).
+  function saveUpgrade(en, vi) {
+    const s = String(en || '').trim()
+    if (!s) return
+    if (user.isWordSaved(s)) {
+      user.removeSavedWord(s)
+      flashToast('Đã bỏ cụm')
+      return
+    }
+    user.createTopic(COMM_SAVE_TOPIC) // idempotent — bỏ qua nếu đã có
+    const base = cardsFromTerms([s], 'saved')[0]
+    user.saveWord({ ...base, vi: String(vi || '').trim(), cat: 'Câu', kind: 'sentence', topic: COMM_SAVE_TOPIC })
+    flashToast('✓ Đã lưu vào ôn tập')
+  }
+
   function toggleMic() {
     if (!listenable) return
     if (listening.value) {
-      clearAnswerTimer()
       recognizer?.stop()
       return
     }
     recognizer = createRecognizer({
       lang: 'en-US',
       onResult: ({ final, interim }) => {
+        // Mốc bật ra tiếng đầu tiên (để đo độ trễ phản hồi) — chỉ ghi 1 lần/lượt.
+        if (!micFirstSpeechAt && (final || interim)) micFirstSpeechAt = Date.now()
         input.value = final || interim
       },
       onError: (err) => {
-        clearAnswerTimer()
         error.value =
           err === 'not-allowed'
             ? 'Trình duyệt chưa cho phép dùng micro. Hãy bật quyền micro rồi thử lại.'
@@ -354,10 +473,21 @@ export function useChatEngine(props) {
         listening.value = false
       },
       onEnd: (finalText) => {
-        clearAnswerTimer()
         listening.value = false
-        if (micStartedAt) user.logSpeakingSeconds((Date.now() - micStartedAt) / 1000)
+        const now = Date.now()
+        if (micStartedAt) user.logSpeakingSeconds((now - micStartedAt) / 1000)
+        // Ghi 1 mẫu trôi chảy: WPM = số từ / số giây NÓI (từ lúc bật tiếng đến khi
+        // dừng); độ trễ = từ lúc mic bật đến khi bật tiếng. Bỏ mẫu quá ngắn (nhiễu).
+        if (isComm.value && micFirstSpeechAt) {
+          const words = countWords(finalText)
+          const speakSec = (now - micFirstSpeechAt) / 1000
+          const wpm = computeWpm(words, speakSec)
+          if (words >= 3 && speakSec >= 1 && wpm > 0) {
+            fluencySamples.value.push({ wpm, latency: (micFirstSpeechAt - micStartedAt) / 1000 })
+          }
+        }
         micStartedAt = 0
+        micFirstSpeechAt = 0
         if (finalText) send()
       },
     })
@@ -365,31 +495,8 @@ export function useChatEngine(props) {
     error.value = ''
     listening.value = true
     micStartedAt = Date.now()
+    micFirstSpeechAt = 0
     recognizer.start()
-  }
-
-  // Sau mỗi lượt AI, tự bật mic + đếm ngược 10s (voice-first). Người học vẫn có
-  // thể tắt mic giữa chừng hoặc gõ chữ — đây chỉ là mặc định để ép phản xạ nói ngay.
-  function maybeAutoListen() {
-    if (!voiceFirst.value || !listenable || listening.value) return
-    toggleMic()
-    if (!listening.value) return
-    answerTimer.value = ANSWER_SECONDS
-    answerTimerId = setInterval(() => {
-      answerTimer.value -= 1
-      if (answerTimer.value <= 0) {
-        clearAnswerTimer()
-        if (listening.value) recognizer?.stop()
-      }
-    }, 1000)
-  }
-
-  function toggleVoiceFirst() {
-    voiceFirst.value = !voiceFirst.value
-    if (!voiceFirst.value) {
-      clearAnswerTimer()
-      if (listening.value) recognizer?.stop()
-    }
   }
 
   function reset() {
@@ -397,17 +504,18 @@ export function useChatEngine(props) {
       startRoleplaySession()
     } else {
       initSession()
-      maybeAutoListen()
     }
   }
 
-  // Đổi bài học thì làm mới phiên (tắt luôn Surprise mode — kịch bản cũ không còn hợp).
+  // Đổi bài học thì làm mới phiên. Buổi comm: nạp lại kịch bản CỐ ĐỊNH của buổi mới
+  // (currentScenario=null -> startRoleplaySession lấy fixedScenario mới). Buổi thường:
+  // tắt Surprise mode và hiện câu mở đầu tĩnh như cũ.
   watch(
     () => props.context?.title,
     () => {
       roleplayOn.value = false
       currentScenario.value = null
-      initSession()
+      startSession()
     },
   )
 
@@ -420,8 +528,7 @@ export function useChatEngine(props) {
     autoSpeak,
     listening,
     savedToast,
-    voiceFirst,
-    answerTimer,
+    fluency,
     persona,
     setPersona,
     speakable,
@@ -429,6 +536,14 @@ export function useChatEngine(props) {
     unlockedRoleplay,
     roleplayOn,
     currentScenario,
+    deferCorrection,
+    toggleDeferCorrection,
+    debrief,
+    debriefLoading,
+    debriefError,
+    debriefAvailable,
+    runDebrief,
+    saveUpgrade,
     toggleRoleplay,
     send,
     changePersona,
@@ -441,7 +556,6 @@ export function useChatEngine(props) {
     savingSentence,
     saveSentence,
     toggleMic,
-    toggleVoiceFirst,
     reset,
   }
 }

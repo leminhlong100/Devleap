@@ -1,10 +1,10 @@
 /**
- * Chỉ mục tìm kiếm toàn cục — gom toàn bộ nội dung Java + IELTS thành một mảng
- * phẳng các "entry" để tra cứu nhanh ở client. Với ~115 ngày học, không có
- * search thì gần như không điều hướng được.
+ * Chỉ mục tìm kiếm toàn cục — gom toàn bộ nội dung Java + IELTS + Giao Tiếp Thực
+ * Chiến thành một mảng phẳng các "entry" để tra cứu nhanh ở client. Với ~170 ngày
+ * học, không có search thì gần như không điều hướng được.
  *
  * Mỗi entry thuộc một trong ba loại:
- *   lesson — một ngày/buổi học (điều hướng tới java-day / ielts-day)
+ *   lesson — một ngày/buổi học (điều hướng tới java-day / ielts-day / comm-day)
  *   vocab  — một từ vựng tiếng Anh (gộp trùng theo từng khóa)
  *   term   — thuật ngữ / chủ đề (câu hỏi phỏng vấn Java, ngữ pháp & chủ đề IELTS)
  *
@@ -12,6 +12,7 @@
  */
 import { javaWeeksData } from './course'
 import { ieltsWeeksData } from './courseIelts'
+import { commWeeksData } from './courseComm'
 
 /** Bỏ dấu tiếng Việt + thường hóa để so khớp không phân biệt dấu/hoa-thường. */
 export function normalize(str) {
@@ -205,6 +206,64 @@ export function buildSearchIndex() {
       })
       itTermSeen.set(key, e)
       entries.push(e)
+    }
+  }
+
+  // -------------------- GIAO TIẾP THỰC CHIẾN (comm) --------------------
+  // Cùng khuôn IELTS (parseCommWeek bọc parseIeltsWeek) + section 🎭 tình huống
+  // roleplay -> mỗi tình huống thành một "term" điều hướng tới đúng buổi.
+  for (const week of commWeeksData) {
+    const wctx = `Giao tiếp · Tuần ${week.num}`
+
+    week.days.forEach((day, idx) => {
+      const rhythm = week.rhythm[idx] || null
+      const title = clean(rhythm?.task?.replace(/\s*\.?\s*$/, '')) || `Buổi ${day.n}`
+      const route = { name: 'comm-day', params: { week: week.num, day: day.n } }
+      const snippet = clip([rhythm?.product, ...(day.checklist || [])].filter(Boolean).map(clean).join(' · '))
+
+      entries.push(
+        finalize({
+          id: `comm-l-${week.num}-${day.n}`,
+          type: 'lesson',
+          course: 'comm',
+          courseLabel: 'Giao tiếp',
+          icon: '🎭',
+          title,
+          subtitle: `${wctx} · Buổi ${day.n} · ${clean(week.title)}`,
+          snippet,
+          week: week.num,
+          day: day.n,
+          route,
+          keywords: [
+            clean(week.title),
+            clean(week.subtitle),
+            clean(rhythm?.product),
+            ...(day.checklist || []).map(clean),
+          ],
+        }),
+      )
+    })
+
+    // Tình huống roleplay = thuật ngữ/chủ đề của khóa comm -> tới đúng buổi N.D.
+    for (const sc of week.scenarios || []) {
+      const title = clean(sc.title)
+      if (!title) continue
+      entries.push(
+        finalize({
+          id: `comm-s-${week.num}-${sc.day}`,
+          type: 'term',
+          course: 'comm',
+          courseLabel: 'Giao tiếp',
+          icon: '🎭',
+          title,
+          subtitle: `Tình huống ${sc.id} · ${wctx}`,
+          snippet: clip(clean([sc.setting, ...(sc.tasks || [])].filter(Boolean).join(' · '))),
+          week: week.num,
+          day: sc.day,
+          route: { name: 'comm-day', params: { week: week.num, day: sc.day } },
+          keywords: [clean(week.title), clean(sc.role)],
+        }),
+      )
     }
   }
 

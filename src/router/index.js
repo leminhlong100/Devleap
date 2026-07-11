@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { routeGuardDecision } from '@/router/guard'
 import { setRouteDirection } from '@/composables/useRouteTransition'
 
 const routes = [
@@ -18,6 +19,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // Khóa "Java Phỏng Vấn Cấp Tốc" — ôn 2 tuần + AI mock interview + coding chạy thật
+  { path: '/courses/java/prep', name: 'java-prep', component: () => import('@/views/JavaPrepView.vue'), meta: { requiresAuth: true } },
+  // Phòng phỏng vấn thử (AI hỏi + chấm từng câu)
+  { path: '/courses/java/prep/mock', name: 'java-mock', component: () => import('@/views/MockInterviewView.vue'), meta: { requiresAuth: true } },
+
   // Khóa IELTS — lộ trình 8 tuần
   { path: '/courses/ielts', name: 'ielts', component: () => import('@/views/IeltsCourseView.vue'), meta: { requiresAuth: true } },
   {
@@ -28,6 +34,18 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // Khóa Giao Tiếp Thực Chiến — roleplay AI voice-first, 8 tuần
+  { path: '/courses/comm', name: 'comm', component: () => import('@/views/CommCourseView.vue'), meta: { requiresAuth: true } },
+  {
+    path: '/courses/comm/week/:week/day/:day',
+    name: 'comm-day',
+    component: () => import('@/views/CommDayView.vue'),
+    props: true,
+    meta: { requiresAuth: true },
+  },
+  // Trang tổng kết cuối khóa comm: bảng điểm 8 Boss + vốn SRS + 3 mốc ghi âm + huy hiệu
+  { path: '/courses/comm/summary', name: 'comm-summary', component: () => import('@/views/CommSummaryView.vue'), meta: { requiresAuth: true } },
+
   // So sánh mốc ghi âm (Đầu/Giữa/Cuối khóa) + nhật ký Mission + huy hiệu real-life
   { path: '/milestones', name: 'milestones', component: () => import('@/views/MilestonesView.vue'), meta: { requiresAuth: true } },
 
@@ -36,7 +54,7 @@ const routes = [
 
   // Bài kiểm tra cuối tuần / cuối khóa (lưu điểm) — scope: "week-N" | "final"
   {
-    path: '/courses/:course(java|ielts)/test/:scope',
+    path: '/courses/:course(java|ielts|comm)/test/:scope',
     name: 'assessment',
     component: () => import('@/views/AssessmentView.vue'),
     props: true,
@@ -97,22 +115,9 @@ function waitForAuthReady(auth) {
 // Chặn vào khóa học/quản trị khi chưa đăng nhập (hoặc không đủ quyền).
 router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth && !to.meta?.requiresAdmin) return true
-
   const auth = useAuthStore()
   await waitForAuthReady(auth)
-
-  // Khu quản trị: bắt buộc có cloud + đăng nhập + là admin.
-  if (to.meta?.requiresAdmin) {
-    if (!auth.cloudEnabled) return { name: 'home' }
-    if (!auth.isAuthed) return { name: 'home', query: { login: 'required', redirect: to.fullPath } }
-    return auth.isAdmin ? true : { name: 'home' }
-  }
-
-  // Chưa cấu hình Supabase → không thể đăng nhập, cho qua ở chế độ khách.
-  if (!auth.cloudEnabled) return true
-  if (auth.isAuthed) return true
-
-  return { name: 'home', query: { login: 'required', redirect: to.fullPath } }
+  return routeGuardDecision(to, auth)
 })
 
 // Ghi hướng chuyển trang (đi sâu/lùi) sau khi điều hướng đã xác nhận — App.vue

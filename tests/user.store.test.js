@@ -1062,3 +1062,45 @@ describe('user store — leaderboard tuần (Bước 5.1)', () => {
     expect(s.leaderboardStatus).toBe('error')
   })
 })
+
+describe('user store — toggleReviewQuestion (đánh dấu câu hỏi Java cần ôn lại)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('đánh dấu rồi bỏ đánh dấu một câu hỏi', () => {
+    const s = useUserStore()
+    expect(s.javaPrep.reviewQuestions).toEqual([])
+    s.toggleReviewQuestion('jpa-1')
+    expect(s.javaPrep.reviewQuestions).toEqual(['jpa-1'])
+    s.toggleReviewQuestion('jpa-1')
+    expect(s.javaPrep.reviewQuestions).toEqual([])
+  })
+
+  it('đánh dấu nhiều câu, giữ nguyên topicScores/bestScore đã có', () => {
+    const s = useUserStore()
+    s.saveInterviewResult({ overall: 80, byTopic: [{ topic: 'jpa', score: 80 }] })
+    s.toggleReviewQuestion('jpa-1')
+    s.toggleReviewQuestion('con-2')
+    expect(s.javaPrep.reviewQuestions.sort()).toEqual(['con-2', 'jpa-1'])
+    expect(s.javaPrep.bestScore).toBe(80)
+    expect(s.javaPrep.topicScores.jpa).toBe(80)
+  })
+
+  it('id rỗng/không hợp lệ thì bỏ qua', () => {
+    const s = useUserStore()
+    s.toggleReviewQuestion('')
+    s.toggleReviewQuestion(null)
+    expect(s.javaPrep.reviewQuestions).toEqual([])
+  })
+
+  it('ghi xuống localStorage và nạp lại được qua loadJavaPrep', () => {
+    const s = useUserStore()
+    s.toggleReviewQuestion('spr-16')
+    const s2 = useUserStore()
+    s2.javaPrep = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [] }
+    s2.loadJavaPrep()
+    expect(s2.javaPrep.reviewQuestions).toEqual(['spr-16'])
+  })
+})
