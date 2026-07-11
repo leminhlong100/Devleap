@@ -1,24 +1,42 @@
 import { defineStore } from 'pinia'
-import { fetchSiteConfig, saveSiteConfig } from '@/lib/siteConfigRepo'
+import { fetchSiteConfig, saveSiteConfig, fetchMyCourseAccess } from '@/lib/siteConfigRepo'
 
 /**
- * Cấu hình site (lớp phủ DB) — Đợt 3, docs/KE_HOACH_TRANG_ADMIN.md mục 4.2.
+ * Cấu hình site (lớp phủ DB) — Đợt 3, docs/KE_HOACH_TRANG_ADMIN.md mục 4.2 & 5.
  *
- * Nạp 1 lần lúc khởi động (main.js) để: bật/tắt hiển thị từng khóa và hiện banner
- * thông báo/bảo trì trên trang. Nguồn ghi là /admin/content (qua siteConfigRepo,
- * RLS `is_admin()`); mọi client khác chỉ đọc.
+ * Nạp 1 lần lúc khởi động (main.js) để: đặt chế độ hiển thị từng khóa và hiện
+ * banner thông báo/bảo trì trên trang. Nguồn ghi là /admin/content (qua
+ * siteConfigRepo, RLS `is_admin()`); mọi client khác chỉ đọc.
  *
- * An toàn khi CHƯA cấu hình cloud hoặc lỗi mạng: giữ MẶC ĐỊNH (mọi khóa bật,
+ * Mỗi khóa có MỘT trong ba chế độ (Đợt 5 — khóa riêng theo người):
+ *   - 'public'     : mọi người thấy & vào được (mặc định).
+ *   - 'hidden'     : ẩn với tất cả.
+ *   - 'restricted' : chỉ admin + những người được cấp quyền (bảng course_access).
+ *
+ * An toàn khi CHƯA cấu hình cloud hoặc lỗi mạng: giữ MẶC ĐỊNH (mọi khóa 'public',
  * banner tắt) để app không bao giờ "khóa nhầm" nội dung của người học.
  */
 
-// Các khóa có thể bật/tắt (khớp id trong data/courses.js).
+// Các khóa có thể cấu hình chế độ (khớp id trong data/courses.js).
 export const CONFIGURABLE_COURSES = ['java', 'java-prep', 'ielts', 'comm']
+
+/** Các chế độ hiển thị hợp lệ của một khóa. */
+export const COURSE_MODES = ['public', 'hidden', 'restricted']
+
+/**
+ * Chuẩn hóa 1 giá trị chế độ khóa (tương thích ngược với dữ liệu cũ dạng
+ * boolean: `true` -> 'public', `false` -> 'hidden'). Giá trị lạ -> 'public'.
+ */
+export function normalizeMode(v) {
+  if (v === false) return 'hidden'
+  if (v === true || v == null) return 'public'
+  return COURSE_MODES.includes(v) ? v : 'public'
+}
 
 /** Cấu hình mặc định — dùng khi thiếu dòng DB / chưa cấu hình cloud. */
 export function defaultConfig() {
   return {
-    courses: Object.fromEntries(CONFIGURABLE_COURSES.map((id) => [id, true])),
+    courses: Object.fromEntries(CONFIGURABLE_COURSES.map((id) => [id, 'public'])),
     banner: { enabled: false, text: '', tone: 'info' }, // tone: 'info' | 'warn'
   }
 }
@@ -28,7 +46,7 @@ export function normalizeConfig(raw = {}) {
   const base = defaultConfig()
   raw = raw && typeof raw === 'object' ? raw : {}
   const c = raw.courses && typeof raw.courses === 'object' ? raw.courses : {}
-  for (const id of CONFIGURABLE_COURSES) if (id in c) base.courses[id] = c[id] !== false
+  for (const id of CONFIGURABLE_COURSES) if (id in c) base.courses[id] = normalizeMode(c[id])
   const b = raw.banner && typeof raw.banner === 'object' ? raw.banner : {}
   base.banner = {
     enabled: !!b.enabled,
@@ -41,12 +59,29 @@ export function normalizeConfig(raw = {}) {
 export const useSiteConfigStore = defineStore('siteConfig', {
   state: () => ({
     ...defaultConfig(),
-    loaded: false, // đã cố nạp từ DB xong chưa (thành công hay lỗi đều bật)
+    // Danh sách id khóa 'restricted' mà NGƯỜI DÙNG HIỆN TẠI được cấp quyền vào
+    // (đọc từ bảng course_access — RLS chỉ trả dòng của chính mình).
+    myAccess: [],
+    loaded: false, // đã cố nạp cấu hình chế độ khóa từ DB xong chưa (thành/bại đều bật)
   }),
 
   getters: {
-    /** Khóa có được bật hiển thị không (mặc định bật nếu không rõ). */
-    courseEnabled: (s) => (id) => s.courses[id] !== false,
+    /** Chế độ hiển thị của một khóa ('public' | 'hidden' | 'restricted'). */
+    courseMode: (s) => (id) => normalizeMode(s.courses[id]),
+    /**
+     * Người dùng có được thấy/vào khóa này không.
+     *  - 'public'     : luôn được.
+     *  - 'hidden'     : không bao giờ.
+     *  - 'restricted' : chỉ admin hoặc người có trong danh sách được cấp.
+     * @param {string} id      id khóa
+     * @param {boolean} isAdmin admin luôn xem được mọi khóa (kiểm tra ở call site)
+     */
+    courseEnabled: (s) => (id, isAdmin = false) => {
+      const mode = normalizeMode(s.courses[id])
+      if (mode === 'hidden') return false
+      if (mode === 'restricted') return !!isAdmin || s.myAccess.includes(id)
+      return true
+    },
     /** Banner đang hiển thị (enabled + có chữ) hay không. */
     bannerActive: (s) => s.banner.enabled && !!s.banner.text.trim(),
   },
@@ -56,7 +91,9 @@ export const useSiteConfigStore = defineStore('siteConfig', {
     async load() {
       try {
         const raw = await fetchSiteConfig()
-        Object.assign(this, normalizeConfig(raw))
+        const cfg = normalizeConfig(raw)
+        this.courses = cfg.courses
+        this.banner = cfg.banner
       } catch {
         /* giữ mặc định */
       } finally {
@@ -64,9 +101,24 @@ export const useSiteConfigStore = defineStore('siteConfig', {
       }
     },
 
-    /** (Admin) Lưu bật/tắt các khóa rồi áp ngay vào state. */
+    /** Nạp danh sách khóa 'restricted' mà user hiện tại được cấp. Nuốt lỗi → rỗng. */
+    async loadMyAccess() {
+      try {
+        this.myAccess = await fetchMyCourseAccess()
+      } catch {
+        this.myAccess = []
+      }
+    },
+
+    /** Xóa quyền cục bộ khi đăng xuất/chuyển sang khách. */
+    clearMyAccess() {
+      this.myAccess = []
+    },
+
+    /** (Admin) Lưu chế độ hiển thị các khóa rồi áp ngay vào state. */
     async setCourses(courses) {
-      const value = { ...this.courses, ...courses }
+      const value = { ...this.courses }
+      for (const [id, mode] of Object.entries(courses)) value[id] = normalizeMode(mode)
       await saveSiteConfig('courses', value)
       this.courses = value
     },

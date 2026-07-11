@@ -121,3 +121,20 @@ export function resetProgress(userId) {
 export function deleteUser(userId) {
   return callAdmin('deleteUser', { userId })
 }
+
+// ——————————————————————— Đợt 5: Quyền vào khóa "giới hạn" ———————————————————————
+
+/** Danh sách người được cấp quyền vào 1 khóa 'restricted' → { courseId, users, count }. */
+export function listCourseAccess(courseId) {
+  return callAdmin('listCourseAccess', { courseId })
+}
+
+/** Cấp cho 1 user quyền vào 1 khóa 'restricted'. */
+export function grantCourseAccess(userId, courseId) {
+  return callAdmin('grantCourseAccess', { userId, courseId })
+}
+
+/** Thu quyền vào 1 khóa 'restricted' của 1 user. */
+export function revokeCourseAccess(userId, courseId) {
+  return callAdmin('revokeCourseAccess', { userId, courseId })
+}

@@ -29,3 +29,16 @@ export async function saveSiteConfig(key, value) {
     .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
   if (error) throw error
 }
+
+/**
+ * Đọc các khóa 'restricted' mà NGƯỜI DÙNG HIỆN TẠI được cấp quyền vào → mảng
+ * course_id. RLS `course_access` chỉ trả dòng của chính mình, nên client thường
+ * chỉ thấy quyền của mình (không lộ ai khác được cấp). Rỗng nếu chưa đăng nhập /
+ * chưa cấu hình cloud.
+ */
+export async function fetchMyCourseAccess() {
+  if (!isCloudEnabled) return []
+  const { data, error } = await supabase.from('course_access').select('course_id')
+  if (error) throw error
+  return (data || []).map((r) => r.course_id)
+}

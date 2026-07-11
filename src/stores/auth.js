@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { supabase, isCloudEnabled } from '@/lib/supabase'
 import { useUserStore } from '@/stores/user'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { flushPendingUploads } from '@/lib/recordingSync'
 
 /**
@@ -51,6 +52,7 @@ export const useAuthStore = defineStore('auth', {
     /** Đồng bộ trạng thái store theo session hiện tại. */
     async onSession(session) {
       const user = useUserStore()
+      const site = useSiteConfigStore()
       if (session?.user) {
         const u = session.user
         this.user = {
@@ -61,10 +63,14 @@ export const useAuthStore = defineStore('auth', {
         }
         await user.pullAndMerge(u.id)
         await this.refreshAdmin(u.id)
+        // Nạp quyền vào các khóa 'restricted' của chính user (cho router guard +
+        // thư viện khóa). Đợi xong trước khi báo `ready` để guard quyết đúng.
+        await site.loadMyAccess()
         flushPendingUploads(u.id)
       } else {
         this.user = null
         this.isAdmin = false
+        site.clearMyAccess()
         user.detachCloud()
       }
     },

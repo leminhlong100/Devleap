@@ -129,7 +129,7 @@ router.beforeEach(async (to) => {
   // trong lúc còn đang nạp (mặc định mọi khóa bật).
   const site = useSiteConfigStore()
   const courseId = courseIdForRoute(to)
-  if (courseId && site.loaded && !site.courseEnabled(courseId)) {
+  if (courseId && site.loaded && !site.courseEnabled(courseId, auth.isAdmin)) {
     return { name: 'courses', query: { disabled: courseId } }
   }
   return true

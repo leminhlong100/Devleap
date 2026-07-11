@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { courses } from '@/data/courses'
 import { computeJavaProgress } from '@/data/course'
@@ -10,12 +11,14 @@ import { computeIeltsProgress } from '@/data/courseIelts'
 const route = useRoute()
 const router = useRouter()
 const user = useUserStore()
+const auth = useAuthStore()
 const site = useSiteConfigStore()
 const filters = ['Tất cả', '💻 Lập trình', '🗣️ Tiếng Anh']
 const active = ref('Tất cả')
 
-// Ẩn khóa bị admin tắt (lớp phủ site — Đợt 3), rồi lọc theo bộ lọc danh mục.
-const visible = computed(() => courses.filter((c) => site.courseEnabled(c.id)))
+// Ẩn khóa bị admin ẩn/giới hạn (lớp phủ site), rồi lọc theo bộ lọc danh mục.
+// Admin luôn thấy mọi khóa; khóa 'restricted' chỉ hiện với người được cấp quyền.
+const visible = computed(() => courses.filter((c) => site.courseEnabled(c.id, auth.isAdmin)))
 const shown = computed(() =>
   active.value === 'Tất cả' ? visible.value : visible.value.filter((c) => c.category === active.value),
 )

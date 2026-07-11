@@ -263,6 +263,31 @@ create policy "site_config_delete_admin"
   on public.site_config for delete
   using (public.is_admin());
 
+-- ----------------------------------------------------------------------------
+-- Quyền vào khóa "giới hạn" theo TỪNG NGƯỜI (Đợt 5 — khóa riêng).
+-- Khi một khóa để chế độ 'restricted' trong site_config, chỉ admin + những
+-- người có dòng ở đây mới thấy & vào được khóa đó. Chỉ admin ghi (qua function
+-- `admin` service_role); mỗi người chỉ đọc dòng của CHÍNH MÌNH.
+-- ----------------------------------------------------------------------------
+create table if not exists public.course_access (
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  course_id  text not null,
+  granted_at timestamptz not null default now(),
+  primary key (user_id, course_id)
+);
+
+alter table public.course_access enable row level security;
+
+-- Mỗi user chỉ đọc dòng của chính mình (đủ để biết "tôi được vào khóa nào").
+-- KHÔNG có policy insert/update/delete -> client thường không bao giờ ghi được;
+-- chỉ function `admin` (service_role, bypass RLS) cấp/thu quyền.
+drop policy if exists "course_access_select_own" on public.course_access;
+create policy "course_access_select_own"
+  on public.course_access for select
+  using (auth.uid() = user_id);
+
+create index if not exists course_access_course_idx on public.course_access (course_id);
+
 -- ============================================================================
 -- Storage: bucket ghi âm mốc (VoiceRecorder / MilestonesView) — sync đa thiết bị
 -- Đường dẫn mỗi file: recordings/{user_id}/{recId-đã-escape}.webm

@@ -274,7 +274,26 @@ Mỗi module mới = 1 phần tử trong `adminModules.js` + 1 route con trong
       (`clearLeaderboardName`) có audit. KHÔNG cần migration mới (dùng `recordings`/
       `progress`/`admin_audit` sẵn có). Test: `tests/adminModeration.test.js` (13 ca).)
 
+- [x] Đợt 5 — Khóa riêng theo người (course_access) ✅ (Mỗi khóa có **3 chế độ**
+      thay công tắc bật/tắt: `public` / `hidden` / `restricted`. Chế độ lưu ở
+      `site_config.courses` (id→chuỗi chế độ; `normalizeMode` tương thích ngược
+      boolean cũ: true→public, false→hidden). Khóa `restricted` chỉ admin + người
+      có dòng trong bảng mới **`course_access`** (user_id, course_id) mới thấy/vào.
+      RLS: mỗi người chỉ đọc dòng của mình; ghi CHỈ qua function `admin` service_role
+      (như bảng `admins`). Actions mới ở `_adminActions.js`: `listCourseAccess` /
+      `grantCourseAccess` / `revokeCourseAccess` (đều audit) + `getUserDetail` trả
+      thêm `courseAccess`. Wrapper `adminApi.js` tương ứng. Enforce: store nạp
+      `myAccess` (khóa restricted mình được cấp) trong `auth.onSession` trước khi
+      `ready`; getter `courseEnabled(id, isAdmin)` dùng chung ở router guard +
+      `CoursesView`. Quản lý ở CẢ HAI nơi: `AdminContentView` (segmented 3 chế độ +
+      ô tìm/cấp theo từng khóa restricted) và `AdminAccountsView` (checkbox khóa
+      restricted trong drawer chi tiết). ⚠️ **Giới hạn thật**: nội dung .md nằm sẵn
+      trong bundle client → đây là cổng HIỂN THỊ/TRUY CẬP, không phải mã hóa nội
+      dung. Test: `siteConfig` (normalizeMode + chế độ), `adminActions`
+      (list/grant/revoke + requireCourseId + courseAccess).)
+
 > Ghi chú: kế hoạch tự chứa. Bắt đầu **bắt buộc từ Đợt 0** rồi tới Đợt 1.
 >
-> **TOÀN BỘ 5 ĐỢT (0–4) ĐÃ XONG** (2026-07-11). Cần chạy migration mới của Đợt 3
-> (`site_config` trong `supabase/schema.sql`) để bật/tắt khóa & banner lưu được.
+> **TOÀN BỘ 6 ĐỢT (0–5) ĐÃ XONG** (Đợt 0–4: 2026-07-11; Đợt 5: 2026-07-11). Cần
+> chạy migration mới trong `supabase/schema.sql`: Đợt 3 (`site_config`) và Đợt 5
+> (`course_access`) để lưu chế độ khóa + quyền theo người.

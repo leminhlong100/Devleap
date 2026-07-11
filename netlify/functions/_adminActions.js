@@ -53,8 +53,11 @@ export function buildUserList(authUsers = [], progressRows = [], adminIds = []) 
   })
 }
 
-/** Bóc tách 1 dòng progress thành số liệu dễ đọc cho panel chi tiết. */
-export function buildUserDetail(user, progressRow, isAdmin) {
+/**
+ * Bóc tách 1 dòng progress thành số liệu dễ đọc cho panel chi tiết.
+ * @param {Array<string>} courseAccess id các khóa 'restricted' user được cấp quyền.
+ */
+export function buildUserDetail(user, progressRow, isAdmin, courseAccess = []) {
   const p = progressRow || {}
   const c = p.completed || {}
   return {
@@ -64,6 +67,7 @@ export function buildUserDetail(user, progressRow, isAdmin) {
     createdAt: user.created_at || null,
     lastSignInAt: user.last_sign_in_at || null,
     isAdmin: !!isAdmin,
+    courseAccess: Array.isArray(courseAccess) ? courseAccess : [],
     hasProgress: !!progressRow,
     xp: p.xp || 0,
     weekXp: p.week_xp || 0,
@@ -90,6 +94,13 @@ export function buildUserDetail(user, progressRow, isAdmin) {
 export function requireUserId(payload) {
   const id = typeof payload?.userId === 'string' ? payload.userId.trim() : ''
   if (!id) throw new AdminAuthError('Thiếu userId.', 'bad_request', 400)
+  return id
+}
+
+/** Lấy & kiểm tra courseId hợp lệ từ payload; ném 400 nếu thiếu. */
+export function requireCourseId(payload) {
+  const id = typeof payload?.courseId === 'string' ? payload.courseId.trim() : ''
+  if (!id) throw new AdminAuthError('Thiếu courseId.', 'bad_request', 400)
   return id
 }
 
@@ -167,12 +178,14 @@ export async function actionGetUserDetail(service, payload) {
   const { data: userData, error: userErr } = await service.auth.admin.getUserById(userId)
   if (userErr || !userData?.user)
     throw new AdminAuthError('Không tìm thấy người dùng.', 'not_found', 404)
-  const [progressRes, adminRes] = await Promise.all([
+  const [progressRes, adminRes, accessRes] = await Promise.all([
     service.from('progress').select('*').eq('user_id', userId).maybeSingle(),
     service.from('admins').select('user_id').eq('user_id', userId).maybeSingle(),
+    service.from('course_access').select('course_id').eq('user_id', userId),
   ])
   if (progressRes.error) throw new AdminAuthError('Không đọc được tiến độ.', 'upstream', 502)
-  return { user: buildUserDetail(userData.user, progressRes.data, !!adminRes.data) }
+  const access = (accessRes.data || []).map((r) => r.course_id)
+  return { user: buildUserDetail(userData.user, progressRes.data, !!adminRes.data, access) }
 }
 
 /** action `setAdmin`: cấp / thu quyền admin (có chốt chặn + audit). */
@@ -247,4 +260,67 @@ export async function actionDeleteUser(service, admin, payload) {
     detail: { hadProgress: !!old, recordings, snapshot: old || null },
   })
   return { ok: true, userId }
+}
+
+// ————————————————————————————————————————————————————————————————
+//  Đợt 5 — Quyền vào khóa "giới hạn" theo từng người (course_access)
+// ————————————————————————————————————————————————————————————————
+
+/**
+ * action `listCourseAccess`: danh sách người đang được cấp quyền vào 1 khóa.
+ * Đọc course_access theo course_id rồi ghép với auth.users để có email/tên.
+ */
+export async function actionListCourseAccess(service, payload) {
+  const courseId = requireCourseId(payload)
+  const { data: rows, error } = await service
+    .from('course_access')
+    .select('user_id, granted_at')
+    .eq('course_id', courseId)
+  if (error) throw new AdminAuthError('Không đọc được danh sách quyền khóa.', 'upstream', 502)
+  const grantedAt = new Map((rows || []).map((r) => [r.user_id, r.granted_at]))
+  const authUsers = await listAllAuthUsers(service)
+  const users = authUsers
+    .filter((u) => grantedAt.has(u.id))
+    .map((u) => ({
+      id: u.id,
+      email: u.email || '',
+      name: displayName(u),
+      grantedAt: grantedAt.get(u.id) || null,
+    }))
+  return { courseId, users, count: users.length }
+}
+
+/** action `grantCourseAccess`: cấp cho 1 user quyền vào 1 khóa (idempotent) + audit. */
+export async function actionGrantCourseAccess(service, admin, payload) {
+  const userId = requireUserId(payload)
+  const courseId = requireCourseId(payload)
+  const { error } = await service
+    .from('course_access')
+    .upsert({ user_id: userId, course_id: courseId }, { onConflict: 'user_id,course_id' })
+  if (error) throw new AdminAuthError('Không cấp được quyền vào khóa.', 'upstream', 502)
+  await logAudit(service, {
+    actorId: admin.userId,
+    action: 'grantCourseAccess',
+    targetId: userId,
+    detail: { courseId },
+  })
+  return { ok: true, userId, courseId }
+}
+
+/** action `revokeCourseAccess`: thu quyền vào 1 khóa của 1 user + audit. */
+export async function actionRevokeCourseAccess(service, admin, payload) {
+  const userId = requireUserId(payload)
+  const courseId = requireCourseId(payload)
+  const { error } = await service
+    .from('course_access')
+    .delete()
+    .match({ user_id: userId, course_id: courseId })
+  if (error) throw new AdminAuthError('Không thu được quyền vào khóa.', 'upstream', 502)
+  await logAudit(service, {
+    actorId: admin.userId,
+    action: 'revokeCourseAccess',
+    targetId: userId,
+    detail: { courseId },
+  })
+  return { ok: true, userId, courseId }
 }

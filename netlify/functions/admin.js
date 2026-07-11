@@ -19,6 +19,9 @@ import {
   actionSetAdmin,
   actionResetProgress,
   actionDeleteUser,
+  actionListCourseAccess,
+  actionGrantCourseAccess,
+  actionRevokeCourseAccess,
 } from './_adminActions.js'
 import {
   actionGetFeedbackStats,
@@ -97,6 +100,14 @@ async function handleAction(action, payload, admin) {
       return actionResetProgress(admin.service, admin, payload)
     case 'deleteUser':
       return actionDeleteUser(admin.service, admin, payload)
+
+    // Đợt 5 — Quyền vào khóa "giới hạn" theo từng người.
+    case 'listCourseAccess':
+      return actionListCourseAccess(admin.service, payload)
+    case 'grantCourseAccess':
+      return actionGrantCourseAccess(admin.service, admin, payload)
+    case 'revokeCourseAccess':
+      return actionRevokeCourseAccess(admin.service, admin, payload)
 
     // Đợt 4 — Kiểm duyệt & phản hồi.
     case 'getFeedbackStats':

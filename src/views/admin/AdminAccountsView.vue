@@ -1,12 +1,16 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { courses } from '@/data/courses'
 import {
   listUsers,
   getUserDetail,
   setAdmin as apiSetAdmin,
   resetProgress as apiResetProgress,
   deleteUser as apiDeleteUser,
+  grantCourseAccess,
+  revokeCourseAccess,
 } from '@/lib/adminApi'
 
 /**
@@ -17,7 +21,42 @@ import {
  * và chạy qua cổng đặc quyền `admin` (server tự xác minh admin + ghi audit).
  */
 const auth = useAuthStore()
+const site = useSiteConfigStore()
 const myId = computed(() => auth.user?.id || '')
+
+// Các khóa đang ở chế độ "Giới hạn" — chỉ những khóa này cần cấp quyền theo người.
+const restrictedCourses = computed(() =>
+  courses.filter((c) => site.courseMode(c.id) === 'restricted').map((c) => ({ id: c.id, name: c.name })),
+)
+// `${userId}:${courseId}` -> đang cấp/thu (chặn double-click).
+const busyAccess = reactive({})
+
+/** Bật/tắt quyền vào 1 khóa giới hạn cho user đang mở chi tiết. */
+async function toggleAccess(courseId, on) {
+  const u = detail.value
+  if (!u) return
+  const key = `${u.id}:${courseId}`
+  if (busyAccess[key]) return
+  busyAccess[key] = true
+  error.value = ''
+  okMsg.value = ''
+  try {
+    if (on) {
+      await grantCourseAccess(u.id, courseId)
+      if (!u.courseAccess.includes(courseId)) u.courseAccess.push(courseId)
+      okMsg.value = `Đã cấp quyền vào “${courseName(courseId)}” cho ${u.email}.`
+    } else {
+      await revokeCourseAccess(u.id, courseId)
+      u.courseAccess = u.courseAccess.filter((id) => id !== courseId)
+      okMsg.value = `Đã thu quyền vào “${courseName(courseId)}” của ${u.email}.`
+    }
+  } catch (e) {
+    error.value = e?.message || 'Không đổi được quyền vào khóa.'
+  } finally {
+    busyAccess[key] = false
+  }
+}
+const courseName = (id) => courses.find((c) => c.id === id)?.name || id
 
 // —— Danh sách ——
 const users = ref([])
@@ -312,6 +351,24 @@ const confirmText = computed(() => {
         <div class="lb muted pad-sm">
           Leaderboard: {{ detail.leaderboardOptIn ? `tham gia — “${detail.leaderboardName || 'ẩn danh'}”` : 'không tham gia' }}
         </div>
+
+        <template v-if="restrictedCourses.length">
+          <h3 class="sec">Quyền vào khóa Giới hạn</h3>
+          <div class="access-list">
+            <label v-for="c in restrictedCourses" :key="c.id" class="access-row">
+              <input
+                type="checkbox"
+                :checked="detail.courseAccess.includes(c.id)"
+                :disabled="busyAccess[`${detail.id}:${c.id}`]"
+                @change="toggleAccess(c.id, $event.target.checked)"
+              />
+              <span class="access-name">🔒 {{ c.name }}</span>
+              <span class="access-state" :class="{ on: detail.courseAccess.includes(c.id) }">
+                {{ detail.courseAccess.includes(c.id) ? 'Được vào' : 'Chưa cấp' }}
+              </span>
+            </label>
+          </div>
+        </template>
 
         <h3 class="sec">Hành động</h3>
         <div class="d-actions">
@@ -681,6 +738,44 @@ const confirmText = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.access-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.access-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 10px;
+  background: var(--surface-1);
+  cursor: pointer;
+}
+.access-row input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--purple);
+}
+.access-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.access-state {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--muted);
+  background: var(--chip-bg);
+  padding: 2px 9px;
+  border-radius: 99px;
+}
+.access-state.on {
+  color: var(--text-success);
+  background: rgba(0, 168, 111, 0.12);
 }
 
 /* —— Modal xác nhận —— */

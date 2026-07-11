@@ -3,6 +3,7 @@ import {
   buildUserList,
   buildUserDetail,
   requireUserId,
+  requireCourseId,
   assertCanSetAdmin,
   assertCanDelete,
   actionListUsers,
@@ -10,6 +11,9 @@ import {
   actionSetAdmin,
   actionResetProgress,
   actionDeleteUser,
+  actionListCourseAccess,
+  actionGrantCourseAccess,
+  actionRevokeCourseAccess,
 } from '../netlify/functions/_adminActions.js'
 
 /**
@@ -75,6 +79,11 @@ describe('buildUserDetail — bóc tách 1 user', () => {
     expect(d.xp).toBe(0)
     expect(d.completed).toEqual({ java: 0, ielts: 0, comm: 0 })
   })
+
+  it('courseAccess: mặc định [] khi thiếu, giữ nguyên khi truyền vào', () => {
+    expect(buildUserDetail(user, null, false).courseAccess).toEqual([])
+    expect(buildUserDetail(user, null, false, ['comm', 'java']).courseAccess).toEqual(['comm', 'java'])
+  })
 })
 
 describe('requireUserId', () => {
@@ -84,6 +93,16 @@ describe('requireUserId', () => {
   it('thiếu -> 400 bad_request', () => {
     expect(() => requireUserId({})).toThrow(/Thiếu userId/)
     expect(() => requireUserId({ userId: '   ' })).toThrowError(expect.objectContaining({ status: 400 }))
+  })
+})
+
+describe('requireCourseId', () => {
+  it('trả courseId đã trim', () => {
+    expect(requireCourseId({ courseId: ' comm ' })).toBe('comm')
+  })
+  it('thiếu -> 400 bad_request', () => {
+    expect(() => requireCourseId({})).toThrow(/Thiếu courseId/)
+    expect(() => requireCourseId({ courseId: '  ' })).toThrowError(expect.objectContaining({ status: 400 }))
   })
 })
 
@@ -231,5 +250,77 @@ describe('actionDeleteUser — chặn tự xóa + audit', () => {
     expect(res).toMatchObject({ ok: true, userId: 'u2' })
     expect(service.auth.admin.deleteUser).toHaveBeenCalledWith('u2')
     expect(service._audits[0]).toMatchObject({ action: 'deleteUser', target_id: 'u2', detail: { recordings: 1 } })
+  })
+})
+
+// —— Đợt 5: Quyền vào khóa "giới hạn" (course_access) ——
+
+/** Fake service riêng cho course_access: hỗ trợ select().eq / upsert / delete().match. */
+function courseAccessFake(opts = {}) {
+  const audits = []
+  const calls = { upsert: [], match: [] }
+  const from = (table) => {
+    if (table === 'admin_audit') {
+      return { insert: async (row) => { audits.push(row); return { error: null } } }
+    }
+    if (table === 'course_access') {
+      return {
+        select: () => ({ eq: async () => ({ data: opts.rows ?? [], error: opts.selectError ?? null }) }),
+        upsert: async (row) => { calls.upsert.push(row); return { error: opts.upsertError ?? null } },
+        delete: () => ({ match: async (m) => { calls.match.push(m); return { error: opts.deleteError ?? null } } }),
+      }
+    }
+    return {}
+  }
+  return {
+    from,
+    _audits: audits,
+    _calls: calls,
+    auth: { admin: { listUsers: async () => ({ data: { users: opts.authUsers ?? [] }, error: null }) } },
+  }
+}
+
+describe('actionListCourseAccess — ghép course_access × auth.users', () => {
+  it('trả đúng người được cấp + email/tên/grantedAt', async () => {
+    const service = courseAccessFake({
+      rows: [{ user_id: 'u1', granted_at: '2026-07-01' }],
+      authUsers: [
+        { id: 'u1', email: 'a@x.com', user_metadata: { full_name: 'An' } },
+        { id: 'u2', email: 'b@x.com' },
+      ],
+    })
+    const res = await actionListCourseAccess(service, { courseId: 'comm' })
+    expect(res).toMatchObject({ courseId: 'comm', count: 1 })
+    expect(res.users[0]).toMatchObject({ id: 'u1', email: 'a@x.com', name: 'An', grantedAt: '2026-07-01' })
+  })
+
+  it('thiếu courseId -> ném lỗi 400', async () => {
+    await expect(actionListCourseAccess(courseAccessFake(), {})).rejects.toThrow(/Thiếu courseId/)
+  })
+})
+
+describe('actionGrantCourseAccess — upsert + audit', () => {
+  it('cấp quyền -> upsert đúng cặp + ghi audit', async () => {
+    const service = courseAccessFake()
+    const res = await actionGrantCourseAccess(service, { userId: 'admin1' }, { userId: 'u2', courseId: 'comm' })
+    expect(res).toMatchObject({ ok: true, userId: 'u2', courseId: 'comm' })
+    expect(service._calls.upsert[0]).toMatchObject({ user_id: 'u2', course_id: 'comm' })
+    expect(service._audits[0]).toMatchObject({ action: 'grantCourseAccess', target_id: 'u2', detail: { courseId: 'comm' } })
+  })
+
+  it('thiếu userId -> ném lỗi, không upsert', async () => {
+    const service = courseAccessFake()
+    await expect(actionGrantCourseAccess(service, { userId: 'a' }, { courseId: 'comm' })).rejects.toThrow(/Thiếu userId/)
+    expect(service._calls.upsert).toHaveLength(0)
+  })
+})
+
+describe('actionRevokeCourseAccess — delete + audit', () => {
+  it('thu quyền -> match đúng cặp + ghi audit', async () => {
+    const service = courseAccessFake()
+    const res = await actionRevokeCourseAccess(service, { userId: 'admin1' }, { userId: 'u2', courseId: 'comm' })
+    expect(res).toMatchObject({ ok: true, userId: 'u2', courseId: 'comm' })
+    expect(service._calls.match[0]).toMatchObject({ user_id: 'u2', course_id: 'comm' })
+    expect(service._audits[0]).toMatchObject({ action: 'revokeCourseAccess', target_id: 'u2', detail: { courseId: 'comm' } })
   })
 })
