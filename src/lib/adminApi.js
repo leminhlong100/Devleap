@@ -60,3 +60,64 @@ export async function callAdmin(action, payload = {}) {
 export function pingAdmin() {
   return callAdmin('ping')
 }
+
+// ——————————————————————— Đợt 4: Kiểm duyệt & phản hồi ———————————————————————
+
+/** Tổng hợp cảm nhận độ khó cuối tuần theo khóa × tuần → { feedback }. */
+export function getFeedbackStats() {
+  return callAdmin('getFeedbackStats')
+}
+
+/** Liệt kê ghi âm mốc (mọi user) kèm signed URL để nghe → { recordings, count }. */
+export function listRecordings(limit) {
+  return callAdmin('listRecordings', { limit })
+}
+
+/** Xóa 1 ghi âm theo path "{userId}/{file}.webm". */
+export function deleteRecording(path) {
+  return callAdmin('deleteRecording', { path })
+}
+
+/** Danh sách người tham gia leaderboard + tên hiển thị → { entries }. */
+export function listLeaderboard() {
+  return callAdmin('listLeaderboard')
+}
+
+/** Xóa tên hiển thị leaderboard phản cảm (giữ opt-in). */
+export function clearLeaderboardName(userId) {
+  return callAdmin('clearLeaderboardName', { userId })
+}
+
+// ——————————————————————— Đợt 2: Dashboard & thống kê ———————————————————————
+
+/** Số liệu tổng hợp cho dashboard (overview/funnels/quizzes/content) → { stats }. */
+export function getStats() {
+  return callAdmin('getStats')
+}
+
+// ——————————————————————— Đợt 1: Quản lý tài khoản ———————————————————————
+
+/** Danh sách tài khoản + tiến độ tóm tắt + cờ admin → { users, count }. */
+export function listUsers() {
+  return callAdmin('listUsers')
+}
+
+/** Chi tiết tiến độ 1 user (chỉ đọc) → { user }. */
+export function getUserDetail(userId) {
+  return callAdmin('getUserDetail', { userId })
+}
+
+/** Cấp (`on=true`) / thu (`on=false`) quyền admin. */
+export function setAdmin(userId, on) {
+  return callAdmin('setAdmin', { userId, on: !!on })
+}
+
+/** Reset tiến độ (xóa dòng progress; audit giữ snapshot cũ để cứu). */
+export function resetProgress(userId) {
+  return callAdmin('resetProgress', { userId })
+}
+
+/** Xóa vĩnh viễn tài khoản + tiến độ + ghi âm. */
+export function deleteUser(userId) {
+  return callAdmin('deleteUser', { userId })
+}

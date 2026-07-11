@@ -5,6 +5,7 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import LoginGate from '@/components/layout/LoginGate.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
+import SiteBanner from '@/components/common/SiteBanner.vue'
 import QuickAddWord from '@/components/common/QuickAddWord.vue'
 import OfflineBanner from '@/components/common/OfflineBanner.vue'
 import UpdateToast from '@/components/common/UpdateToast.vue'
@@ -35,6 +36,7 @@ const transitionName = computed(() => {
 <template>
   <div class="app-shell">
     <AppHeader />
+    <SiteBanner />
     <OfflineBanner />
     <UpdateToast />
     <main class="app-main">

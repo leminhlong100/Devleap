@@ -12,6 +12,21 @@
  * Env cần ở Netlify: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
  */
 import { requireAdmin, AdminAuthError } from './_adminAuth.js'
+import {
+  actionListUsers,
+  actionGetStats,
+  actionGetUserDetail,
+  actionSetAdmin,
+  actionResetProgress,
+  actionDeleteUser,
+} from './_adminActions.js'
+import {
+  actionGetFeedbackStats,
+  actionListRecordings,
+  actionDeleteRecording,
+  actionListLeaderboard,
+  actionClearLeaderboardName,
+} from './_adminModeration.js'
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -66,6 +81,34 @@ async function handleAction(action, payload, admin) {
     // Action thử của Đợt 0: xác nhận cổng hoạt động + người gọi đúng là admin.
     case 'ping':
       return { ok: true, isAdmin: true, userId: admin.userId, email: admin.email }
+
+    // Đợt 2 — Dashboard & thống kê.
+    case 'getStats':
+      return actionGetStats(admin.service)
+
+    // Đợt 1 — Quản lý tài khoản.
+    case 'listUsers':
+      return actionListUsers(admin.service)
+    case 'getUserDetail':
+      return actionGetUserDetail(admin.service, payload)
+    case 'setAdmin':
+      return actionSetAdmin(admin.service, admin, payload)
+    case 'resetProgress':
+      return actionResetProgress(admin.service, admin, payload)
+    case 'deleteUser':
+      return actionDeleteUser(admin.service, admin, payload)
+
+    // Đợt 4 — Kiểm duyệt & phản hồi.
+    case 'getFeedbackStats':
+      return actionGetFeedbackStats(admin.service)
+    case 'listRecordings':
+      return actionListRecordings(admin.service, payload)
+    case 'deleteRecording':
+      return actionDeleteRecording(admin.service, admin, payload)
+    case 'listLeaderboard':
+      return actionListLeaderboard(admin.service)
+    case 'clearLeaderboardName':
+      return actionClearLeaderboardName(admin.service, admin, payload)
 
     default:
       throw new AdminAuthError(`Hành động không hỗ trợ: ${action}`, 'bad_request', 400)

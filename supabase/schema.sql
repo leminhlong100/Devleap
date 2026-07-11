@@ -226,6 +226,43 @@ create policy "clips_delete_admin"
   on public.shadowing_clips for delete
   using (public.is_admin());
 
+-- ----------------------------------------------------------------------------
+-- Cấu hình site — lớp phủ ở DB (Đợt 3 — docs/KE_HOACH_TRANG_ADMIN.md mục 4.2)
+-- key -> jsonb. Admin sửa qua /admin/content (không cần deploy lại); client đọc
+-- lúc khởi động để bật/tắt khóa & hiện banner. Cùng mô hình `shadowing_clips`:
+-- public đọc, is_admin() ghi.
+-- ----------------------------------------------------------------------------
+create table if not exists public.site_config (
+  key        text primary key,
+  value      jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_config enable row level security;
+
+-- Ai cũng đọc được (kể cả khách) để áp cấu hình lúc khởi động.
+drop policy if exists "site_config_select_all" on public.site_config;
+create policy "site_config_select_all"
+  on public.site_config for select
+  using (true);
+
+-- Chỉ admin được thêm/sửa/xóa cấu hình.
+drop policy if exists "site_config_insert_admin" on public.site_config;
+create policy "site_config_insert_admin"
+  on public.site_config for insert
+  with check (public.is_admin());
+
+drop policy if exists "site_config_update_admin" on public.site_config;
+create policy "site_config_update_admin"
+  on public.site_config for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "site_config_delete_admin" on public.site_config;
+create policy "site_config_delete_admin"
+  on public.site_config for delete
+  using (public.is_admin());
+
 -- ============================================================================
 -- Storage: bucket ghi âm mốc (VoiceRecorder / MilestonesView) — sync đa thiết bị
 -- Đường dẫn mỗi file: recordings/{user_id}/{recId-đã-escape}.webm

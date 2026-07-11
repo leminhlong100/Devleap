@@ -27,3 +27,25 @@ export function routeGuardDecision(to, auth) {
   if (auth.isAuthed) return true
   return { name: 'home', query: { login: 'required', redirect: to.fullPath } }
 }
+
+/**
+ * Khóa (id trong data/courses.js) mà một route thuộc về — để lớp phủ site có thể
+ * chặn vào khi admin tắt khóa đó. Trả null nếu route không gắn khóa nào.
+ */
+export function courseIdForRoute(to) {
+  const name = to?.name
+  if (!name) return null
+  if (name === 'assessment') return to?.params?.course || null
+  const map = {
+    java: 'java',
+    'java-day': 'java',
+    'java-prep': 'java-prep',
+    'java-mock': 'java-prep',
+    ielts: 'ielts',
+    'ielts-day': 'ielts',
+    comm: 'comm',
+    'comm-day': 'comm',
+    'comm-summary': 'comm',
+  }
+  return map[name] || null
+}

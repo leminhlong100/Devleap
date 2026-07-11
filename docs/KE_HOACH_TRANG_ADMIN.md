@@ -227,9 +227,54 @@ Mỗi module mới = 1 phần tử trong `adminModules.js` + 1 route con trong
       admin phía server; wrapper `lib/adminApi.js` (`callAdmin`/`pingAdmin`); bảng
       `admin_audit` + `logAudit`; dev proxy chuyển tiếp Bearer token; guard tách ra
       `router/guard.js`; test: `adminAuth`, `adminApi`, `routeGuard`. Action thử `ping`.)
-- [ ] Đợt 1 — Quản lý tài khoản
-- [ ] Đợt 2 — Dashboard & thống kê
-- [ ] Đợt 3 — Quản lý nội dung (mở rộng DB)
-- [ ] Đợt 4 — Kiểm duyệt & phản hồi
+- [x] Đợt 1 — Quản lý tài khoản ✅ (actions server `listUsers`/`getUserDetail`/
+      `setAdmin`/`resetProgress`/`deleteUser` trong `_adminActions.js`, dispatch qua
+      `admin.js`; wrapper client thêm 5 hàm mỏng trong `lib/adminApi.js`; view
+      `AdminAccountsView.vue` (bảng tìm/sắp xếp/phân trang + drawer chi tiết + xác
+      nhận 2 bước, xóa/reset gõ lại email); module `accounts` + route `admin-accounts`.
+      Chốt chặn an toàn: không tự thu quyền/tự xóa, không hạ admin cuối cùng; mọi
+      thay đổi ghi `admin_audit` (reset/delete kèm snapshot cũ để cứu); xóa dọn cả
+      progress + ghi âm storage. Test: `tests/adminActions.test.js` (19 ca) phủ phần
+      thuần + các chốt chặn + dòng chảy action với service giả.)
+- [x] Đợt 2 — Dashboard & thống kê ✅ (action `getStats` (`_adminActions.js`) đọc
+      toàn bộ `progress` + user rồi gọi `computeStats` thuần (`_adminStats.js`) →
+      TRẢ CHỈ SỐ GỘP, không PII; wrapper `getStats()` ở `lib/adminApi.js`.
+      `AdminHomeView.vue` nâng thành dashboard: 6 thẻ KPI (user/hoạt động 7-30 ngày/
+      user mới/tổng XP/buổi/lượt kiểm tra), phễu hoàn thành theo tuần từng khóa (bar
+      CSS), bảng quiz (lượt làm/tỉ lệ đậu/điểm TB), buổi phổ biến + quiz trượt cao;
+      lưới module giữ dưới cùng; lỗi/thiếu service key hiện ghi chú mềm, module vẫn
+      dùng được. Test `tests/adminStats.test.js` (10 ca) + 1 ca wiring `getStats`.
+      Lưu ý lệch kế hoạch: gộp mọi tính toán vào action `admin` chạy JS thuần thay
+      vì RPC security-definer — vì phễu jsonb + tỉ lệ đậu quiz rất rối/không test
+      được trong PL/pgSQL, và cổng đã đọc `progress` sẵn nên không cần migration SQL.)
+- [x] Đợt 3 — Quản lý nội dung (mở rộng DB) ✅ (bảng `site_config` (key→jsonb,
+      public đọc / `is_admin()` ghi) + repo client `lib/siteConfigRepo.js` (ghi
+      thẳng qua RLS như `shadowingRepo`, KHÔNG cần function); store `stores/
+      siteConfig.js` nạp lúc khởi động (main.js), mặc định an toàn "mọi khóa bật,
+      banner tắt" khi lỗi/chưa cấu hình. Áp phía người dùng: `SiteBanner.vue` trong
+      App.vue (banner info/warn toàn site); `CoursesView` ẩn khóa bị tắt; router
+      guard chặn vào route khóa đã tắt (`courseIdForRoute` trong `guard.js`, chỉ
+      chặn khi `site.loaded`) → về /courses kèm ghi chú. Module `content`
+      (`AdminContentView.vue`, route `admin-content`): (A) sửa lớp phủ — bật/tắt
+      khóa + banner (xem trước trực tiếp); (B) cây nội dung tĩnh read-only
+      (`lib/adminContentTree.js`: Khóa→Tuần→Buổi + chỉ số), kèm đường dẫn file .md.
+      Shadowing gộp nhóm "Nội dung" (thêm `group` + `groupedModules()`; trang chủ
+      admin hiện theo nhóm). Test: `adminContentTree`, `siteConfig` (normalize an
+      toàn + `courseIdForRoute`). Đã chạy dev khách: /courses render đủ khóa, không
+      lỗi console.)
+- [x] Đợt 4 — Kiểm duyệt & phản hồi ✅ (module `moderation` (`AdminModerationView.vue`,
+      route `admin-moderation`, nhóm "Kiểm duyệt") với 3 tab. Logic thuần + I/O ở
+      `netlify/functions/_adminModeration.js`, dispatch qua `admin.js`; wrapper thêm
+      `getFeedbackStats`/`listRecordings`/`deleteRecording`/`listLeaderboard`/
+      `clearLeaderboardName`. (5.1) Cảm nhận độ khó: gộp `week_feedback` theo khóa ×
+      tuần (tính JS như Đợt 2), bar Dễ/Vừa/Khó/Bỏqua + cảnh báo tuần ≥40% khó. (5.2)
+      Ghi âm mốc: liệt kê mọi user qua storage service key + **signed URL** nghe thử
+      (không mở policy storage cho client), nhãn mốc từ tên file, xóa có audit +
+      chặn path xấu. (5.3) Leaderboard: liệt kê opt-in + tên, xóa tên phản cảm
+      (`clearLeaderboardName`) có audit. KHÔNG cần migration mới (dùng `recordings`/
+      `progress`/`admin_audit` sẵn có). Test: `tests/adminModeration.test.js` (13 ca).)
 
 > Ghi chú: kế hoạch tự chứa. Bắt đầu **bắt buộc từ Đợt 0** rồi tới Đợt 1.
+>
+> **TOÀN BỘ 5 ĐỢT (0–4) ĐÃ XONG** (2026-07-11). Cần chạy migration mới của Đợt 3
+> (`site_config` trong `supabase/schema.sql`) để bật/tắt khóa & banner lưu được.

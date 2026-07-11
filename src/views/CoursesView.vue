@@ -1,19 +1,27 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { courses } from '@/data/courses'
 import { computeJavaProgress } from '@/data/course'
 import { computeIeltsProgress } from '@/data/courseIelts'
 
+const route = useRoute()
 const router = useRouter()
 const user = useUserStore()
+const site = useSiteConfigStore()
 const filters = ['Tất cả', '💻 Lập trình', '🗣️ Tiếng Anh']
 const active = ref('Tất cả')
 
+// Ẩn khóa bị admin tắt (lớp phủ site — Đợt 3), rồi lọc theo bộ lọc danh mục.
+const visible = computed(() => courses.filter((c) => site.courseEnabled(c.id)))
 const shown = computed(() =>
-  active.value === 'Tất cả' ? courses : courses.filter((c) => c.category === active.value),
+  active.value === 'Tất cả' ? visible.value : visible.value.filter((c) => c.category === active.value),
 )
+
+// Vừa bị chặn khỏi một khóa đã tắt (router chuyển về đây kèm ?disabled=id).
+const disabledNotice = computed(() => route.query.disabled || '')
 
 // % tiến độ thật theo từng khóa (các khóa khác giữ giá trị biên tập sẵn).
 function progressOf(c) {
@@ -35,6 +43,10 @@ function open(c) {
         Chọn một hành trình và bắt đầu bước nhảy đầu tiên. Khóa mới được thêm liên tục.
       </p>
     </div>
+
+    <p v-if="disabledNotice" class="disabled-note">
+      Khóa học này hiện đang tạm ẩn. Vui lòng quay lại sau nhé!
+    </p>
 
     <div class="filters">
       <span
@@ -107,6 +119,18 @@ function open(c) {
   font-size: 18px;
   color: var(--muted);
   margin-top: 12px;
+}
+.disabled-note {
+  max-width: 620px;
+  margin: 18px auto 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b26a00;
+  background: rgba(214, 158, 43, 0.14);
+  border: 1px solid rgba(214, 158, 43, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
 }
 .filters {
   display: flex;

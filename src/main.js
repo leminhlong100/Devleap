@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { useUserStore } from './stores/user'
 import { useAuthStore } from './stores/auth'
+import { useSiteConfigStore } from './stores/siteConfig'
 import { registerServiceWorkerUpdates } from './composables/useServiceWorkerUpdate'
 
 import './assets/styles/base.css'
@@ -19,6 +20,8 @@ app.use(router)
 useUserStore(pinia).hydrate()
 // Kiểm tra phiên đăng nhập & bật đồng bộ cloud nếu đã cấu hình Supabase.
 useAuthStore(pinia).init()
+// Nạp cấu hình site (bật/tắt khóa, banner) — không chặn render; giữ mặc định nếu lỗi.
+useSiteConfigStore(pinia).load()
 
 app.mount('#app')
 

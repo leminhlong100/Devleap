@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { routeGuardDecision } from '@/router/guard'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { routeGuardDecision, courseIdForRoute } from '@/router/guard'
 import { setRouteDirection } from '@/composables/useRouteTransition'
 
 const routes = [
@@ -75,7 +76,10 @@ const routes = [
     meta: { requiresAdmin: true },
     children: [
       { path: '', name: 'admin-home', component: () => import('@/views/admin/AdminHomeView.vue') },
+      { path: 'accounts', name: 'admin-accounts', component: () => import('@/views/admin/AdminAccountsView.vue') },
+      { path: 'content', name: 'admin-content', component: () => import('@/views/admin/AdminContentView.vue') },
       { path: 'shadowing', name: 'admin-shadowing', component: () => import('@/views/admin/AdminShadowingView.vue') },
+      { path: 'moderation', name: 'admin-moderation', component: () => import('@/views/admin/AdminModerationView.vue') },
     ],
   },
 
@@ -117,7 +121,18 @@ router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth && !to.meta?.requiresAdmin) return true
   const auth = useAuthStore()
   await waitForAuthReady(auth)
-  return routeGuardDecision(to, auth)
+  const decision = routeGuardDecision(to, auth)
+  if (decision !== true) return decision
+
+  // Lớp phủ site (Đợt 3): khóa bị admin tắt -> chặn vào, đưa về thư viện khóa
+  // học. Chỉ chặn khi cấu hình đã nạp xong (site.loaded) để tránh khóa nhầm
+  // trong lúc còn đang nạp (mặc định mọi khóa bật).
+  const site = useSiteConfigStore()
+  const courseId = courseIdForRoute(to)
+  if (courseId && site.loaded && !site.courseEnabled(courseId)) {
+    return { name: 'courses', query: { disabled: courseId } }
+  }
+  return true
 })
 
 // Ghi hướng chuyển trang (đi sâu/lùi) sau khi điều hướng đã xác nhận — App.vue
