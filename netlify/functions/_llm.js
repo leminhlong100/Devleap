@@ -628,6 +628,7 @@ export function buildInterviewPrompt(context = {}) {
     `- When ${count} questions have already been asked and answered, set "next" to null to END the interview.`,
     '- Be fair but rigorous like a real interview. Ground the score on the actual answer, do not invent what they said.',
     '- Ask ONE question at a time. Prefer the focus topics. Vary difficulty around the requested level.',
+    '- Some answers are LIVE CODING rounds: the user message contains a "[Bài coding: ...]" block with the Java code they wrote and the actual compiler/run output. Evaluate correctness of the code and whether the printed output matches what the prompt asked for, exactly like grading a verbal answer.',
     '- Output JSON only.',
   ]
     .filter(Boolean)

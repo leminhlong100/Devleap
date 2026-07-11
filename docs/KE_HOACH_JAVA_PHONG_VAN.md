@@ -156,10 +156,10 @@ Mục tiêu: bịt các topic mỏng và thêm chiều thực chiến.
 
 | Đợt | Nội dung | Trạng thái |
 | --- | --- | --- |
-| 1 | Vá coding challenge (dạng bài + pattern + đọc-code-tìm-bug) | ☐ Chưa làm |
-| 2 | Mock có coding + timed mode + preset buổi | ☐ Chưa làm |
-| 3 | SRS thật cho câu hỏi + Readiness meter/dashboard | ☐ Chưa làm |
-| 4 | System Design + làm dày topic mỏng + hạ tầng | ☐ Chưa làm |
+| 1 | Vá coding challenge (dạng bài + pattern + đọc-code-tìm-bug) | ✅ Xong |
+| 2 | Mock có coding + timed mode + preset buổi | ✅ Xong |
+| 3 | SRS thật cho câu hỏi + Readiness meter/dashboard | ✅ Xong |
+| 4 | System Design + làm dày topic mỏng + hạ tầng | ✅ Xong |
 
 ---
 

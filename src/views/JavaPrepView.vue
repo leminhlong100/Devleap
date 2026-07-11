@@ -15,7 +15,10 @@ import {
   INTERVIEW_SKILLS,
   INTERVIEW_TOTALS,
   topicLabel,
+  challengePatterns,
+  javaSrsId,
 } from '@/data/javaInterview'
+import { computeReadiness, readinessLabel } from '@/lib/readiness'
 
 const route = useRoute()
 const router = useRouter()
@@ -44,21 +47,32 @@ const filterLevel = ref('')
 const search = ref('')
 const opened = ref(new Set())
 const onlyReview = ref(false)
+const onlyDue = ref(false)
 
-// Câu hỏi tự đánh dấu "cần ôn lại" (SRS-lite, chỉ local) — ép active-recall thay
-// vì đọc lướt cả ngân hàng. Xem user.toggleReviewQuestion trong localPrefsSlice.
+// Câu hỏi tự đánh dấu "cần ôn lại" — giờ có lịch ôn SM-2 thật (tái dùng map
+// `srs` chung, namespace 'javaq:'), ép active-recall đúng lúc sắp quên thay vì
+// chỉ lọc tĩnh. Xem user.toggleReviewQuestion/reviewJavaQuestion.
 const reviewSet = computed(() => new Set(user.javaPrep?.reviewQuestions || []))
 const reviewCount = computed(() => reviewSet.value.size)
+const dueSet = computed(() => new Set([...reviewSet.value].filter((id) => user.isCardDue(javaSrsId(id)))))
+const dueCount = computed(() => dueSet.value.size)
 function isMarked(id) {
   return reviewSet.value.has(id)
 }
+function isDueForReview(id) {
+  return dueSet.value.has(id)
+}
 function toggleReview(id) {
   user.toggleReviewQuestion(id)
+}
+function gradeReview(id, grade) {
+  user.reviewJavaQuestion(id, grade)
 }
 
 const filteredQuestions = computed(() => {
   const q = search.value.trim().toLowerCase()
   return QUESTION_BANK.filter((item) => {
+    if (onlyDue.value && !dueSet.value.has(item.id)) return false
     if (onlyReview.value && !reviewSet.value.has(item.id)) return false
     if (filterTopic.value && item.topic !== filterTopic.value) return false
     if (filterLevel.value && item.level !== filterLevel.value) return false
@@ -76,6 +90,21 @@ function toggleOpen(id) {
 // Điểm theo chủ đề từ lần phỏng vấn gần nhất (gợi ý ôn chỗ yếu).
 const topicScores = computed(() => user.javaPrep?.topicScores || {})
 const bestScore = computed(() => user.javaPrep?.bestScore || 0)
+
+// —— Readiness meter: 1 chỉ số 0-100 trả lời "đã sẵn sàng phỏng vấn chưa?" ——
+const readiness = computed(() =>
+  computeReadiness({
+    bestScore: bestScore.value,
+    topicScores: topicScores.value,
+    solvedChallenges: user.javaPrep?.solvedChallenges || [],
+  }),
+)
+const readinessColor = computed(() => {
+  const s = readiness.value.score
+  if (s >= 80) return '#00c281'
+  if (s >= 60) return '#FFB020'
+  return '#ff5f57'
+})
 
 // —— Kỹ năng phỏng vấn ——
 const skills = INTERVIEW_SKILLS
@@ -109,6 +138,11 @@ const output = ref(null)
 const running = ref(false)
 const runError = ref('')
 const showSolution = ref(false)
+const filterPattern = ref('')
+const patterns = challengePatterns()
+const filteredChallenges = computed(() =>
+  filterPattern.value ? CODING_CHALLENGES.filter((c) => c.pattern === filterPattern.value) : CODING_CHALLENGES,
+)
 
 function pickChallenge(c) {
   challenge.value = c
@@ -124,7 +158,10 @@ async function run() {
   output.value = null
   try {
     output.value = await runJavaCode(code.value)
-    if (output.value.ok) user.addXp(10)
+    if (output.value.ok) {
+      user.addXp(10)
+      user.markChallengeSolved(challenge.value.id)
+    }
   } catch (e) {
     runError.value = friendlyRunError(e)
   } finally {
@@ -150,6 +187,22 @@ onMounted(() => {
         <p>{{ INTERVIEW_TOTALS.questions }} câu hỏi · {{ INTERVIEW_TOTALS.topics }} chủ đề · {{ INTERVIEW_TOTALS.challenges }} bài coding — Java backend là chính, kèm frontend, SQL sâu, stack thực tế &amp; kỹ năng phỏng vấn.</p>
         <button class="cta" @click="router.push({ name: 'java-mock' })">🎤 Bắt đầu Mock Interview →</button>
         <span v-if="bestScore" class="best">🏆 Điểm phỏng vấn cao nhất: {{ bestScore }}/100</span>
+      </div>
+    </div>
+
+    <!-- Readiness meter -->
+    <div class="readiness">
+      <div class="r-gauge" :style="{ '--c': readinessColor }">
+        <span class="r-big">{{ readiness.score }}</span><span class="r-unit">/100</span>
+      </div>
+      <div class="r-body">
+        <div class="r-head">
+          <b>Độ sẵn sàng phỏng vấn</b>
+          <span class="r-verdict" :style="{ color: readinessColor }">{{ readinessLabel(readiness.score) }}</span>
+        </div>
+        <ul class="r-tips">
+          <li v-for="(t, i) in readiness.tips" :key="i">{{ t }}</li>
+        </ul>
       </div>
     </div>
 
@@ -294,6 +347,9 @@ onMounted(() => {
           <button class="review-toggle" :class="{ on: onlyReview }" @click="onlyReview = !onlyReview">
             ⭐ Cần ôn lại{{ reviewCount ? ` (${reviewCount})` : '' }}
           </button>
+          <button class="review-toggle due" :class="{ on: onlyDue }" @click="onlyDue = !onlyDue">
+            ⏰ Ôn theo lịch{{ dueCount ? ` (${dueCount})` : '' }}
+          </button>
         </div>
       </div>
 
@@ -320,15 +376,35 @@ onMounted(() => {
           <ul class="points"><li v-for="(p, i) in item.points" :key="i">{{ p }}</li></ul>
           <p class="ans"><b>Trả lời:</b> {{ item.answer }}</p>
           <span class="tag">{{ topicLabel(item.topic) }}</span>
+          <span v-if="isMarked(item.id) && isDueForReview(item.id)" class="tag due-tag">⏰ Đến hạn ôn</span>
+          <div v-if="isMarked(item.id)" class="grade-row">
+            <span class="grade-lbl">Bạn nhớ tới đâu?</span>
+            <button class="grade again" @click="gradeReview(item.id, 'again')">Quên</button>
+            <button class="grade hard" @click="gradeReview(item.id, 'hard')">Khó</button>
+            <button class="grade good" @click="gradeReview(item.id, 'good')">Tốt</button>
+            <button class="grade easy" @click="gradeReview(item.id, 'easy')">Dễ</button>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ===== Coding ===== -->
     <section v-else class="coding">
+      <div class="chips ch-filters">
+        <button class="chip" :class="{ on: filterPattern === '' }" @click="filterPattern = ''">Tất cả dạng</button>
+        <button
+          v-for="p in patterns"
+          :key="p"
+          class="chip"
+          :class="{ on: filterPattern === p }"
+          @click="filterPattern = p"
+        >
+          {{ p }}
+        </button>
+      </div>
       <div class="ch-list">
         <button
-          v-for="c in CODING_CHALLENGES"
+          v-for="c in filteredChallenges"
           :key="c.id"
           class="ch"
           :class="{ on: challenge.id === c.id }"
@@ -398,6 +474,56 @@ onMounted(() => {
   line-height: 1.2;
   margin: 12px 0;
   letter-spacing: -0.5px;
+}
+.readiness {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+}
+.r-gauge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 6px solid var(--c);
+  color: var(--c);
+}
+.r-big {
+  font-size: 22px;
+  font-weight: 800;
+}
+.r-unit {
+  font-size: 11px;
+  font-weight: 700;
+}
+.r-body {
+  flex: 1;
+  min-width: 0;
+}
+.r-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.r-verdict {
+  font-weight: 800;
+  font-size: 13px;
+}
+.r-tips {
+  padding-left: 18px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 .banner p {
   opacity: 0.92;
@@ -568,6 +694,49 @@ onMounted(() => {
   background: rgba(255, 176, 32, 0.2);
   border-color: #d98700;
   color: #d98700;
+}
+.review-toggle.due.on {
+  background: rgba(108, 92, 231, 0.15);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+.due-tag {
+  background: var(--purple-soft);
+  color: var(--purple);
+  margin-left: 8px;
+}
+.grade-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.grade-lbl {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  font-weight: 600;
+}
+.grade {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+}
+.grade.again {
+  background: #ff5f57;
+}
+.grade.hard {
+  background: #FFB020;
+}
+.grade.good {
+  background: #00c281;
+}
+.grade.easy {
+  background: #6c5ce7;
 }
 .count {
   color: var(--muted-2);

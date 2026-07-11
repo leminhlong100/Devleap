@@ -1,4 +1,5 @@
 import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
+import { javaSrsId } from '@/data/javaInterview'
 
 /**
  * Tùy chọn chỉ lưu LOCAL, không đồng bộ cloud và không nằm trong
@@ -31,11 +32,14 @@ const DEFAULT_CONVO = {
 
 // Kết quả khóa "Java Phỏng Vấn Cấp Tốc" — chỉ LOCAL: điểm cao nhất + báo cáo gần
 // nhất + điểm trung bình theo chủ đề (gợi ý ôn chỗ yếu) + danh sách câu hỏi tự
-// đánh dấu "cần ôn lại" (SRS-lite: không lịch lặp lại như flashcard, chỉ là một
-// bucket để lọc riêng trong Ngân hàng câu hỏi, ép active-recall thay vì đọc lướt).
-// Không đồng bộ cloud để khỏi đổi schema Supabase; có thể nâng cấp sync sau.
+// đánh dấu "cần ôn lại" + coding challenge đã giải được (cho Readiness meter).
+// Đánh dấu "cần ôn lại" giờ có LỊCH ÔN THẬT: tái dùng chung map `srs` (SM-2) của
+// srsSlice.js qua namespace 'javaq:' (xem javaSrsId trong data/javaInterview.js)
+// — không cần cột Supabase riêng, `srs` đã đồng bộ cloud sẵn.
+// reviewQuestions/topicScores/bestScore/solvedChallenges không đồng bộ cloud để
+// khỏi đổi schema Supabase; có thể nâng cấp sync sau.
 const JAVA_PREP_KEY = 'devleap:javaprep:v1'
-const DEFAULT_JAVA_PREP = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [] }
+const DEFAULT_JAVA_PREP = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [], solvedChallenges: [] }
 
 export function state() {
   return {
@@ -116,6 +120,7 @@ export const actions = {
           ...j,
           topicScores: j.topicScores && typeof j.topicScores === 'object' ? j.topicScores : {},
           reviewQuestions: Array.isArray(j.reviewQuestions) ? j.reviewQuestions : [],
+          solvedChallenges: Array.isArray(j.solvedChallenges) ? j.solvedChallenges : [],
         }
       }
     } catch {
@@ -155,8 +160,10 @@ export const actions = {
 
   /**
    * Đánh dấu / bỏ đánh dấu một câu hỏi trong ngân hàng "cần ôn lại" (tab Ngân
-   * hàng câu hỏi của khóa Java). Chỉ local — dùng để lọc riêng, ép active-recall
-   * thay vì đọc lướt cả trăm câu.
+   * hàng câu hỏi của khóa Java). Không tự gieo lịch SM-2 khi đánh dấu — thẻ
+   * CHƯA có lịch trong map `srs` chung (namespace 'javaq:') luôn được coi là
+   * "đến hạn" (xem srsSlice.isCardDue), nên câu vừa đánh dấu vào thẳng "Ôn theo
+   * lịch"; lịch thật chỉ hình thành sau lần chấm đầu tiên (reviewJavaQuestion).
    * @param {string} questionId id của câu trong QUESTION_BANK (vd 'jpa-1').
    */
   toggleReviewQuestion(questionId) {
@@ -165,6 +172,33 @@ export const actions = {
     const list = Array.isArray(this.javaPrep.reviewQuestions) ? this.javaPrep.reviewQuestions : []
     const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
     this.javaPrep = { ...this.javaPrep, reviewQuestions: next }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
+  },
+
+  /**
+   * Chấm độ nhớ (SM-2) một câu "cần ôn lại" — dùng ở chế độ "Ôn theo lịch".
+   * Chỉ cập nhật khi câu đã được đánh dấu (tránh tạo lịch mồ côi cho câu chưa
+   * từng bấm ⭐). Tái dùng thẳng `reviewCard` của srsSlice.js.
+   * @param {string} questionId  id câu trong QUESTION_BANK.
+   * @param {'again'|'hard'|'good'|'easy'} grade
+   */
+  reviewJavaQuestion(questionId, grade) {
+    const id = String(questionId || '').trim()
+    if (!id || !this.javaPrep.reviewQuestions?.includes(id)) return
+    this.reviewCard(javaSrsId(id), grade)
+  },
+
+  /** Đánh dấu một bài coding đã giải được (chạy ra kết quả đúng) — nạp cho Readiness meter. */
+  markChallengeSolved(challengeId) {
+    const id = String(challengeId || '').trim()
+    if (!id) return
+    const list = Array.isArray(this.javaPrep.solvedChallenges) ? this.javaPrep.solvedChallenges : []
+    if (list.includes(id)) return
+    this.javaPrep = { ...this.javaPrep, solvedChallenges: [...list, id] }
     try {
       localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
     } catch {

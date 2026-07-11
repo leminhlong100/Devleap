@@ -1122,8 +1122,48 @@ describe('user store — toggleReviewQuestion (đánh dấu câu hỏi Java cầ
     const s = useUserStore()
     s.toggleReviewQuestion('spr-16')
     const s2 = useUserStore()
-    s2.javaPrep = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [] }
+    s2.javaPrep = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [], solvedChallenges: [] }
     s2.loadJavaPrep()
     expect(s2.javaPrep.reviewQuestions).toEqual(['spr-16'])
+  })
+
+  it('đánh dấu cần ôn lại -> chưa có lịch nhưng coi như đến hạn ngay (thẻ mới)', () => {
+    const s = useUserStore()
+    expect(s.srs['javaq:jpa-1']).toBeUndefined()
+    s.toggleReviewQuestion('jpa-1')
+    expect(s.srs['javaq:jpa-1']).toBeUndefined()
+    expect(s.isCardDue('javaq:jpa-1')).toBe(true) // chưa có lịch -> coi như đến hạn
+  })
+
+  it('reviewJavaQuestion chấm SM-2 cho câu đã đánh dấu, bỏ qua câu chưa đánh dấu', () => {
+    const s = useUserStore()
+    s.reviewJavaQuestion('jpa-1', 'good') // chưa đánh dấu -> bỏ qua
+    expect(s.srs['javaq:jpa-1']).toBeUndefined()
+
+    s.toggleReviewQuestion('jpa-1')
+    s.reviewJavaQuestion('jpa-1', 'good')
+    expect(s.srs['javaq:jpa-1'].reps).toBe(1)
+  })
+})
+
+describe('user store — markChallengeSolved (Readiness meter)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('thêm challenge đã giải, không trùng lặp', () => {
+    const s = useUserStore()
+    s.markChallengeSolved('two-sum')
+    s.markChallengeSolved('two-sum')
+    s.markChallengeSolved('fizzbuzz')
+    expect(s.javaPrep.solvedChallenges.sort()).toEqual(['fizzbuzz', 'two-sum'])
+  })
+
+  it('id rỗng thì bỏ qua', () => {
+    const s = useUserStore()
+    s.markChallengeSolved('')
+    s.markChallengeSolved(null)
+    expect(s.javaPrep.solvedChallenges).toEqual([])
   })
 })

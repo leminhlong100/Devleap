@@ -34,6 +34,8 @@ export const INTERVIEW_TOPICS = [
   { key: 'mystack', label: 'Stack thực tế', icon: '🏭', blurb: 'Struts, iBatis/MyBatis, Batch, JasperReports, FTP' },
   { key: 'kafka', label: 'Kafka & Messaging', icon: '📨', blurb: 'Producer/consumer, partition, offset, DLT, acks' },
   { key: 'microservice', label: 'Microservice', icon: '🧩', blurb: 'Gateway, discovery, SAGA, giao tiếp service' },
+  { key: 'design', label: 'System Design', icon: '🏗️', blurb: 'Rate limiter, URL shortener, capacity, cache, pagination' },
+  { key: 'infra', label: 'Hạ tầng thực tế', icon: '🐳', blurb: 'Docker, CI/CD, Redis, observability, gRPC, API versioning' },
   { key: 'scenario', label: 'Tình huống & Thiết kế', icon: '🧭', blurb: 'Thiết kế API, debug prod, idempotency, đánh đổi thực tế' },
   { key: 'behavioral', label: 'Behavioral', icon: '🗣️', blurb: 'STAR, kể dự án, tình huống' },
 ]
@@ -44,6 +46,15 @@ export const LEVELS = ['easy', 'medium', 'hard']
 /** Nhãn tiếng Việt cho từng chủ đề (tra nhanh). */
 export function topicLabel(key) {
   return INTERVIEW_TOPICS.find((t) => t.key === key)?.label || key
+}
+
+/**
+ * srsId cho một câu hỏi trong ngân hàng — tái dùng CHUNG map `srs` (SM-2) đã có
+ * cho flashcard từ vựng (xem src/stores/user/srsSlice.js), chỉ khác namespace
+ * ('javaq:') nên không cần cột Supabase riêng.
+ */
+export function javaSrsId(questionId) {
+  return `javaq:${String(questionId || '').trim()}`
 }
 
 // -------------------- Ngân hàng câu hỏi --------------------
@@ -166,6 +177,15 @@ export const QUESTION_BANK = [
   { id: 'gen-4', topic: 'generics', level: 'medium', q: 'Bounded type parameter là gì? Ví dụ?',
     points: ['<T extends Number> giới hạn kiểu', 'Gọi được method của bound', 'Có thể nhiều bound <T extends A & B>'],
     answer: 'Bounded type giới hạn T phải là con của một kiểu, ví dụ <T extends Number> để dùng được các method của Number (intValue…). Có thể chặn nhiều bound: <T extends Comparable<T> & Serializable>.' },
+  { id: 'gen-5', topic: 'generics', level: 'medium', q: 'Generic method khác generic class thế nào?',
+    points: ['Generic method: <T> khai báo ở method, độc lập với class', 'Type param suy luận từ tham số truyền vào', 'Dùng khi chỉ 1 method cần generic, không muốn generic hóa cả class'],
+    answer: 'Generic class khai báo type parameter ở cấp class (class Box<T>), áp dụng cho mọi method. Generic method khai báo <T> ngay trước kiểu trả về của method (static <T> T firstOf(List<T> list)), độc lập với class chứa nó — dùng khi chỉ một method cần generic mà không muốn kéo cả class theo.' },
+  { id: 'gen-6', topic: 'generics', level: 'hard', q: 'Vì sao không tạo được mảng generic (new T[])? Cách né?',
+    points: ['Mảng Java giữ kiểu runtime (reified), generic bị erasure', 'new T[] sẽ mất kiểm tra kiểu lúc runtime -> Java cấm', 'Né bằng List<T> hoặc ép kiểu (T[]) new Object[n] kèm cảnh báo unchecked'],
+    answer: 'Mảng trong Java biết kiểu phần tử lúc runtime (reified) để check khi gán, còn generic bị xóa kiểu (erasure) nên JVM không biết T là gì lúc chạy — cho phép new T[] sẽ phá vỡ type-safety của mảng. Cách né: dùng List<T> thay mảng, hoặc tạo Object[] rồi ép kiểu (T[]) kèm @SuppressWarnings("unchecked").' },
+  { id: 'gen-7', topic: 'generics', level: 'medium', q: 'Wildcard không giới hạn (?) khác Object thế nào?',
+    points: ['List<?>: danh sách của MỘT kiểu cụ thể nào đó (chưa biết), chỉ đọc an toàn kiểu Object', 'List<Object>: danh sách chấp nhận add mọi kiểu Object', 'List<?> KHÔNG add được (trừ null) vì trình biên dịch không biết kiểu thật'],
+    answer: 'List<?> nghĩa là "danh sách của một kiểu xác định nào đó nhưng không biết là kiểu gì" — chỉ đọc ra được Object, không add được gì (trừ null) vì trình biên dịch không đảm bảo an toàn kiểu. List<Object> là danh sách CHO PHÉP chứa Object bất kỳ, add thoải mái. List<String> không gán được cho List<Object> nhưng gán được cho List<?>.' },
 
   // ---------- Stream & Lambda ----------
   { id: 'str-1', topic: 'stream', level: 'medium', q: 'Stream lazy evaluation nghĩa là gì?',
@@ -318,6 +338,15 @@ export const QUESTION_BANK = [
   { id: 'test-5', topic: 'testing', level: 'medium', q: 'Mock, Stub và Spy khác nhau thế nào?',
     points: ['Stub: trả giá trị cố định', 'Mock: verify tương tác', 'Spy: object thật, override một phần', 'doReturn().when(spy) để tránh gọi thật'],
     answer: 'Stub trả giá trị định sẵn cho query. Mock dùng để verify tương tác. Spy bọc object thật và cho ghi đè một phần method (mặc định vẫn gọi thật — nên dùng doReturn().when(spy).m() để tránh chạy method thật).' },
+  { id: 'test-6', topic: 'testing', level: 'easy', q: 'Test pyramid là gì? Vì sao nên viết nhiều unit test hơn integration/E2E?',
+    points: ['Đáy: unit test (nhiều, nhanh, rẻ)', 'Giữa: integration test', 'Đỉnh: E2E test (ít, chậm, đắt, dễ vỡ)', 'Unit test cô lập lỗi nhanh, chạy trong CI mỗi commit'],
+    answer: 'Test pyramid: nhiều unit test ở đáy (nhanh, rẻ, cô lập từng đơn vị), ít integration test ở giữa (test nhiều lớp phối hợp), rất ít E2E ở đỉnh (chậm, đắt, dễ vỡ vì phụ thuộc môi trường thật). Ưu tiên unit test vì phát hiện lỗi nhanh và chạy được mỗi commit; E2E chỉ giữ cho vài luồng quan trọng nhất.' },
+  { id: 'test-7', topic: 'testing', level: 'medium', q: '@ParameterizedTest dùng để làm gì?',
+    points: ['Chạy CÙNG một test với nhiều bộ input khác nhau', '@ValueSource, @CsvSource, @MethodSource cấp dữ liệu', 'Tránh copy-paste nhiều test method giống hệt nhau chỉ khác input'],
+    answer: '@ParameterizedTest (JUnit 5) chạy lại cùng một test method với nhiều bộ dữ liệu đầu vào khác nhau, cấp qua @ValueSource (giá trị đơn giản), @CsvSource (nhiều tham số) hoặc @MethodSource (dữ liệu phức tạp từ method riêng). Giúp tránh viết nhiều test gần như giống hệt nhau chỉ khác input/expected.' },
+  { id: 'test-8', topic: 'testing', level: 'hard', q: 'Test coverage cao (vd 90%) có đảm bảo code ít bug không?',
+    points: ['Coverage chỉ đo DÒNG/NHÁNH được chạy qua, không đo có assert đúng hay không', 'Có thể 100% coverage mà test không assert gì (false sense of security)', 'Coverage là chỉ báo hữu ích, không phải mục tiêu tự thân'],
+    answer: 'Không. Coverage chỉ đo tỉ lệ dòng/nhánh code được THỰC THI khi chạy test, không đo test có assert đúng hành vi hay không — một test gọi hàm nhưng không assert gì vẫn tính coverage. Coverage cao là tín hiệu tốt nhưng không đảm bảo chất lượng; cần đọc test có kiểm tra đúng kết quả mong đợi, kể cả edge case, không chỉ chạy qua dòng code.' },
 
   // ---------- Security & JWT ----------
   { id: 'sec-1', topic: 'security', level: 'easy', q: 'Authentication khác Authorization thế nào?',
@@ -369,6 +398,15 @@ export const QUESTION_BANK = [
   { id: 'sol-5', topic: 'solid', level: 'medium', q: 'Dependency Inversion khác Dependency Injection thế nào?',
     points: ['DIP: nguyên tắc — phụ thuộc abstraction (WHY)', 'DI: kỹ thuật — tiêm phụ thuộc (HOW)', 'DI là một cách đạt DIP'],
     answer: 'Dependency Inversion Principle là nguyên tắc thiết kế: module cấp cao và cấp thấp cùng phụ thuộc abstraction (lý do — WHY). Dependency Injection là kỹ thuật cụ thể tiêm phụ thuộc từ ngoài vào (cách làm — HOW), một phương tiện để đạt DIP.' },
+  { id: 'sol-6', topic: 'solid', level: 'medium', q: 'Ví dụ vi phạm Open/Closed Principle và cách sửa?',
+    points: ['Vi phạm: if-else/switch theo type, phải sửa code cũ mỗi khi thêm loại mới', 'Sửa: trừu tượng hóa hành vi khác nhau ra interface, mỗi loại implement riêng (Strategy)', 'Thêm loại mới = thêm class mới, không sửa code đang chạy'],
+    answer: 'Vi phạm điển hình: một method tính phí ship với if (type == "STANDARD") ... else if (type == "EXPRESS") ... — mỗi lần thêm loại vận chuyển mới phải sửa lại method này (rủi ro phá code cũ). Sửa bằng Strategy pattern: định nghĩa interface ShippingStrategy, mỗi loại một class implement riêng; thêm loại mới chỉ cần thêm class mới, không đụng vào code đang chạy — đúng tinh thần "mở để mở rộng, đóng để sửa".' },
+  { id: 'sol-7', topic: 'solid', level: 'medium', q: 'Interface Segregation Principle (ISP) là gì? Ví dụ vi phạm?',
+    points: ['Không ép class implement method nó không dùng tới', 'Vi phạm: interface "phình to" (Worker có cả work() và eat())', 'Sửa: tách thành nhiều interface nhỏ, chuyên biệt'],
+    answer: 'ISP: không nên ép một class phải implement những method nó không dùng tới. Vi phạm điển hình: interface Worker { void work(); void eat(); } — Robot implement Worker buộc phải có eat() dù không ăn. Sửa bằng cách tách thành Workable và Eatable riêng, class nào cần gì thì implement interface đó.' },
+  { id: 'sol-8', topic: 'solid', level: 'hard', q: 'Decorator pattern là gì? Khác Inheritance ở điểm nào?',
+    points: ['Bọc object gốc, thêm hành vi mà không sửa class gốc', 'Nhiều decorator ghép được với nhau linh hoạt lúc runtime', 'Khác kế thừa: kế thừa cố định lúc compile, decorator đổi được lúc runtime'],
+    answer: 'Decorator bọc một object gốc bằng object khác cùng interface để thêm hành vi mà không sửa class gốc và không cần tạo tổ hợp subclass cho mọi kết hợp tính năng (vd java.io: BufferedInputStream bọc FileInputStream). Khác kế thừa ở chỗ kế thừa gắn hành vi cố định lúc biên dịch, còn decorator ghép/tháo linh hoạt lúc runtime, tránh bùng nổ số lượng subclass.' },
 
   // ---------- JVM & Memory ----------
   { id: 'jvm-1', topic: 'jvm', level: 'medium', q: 'Heap và Stack khác nhau thế nào?',
@@ -383,6 +421,15 @@ export const QUESTION_BANK = [
   { id: 'jvm-4', topic: 'jvm', level: 'easy', q: 'ClassLoader là gì?',
     points: ['Nạp class vào JVM lúc cần', 'Phân cấp: Bootstrap -> Platform -> Application', 'Delegation model'],
     answer: 'ClassLoader nạp file .class vào JVM khi cần. Có phân cấp theo mô hình ủy quyền: Bootstrap (thư viện lõi) → Platform → Application (classpath ứng dụng); mỗi loader hỏi cha trước khi tự nạp.' },
+  { id: 'jvm-5', topic: 'jvm', level: 'medium', q: 'JIT compiler là gì? Khác Interpreter thế nào?',
+    points: ['Interpreter: dịch & chạy bytecode từng dòng, chậm nhưng khởi động nhanh', 'JIT: biên dịch phần code "nóng" (chạy nhiều lần) thành native code', 'HotSpot kết hợp cả hai để cân bằng tốc độ khởi động và tốc độ chạy lâu dài'],
+    answer: 'Interpreter dịch và chạy bytecode từng dòng một, khởi động nhanh nhưng chạy chậm hơn về sau. JIT (Just-In-Time) compiler theo dõi phần code chạy nhiều lần ("hot spot") và biên dịch thẳng sang native machine code để chạy nhanh hơn nhiều. JVM HotSpot kết hợp cả hai: interpreter chạy ngay lúc đầu, JIT tối ưu dần phần code nóng.' },
+  { id: 'jvm-6', topic: 'jvm', level: 'hard', q: 'String pool nằm ở đâu trong bộ nhớ? Vì sao quan trọng với hiệu năng?',
+    points: ['String pool (String Constant Pool) nằm trong heap (từ Java 7 trở đi)', 'Literal trùng nội dung -> dùng chung 1 object trong pool', 'intern() đưa string vào pool thủ công -> tiết kiệm bộ nhớ khi có nhiều chuỗi trùng lặp'],
+    answer: 'Từ Java 7, String pool nằm trong heap (trước đó ở PermGen). Các String literal có cùng nội dung được JVM tự động dùng chung một object duy nhất trong pool thay vì tạo object mới mỗi lần — tiết kiệm bộ nhớ đáng kể khi ứng dụng có nhiều chuỗi lặp lại. Gọi .intern() trên một String tạo bằng new có thể đưa nó vào pool thủ công để tái sử dụng.' },
+  { id: 'jvm-7', topic: 'jvm', level: 'medium', q: 'Các tham số JVM hay chỉnh khi tune heap là gì?',
+    points: ['-Xms: kích thước heap khởi tạo', '-Xmx: kích thước heap tối đa', '-XX:+UseG1GC: chọn G1 collector', '-Xss: kích thước stack mỗi thread'],
+    answer: '-Xms đặt kích thước heap ban đầu, -Xmx đặt heap tối đa (đặt bằng nhau tránh chi phí resize heap lúc chạy). -XX:+UseG1GC (hoặc -XX:+UseZGC) chọn thuật toán GC. -Xss chỉnh kích thước stack mỗi thread — tăng lên nếu gặp StackOverflowError với đệ quy hợp lệ nhưng sâu.' },
 
   // ---------- Behavioral ----------
   { id: 'beh-1', topic: 'behavioral', level: 'easy', q: 'Hãy kể về một dự án bạn tự hào nhất (theo STAR).',
@@ -612,6 +659,61 @@ export const QUESTION_BANK = [
   { id: 'micro-5', topic: 'microservice', level: 'hard', q: 'Quản lý transaction xuyên nhiều service (phân tán) thế nào? SAGA là gì?',
     points: ['Mỗi service DB riêng → khó ACID/2PC → dùng SAGA', 'SAGA: chuỗi giao dịch cục bộ + hành động bù trừ (compensation) khi lỗi', 'Orchestration (điều phối trung tâm) vs Choreography (theo event)', 'Chấp nhận eventual consistency'],
     answer: 'Vì mỗi service có database riêng nên không dùng được một transaction ACID duy nhất; giải pháp phổ biến là SAGA — chia thành chuỗi giao dịch cục bộ, nếu một bước lỗi thì chạy hành động bù trừ (compensation) để hoàn tác các bước trước, chấp nhận nhất quán cuối (eventual consistency). SAGA có hai kiểu: Orchestration (một bộ điều phối trung tâm ra lệnh) và Choreography (các service phản ứng theo event, không trung tâm).' },
+  { id: 'micro-6', topic: 'microservice', level: 'hard', q: 'Circuit Breaker là gì? Vì sao cần trong hệ microservice?',
+    points: ['Ngăn một service lỗi/chậm kéo sập cả chuỗi gọi (cascading failure)', '3 trạng thái: Closed (bình thường) -> Open (cắt, trả lỗi/fallback ngay) -> Half-Open (thử lại dè chừng)', 'Kèm timeout + fallback (Resilience4j, Hystrix cũ)'],
+    answer: 'Circuit Breaker theo dõi tỉ lệ lỗi khi gọi một service phụ thuộc; nếu vượt ngưỡng thì "mở mạch" (Open) — các lời gọi tiếp theo bị chặn và trả lỗi/fallback ngay lập tức thay vì chờ timeout, tránh kéo sập cả chuỗi service gọi lẫn nhau (cascading failure) khi một service đang gặp sự cố. Sau một khoảng thời gian chuyển sang Half-Open để thử lại vài request; nếu ổn thì về Closed (bình thường). Thường triển khai bằng Resilience4j (Hystrix đã ngừng phát triển).' },
+  { id: 'micro-7', topic: 'microservice', level: 'medium', q: 'Distributed tracing là gì? Vì sao cần khi debug microservice?',
+    points: ['Một request đi qua nhiều service -> cần theo dõi xuyên suốt', 'Trace ID gắn xuyên suốt mọi service trong cùng 1 request, Span ID cho từng bước', 'Công cụ: Zipkin, Jaeger, OpenTelemetry'],
+    answer: 'Một request thực tế thường đi qua nhiều service; nếu chỉ xem log riêng từng service thì rất khó ghép lại để biết request đó chậm/lỗi ở đâu. Distributed tracing gắn một Trace ID duy nhất xuyên suốt toàn bộ request (propagate qua header), mỗi bước xử lý ở từng service là một Span có Span ID riêng — công cụ như Zipkin/Jaeger/OpenTelemetry ghép các span lại thành một biểu đồ timeline giúp thấy ngay service nào đang là nút thắt.' },
+  { id: 'micro-8', topic: 'microservice', level: 'medium', q: 'Vì sao mỗi microservice nên có database riêng (Database per Service)?',
+    points: ['Tách rời triển khai/scale độc lập, đổi schema không ảnh hưởng service khác', 'Tránh coupling ngầm qua DB dùng chung (service khác đọc thẳng bảng nội bộ)', 'Đánh đổi: khó JOIN xuyên service, cần API/event để lấy dữ liệu tổng hợp'],
+    answer: 'Nếu nhiều service dùng chung một database, chúng bị coupling ngầm qua schema — đổi một cột có thể phá vỡ service khác đang đọc thẳng bảng đó, và không thể scale/deploy độc lập thật sự. Database per Service tách hẳn dữ liệu, mỗi service toàn quyền quản lý schema của mình. Đánh đổi: không JOIN trực tiếp xuyên service được nữa, phải gọi API hoặc dùng event/CQRS để tổng hợp dữ liệu liên service.' },
+
+  // ---------- System Design ----------
+  { id: 'design-1', topic: 'design', level: 'medium', q: 'Thiết kế URL Shortener (kiểu bit.ly) — các bước chính?',
+    points: ['1) Làm rõ yêu cầu: QPS đọc/ghi, custom alias, hết hạn link', '2) Sinh mã ngắn: base62 encode một ID tăng dần, hoặc hash + xử lý va chạm', '3) Schema: shortCode -> longUrl, index trên shortCode', '4) Đọc nhiều hơn ghi rất nhiều -> cache (Redis) trước DB', '5) Redirect dùng 301 (cache ở browser) hay 302 (đo được click) tùy nhu cầu'],
+    answer: 'Bước 1 làm rõ yêu cầu (tỉ lệ đọc/ghi, có cho đặt alias riêng không, link có hết hạn không). Bước 2 chọn cách sinh mã ngắn: encode base62 một ID tăng dần (đơn giản, không đụng độ) hoặc hash long URL rồi xử lý va chạm. Bước 3 schema đơn giản {shortCode, longUrl, createdAt, expiresAt}, index theo shortCode. Vì đọc (redirect) nhiều hơn ghi rất nhiều nên đặt cache (Redis) trước DB cho các mã hay truy cập. Cuối cùng chọn HTTP redirect 301 (cache ở trình duyệt, nhẹ server) hay 302 (không cache, đo được số click) tùy mục tiêu có cần thống kê không.' },
+  { id: 'design-2', topic: 'design', level: 'hard', q: 'Thiết kế Rate Limiter cho một API — cách tiếp cận?',
+    points: ['Thuật toán: Token Bucket (cho phép burst) hoặc Sliding Window (chính xác hơn Fixed Window)', 'Lưu bộ đếm ở Redis (INCR + EXPIRE) để dùng chung cho nhiều instance server', 'Key theo user/IP/API key + endpoint', 'Vượt ngưỡng -> trả 429 Too Many Requests + header Retry-After'],
+    answer: 'Chọn thuật toán: Token Bucket cho phép burst ngắn (nạp token đều, mỗi request tiêu 1 token), hoặc Sliding Window Log/Counter chính xác hơn Fixed Window (tránh lỗi "2x giới hạn ở ranh giới cửa sổ"). Với nhiều instance server cần bộ đếm CHUNG — dùng Redis (lệnh INCR + EXPIRE, hoặc script Lua để atomic) thay vì đếm in-memory từng instance. Khóa đếm theo user/IP/API key kết hợp endpoint. Khi vượt ngưỡng trả 429 Too Many Requests kèm header Retry-After để client biết chờ bao lâu.' },
+  { id: 'design-3', topic: 'design', level: 'hard', q: 'Ước lượng capacity/QPS — cách tiếp cận khi được hỏi "hệ thống cần bao nhiêu server"?',
+    points: ['Suy ra QPS trung bình từ DAU × số request/user/ngày ÷ 86400 giây', 'Peak QPS thường gấp 2-5 lần trung bình (giờ cao điểm)', 'Ước lượng storage: số bản ghi × kích thước trung bình × thời gian lưu', 'Không cần số chính xác — quan trọng là THỂ HIỆN CÁCH TÍNH hợp lý'],
+    answer: 'Không ai kỳ vọng số chính xác — interviewer muốn thấy CÁCH ước lượng có logic. Ví dụ: DAU 10 triệu, mỗi user gửi 5 request/ngày → 50 triệu request/ngày ÷ 86400s ≈ 580 QPS trung bình; nhân với hệ số peak (thường 2-5x giờ cao điểm) ra khoảng 1500-3000 QPS đỉnh — từ đó suy ra cần bao nhiêu instance nếu mỗi instance xử lý được vài trăm QPS. Tương tự cho storage: số bản ghi mới/ngày × kích thước trung bình mỗi bản ghi × số ngày lưu trữ.' },
+  { id: 'design-4', topic: 'design', level: 'medium', q: 'Thiết kế API phân trang (pagination) cho danh sách lớn — offset hay cursor?',
+    points: ['Offset/limit (?page=5&size=20): đơn giản nhưng chậm dần khi offset lớn (DB phải quét/skip)', 'Cursor-based (?after=<id_hoặc_encoded_key>): dùng keyset trên cột index, ổn định hơn khi dữ liệu bị thêm/xóa giữa các trang', 'Offset hợp UI có số trang; cursor hợp infinite-scroll/feed lớn'],
+    answer: 'Offset/limit dễ implement và cho phép nhảy thẳng tới trang N, nhưng chậm dần khi offset lớn (DB phải quét qua hết các dòng bị bỏ) và có thể trả trùng/thiếu record nếu dữ liệu bị thêm/xóa giữa các lần gọi. Cursor-based (keyset pagination) dùng giá trị của cột index (thường là id hoặc created_at) làm điểm bắt đầu trang sau, tốc độ ổn định bất kể độ sâu và không lệch khi dữ liệu thay đổi — hợp với feed/danh sách lớn kiểu infinite-scroll. Offset hợp khi UI cần hiển thị số trang cụ thể (1,2,3…) và tổng số trang.' },
+  { id: 'design-5', topic: 'design', level: 'medium', q: 'Khi nào thêm cache (Redis) vào hệ thống? Chọn chiến lược ghi nào?',
+    points: ['Thêm khi: đọc nhiều hơn ghi rất nhiều, dữ liệu ít đổi, truy vấn tính toán nặng lặp lại', 'Cache-aside (lazy loading): app tự đọc cache trước, miss thì query DB rồi ghi lại cache — phổ biến nhất', 'Write-through: ghi cache đồng thời với DB — dữ liệu luôn mới nhưng chậm hơn khi ghi', 'Luôn đặt TTL để tránh dữ liệu cũ vĩnh viễn nếu quên invalidate'],
+    answer: 'Thêm cache khi tỉ lệ đọc/ghi lệch hẳn về đọc, dữ liệu ít thay đổi, hoặc truy vấn tốn kém bị lặp lại nhiều lần (dashboard, danh sách top). Chiến lược phổ biến nhất là cache-aside: app đọc cache trước, miss thì query DB rồi tự ghi ngược vào cache. Write-through ghi đồng thời cache + DB mỗi lần ghi (dữ liệu cache luôn mới nhưng ghi chậm hơn). Dù chọn chiến lược nào cũng nên đặt TTL hợp lý làm lưới an toàn, tránh cache cũ tồn tại vĩnh viễn nếu quên invalidate khi update DB.' },
+  { id: 'design-6', topic: 'design', level: 'hard', q: 'Idempotency cho API thanh toán/đặt hàng ở mức nâng cao hơn scenario cơ bản — cần thêm gì?',
+    points: ['Idempotency key kèm response cache: request lặp trả NGUYÊN response cũ (kể cả status code), không chỉ né tạo trùng', 'TTL cho key (vd 24h) để không phình bảng vô hạn', 'Xử lý trường hợp request đầu ĐANG xử lý dở mà request lặp tới (lock theo key hoặc trạng thái "processing")'],
+    answer: 'Ngoài việc dùng idempotency key để chặn tạo trùng bản ghi, hệ thống nâng cao còn LƯU LẠI response của lần xử lý đầu tiên (status code + body) gắn với key đó — request lặp lại với cùng key trả về NGUYÊN response cũ thay vì tính toán lại hay trả lỗi. Key nên có TTL (vd 24-48h) để bảng lưu không phình vô hạn. Ca khó là khi request lặp tới trong lúc request đầu CÒN ĐANG xử lý dở (chưa có response để trả) — cần một trạng thái "processing" tạm thời (lock theo key hoặc unique constraint) để request lặp biết chờ/thử lại thay vì xử lý song song gây trùng.' },
+  { id: 'design-7', topic: 'design', level: 'hard', q: 'Thiết kế hệ thống thông báo (Notification System) gửi email/SMS/push cho hàng triệu user — những điểm chính?',
+    points: ['Tách API nhận yêu cầu gửi (nhanh, trả 202 ngay) khỏi worker gửi thật (qua message queue)', 'Queue (Kafka/RabbitMQ) đệm request, worker scale ngang xử lý theo tốc độ nhà cung cấp (SES/Twilio…) cho phép', 'Retry + backoff khi provider lỗi tạm thời; Dead Letter Queue cho lỗi vĩnh viễn', 'Template hóa nội dung theo loại thông báo + throttling theo user để tránh spam'],
+    answer: 'API nhận yêu cầu gửi thông báo nên trả về ngay (202 Accepted) và đẩy việc gửi thật vào message queue (Kafka/RabbitMQ) thay vì gửi đồng bộ — vì nhà cung cấp email/SMS (SES, Twilio) có giới hạn tốc độ và độ trễ riêng. Worker đọc queue, scale ngang theo tải, gửi theo đúng tốc độ nhà cung cấp cho phép, retry có backoff khi lỗi tạm thời, đẩy sang Dead Letter Queue nếu lỗi vĩnh viễn (email sai định dạng…) để không chặn cả hàng đợi. Nội dung nên template hóa theo loại thông báo, và có throttling theo user (vd tối đa N thông báo/giờ) để tránh spam người dùng.' },
+
+  // ---------- Hạ tầng thực tế (Docker/CI-CD/Redis/Observability) ----------
+  { id: 'infra-1', topic: 'infra', level: 'easy', q: 'Docker container khác Virtual Machine (VM) thế nào?',
+    points: ['Container chia sẻ chung OS kernel của host -> nhẹ, khởi động giây', 'VM ảo hóa cả phần cứng + có OS riêng -> nặng, khởi động phút', 'Image = bản đóng gói bất biến (app + dependency); container = instance đang chạy của image'],
+    answer: 'Container ảo hóa ở tầng hệ điều hành — nhiều container chia sẻ chung kernel của máy host nên nhẹ, khởi động trong vài giây, và đóng gói gọn đúng app + dependency cần thiết. VM ảo hóa cả phần cứng, mỗi VM chạy một OS đầy đủ riêng nên nặng hơn nhiều, khởi động mất vài phút nhưng cô lập mạnh hơn. Image là bản đóng gói bất biến (giống class), container là một instance đang chạy từ image đó (giống object).' },
+  { id: 'infra-2', topic: 'infra', level: 'medium', q: 'Dockerfile cho một app Spring Boot thường gồm những bước gì? Multi-stage build để làm gì?',
+    points: ['FROM base image (JDK để build, JRE để chạy) -> COPY source -> RUN build (mvn/gradle) -> COPY jar -> ENTRYPOINT java -jar', 'Multi-stage: 1 stage build (có JDK+Maven, image to) -> 1 stage runtime (chỉ JRE + jar, image nhỏ)', 'Multi-stage giảm size image cuối, không mang theo công cụ build không cần lúc chạy'],
+    answer: 'Cấu trúc cơ bản: chọn base image, copy source code, chạy lệnh build (mvn package/gradle build) ra file jar, rồi ENTRYPOINT chạy java -jar app.jar. Multi-stage build tách thành 2 giai đoạn: stage đầu dùng image có đầy đủ JDK + Maven/Gradle để build ra jar (image này to, chỉ dùng tạm), stage sau COPY riêng file jar đã build sang một image JRE gọn nhẹ để chạy — image cuối cùng nhỏ hơn nhiều vì không mang theo toolchain build không cần thiết lúc runtime.' },
+  { id: 'infra-3', topic: 'infra', level: 'medium', q: 'CI/CD pipeline cho một service Java thường có những bước nào?',
+    points: ['CI: mỗi lần push -> checkout -> build -> chạy unit test -> (chạy static analysis/lint)', 'Build Docker image -> push lên registry (nếu pass hết)', 'CD: deploy tự động lên staging; deploy production thường cần approve/gate thủ công hoặc theo nhánh', 'Fail sớm: test nhanh chạy trước, integration test chậm chạy sau'],
+    answer: 'CI (Continuous Integration): mỗi lần push code, pipeline tự checkout, build, chạy unit test (và thường cả static analysis/lint) — fail sớm nếu có lỗi để không lãng phí thời gian chạy các bước sau. Nếu pass, build Docker image và push lên container registry. CD (Continuous Deployment/Delivery): tự động deploy lên môi trường staging; deploy production thường có thêm bước approve thủ công hoặc gate theo nhánh (chỉ nhánh main/release mới được lên prod) để kiểm soát rủi ro.' },
+  { id: 'infra-4', topic: 'infra', level: 'medium', q: 'Dùng Redis làm cache khác gì so với dùng làm session store hay message queue?',
+    points: ['Cache: lưu tạm kết quả tính toán/query tốn kém, có TTL, mất thì query lại DB được (không phải nguồn sự thật)', 'Session store: lưu trạng thái đăng nhập user, cần persistence tốt hơn (mất session -> user bị đăng xuất)', 'Redis Streams/Pub-Sub: dùng làm message queue nhẹ, không bền/mạnh bằng Kafka cho khối lượng lớn'],
+    answer: 'Làm cache: Redis chỉ lưu bản sao tạm của dữ liệu vốn có ở DB, có TTL, mất dữ liệu cache thì hệ thống vẫn đúng (chỉ chậm hơn vì phải query lại DB) — Redis không phải "nguồn sự thật". Làm session store: lưu trạng thái đăng nhập, cần quan tâm hơn tới persistence (AOF/RDB) vì mất dữ liệu này làm user bị văng ra ngoài. Làm message queue qua Redis Streams/Pub-Sub: dùng được cho khối lượng vừa phải, nhưng không có đầy đủ tính năng bền vững/replay/partition mạnh như Kafka cho hệ thống lớn.' },
+  { id: 'infra-5', topic: 'infra', level: 'hard', q: 'Ba trụ cột của Observability (quan sát hệ thống) là gì?',
+    points: ['Logs: sự kiện rời rạc, chi tiết, tìm lỗi cụ thể', 'Metrics: số liệu theo thời gian (CPU, QPS, error rate, latency) -> vẽ dashboard, đặt alert', 'Traces: theo dấu một request xuyên nhiều service (xem thêm chủ đề Microservice)'],
+    answer: 'Logs ghi lại sự kiện rời rạc, chi tiết từng dòng — tốt để tìm hiểu CHUYỆN GÌ đã xảy ra ở một request/lỗi cụ thể. Metrics là số liệu đo theo thời gian (CPU, RAM, QPS, error rate, p95/p99 latency), tổng hợp thành dashboard và dùng để đặt alert khi vượt ngưỡng. Traces theo dấu đường đi của MỘT request xuyên qua nhiều service để thấy nó chậm/lỗi ở bước nào (distributed tracing). Ba trụ cột bổ trợ nhau: metric báo có sự cố, trace/log giúp tìm ra nguyên nhân.' },
+  { id: 'infra-6', topic: 'infra', level: 'medium', q: 'REST và gRPC khác nhau thế nào? Khi nào chọn gRPC?',
+    points: ['REST: JSON qua HTTP/1.1, dễ đọc/debug, phổ biến cho public API', 'gRPC: Protocol Buffers (binary) qua HTTP/2, nhanh hơn, hỗ trợ streaming hai chiều', 'gRPC hợp giao tiếp internal service-to-service hiệu năng cao; REST hợp API public/dễ tích hợp'],
+    answer: 'REST truyền JSON (text, dễ đọc/debug bằng mắt) qua HTTP/1.1, được hỗ trợ rộng rãi, hợp cho API public vì client nào cũng gọi được dễ dàng. gRPC dùng Protocol Buffers (định dạng nhị phân, nhỏ gọn và nhanh hơn JSON) qua HTTP/2, hỗ trợ streaming hai chiều và có contract rõ ràng (.proto) tự sinh code client/server. gRPC hợp giao tiếp nội bộ giữa các service cần hiệu năng cao và độ trễ thấp; REST vẫn là lựa chọn mặc định cho API hướng ra ngoài vì tính phổ dụng.' },
+  { id: 'infra-7', topic: 'infra', level: 'medium', q: 'API versioning là gì? Các cách làm phổ biến?',
+    points: ['Mục đích: đổi API mà không phá vỡ client cũ đang dùng bản trước', 'URI versioning: /api/v1/users, /api/v2/users (đơn giản, dễ thấy nhất)', 'Header versioning: Accept: application/vnd.api+json;version=2 (URL sạch hơn nhưng khó test bằng tay hơn)'],
+    answer: 'API versioning cho phép thay đổi/breaking-change một API mà không làm hỏng các client cũ vẫn đang gọi bản trước đó. Cách phổ biến nhất là URI versioning (/api/v1/users vs /api/v2/users) — đơn giản, dễ thấy ngay trên URL, dễ test bằng trình duyệt/curl. Header versioning (đặt version trong Accept header hoặc custom header) giữ URL sạch hơn nhưng khó thao tác thủ công hơn và dễ bị bỏ sót khi client quên set header. Dù chọn cách nào cũng nên có chính sách rõ ràng về thời gian hỗ trợ version cũ trước khi khai tử (deprecation).' },
 
   // ---------- Tình huống & Thiết kế (scenario/behavioral-kỹ thuật) ----------
   { id: 'scn-1', topic: 'scenario', level: 'medium', q: 'Thiết kế API "đặt hàng" sao cho user bấm submit nhiều lần (double-click, mạng lag rồi retry) không tạo hai đơn trùng?',
@@ -726,6 +828,20 @@ export const CHEATSHEET = [
     'API Gateway = cổng vào (routing/auth/rate limit); Service Discovery (Eureka/Consul) tránh hardcode địa chỉ.',
     'UNION loại trùng (chậm) vs UNION ALL giữ trùng; View chạy lại vs Materialized View lưu sẵn; CTE = WITH.',
   ] },
+  { title: 'System Design nhanh', icon: '🏗️', items: [
+    'Luôn làm rõ yêu cầu + ước lượng QPS/storage trước khi thiết kế — thể hiện CÁCH tính, không cần số chính xác.',
+    'Đọc nhiều hơn ghi rất nhiều → thêm cache (Redis, cache-aside) trước DB, nhớ đặt TTL.',
+    'Rate limiter: Token Bucket (cho phép burst) hoặc Sliding Window; đếm chung qua Redis khi nhiều instance.',
+    'Phân trang danh sách lớn: cursor/keyset ổn định hơn offset khi dữ liệu hay đổi.',
+    'Idempotency nâng cao: lưu lại RESPONSE theo idempotency key, không chỉ né tạo trùng bản ghi.',
+  ] },
+  { title: 'Hạ tầng thực tế', icon: '🐳', items: [
+    'Container chia sẻ kernel host (nhẹ, giây); VM ảo hóa cả phần cứng (nặng, phút).',
+    'Multi-stage Docker build: stage build (JDK+Maven) tách khỏi stage runtime (chỉ JRE+jar) → image nhỏ.',
+    'CI: build + unit test fail sớm trước khi build image; CD: staging tự động, production cần gate/approve.',
+    '3 trụ cột observability: Logs (chi tiết một sự kiện), Metrics (số liệu theo thời gian, alert), Traces (theo dấu 1 request qua nhiều service).',
+    'gRPC (binary, HTTP/2) hợp nội bộ hiệu năng cao; REST (JSON) hợp API public dễ tích hợp.',
+  ] },
 ]
 
 // -------------------- Lộ trình 2 tuần --------------------
@@ -741,15 +857,15 @@ export const CRASH_PLAN = [
   { day: 9, topic: '@Transactional + JPQL + DTO', tasks: ['Hiểu propagation, self-invocation', 'Khi nào native query'] },
   { day: 10, topic: 'Testing (JUnit + Mockito)', tasks: ['@Mock vs @InjectMocks, stub vs verify', 'Viết 3 unit test'] },
   { day: 11, topic: 'Spring Security + JWT', tasks: ['Flow login → token → filter', 'JWT KHÔNG mã hóa; authn vs authz'] },
-  { day: 12, topic: 'SOLID + Patterns + JVM', tasks: ['5 nguyên tắc SOLID trong 30s', 'Heap/stack/GC/memory leak'] },
-  { day: 13, topic: 'SQL sâu + Frontend + Stack thực tế', tasks: ['Ôn tối ưu query (EXPLAIN/index), composite/covering index', 'Ôn lướt JS core + React/Angular; nhớ Struts/MyBatis/batch trong CV'] },
+  { day: 12, topic: 'SOLID + Patterns + JVM + System Design', tasks: ['5 nguyên tắc SOLID trong 30s', 'Heap/stack/GC/memory leak', 'Luyện 1-2 walkthrough System Design (rate limiter hoặc URL shortener)'] },
+  { day: 13, topic: 'SQL sâu + Frontend + Stack thực tế + Hạ tầng', tasks: ['Ôn tối ưu query (EXPLAIN/index), composite/covering index', 'Ôn lướt JS core + React/Angular; nhớ Struts/MyBatis/batch trong CV', 'Ôn nhanh Docker/CI-CD/Redis/observability (chủ đề Hạ tầng thực tế)'] },
   { day: 14, topic: 'Kỹ năng PV + Mock Interview toàn phần', tasks: ['Luyện giới thiệu bản thân 60s (VI+EN) + STAR 2–3 dự án', 'Phỏng vấn thử mọi chủ đề, ôn lại chủ đề điểm thấp'] },
 ]
 
 // -------------------- Coding challenge (chạy thật qua run-java) --------------------
 export const CODING_CHALLENGES = [
   {
-    id: 'reverse-string', title: 'Đảo ngược chuỗi', level: 'easy',
+    id: 'reverse-string', title: 'Đảo ngược chuỗi', level: 'easy', pattern: 'string',
     prompt: 'Viết hàm đảo ngược một chuỗi (không dùng StringBuilder.reverse). In ra "olleh" cho input "hello".',
     starter: `public class Main {
     static String reverse(String s) {
@@ -776,7 +892,7 @@ export const CODING_CHALLENGES = [
 `,
   },
   {
-    id: 'fizzbuzz', title: 'FizzBuzz', level: 'easy',
+    id: 'fizzbuzz', title: 'FizzBuzz', level: 'easy', pattern: 'basic',
     prompt: 'In 1..15: bội 3 → "Fizz", bội 5 → "Buzz", bội cả hai → "FizzBuzz", còn lại in số.',
     starter: `public class Main {
     public static void main(String[] args) {
@@ -798,7 +914,7 @@ export const CODING_CHALLENGES = [
 `,
   },
   {
-    id: 'two-sum', title: 'Two Sum (HashMap)', level: 'medium',
+    id: 'two-sum', title: 'Two Sum (HashMap)', level: 'medium', pattern: 'hashmap',
     prompt: 'Cho mảng {2,7,11,15} và target 9, in chỉ số hai phần tử cộng lại bằng target: "0 1".',
     starter: `import java.util.*;
 public class Main {
@@ -832,7 +948,7 @@ public class Main {
 `,
   },
   {
-    id: 'dedup', title: 'Loại bỏ trùng lặp (Set)', level: 'easy',
+    id: 'dedup', title: 'Loại bỏ trùng lặp (Set)', level: 'easy', pattern: 'hashmap',
     prompt: 'Cho {1,2,2,3,3,3,4}, in các số duy nhất giữ thứ tự xuất hiện: "1 2 3 4".',
     starter: `import java.util.*;
 public class Main {
@@ -857,7 +973,7 @@ public class Main {
 `,
   },
   {
-    id: 'word-count', title: 'Đếm tần suất từ (Stream)', level: 'medium',
+    id: 'word-count', title: 'Đếm tần suất từ (Stream)', level: 'medium', pattern: 'stream',
     prompt: 'Đếm số lần xuất hiện mỗi từ trong "a b a c b a" rồi in map (dùng Stream groupingBy).',
     starter: `import java.util.*;
 import java.util.stream.*;
@@ -882,7 +998,7 @@ public class Main {
 `,
   },
   {
-    id: 'anagram', title: 'Kiểm tra Anagram', level: 'medium',
+    id: 'anagram', title: 'Kiểm tra Anagram', level: 'medium', pattern: 'string',
     prompt: 'Hai chuỗi có phải anagram không? In true cho "listen"/"silent", false cho "abc"/"abd".',
     starter: `import java.util.*;
 public class Main {
@@ -913,7 +1029,7 @@ public class Main {
 `,
   },
   {
-    id: 'fibonacci', title: 'Fibonacci (vòng lặp)', level: 'easy',
+    id: 'fibonacci', title: 'Fibonacci (vòng lặp)', level: 'easy', pattern: 'basic',
     prompt: 'In 10 số Fibonacci đầu tiên cách nhau bởi dấu cách: "0 1 1 2 3 5 8 13 21 34".',
     starter: `public class Main {
     public static void main(String[] args) {
@@ -936,7 +1052,7 @@ public class Main {
 `,
   },
   {
-    id: 'palindrome', title: 'Kiểm tra Palindrome', level: 'easy',
+    id: 'palindrome', title: 'Kiểm tra Palindrome', level: 'easy', pattern: 'two-pointer',
     prompt: 'Chuỗi có đối xứng không? In true cho "racecar", false cho "hello".',
     starter: `public class Main {
     static boolean isPalindrome(String s) {
@@ -964,7 +1080,7 @@ public class Main {
 `,
   },
   {
-    id: 'debug-cme', title: 'Sửa lỗi: xóa phần tử khi đang lặp (debug)', level: 'medium',
+    id: 'debug-cme', title: 'Sửa lỗi: xóa phần tử khi đang lặp (debug)', level: 'medium', pattern: 'debug',
     prompt: 'Đoạn code dưới NÉM ConcurrentModificationException khi chạy. Sửa lại (không đổi kết quả mong muốn) để in ra các số CHẴN còn lại: "2 4".',
     starter: `import java.util.*;
 public class Main {
@@ -995,7 +1111,7 @@ public class Main {
 `,
   },
   {
-    id: 'valid-parentheses', title: 'Kiểm tra ngoặc hợp lệ (Stack)', level: 'medium',
+    id: 'valid-parentheses', title: 'Kiểm tra ngoặc hợp lệ (Stack)', level: 'medium', pattern: 'stack',
     prompt: 'Kiểm tra một chuỗi ngoặc có hợp lệ (cân bằng, đúng thứ tự) không. In true cho "()[]{}", false cho "(]".',
     starter: `import java.util.*;
 public class Main {
@@ -1035,7 +1151,7 @@ public class Main {
 `,
   },
   {
-    id: 'group-anagrams', title: 'Gom nhóm Anagram (Stream)', level: 'medium',
+    id: 'group-anagrams', title: 'Gom nhóm Anagram (Stream)', level: 'medium', pattern: 'stream',
     prompt: 'Cho mảng từ, gom các từ là anagram của nhau vào cùng nhóm. In số nhóm cho {"eat","tea","tan","ate","nat","bat"} (kết quả: 3).',
     starter: `import java.util.*;
 import java.util.stream.*;
@@ -1065,7 +1181,7 @@ public class Main {
 `,
   },
   {
-    id: 'binary-search', title: 'Binary Search', level: 'medium',
+    id: 'binary-search', title: 'Binary Search', level: 'medium', pattern: 'binary-search',
     prompt: 'Viết binary search trên mảng đã sắp xếp, trả về chỉ số phần tử (hoặc -1 nếu không có). In chỉ số của 7 trong {1,3,5,7,9,11} (kết quả: 3).',
     starter: `public class Main {
     static int search(int[] a, int target) {
@@ -1096,7 +1212,7 @@ public class Main {
 `,
   },
   {
-    id: 'merge-intervals', title: 'Gộp khoảng chồng lấn (Merge Intervals)', level: 'hard',
+    id: 'merge-intervals', title: 'Gộp khoảng chồng lấn (Merge Intervals)', level: 'hard', pattern: 'interval',
     prompt: 'Cho danh sách khoảng {{1,3},{2,6},{8,10},{15,18}}, gộp các khoảng chồng lấn. In kết quả: "[1,6] [8,10] [15,18]".',
     starter: `import java.util.*;
 public class Main {
@@ -1128,7 +1244,7 @@ public class Main {
 `,
   },
   {
-    id: 'lru-cache', title: 'LRU Cache (LinkedHashMap)', level: 'hard',
+    id: 'lru-cache', title: 'LRU Cache (LinkedHashMap)', level: 'hard', pattern: 'design',
     prompt: 'Cài đặt LRU Cache dung lượng 2 bằng LinkedHashMap (access-order). put(1,1); put(2,2); get(1); put(3,3) (đẩy 2 ra vì lâu không dùng); in các key còn lại theo thứ tự: "1 3".',
     starter: `import java.util.*;
 public class Main {
@@ -1178,6 +1294,536 @@ public class Main {
         cache.put(3, 3);
         StringBuilder sb = new StringBuilder();
         for (int k : cache.keySet()) sb.append(k).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+  },
+  {
+    id: 'linked-list-reverse', title: 'Đảo ngược Linked List', level: 'medium', pattern: 'linked-list',
+    prompt: 'Đảo ngược một singly linked list 1->2->3->4->5. In dãy sau khi đảo: "5 4 3 2 1".',
+    starter: `public class Main {
+    static class Node {
+        int val;
+        Node next;
+        Node(int val) { this.val = val; }
+    }
+    static Node reverse(Node head) {
+        // TODO: đảo ngược danh sách liên kết, trả về head mới
+        return head;
+    }
+    public static void main(String[] args) {
+        Node head = new Node(1);
+        head.next = new Node(2);
+        head.next.next = new Node(3);
+        head.next.next.next = new Node(4);
+        head.next.next.next.next = new Node(5);
+        Node rev = reverse(head);
+        StringBuilder sb = new StringBuilder();
+        for (Node n = rev; n != null; n = n.next) sb.append(n.val).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+    hints: ['Giữ 3 con trỏ: prev, curr, next', 'Mỗi bước: lưu curr.next, đảo curr.next = prev, rồi dịch chuyển cả prev/curr'],
+    solution: `public class Main {
+    static class Node {
+        int val;
+        Node next;
+        Node(int val) { this.val = val; }
+    }
+    static Node reverse(Node head) {
+        Node prev = null, curr = head;
+        while (curr != null) {
+            Node next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        return prev;
+    }
+    public static void main(String[] args) {
+        Node head = new Node(1);
+        head.next = new Node(2);
+        head.next.next = new Node(3);
+        head.next.next.next = new Node(4);
+        head.next.next.next.next = new Node(5);
+        Node rev = reverse(head);
+        StringBuilder sb = new StringBuilder();
+        for (Node n = rev; n != null; n = n.next) sb.append(n.val).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+  },
+  {
+    id: 'linked-list-cycle', title: 'Phát hiện chu trình (Floyd)', level: 'medium', pattern: 'linked-list',
+    prompt: 'Kiểm tra một linked list có chu trình không, dùng thuật toán Floyd (slow/fast pointer). In true cho list có chu trình, false cho list bình thường.',
+    starter: `public class Main {
+    static class Node {
+        int val;
+        Node next;
+        Node(int val) { this.val = val; }
+    }
+    static boolean hasCycle(Node head) {
+        // TODO: dùng hai con trỏ slow/fast (Floyd's Tortoise and Hare)
+        return false;
+    }
+    public static void main(String[] args) {
+        Node a = new Node(1);
+        Node b = new Node(2);
+        Node c = new Node(3);
+        a.next = b; b.next = c; c.next = a; // có chu trình
+        System.out.println(hasCycle(a));
+
+        Node x = new Node(1);
+        x.next = new Node(2); // không có chu trình
+        System.out.println(hasCycle(x));
+    }
+}
+`,
+    hints: ['slow đi 1 bước, fast đi 2 bước mỗi vòng lặp', 'Nếu có chu trình, slow và fast chắc chắn gặp nhau; fast chạm null nghĩa là không có chu trình'],
+    solution: `public class Main {
+    static class Node {
+        int val;
+        Node next;
+        Node(int val) { this.val = val; }
+    }
+    static boolean hasCycle(Node head) {
+        Node slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+            if (slow == fast) return true;
+        }
+        return false;
+    }
+    public static void main(String[] args) {
+        Node a = new Node(1);
+        Node b = new Node(2);
+        Node c = new Node(3);
+        a.next = b; b.next = c; c.next = a;
+        System.out.println(hasCycle(a));
+
+        Node x = new Node(1);
+        x.next = new Node(2);
+        System.out.println(hasCycle(x));
+    }
+}
+`,
+  },
+  {
+    id: 'bst-inorder', title: 'BST: chèn & duyệt in-order', level: 'medium', pattern: 'tree',
+    prompt: 'Chèn các số {5,3,8,1,4,7,9} vào một Binary Search Tree rồi duyệt in-order (phải tăng dần): "1 3 4 5 7 8 9".',
+    starter: `public class Main {
+    static class Node {
+        int val;
+        Node left, right;
+        Node(int val) { this.val = val; }
+    }
+    static Node insert(Node root, int val) {
+        // TODO: chèn val vào đúng vị trí BST (đệ quy), trả về root
+        return root;
+    }
+    static void inorder(Node root, StringBuilder sb) {
+        // TODO: duyệt trái - gốc - phải
+    }
+    public static void main(String[] args) {
+        Node root = null;
+        for (int v : new int[]{5,3,8,1,4,7,9}) root = insert(root, v);
+        StringBuilder sb = new StringBuilder();
+        inorder(root, sb);
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+    hints: ['insert: val nhỏ hơn root thì đi trái, lớn hơn thì đi phải, gặp null thì tạo Node mới', 'inorder: đệ quy trái, in gốc, đệ quy phải -> luôn ra thứ tự tăng dần với BST'],
+    solution: `public class Main {
+    static class Node {
+        int val;
+        Node left, right;
+        Node(int val) { this.val = val; }
+    }
+    static Node insert(Node root, int val) {
+        if (root == null) return new Node(val);
+        if (val < root.val) root.left = insert(root.left, val);
+        else root.right = insert(root.right, val);
+        return root;
+    }
+    static void inorder(Node root, StringBuilder sb) {
+        if (root == null) return;
+        inorder(root.left, sb);
+        sb.append(root.val).append(" ");
+        inorder(root.right, sb);
+    }
+    public static void main(String[] args) {
+        Node root = null;
+        for (int v : new int[]{5,3,8,1,4,7,9}) root = insert(root, v);
+        StringBuilder sb = new StringBuilder();
+        inorder(root, sb);
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+  },
+  {
+    id: 'bst-validate', title: 'Kiểm tra Valid BST', level: 'hard', pattern: 'tree',
+    prompt: 'Kiểm tra một cây nhị phân có phải Binary Search Tree hợp lệ không (không chỉ so root với con trực tiếp). Cây 1 hợp lệ -> true, cây 2 không hợp lệ -> false.',
+    starter: `public class Main {
+    static class Node {
+        int val;
+        Node left, right;
+        Node(int val) { this.val = val; }
+    }
+    static boolean isValidBST(Node root, Long lo, Long hi) {
+        // TODO: kiểm tra root.val nằm trong (lo, hi), rồi đệ quy siết khoảng cho con trái/phải
+        return true;
+    }
+    public static void main(String[] args) {
+        Node valid = new Node(5);
+        valid.left = new Node(3);
+        valid.right = new Node(8);
+        System.out.println(isValidBST(valid, null, null));
+
+        Node invalid = new Node(5);
+        invalid.left = new Node(3);
+        invalid.right = new Node(4); // 4 nằm bên phải nhưng nhỏ hơn root -> vi phạm BST
+        System.out.println(isValidBST(invalid, null, null));
+    }
+}
+`,
+    hints: ['Không chỉ so root với con trực tiếp — phải giữ khoảng (lo, hi) siết dần qua từng tầng đệ quy', 'Con trái: hi mới = giá trị root; con phải: lo mới = giá trị root'],
+    solution: `public class Main {
+    static class Node {
+        int val;
+        Node left, right;
+        Node(int val) { this.val = val; }
+    }
+    static boolean isValidBST(Node root, Long lo, Long hi) {
+        if (root == null) return true;
+        if (lo != null && root.val <= lo) return false;
+        if (hi != null && root.val >= hi) return false;
+        return isValidBST(root.left, lo, (long) root.val) && isValidBST(root.right, (long) root.val, hi);
+    }
+    public static void main(String[] args) {
+        Node valid = new Node(5);
+        valid.left = new Node(3);
+        valid.right = new Node(8);
+        System.out.println(isValidBST(valid, null, null));
+
+        Node invalid = new Node(5);
+        invalid.left = new Node(3);
+        invalid.right = new Node(4);
+        System.out.println(isValidBST(invalid, null, null));
+    }
+}
+`,
+  },
+  {
+    id: 'subsets', title: 'Sinh tất cả tập con (Backtracking)', level: 'medium', pattern: 'recursion',
+    prompt: 'In tất cả tập con của {1,2,3} (kể cả tập rỗng) bằng backtracking, mỗi tập một dòng.',
+    starter: `import java.util.*;
+public class Main {
+    static List<List<Integer>> result = new ArrayList<>();
+    static void backtrack(int[] nums, int start, List<Integer> current) {
+        // TODO: thêm bản sao current vào result, rồi thử thêm từng số từ index start trở đi
+    }
+    public static void main(String[] args) {
+        backtrack(new int[]{1,2,3}, 0, new ArrayList<>());
+        for (List<Integer> subset : result) System.out.println(subset);
+    }
+}
+`,
+    hints: ['Mỗi lời gọi backtrack: trước tiên add(new ArrayList<>(current)) vào result (bản sao, không phải chính current)', 'for i từ start..n-1: thêm nums[i] vào current, đệ quy backtrack(nums, i+1, current), rồi remove phần tử cuối (quay lui)'],
+    solution: `import java.util.*;
+public class Main {
+    static List<List<Integer>> result = new ArrayList<>();
+    static void backtrack(int[] nums, int start, List<Integer> current) {
+        result.add(new ArrayList<>(current));
+        for (int i = start; i < nums.length; i++) {
+            current.add(nums[i]);
+            backtrack(nums, i + 1, current);
+            current.remove(current.size() - 1);
+        }
+    }
+    public static void main(String[] args) {
+        backtrack(new int[]{1,2,3}, 0, new ArrayList<>());
+        for (List<Integer> subset : result) System.out.println(subset);
+    }
+}
+`,
+  },
+  {
+    id: 'permutations', title: 'Sinh hoán vị (Backtracking)', level: 'hard', pattern: 'recursion',
+    prompt: 'In tất cả hoán vị của {1,2,3} bằng backtracking hoán đổi tại chỗ (in-place swap), mỗi hoán vị một dòng — có 6 dòng.',
+    starter: `import java.util.*;
+public class Main {
+    static void permute(int[] nums, int l) {
+        // TODO: nếu l == nums.length thì in nums; ngược lại thử hoán đổi từng vị trí i >= l rồi đệ quy, sau đó hoán đổi lại (quay lui)
+    }
+    public static void main(String[] args) {
+        permute(new int[]{1,2,3}, 0);
+    }
+}
+`,
+    hints: ['Điều kiện dừng: l == nums.length -> in mảng (Arrays.toString)', 'for i từ l..n-1: swap(l,i), đệ quy permute(nums, l+1), rồi swap(l,i) lần nữa để quay lui về trạng thái cũ'],
+    solution: `import java.util.*;
+public class Main {
+    static void swap(int[] a, int i, int j) {
+        int t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    static void permute(int[] nums, int l) {
+        if (l == nums.length) {
+            System.out.println(Arrays.toString(nums));
+            return;
+        }
+        for (int i = l; i < nums.length; i++) {
+            swap(nums, l, i);
+            permute(nums, l + 1);
+            swap(nums, l, i);
+        }
+    }
+    public static void main(String[] args) {
+        permute(new int[]{1,2,3}, 0);
+    }
+}
+`,
+  },
+  {
+    id: 'longest-substr-no-repeat', title: 'Chuỗi con dài nhất không lặp ký tự (Sliding Window)', level: 'medium', pattern: 'sliding-window',
+    prompt: 'Tìm độ dài chuỗi con liên tiếp dài nhất không có ký tự lặp lại trong "abcabcbb". Kết quả: 3 (ứng với "abc").',
+    starter: `import java.util.*;
+public class Main {
+    static int lengthOfLongestSubstring(String s) {
+        // TODO: sliding window với HashMap lưu vị trí gặp gần nhất của mỗi ký tự
+        return 0;
+    }
+    public static void main(String[] args) {
+        System.out.println(lengthOfLongestSubstring("abcabcbb"));
+    }
+}
+`,
+    hints: ['Giữ cửa sổ [left, right], mở rộng right; nếu ký tự đã có trong cửa sổ thì đẩy left lên sau vị trí gặp trùng gần nhất', 'Dùng Map<Character, Integer> lưu vị trí gặp gần nhất của mỗi ký tự'],
+    solution: `import java.util.*;
+public class Main {
+    static int lengthOfLongestSubstring(String s) {
+        Map<Character, Integer> lastSeen = new HashMap<>();
+        int left = 0, best = 0;
+        for (int right = 0; right < s.length(); right++) {
+            char c = s.charAt(right);
+            if (lastSeen.containsKey(c) && lastSeen.get(c) >= left) {
+                left = lastSeen.get(c) + 1;
+            }
+            lastSeen.put(c, right);
+            best = Math.max(best, right - left + 1);
+        }
+        return best;
+    }
+    public static void main(String[] args) {
+        System.out.println(lengthOfLongestSubstring("abcabcbb"));
+    }
+}
+`,
+  },
+  {
+    id: 'container-most-water', title: 'Container With Most Water (Two Pointer)', level: 'medium', pattern: 'two-pointer',
+    prompt: 'Cho mảng chiều cao {1,8,6,2,5,4,8,3,7}, tìm diện tích chứa nước lớn nhất giữa hai vạch. Kết quả: 49.',
+    starter: `public class Main {
+    static int maxArea(int[] height) {
+        // TODO: hai con trỏ đầu-cuối, luôn dịch con trỏ có chiều cao NHỎ HƠN vào trong
+        return 0;
+    }
+    public static void main(String[] args) {
+        System.out.println(maxArea(new int[]{1,8,6,2,5,4,8,3,7}));
+    }
+}
+`,
+    hints: ['Diện tích = min(height[l], height[r]) * (r - l)', 'Dịch con trỏ có chiều cao thấp hơn vào trong — dịch cái cao hơn không bao giờ tăng được diện tích'],
+    solution: `public class Main {
+    static int maxArea(int[] height) {
+        int l = 0, r = height.length - 1, best = 0;
+        while (l < r) {
+            int area = Math.min(height[l], height[r]) * (r - l);
+            best = Math.max(best, area);
+            if (height[l] < height[r]) l++;
+            else r--;
+        }
+        return best;
+    }
+    public static void main(String[] args) {
+        System.out.println(maxArea(new int[]{1,8,6,2,5,4,8,3,7}));
+    }
+}
+`,
+  },
+  {
+    id: 'climb-stairs', title: 'Climbing Stairs (DP)', level: 'easy', pattern: 'dp',
+    prompt: 'Có 10 bậc thang, mỗi bước leo 1 hoặc 2 bậc. Hỏi có bao nhiêu cách khác nhau để lên tới đỉnh? Kết quả: 89.',
+    starter: `public class Main {
+    static int climbStairs(int n) {
+        // TODO: dp[i] = số cách lên bậc i = dp[i-1] + dp[i-2] (giống Fibonacci)
+        return 0;
+    }
+    public static void main(String[] args) {
+        System.out.println(climbStairs(10));
+    }
+}
+`,
+    hints: ['Đây thực chất là Fibonacci: dp[1]=1, dp[2]=2', 'Chỉ cần giữ 2 biến trước đó thay vì mảng dp đầy đủ (tối ưu bộ nhớ)'],
+    solution: `public class Main {
+    static int climbStairs(int n) {
+        if (n <= 2) return n;
+        int prev2 = 1, prev1 = 2;
+        for (int i = 3; i <= n; i++) {
+            int cur = prev1 + prev2;
+            prev2 = prev1;
+            prev1 = cur;
+        }
+        return prev1;
+    }
+    public static void main(String[] args) {
+        System.out.println(climbStairs(10));
+    }
+}
+`,
+  },
+  {
+    id: 'coin-change', title: 'Coin Change — số đồng xu ít nhất (DP)', level: 'hard', pattern: 'dp',
+    prompt: 'Cho các mệnh giá {1,3,4} và tổng cần đổi 6, tìm số đồng xu ÍT NHẤT để đủ tổng đó. Kết quả: 2 (3+3).',
+    starter: `import java.util.*;
+public class Main {
+    static int coinChange(int[] coins, int amount) {
+        // TODO: dp[i] = số đồng xu tối thiểu để đổi được i, dp[0] = 0
+        return -1;
+    }
+    public static void main(String[] args) {
+        System.out.println(coinChange(new int[]{1,3,4}, 6));
+    }
+}
+`,
+    hints: ['dp[i] = min(dp[i - coin] + 1) với mọi coin <= i mà dp[i-coin] đã tính được', 'Khởi tạo dp toàn Integer.MAX_VALUE (trừ dp[0]=0); cuối cùng dp[amount] == MAX_VALUE nghĩa là không đổi được'],
+    solution: `import java.util.*;
+public class Main {
+    static int coinChange(int[] coins, int amount) {
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; i++) {
+            for (int coin : coins) {
+                if (coin <= i && dp[i - coin] != Integer.MAX_VALUE) {
+                    dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+                }
+            }
+        }
+        return dp[amount] == Integer.MAX_VALUE ? -1 : dp[amount];
+    }
+    public static void main(String[] args) {
+        System.out.println(coinChange(new int[]{1,3,4}, 6));
+    }
+}
+`,
+  },
+  {
+    id: 'merge-sort', title: 'Merge Sort', level: 'medium', pattern: 'sorting',
+    prompt: 'Cài đặt merge sort để sắp xếp mảng {5,2,9,1,5,6}. In kết quả: "1 2 5 5 6 9".',
+    starter: `import java.util.*;
+public class Main {
+    static void mergeSort(int[] a, int lo, int hi) {
+        // TODO: chia đôi, sort từng nửa, rồi merge(a, lo, mid, hi)
+    }
+    static void merge(int[] a, int lo, int mid, int hi) {
+        // TODO: trộn hai nửa đã sắp xếp a[lo..mid] và a[mid+1..hi]
+    }
+    public static void main(String[] args) {
+        int[] a = {5,2,9,1,5,6};
+        mergeSort(a, 0, a.length - 1);
+        StringBuilder sb = new StringBuilder();
+        for (int n : a) sb.append(n).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+    hints: ['mergeSort: nếu lo < hi thì tính mid = lo + (hi-lo)/2, đệ quy hai nửa rồi merge', 'merge: copy sang mảng tạm, dùng hai con trỏ i, j so sánh và ghi lại vào a theo thứ tự tăng dần'],
+    solution: `import java.util.*;
+public class Main {
+    static void mergeSort(int[] a, int lo, int hi) {
+        if (lo >= hi) return;
+        int mid = lo + (hi - lo) / 2;
+        mergeSort(a, lo, mid);
+        mergeSort(a, mid + 1, hi);
+        merge(a, lo, mid, hi);
+    }
+    static void merge(int[] a, int lo, int mid, int hi) {
+        int[] tmp = new int[hi - lo + 1];
+        int i = lo, j = mid + 1, k = 0;
+        while (i <= mid && j <= hi) tmp[k++] = a[i] <= a[j] ? a[i++] : a[j++];
+        while (i <= mid) tmp[k++] = a[i++];
+        while (j <= hi) tmp[k++] = a[j++];
+        System.arraycopy(tmp, 0, a, lo, tmp.length);
+    }
+    public static void main(String[] args) {
+        int[] a = {5,2,9,1,5,6};
+        mergeSort(a, 0, a.length - 1);
+        StringBuilder sb = new StringBuilder();
+        for (int n : a) sb.append(n).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+  },
+  {
+    id: 'debug-integer-cache', title: 'Sửa lỗi: so sánh Integer bằng == (debug)', level: 'medium', pattern: 'debug',
+    prompt: 'Đoạn code dưới in ra false dù hai giá trị bằng nhau (200 và 200), do dùng == để so sánh hai đối tượng Integer nằm ngoài vùng cache (-128..127). Sửa lại để in true.',
+    starter: `public class Main {
+    public static void main(String[] args) {
+        Integer a = 200;
+        Integer b = 200;
+        System.out.println(a == b); // BUG: so sánh tham chiếu Integer ngoài cache -128..127
+    }
+}
+`,
+    hints: ['Integer cache chỉ áp dụng cho giá trị -128..127; ngoài khoảng đó mỗi autobox tạo một object Integer riêng nên == so sánh tham chiếu sẽ là false', 'Dùng .equals() (hoặc unbox về int rồi so sánh) thay vì =='],
+    solution: `public class Main {
+    public static void main(String[] args) {
+        Integer a = 200;
+        Integer b = 200;
+        System.out.println(a.equals(b));
+    }
+}
+`,
+  },
+  {
+    id: 'debug-map-iteration', title: 'Sửa lỗi: sửa Map khi đang duyệt (debug)', level: 'medium', pattern: 'debug',
+    prompt: 'Đoạn code dưới ném ConcurrentModificationException khi xóa entry khỏi Map trong lúc for-each. Sửa lại để in ra các entry có value chẵn, giữ nguyên thứ tự chèn: "a=2 c=4".',
+    starter: `import java.util.*;
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put("a", 2);
+        map.put("b", 3);
+        map.put("c", 4);
+        for (Map.Entry<String, Integer> e : map.entrySet()) {
+            if (e.getValue() % 2 != 0) {
+                map.remove(e.getKey()); // BUG: xóa khỏi map trong lúc for-each duyệt entrySet
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : map.entrySet()) sb.append(e.getKey()).append("=").append(e.getValue()).append(" ");
+        System.out.println(sb.toString().trim());
+    }
+}
+`,
+    hints: ['Map cũng fail-fast như List — sửa cấu trúc map trong for-each trên entrySet/keySet cũng ném ConcurrentModificationException', 'Dùng map.entrySet().removeIf(...) (hoặc Iterator.remove() qua entrySet().iterator())'],
+    solution: `import java.util.*;
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put("a", 2);
+        map.put("b", 3);
+        map.put("c", 4);
+        map.entrySet().removeIf(e -> e.getValue() % 2 != 0);
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : map.entrySet()) sb.append(e.getKey()).append("=").append(e.getValue()).append(" ");
         System.out.println(sb.toString().trim());
     }
 }
@@ -1336,6 +1982,24 @@ export function pickInterviewSet({ topics = [], level, count = 8, seed = 0 } = {
     idx++
   }
   return out.slice(0, count)
+}
+
+/** Lọc coding challenge theo dạng (pattern), vd 'two-pointer', 'dp', 'tree'. */
+export function challengesByPattern(pattern) {
+  return CODING_CHALLENGES.filter((c) => c.pattern === pattern)
+}
+
+/** Danh sách các pattern đang có, theo thứ tự xuất hiện đầu tiên (dùng cho bộ lọc UI). */
+export function challengePatterns() {
+  const seen = new Set()
+  const out = []
+  for (const c of CODING_CHALLENGES) {
+    if (c.pattern && !seen.has(c.pattern)) {
+      seen.add(c.pattern)
+      out.push(c.pattern)
+    }
+  }
+  return out
 }
 
 export const INTERVIEW_TOTALS = {

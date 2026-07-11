@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMockInterview } from '@/composables/useMockInterview'
 import { INTERVIEW_TOPICS, topicLabel } from '@/data/javaInterview'
+import { MOCK_PRESETS } from '@/lib/mockInterview'
+import CodeEditor from '@/components/tools/CodeEditor.vue'
 
 const router = useRouter()
 const mi = useMockInterview()
@@ -11,6 +13,8 @@ const mi = useMockInterview()
 const lang = ref('vi')
 const level = ref('') // '' = mọi mức
 const count = ref(8)
+const durationMin = ref(0) // 0 = không giới hạn giờ
+const codingCount = ref(0)
 const chosen = ref([]) // topic keys; rỗng = mọi chủ đề
 
 const LEVELS = [
@@ -19,6 +23,12 @@ const LEVELS = [
   { key: 'medium', label: 'Trung bình' },
   { key: 'hard', label: 'Khó' },
 ]
+const DURATIONS = [
+  { key: 0, label: 'Không giới hạn' },
+  { key: 20, label: '20 phút' },
+  { key: 30, label: '30 phút' },
+  { key: 45, label: '45 phút' },
+]
 
 function toggleTopic(key) {
   const i = chosen.value.indexOf(key)
@@ -26,8 +36,22 @@ function toggleTopic(key) {
   else chosen.value.splice(i, 1)
 }
 
+function applyPreset(p) {
+  count.value = p.count
+  durationMin.value = p.durationMin
+  codingCount.value = p.codingCount
+  begin()
+}
+
 function begin() {
-  mi.start({ lang: lang.value, topics: chosen.value, level: level.value, count: count.value })
+  mi.start({
+    lang: lang.value,
+    topics: chosen.value,
+    level: level.value,
+    count: count.value,
+    durationMin: durationMin.value,
+    codingCount: codingCount.value,
+  })
 }
 
 function scoreColor(s) {
@@ -50,6 +74,13 @@ function reviewWeak() {
       <button class="back" @click="router.push({ name: 'java-prep' })">← Về khóa ôn</button>
       <h1 class="title">🎤 Mock Interview · Java</h1>
       <p class="sub">AI đóng vai người phỏng vấn: hỏi từng câu, chấm điểm ngay, tổng kết cuối buổi.</p>
+
+      <div class="presets">
+        <button v-for="p in MOCK_PRESETS" :key="p.key" class="preset" @click="applyPreset(p)">
+          <span class="preset-label">{{ p.label }}</span>
+          <span class="preset-blurb">{{ p.blurb }}</span>
+        </button>
+      </div>
 
       <div class="card">
         <label class="lbl">Ngôn ngữ phỏng vấn</label>
@@ -88,6 +119,23 @@ function reviewWeak() {
           </div>
         </div>
 
+        <div class="row">
+          <div class="col">
+            <label class="lbl">Thời gian</label>
+            <div class="seg small">
+              <button v-for="d in DURATIONS" :key="d.key" :class="{ on: durationMin === d.key }" @click="durationMin = d.key">
+                {{ d.label }}
+              </button>
+            </div>
+          </div>
+          <div class="col">
+            <label class="lbl">Bài coding trong buổi</label>
+            <div class="seg small">
+              <button v-for="n in [0, 1, 2]" :key="n" :class="{ on: codingCount === n }" @click="codingCount = n">{{ n }}</button>
+            </div>
+          </div>
+        </div>
+
         <button class="start" @click="begin">Bắt đầu phỏng vấn →</button>
         <p v-if="!mi.listenable" class="warn">⚠️ Trình duyệt không hỗ trợ mic — bạn vẫn gõ chữ trả lời được.</p>
       </div>
@@ -101,6 +149,7 @@ function reviewWeak() {
           <div class="track"><div class="fill" :style="{ width: mi.progressPct.value + '%' }"></div></div>
           <span>Đã trả lời {{ mi.answered.value }}/{{ mi.total.value }}</span>
         </div>
+        <span v-if="mi.isTimed.value" class="timer" :class="{ low: mi.remainingSec.value <= 60 }">⏱ {{ mi.remainingLabel.value }}</span>
       </div>
 
       <div class="qa-list">
@@ -138,8 +187,21 @@ function reviewWeak() {
         <button v-if="mi.retry.value" class="mini" @click="mi.retry.value()">Thử lại</button>
       </div>
 
+      <!-- Bài coding trong buổi -->
+      <div v-if="mi.awaitingCode.value" class="composer coding-composer">
+        <CodeEditor v-model="mi.currentRound.value.code" />
+        <div v-if="mi.currentRound.value.runOutput" class="out" :class="{ bad: !mi.currentRound.value.runOutput.ok }">
+          <pre v-if="mi.currentRound.value.runOutput.stdout">{{ mi.currentRound.value.runOutput.stdout }}</pre>
+          <pre v-if="mi.currentRound.value.runOutput.stderr" class="stderr">{{ mi.currentRound.value.runOutput.stderr }}</pre>
+        </div>
+        <div class="composer-actions">
+          <button class="mic" :disabled="mi.loading.value" @click="mi.runCode()">▶ Chạy thử</button>
+          <button class="send" :disabled="mi.loading.value" @click="mi.submitCode()">Nộp bài</button>
+        </div>
+      </div>
+
       <!-- Ô trả lời câu hiện tại -->
-      <div v-if="mi.awaitingAnswer.value" class="composer">
+      <div v-else-if="mi.awaitingAnswer.value" class="composer">
         <textarea
           v-model="mi.input.value"
           rows="3"
@@ -231,6 +293,33 @@ function reviewWeak() {
 .sub {
   color: var(--muted);
   margin: 8px 0 22px;
+}
+.presets {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.preset {
+  flex: 1;
+  min-width: 200px;
+  text-align: left;
+  border: 1px solid var(--purple);
+  background: var(--purple-soft);
+  border-radius: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.preset-label {
+  font-weight: 800;
+  color: var(--purple);
+}
+.preset-blurb {
+  font-size: 12.5px;
+  color: var(--muted);
 }
 .card {
   background: var(--surface);
@@ -335,6 +424,37 @@ function reviewWeak() {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--muted-2);
+}
+.timer {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--purple);
+  white-space: nowrap;
+}
+.timer.low {
+  color: #ff5f57;
+}
+.coding-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.out {
+  background: var(--surface-1, rgba(108, 92, 231, 0.05));
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.out.bad {
+  background: rgba(255, 95, 87, 0.08);
+}
+.out pre {
+  white-space: pre-wrap;
+  margin: 0;
+}
+.out .stderr {
+  color: #ff5f57;
+  margin-top: 6px;
 }
 .track {
   height: 8px;

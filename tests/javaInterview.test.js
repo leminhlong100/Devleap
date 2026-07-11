@@ -6,9 +6,14 @@ import {
   INTERVIEW_SKILLS,
   LEVELS,
   INTERVIEW_TOTALS,
+  CHEATSHEET,
+  CRASH_PLAN,
   questionsByTopic,
   pickInterviewSet,
   topicLabel,
+  challengesByPattern,
+  challengePatterns,
+  javaSrsId,
 } from '../src/data/javaInterview.js'
 import { buildInterviewPrompt, buildInterviewReportPrompt } from '../netlify/functions/_llm.js'
 
@@ -63,9 +68,62 @@ describe('data/javaInterview — ngân hàng câu hỏi', () => {
     expect(debug.solution).toMatch(/removeIf/)
   })
 
+  it('mỗi coding challenge có pattern hợp lệ (non-empty string)', () => {
+    for (const c of CODING_CHALLENGES) {
+      expect(typeof c.pattern, `pattern ${c.id}`).toBe('string')
+      expect(c.pattern.length, `pattern ${c.id}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('phủ đủ dạng bài live-coding hay gặp: linked list, tree, backtracking, sliding window, two-pointer, dp, sorting, ≥3 bài debug', () => {
+    const requiredPatterns = ['linked-list', 'tree', 'recursion', 'sliding-window', 'two-pointer', 'dp', 'sorting']
+    for (const p of requiredPatterns) {
+      expect(challengesByPattern(p).length, `pattern ${p}`).toBeGreaterThan(0)
+    }
+    expect(challengesByPattern('debug').length).toBeGreaterThanOrEqual(3)
+    const ids = new Set(CODING_CHALLENGES.map((c) => c.id))
+    for (const id of [
+      'linked-list-reverse', 'linked-list-cycle', 'bst-inorder', 'bst-validate',
+      'subsets', 'permutations', 'longest-substr-no-repeat', 'container-most-water',
+      'climb-stairs', 'coin-change', 'merge-sort', 'debug-integer-cache', 'debug-map-iteration',
+    ]) {
+      expect(ids.has(id), `thiếu challenge ${id}`).toBe(true)
+    }
+  })
+
+  it('challengesByPattern lọc đúng và challengePatterns liệt kê không trùng', () => {
+    const dp = challengesByPattern('dp')
+    expect(dp.length).toBeGreaterThan(0)
+    for (const c of dp) expect(c.pattern).toBe('dp')
+    expect(challengesByPattern('khong-ton-tai')).toEqual([])
+
+    const patterns = challengePatterns()
+    expect(new Set(patterns).size).toBe(patterns.length)
+    expect(patterns).toContain('two-pointer')
+  })
+
   it('topicLabel trả nhãn tiếng Việt, fallback về key', () => {
     expect(topicLabel('jpa')).toBe('JPA / Hibernate')
     expect(topicLabel('khong-co')).toBe('khong-co')
+  })
+
+  it('javaSrsId tạo namespace "javaq:" ổn định, tái dùng map srs chung', () => {
+    expect(javaSrsId('jpa-1')).toBe('javaq:jpa-1')
+    expect(javaSrsId(' jpa-1 ')).toBe('javaq:jpa-1')
+    expect(javaSrsId('')).toBe('javaq:')
+  })
+
+  it('CHEATSHEET có card System Design & Hạ tầng thực tế mới', () => {
+    const titles = CHEATSHEET.map((c) => c.title)
+    expect(titles.some((t) => t.includes('System Design'))).toBe(true)
+    expect(titles.some((t) => t.includes('Hạ tầng'))).toBe(true)
+  })
+
+  it('CRASH_PLAN 14 ngày vẫn nguyên vẹn, có nhắc System Design/Hạ tầng', () => {
+    expect(CRASH_PLAN.length).toBe(14)
+    const blob = CRASH_PLAN.map((d) => `${d.topic} ${d.tasks.join(' ')}`).join(' ')
+    expect(blob).toMatch(/System Design/)
+    expect(blob).toMatch(/Hạ tầng/)
   })
 
   it('có đủ chủ đề mở rộng theo CV (frontend, stack thực tế) và mỗi cái đủ câu', () => {
@@ -90,6 +148,27 @@ describe('data/javaInterview — ngân hàng câu hỏi', () => {
     const keys = new Set(INTERVIEW_TOPICS.map((t) => t.key))
     expect(keys.has('scenario')).toBe(true)
     expect(questionsByTopic('scenario').length).toBeGreaterThanOrEqual(10)
+  })
+
+  it('có chủ đề System Design (design) và Hạ tầng thực tế (infra), đủ câu walkthrough', () => {
+    const keys = new Set(INTERVIEW_TOPICS.map((t) => t.key))
+    expect(keys.has('design')).toBe(true)
+    expect(keys.has('infra')).toBe(true)
+    expect(questionsByTopic('design').length).toBeGreaterThanOrEqual(6)
+    expect(questionsByTopic('infra').length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('các topic từng mỏng (jvm/generics/testing/solid/microservice) nay đủ ≥7 câu', () => {
+    for (const key of ['jvm', 'generics', 'testing', 'solid', 'microservice']) {
+      expect(questionsByTopic(key).length, `topic ${key}`).toBeGreaterThanOrEqual(7)
+    }
+  })
+
+  it('bao phủ từ khóa hạ tầng thực tế (Docker/CI-CD/Redis/observability/gRPC/versioning)', () => {
+    const blob = QUESTION_BANK.map((q) => `${q.q} ${q.answer}`).join(' ').toLowerCase()
+    for (const kw of ['docker', 'multi-stage', 'ci/cd', 'observability', 'grpc', 'versioning', 'circuit breaker']) {
+      expect(blob.includes(kw), `thiếu: ${kw}`).toBe(true)
+    }
   })
 
   it('bổ sung caching/connection-pool (Spring) và gotcha rollback (transaction)', () => {
