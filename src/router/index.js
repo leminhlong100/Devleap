@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { routeGuardDecision, courseIdForRoute } from '@/router/guard'
 import { setRouteDirection } from '@/composables/useRouteTransition'
+import { navStart, navDone } from '@/composables/useNavProgress'
 
 const routes = [
   { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
@@ -116,6 +117,13 @@ function waitForAuthReady(auth) {
   })
 }
 
+// Hiện thanh tiến trình ngay khi bắt đầu chuyển trang — bao trọn cả thời gian
+// tải chunk lazy lẫn chờ xác thực bên dưới, để bấm là có phản hồi tức thì.
+router.beforeEach(() => {
+  navStart()
+  return true
+})
+
 // Chặn vào khóa học/quản trị khi chưa đăng nhập (hoặc không đủ quyền).
 router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth && !to.meta?.requiresAdmin) return true
@@ -137,6 +145,12 @@ router.beforeEach(async (to) => {
 
 // Ghi hướng chuyển trang (đi sâu/lùi) sau khi điều hướng đã xác nhận — App.vue
 // dùng để chọn transition trượt có hướng trên mobile (Bước 4.1).
-router.afterEach((to, from) => setRouteDirection(to, from))
+router.afterEach((to, from) => {
+  setRouteDirection(to, from)
+  navDone()
+})
+
+// Điều hướng bị hủy/lỗi (vd lỗi tải chunk) cũng phải ẩn thanh, đừng để treo.
+router.onError(() => navDone())
 
 export default router
