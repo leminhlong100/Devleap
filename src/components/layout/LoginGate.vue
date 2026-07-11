@@ -16,7 +16,7 @@ const open = computed(
 )
 
 // —— form email/mật khẩu ——
-const mode = ref('signin') // 'signin' | 'signup'
+const mode = ref('signin') // 'signin' | 'signup' | 'forgot'
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -77,6 +77,27 @@ async function submitPassword() {
   }
 }
 
+async function submitForgot() {
+  if (busy.value) return
+  error.value = ''
+  info.value = ''
+  if (!email.value.trim()) {
+    error.value = 'Vui lòng nhập email để nhận liên kết đặt lại.'
+    return
+  }
+  busy.value = true
+  try {
+    const res = await auth.sendPasswordReset(email.value)
+    if (res.error) {
+      error.value = res.error
+    } else {
+      info.value = 'Đã gửi email đặt lại mật khẩu — hãy mở hộp thư và bấm vào liên kết.'
+    }
+  } finally {
+    busy.value = false
+  }
+}
+
 async function signInGoogle() {
   await auth.signInWithGoogle()
 }
@@ -88,14 +109,21 @@ async function signInGoogle() {
       <div class="gate-card">
         <button class="gate-close" aria-label="Đóng" @click="close">✕</button>
         <MascotLogo :width="76" :height="81" uid="gate" />
-        <h2 class="gate-title">{{ mode === 'signup' ? 'Tạo tài khoản mới' : 'Đăng nhập để vào học' }}</h2>
+        <h2 class="gate-title">
+          {{ mode === 'forgot' ? 'Quên mật khẩu?' : mode === 'signup' ? 'Tạo tài khoản mới' : 'Đăng nhập để vào học' }}
+        </h2>
         <p class="gate-sub">
-          Các khóa học chỉ dành cho thành viên đã đăng nhập — để lưu tiến độ, streak và đồng bộ trên
-          mọi thiết bị.
+          <template v-if="mode === 'forgot'">
+            Nhập email tài khoản — chúng tôi sẽ gửi liên kết để bạn đặt lại mật khẩu.
+          </template>
+          <template v-else>
+            Các khóa học chỉ dành cho thành viên đã đăng nhập — để lưu tiến độ, streak và đồng bộ
+            trên mọi thiết bị.
+          </template>
         </p>
 
         <!-- Chuyển giữa Đăng nhập / Đăng ký -->
-        <div class="gate-tabs" role="tablist">
+        <div v-if="mode !== 'forgot'" class="gate-tabs" role="tablist">
           <button
             class="gate-tab"
             :class="{ active: mode === 'signin' }"
@@ -116,7 +144,28 @@ async function signInGoogle() {
           </button>
         </div>
 
-        <form class="gate-form" @submit.prevent="submitPassword">
+        <!-- Form Quên mật khẩu -->
+        <form v-if="mode === 'forgot'" class="gate-form" @submit.prevent="submitForgot">
+          <input
+            v-model="email"
+            class="gate-input"
+            type="email"
+            autocomplete="email"
+            placeholder="Email"
+            required
+          />
+          <p v-if="error" class="gate-error">{{ error }}</p>
+          <p v-if="info" class="gate-info">{{ info }}</p>
+          <button class="gate-btn primary tappable" type="submit" :disabled="busy">
+            {{ busy ? 'Đang gửi…' : 'Gửi liên kết đặt lại' }}
+          </button>
+          <button class="gate-link-btn" type="button" @click="switchMode('signin')">
+            ← Quay lại đăng nhập
+          </button>
+        </form>
+
+        <!-- Form Đăng nhập / Đăng ký -->
+        <form v-else class="gate-form" @submit.prevent="submitPassword">
           <input
             v-if="mode === 'signup'"
             v-model="name"
@@ -143,6 +192,15 @@ async function signInGoogle() {
             required
           />
 
+          <button
+            v-if="mode === 'signin'"
+            class="gate-link-btn forgot"
+            type="button"
+            @click="switchMode('forgot')"
+          >
+            Quên mật khẩu?
+          </button>
+
           <p v-if="error" class="gate-error">{{ error }}</p>
           <p v-if="info" class="gate-info">{{ info }}</p>
 
@@ -151,11 +209,13 @@ async function signInGoogle() {
           </button>
         </form>
 
-        <div class="gate-or"><span>hoặc</span></div>
+        <template v-if="mode !== 'forgot'">
+          <div class="gate-or"><span>hoặc</span></div>
 
-        <button class="gate-btn tappable" @click="signInGoogle">
-          <span class="g">G</span> Tiếp tục với Google
-        </button>
+          <button class="gate-btn tappable" @click="signInGoogle">
+            <span class="g">G</span> Tiếp tục với Google
+          </button>
+        </template>
         <button class="gate-later" @click="close">Để sau</button>
       </div>
     </div>
@@ -343,6 +403,19 @@ async function signInGoogle() {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+.gate-link-btn {
+  border: none;
+  background: none;
+  color: var(--purple, #6c5ce7);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.gate-link-btn.forgot {
+  align-self: flex-end;
+  margin-top: -2px;
 }
 .gate-fade-enter-active,
 .gate-fade-leave-active {

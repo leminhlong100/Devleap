@@ -112,11 +112,17 @@ async function signOut() {
             </div>
             <!-- Avatar Google nằm trong chip, đóng vai trò nút mở menu tài khoản -->
             <div v-if="auth.cloudEnabled && authReady" class="account">
-              <button class="account-btn" @click="menuOpen = !menuOpen">
+              <button
+                class="account-btn"
+                type="button"
+                aria-label="Menu tài khoản"
+                :aria-expanded="menuOpen"
+                @click="menuOpen = !menuOpen"
+              >
                 <img v-if="authUser.avatar" :src="authUser.avatar" class="account-avatar" alt="" referrerpolicy="no-referrer" />
                 <span v-else class="account-avatar fallback">{{ (authUser.name || '?')[0].toUpperCase() }}</span>
               </button>
-              <div v-if="menuOpen" class="menu-backdrop" @click="menuOpen = false"></div>
+              <div v-if="menuOpen" class="menu-backdrop" aria-hidden="true" @click="menuOpen = false"></div>
               <div v-if="menuOpen" class="menu">
                 <div class="menu-card">
                   <div class="menu-name">{{ authUser.name }}</div>
@@ -137,6 +143,9 @@ async function signOut() {
                     <span>📳 Rung phản hồi</span>
                     <span class="menu-switch" :class="{ on: hapticOn }"><span class="menu-knob"></span></span>
                   </button>
+                  <RouterLink :to="{ name: 'profile' }" class="menu-profile" @click="menuOpen = false">
+                    👤 Hồ sơ & cài đặt
+                  </RouterLink>
                   <RouterLink
                     v-if="isAdmin"
                     :to="{ name: 'admin-home' }"
@@ -508,6 +517,7 @@ async function signOut() {
 .menu-switch.on .menu-knob {
   transform: translateX(16px);
 }
+.menu-profile,
 .menu-admin {
   display: block;
   margin-top: 12px;
@@ -521,10 +531,12 @@ async function signOut() {
   border-radius: 10px;
 }
 @media (hover: hover) {
+  .menu-profile:hover,
   .menu-admin:hover {
     background: rgba(108, 92, 231, 0.14);
   }
 }
+.menu-profile:active,
 .menu-admin:active {
   background: rgba(108, 92, 231, 0.14);
 }

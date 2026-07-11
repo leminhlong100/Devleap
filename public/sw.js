@@ -43,6 +43,37 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+// Bước 3.3 — nhắc học qua Web Push: Edge Function `send-study-reminders` gửi
+// payload JSON { title, body } khi tới giờ ưa thích của người dùng và streak
+// sắp đứt. Bấm vào thông báo mở (hoặc focus) tab app tại '/'.
+self.addEventListener('push', (event) => {
+  let data = { title: '🔥 Đừng để đứt streak!', body: 'Học 1 buổi hôm nay để giữ lửa nhé.' }
+  try {
+    if (event.data) data = { ...data, ...event.data.json() }
+  } catch {
+    /* payload không phải JSON hợp lệ — dùng nội dung mặc định */
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: 'devleap-study-reminder',
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((clients) => {
+      const existing = clients.find((c) => 'focus' in c)
+      if (existing) return existing.focus()
+      return self.clients.openWindow('/')
+    }),
+  )
+})
+
 function shouldBypass(url) {
   return url.pathname.startsWith('/.netlify/functions/') || /supabase\.co$/.test(url.hostname)
 }

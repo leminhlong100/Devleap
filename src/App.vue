@@ -4,6 +4,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import LoginGate from '@/components/layout/LoginGate.vue'
+import AppErrorBoundary from '@/components/common/AppErrorBoundary.vue'
 import BackToTop from '@/components/common/BackToTop.vue'
 import NavigationProgress from '@/components/common/NavigationProgress.vue'
 import SiteBanner from '@/components/common/SiteBanner.vue'
@@ -14,6 +15,10 @@ import { useUserStore } from '@/stores/user'
 import { updateAppBadge } from '@/lib/appBadge'
 import { useRouteTransition } from '@/composables/useRouteTransition'
 import { useIsMobile, useMediaQuery } from '@/composables/useMediaQuery'
+import { usePageMeta } from '@/composables/usePageMeta'
+
+// Bước 3.2 — title/description/OG theo route, thay tiêu đề tĩnh duy nhất.
+usePageMeta()
 
 // Bước 3.4 — chấm số từ đến hạn ôn lên icon app (chỉ hiệu lực khi đã cài PWA;
 // trình duyệt thường tự bỏ qua). Đặt ở App.vue để chạy suốt vòng đời app, cập
@@ -42,11 +47,13 @@ const transitionName = computed(() => {
     <OfflineBanner />
     <UpdateToast />
     <main class="app-main">
-      <RouterView v-slot="{ Component }">
-        <Transition :name="transitionName" mode="out-in">
-          <component :is="Component" />
-        </Transition>
-      </RouterView>
+      <AppErrorBoundary v-slot="{ retryKey }">
+        <RouterView v-slot="{ Component }">
+          <Transition :name="transitionName" mode="out-in">
+            <component :is="Component" :key="retryKey" />
+          </Transition>
+        </RouterView>
+      </AppErrorBoundary>
     </main>
     <AppFooter />
     <BottomNav />

@@ -60,6 +60,9 @@ export const useAuthStore = defineStore('auth', {
           email: u.email,
           name: u.user_metadata?.full_name || u.user_metadata?.name || u.email,
           avatar: u.user_metadata?.avatar_url || u.user_metadata?.picture || null,
+          // 'google' | 'email' — hiện ở trang Hồ sơ để biết đăng nhập bằng gì
+          // (ẩn nút "Đổi mật khẩu" khi đăng nhập qua Google, vì không có mật khẩu để đổi).
+          provider: u.app_metadata?.provider || 'email',
         }
         await user.pullAndMerge(u.id)
         await this.refreshAdmin(u.id)
@@ -139,6 +142,44 @@ export const useAuthStore = defineStore('auth', {
       if (!isCloudEnabled) return
       await supabase.auth.signOut()
       // onAuthStateChange sẽ kích hoạt onSession(null) -> detachCloud()
+    },
+
+    /**
+     * Gửi email đặt lại mật khẩu. Link trong email đưa người dùng về trang
+     * /reset-password kèm token khôi phục; tại đó gọi updatePassword() để đổi.
+     * Trả về { error } (tiếng Việt) hoặc { error: null } khi đã gửi.
+     */
+    async sendPasswordReset(email) {
+      if (!isCloudEnabled) return { error: 'Chưa cấu hình đăng nhập.' }
+      const clean = (email || '').trim()
+      if (!clean) return { error: 'Vui lòng nhập email.' }
+      const { error } = await supabase.auth.resetPasswordForEmail(clean, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      return { error: error ? authErrorMessage(error) : null }
+    },
+
+    /**
+     * Đặt mật khẩu mới. Chỉ chạy được khi đang có phiên khôi phục (người dùng vừa
+     * bấm link trong email — Supabase tự tạo phiên tạm từ token trong URL).
+     */
+    async updatePassword(newPassword) {
+      if (!isCloudEnabled) return { error: 'Chưa cấu hình đăng nhập.' }
+      if (!newPassword || newPassword.length < 6)
+        return { error: 'Mật khẩu quá ngắn (cần ít nhất 6 ký tự).' }
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      return { error: error ? authErrorMessage(error) : null }
+    },
+
+    /** Đổi tên hiển thị (trang Hồ sơ). Cập nhật cả `user_metadata` lẫn state tại chỗ. */
+    async updateDisplayName(name) {
+      if (!isCloudEnabled) return { error: 'Chưa cấu hình đăng nhập.' }
+      const clean = (name || '').trim()
+      if (!clean) return { error: 'Vui lòng nhập tên hiển thị.' }
+      const { error } = await supabase.auth.updateUser({ data: { full_name: clean } })
+      if (error) return { error: authErrorMessage(error) }
+      if (this.user) this.user = { ...this.user, name: clean }
+      return { error: null }
     },
   },
 })

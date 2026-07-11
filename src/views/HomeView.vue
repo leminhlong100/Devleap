@@ -3,17 +3,21 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MascotLogo from '@/components/common/MascotLogo.vue'
 import BottomSheet from '@/components/common/BottomSheet.vue'
+import OnboardingTour from '@/components/common/OnboardingTour.vue'
 import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
 import { javaStages, courses } from '@/data/courses'
 import { pendingWeekMission } from '@/lib/missionStats'
 import { useStudyReminder } from '@/composables/useStudyReminder'
 import { useInstallPrompt } from '@/composables/useInstallPrompt'
+import { useOnboardingTour, useOnboardingChecklist } from '@/composables/useOnboarding'
 import { prefetchNextLesson } from '@/lib/prefetchNextLesson'
 
 const router = useRouter()
 const user = useUserStore()
+const auth = useAuthStore()
 
 // Tiến độ thật của khóa Java, suy từ danh sách ngày đã hoàn thành (store).
 const prog = computed(() => computeJavaProgress(user.completed.java))
@@ -96,6 +100,23 @@ function handleInstallDismiss() {
   installDismissedNow.value = true
   showIosInstallSheet.value = false
 }
+
+// Bước 3.1 — tour ngắn ở lần đầu ghé trang chủ (khách lẫn người đã đăng nhập,
+// chỉ khi chưa từng thấy) + checklist khởi động sau đăng nhập đầu.
+const { slides: tourSlides, showTour, slideIndex, nextSlide, prevSlide, closeTour } = useOnboardingTour()
+const { checklist, shouldShowChecklist, dismiss: dismissChecklistCard } = useOnboardingChecklist()
+const reminderEnabled = ref(typeof Notification !== 'undefined' && Notification.permission === 'granted')
+const showChecklist = computed(
+  () => auth.isAuthed && shouldShowChecklist(totalSessions.value, reminderEnabled.value),
+)
+const checklistItems = computed(() => checklist(totalSessions.value, reminderEnabled.value))
+function checklistCta() {
+  const next = checklistItems.value.find((s) => !s.done)
+  if (!next) return
+  if (next.key === 'course') router.push({ name: 'courses' })
+  else if (next.key === 'session') router.push({ name: 'java' })
+  else router.push({ name: 'profile' })
+}
 </script>
 
 <template>
@@ -122,8 +143,8 @@ function handleInstallDismiss() {
           <span class="chip">🔥 Streak {{ user.streak }} ngày</span>
           <span v-if="streakAtRisk" class="chip chip-warn">⚠️ Sắp đứt streak — học 1 buổi trước 24h nữa</span>
           <span v-if="user.speakingStreak > 0" class="chip">🗣️ Nói {{ user.speakingStreak }} ngày liền</span>
-          <span v-if="user.dueTodayCount > 0" class="chip chip-link" @click="goDueReview">📆 {{ user.dueTodayCount }} từ đến hạn</span>
-          <span v-if="remedial" class="chip chip-warn chip-link" @click="goRemedial">🎯 Quiz Tuần {{ remedial.week }} chưa đạt</span>
+          <button v-if="user.dueTodayCount > 0" type="button" class="chip chip-link" @click="goDueReview">📆 {{ user.dueTodayCount }} từ đến hạn</button>
+          <button v-if="remedial" type="button" class="chip chip-warn chip-link" @click="goRemedial">🎯 Quiz Tuần {{ remedial.week }} chưa đạt</button>
         </div>
 
         <p v-if="pendingMission" class="today-mission">
@@ -175,16 +196,35 @@ function handleInstallDismiss() {
       </div>
     </section>
 
+    <!-- CHECKLIST KHỞI ĐỘNG (Bước 3.1) — sau lần đăng nhập đầu, đến khi xong cả 3 bước -->
+    <section v-if="showChecklist" class="container due-wrap">
+      <div class="due-card checklist-card">
+        <span class="due-emoji">✅</span>
+        <div class="due-text checklist-text">
+          <b>Khởi động cùng Devleap</b>
+          <ul class="checklist-list">
+            <li v-for="s in checklistItems" :key="s.key" :class="{ done: s.done }">
+              <span>{{ s.done ? '✅' : '⬜' }}</span> {{ s.label }}
+            </li>
+          </ul>
+        </div>
+        <div class="install-actions">
+          <button class="install-btn install-btn-ghost" @click="dismissChecklistCard">Ẩn đi</button>
+          <button class="install-btn install-btn-primary" @click="checklistCta">Tiếp tục →</button>
+        </div>
+      </div>
+    </section>
+
     <!-- NHẮC HỌC TỐI (Bước 4.4 — mức 1) -->
     <section v-if="showEveningReminder" class="container due-wrap">
-      <div class="due-card reminder-card" @click="user.nextLesson.length ? goContinue(user.nextLesson[0]) : router.push({ name: 'courses' })">
+      <button type="button" class="due-card reminder-card" @click="user.nextLesson.length ? goContinue(user.nextLesson[0]) : router.push({ name: 'courses' })">
         <span class="due-emoji">🔥</span>
         <div class="due-text">
           <b>Streak {{ user.streak }} ngày sắp đứt — 1 buổi 15' là giữ được</b>
           <span>Học ngay tối nay để không mất công sức đã tích lũy<template v-if="user.dueTodayCount > 0"> · {{ user.dueTodayCount }} từ cũng đang chờ ôn</template></span>
         </div>
         <span class="due-arrow">→</span>
-      </div>
+      </button>
       <div class="reminder-hour" @click.stop>
         <label>
           ⏰ Giờ học quen thuộc:
@@ -197,26 +237,26 @@ function handleInstallDismiss() {
 
     <!-- NHẮC ÔN TỪ VỰNG ĐẾN HẠN -->
     <section v-if="user.dueTodayCount > 0" class="container due-wrap">
-      <div class="due-card" @click="router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })">
+      <button type="button" class="due-card" @click="router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })">
         <span class="due-emoji">📆</span>
         <div class="due-text">
           <b>Hôm nay có {{ user.dueTodayCount }} từ đến hạn ôn</b>
           <span>Ôn nhanh vài phút để khỏi quên nhé</span>
         </div>
         <span class="due-arrow">→</span>
-      </div>
+      </button>
     </section>
 
     <!-- LỐI TẮT XEM TIẾN ĐỘ HỌC TẬP -->
     <section class="container due-wrap">
-      <div class="due-card" @click="router.push({ name: 'progress' })">
+      <button type="button" class="due-card" @click="router.push({ name: 'progress' })">
         <span class="due-emoji">📈</span>
         <div class="due-text">
           <b>Xem tiến độ học tập</b>
           <span>Điểm viết, phút luyện nói và từ đến hạn ôn — tất cả trong 1 trang</span>
         </div>
         <span class="due-arrow">→</span>
-      </div>
+      </button>
     </section>
 
     <!-- MỜI CÀI PWA (Bước 3.1) -->
@@ -278,9 +318,9 @@ function handleInstallDismiss() {
     <section class="container section">
       <div class="feat-head">
         <h2 class="section-title sm">Khóa học nổi bật</h2>
-        <span class="see-all" @click="router.push({ name: 'courses' })">Xem tất cả →</span>
+        <button type="button" class="see-all" @click="router.push({ name: 'courses' })">Xem tất cả →</button>
       </div>
-      <div class="feat-card" @click="openFeatured">
+      <button type="button" class="feat-card" @click="openFeatured">
         <div class="feat-left">
           <div class="feat-emoji">☕</div>
           <div class="feat-left-top">
@@ -305,8 +345,17 @@ function handleInstallDismiss() {
           </div>
           <div class="feat-continue">{{ continueLabel }}</div>
         </div>
-      </div>
+      </button>
     </section>
+
+    <OnboardingTour
+      v-model:open="showTour"
+      :slides="tourSlides"
+      :slide-index="slideIndex"
+      @next="nextSlide"
+      @prev="prevSlide"
+      @close="closeTour"
+    />
   </div>
 </template>
 
@@ -559,6 +608,7 @@ function handleInstallDismiss() {
   border: 1px solid var(--line-soft);
   border-radius: 99px;
   padding: 8px 14px;
+  font-family: inherit;
   font-size: 13.5px;
   font-weight: 700;
   color: var(--ink);
@@ -595,6 +645,10 @@ function handleInstallDismiss() {
   display: flex;
   align-items: center;
   gap: 16px;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   background: var(--today-card-bg);
   border: 1px solid rgba(108, 92, 231, 0.18);
   border-radius: 18px;
@@ -648,6 +702,29 @@ function handleInstallDismiss() {
   color: var(--ink);
   padding: 3px 8px;
   font-size: 13px;
+}
+
+/* checklist khởi động */
+.checklist-card {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.checklist-text {
+  gap: 8px;
+}
+.checklist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.checklist-list li.done {
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 /* mời cài PWA */
@@ -855,6 +932,10 @@ function handleInstallDismiss() {
   margin-bottom: 22px;
 }
 .see-all {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   color: var(--purple);
@@ -864,6 +945,12 @@ function handleInstallDismiss() {
   cursor: pointer;
   display: grid;
   grid-template-columns: 1fr 1.4fr;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border: none;
+  padding: 0;
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(108, 92, 231, 0.16);

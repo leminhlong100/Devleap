@@ -3,6 +3,7 @@ import { computeIeltsProgress, getIeltsDay } from '@/data/courseIelts'
 import { computeJavaProgress, getJavaDay } from '@/data/course'
 import { computeCommProgress, getCommDay } from '@/data/courseComm'
 import { maybeRequestNotificationPermission } from '@/lib/studyReminder'
+import { useAnalytics } from '@/composables/useAnalytics'
 
 /**
  * Slice "tiến độ cốt lõi": ngày đã hoàn thành, streak, XP, huy hiệu, thẻ đã
@@ -133,6 +134,8 @@ export const actions = {
       // Mức 2 của Bước 4.4: xin quyền Notification đúng lúc vừa đủ buổi thứ 3
       // (đúng thời điểm "engagement" — không hỏi ngay lần đầu mở app).
       maybeRequestNotificationPermission((this.completed.java || []).length + (this.completed.ielts || []).length)
+      // Bước 4.1 — đo "hoàn thành buổi" (không bắn khi bỏ đánh dấu).
+      useAnalytics().track('lesson_complete', { course, week, day })
     } else {
       // Bỏ đánh dấu — hoàn lại XP/huy hiệu đã cấp
       const wasWeekDone = totalDays > 0 && weekCount() === totalDays

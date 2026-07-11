@@ -184,48 +184,48 @@ phát âm bằng LLM** — dùng đối chiếu STT (đã chứng minh trong `Pr
 
 ### Đợt 1 — Phát âm & độ dễ hiểu *(tác động cao nhất, chi phí thấp nhờ tái dùng)*
 
-- [ ] Lắp `PronunciationDrill` vào `CommDayView` (sau khối nạp cụm): items = cụm sống còn
+- [x] Lắp `PronunciationDrill` vào `CommDayView` (sau khối nạp cụm): items = cụm sống còn
       của buổi; truyền `week` + `vocabTerms` để bật cặp tối thiểu.
-- [ ] Bổ sung cặp tối thiểu "giao tiếp" vào `minimalPairs.js` (âm cuối, th/t, sh/s, l/n,
+- [x] Bổ sung cặp tối thiểu "giao tiếp" vào `minimalPairs.js` (âm cuối, th/t, sh/s, l/n,
       b/p, dài–ngắn) + bảo đảm `pairsForWeek` phủ Tuần 1–8 khóa comm.
-- [ ] Viết 3 micro-lesson phát âm theo khối (mục "## 🗣️ Phát âm trọng tâm" trong MD
+- [x] Viết 3 micro-lesson phát âm theo khối (mục "## 🗣️ Phát âm trọng tâm" trong MD
       khối 1/2-3/4) — parser thêm `parsePronunciation()` (an toàn khi vắng).
-- [ ] Đưa `pronScore` + `confusions` vào `context` debrief; thêm dòng nhận xét "độ dễ hiểu".
-- [ ] Test: `pairsForWeek` cho tuần comm; parser mục phát âm.
+- [x] Đưa `pronScore` + `confusions` vào `context` debrief; thêm dòng nhận xét "độ dễ hiểu".
+- [x] Test: `pairsForWeek` cho tuần comm; parser mục phát âm.
 
 ### Đợt 2 — Trôi chảy & tự động hóa
 
-- [ ] Thêm nhóm cụm "câu giờ / giữ nhịp" vào Tuần 1 MD + nhắc lại ở review vocab các tuần.
-- [ ] `FluencyRetell.vue` (4/3/2, tái dùng `VoiceRecorder` + đồng hồ) + gắn 1 buổi/tuần.
-- [ ] Đo WPM & độ trễ trong `useChatEngine` (từ mốc mic của `listen.js`); hiện nhẹ ở debrief.
-- [ ] Đồng hồ trả lời thành thang trượt theo tuần (15→12→8s) + cho tắt.
-- [ ] Test: hàm tính WPM; thang đồng hồ theo tuần.
+- [x] Thêm nhóm cụm "câu giờ / giữ nhịp" vào Tuần 1 MD + nhắc lại ở review vocab các tuần.
+- [x] `FluencyRetell.vue` (4/3/2, tái dùng `VoiceRecorder` + đồng hồ) + gắn 1 buổi/tuần.
+- [x] Đo WPM & độ trễ trong `useChatEngine` (từ mốc mic của `listen.js`); hiện nhẹ ở debrief.
+- [x] Đồng hồ trả lời thành thang trượt theo tuần (15→12→8s) + cho tắt.
+- [x] Test: hàm tính WPM; thang đồng hồ theo tuần.
 
 ### Đợt 3 — Nghe hiểu thực tế *(tái dùng linh kiện có sẵn)*
 
-- [ ] Lắp `ListeningDictation` (1–2 câu chốt) vào khối nạp cụm; MD thêm mục "## 🎧 Nghe".
-- [ ] Lắp `ListeningComprehension` ở buổi Boss (đoạn + 2–3 câu hỏi).
-- [ ] `speak.js`: chọn giọng đa vùng theo buổi + nút tốc độ 0.8x/1.0x.
-- [ ] Nút "🐢 Nói chậm lại / nhắc lại" trong `AiChat` khi đang roleplay.
-- [ ] Test: parser mục 🎧 Nghe; chọn giọng ổn định (không random vỡ test).
+- [x] Lắp `ListeningDictation` (1–2 câu chốt) vào khối nạp cụm; MD thêm mục "## 🎧 Nghe".
+- [x] Lắp `ListeningComprehension` ở buổi Boss (đoạn + 2–3 câu hỏi).
+- [x] `speak.js`: chọn giọng đa vùng theo buổi + nút tốc độ 0.8x/1.0x.
+- [x] Nút "🐢 Nói chậm lại / nhắc lại" trong `AiChat` khi đang roleplay.
+- [x] Test: parser mục 🎧 Nghe; chọn giọng ổn định (không random vỡ test).
 
 ### Đợt 4 — Phản hồi & tâm lý tự tin
 
-- [ ] Cờ `deferCorrection` trong `buildRoleplayPrompt` (evaluation null) + toggle "Chỉ trò
+- [x] Cờ `deferCorrection` trong `buildRoleplayPrompt` (evaluation null) + toggle "Chỉ trò
       chuyện / Vừa trò chuyện vừa soi" trong `AiChat`; mặc định BẬT cho khóa comm.
-- [ ] Persona mặc định khóa comm = `gaubong`; chip nhẹ 🟢 "được hiểu"; debrief đóng khung
+- [x] Persona mặc định khóa comm = `gaubong`; chip nhẹ 🟢 "được hiểu"; debrief đóng khung
       1-tốt-1-sửa + mẹo vượt lo âu.
-- [ ] Câu tự đánh giá "mình dám nói" (1–5) đầu & cuối khóa; hiện tiến bộ ở `CommSummaryView`.
-- [ ] Test: `deferCorrection` cho evaluation null; persona mặc định theo khóa.
+- [x] Câu tự đánh giá "mình dám nói" (1–5) đầu & cuối khóa; hiện tiến bộ ở `CommSummaryView`.
+- [x] Test: `deferCorrection` cho evaluation null; persona mặc định theo khóa.
 
 ### Đợt 5 — Tái chế, thích ứng, độc thoại, đánh giá đúng
 
-- [ ] Boss mỗi khối kéo lại 1 cảnh khối trước (thêm "cảnh ôn" vào brief scenario).
-- [ ] "🔁 Cảnh phục thù" ở buổi mission khi tuần có rubric < 70% / lỗi lặp (suy từ store).
-- [ ] 1 buổi độc thoại 60–90s/khối + dạy từ nối; rubric mạch lạc.
-- [ ] Rubric debrief +2 chiều (trôi chảy, dễ hiểu) có số khách quan; cập nhật `commStats`
+- [x] Boss mỗi khối kéo lại 1 cảnh khối trước (thêm "cảnh ôn" vào brief scenario).
+- [x] "🔁 Cảnh phục thù" ở buổi mission khi tuần có rubric < 70% / lỗi lặp (suy từ store).
+- [x] 1 buổi độc thoại 60–90s/khối + dạy từ nối; rubric mạch lạc.
+- [x] Rubric debrief +2 chiều (trôi chảy, dễ hiểu) có số khách quan; cập nhật `commStats`
       + `CommSummaryView` (WPM, điểm phát âm, thang tự tin).
-- [ ] Test: rubric mở rộng; điều kiện "cảnh phục thù"; thống kê Tổng kết mới.
+- [x] Test: rubric mở rộng; điều kiện "cảnh phục thù"; thống kê Tổng kết mới.
 
 > **Thứ tự cố ý:** Đợt 1–2 (phát âm + trôi chảy) đánh trúng thứ quyết định cảm giác tự
 > tin và tận dụng tối đa linh kiện có sẵn → làm trước. Đợt 3–4 mở rộng tai và hạ lo âu.

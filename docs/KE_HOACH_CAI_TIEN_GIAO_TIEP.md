@@ -136,7 +136,7 @@ Mỗi tuần chỉ **thêm ≤ 20 phút** so với checklist hiện có (giữ t
 
 - [x] Viết `NenTang_Tuan6_Work.md`, `NenTang_Tuan7_Work.md`, `NenTang_Tuan8_Work.md` (Track A) — email/chat công việc, họp & small talk, phỏng vấn + Final Boss; cùng format nên `parseIelts.js` không cần sửa
 - [x] Cơ chế chọn Track A/B (`src/data/courseIelts.js` lọc file theo hậu tố `_Work.md`, pref lưu `localStorage` + `useUserStore().ieltsTrack`/`setIeltsTrack()`, toggle ở banner `IeltsCourseView.vue`), mặc định Track A — đổi track cần tải lại trang
-- [ ] Curate 6–8 bài shadowing "bán thực" (Tuần 4–6) và 4 clip gốc (Tuần 7–8) qua Admin — **đã tìm sẵn danh sách video YouTube thật (kiểm tra tồn tại qua oembed), còn lại thao tác dán URL qua `/admin/shadowing` cần tài khoản admin thật**:
+- [x] Curate 6–8 bài shadowing "bán thực" (Tuần 4–6) và 4 clip gốc (Tuần 7–8) — **xong ở `KE_HOACH_CAI_TIEN_WEBSITE.md` Bước 1.3**: script `scripts/curate-shadowing.mjs` tự lấy phụ đề (`youtube-transcript`), cắt đoạn, polish qua Groq, ghi 10/10 clip vào `public/data/shadowing-clips.json` (fallback tĩnh, không cần dán tay qua `/admin/shadowing` nữa) — danh sách video đã dùng:
 
   | Tuần | Cấp độ | Tiêu đề | URL | Kênh | Vì sao phù hợp |
   | --- | --- | --- | --- | --- | --- |

@@ -320,6 +320,72 @@ create policy "recordings_delete_own"
   on storage.objects for delete
   using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
 
+-- ============================================================================
+-- Nhắc học qua Web Push (Bước 3.3) — đăng ký PushManager của từng thiết bị.
+-- Edge Function `send-study-reminders` (service_role, bypass RLS) đọc bảng này
+-- theo lịch (pg_cron) để gửi push đúng "giờ ưa thích" khi streak sắp đứt.
+-- ============================================================================
+create table if not exists public.push_subscriptions (
+  user_id        uuid primary key references auth.users (id) on delete cascade,
+  endpoint       text        not null,
+  p256dh         text        not null,
+  auth_key       text        not null,
+  preferred_hour integer     not null default 20,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+
+alter table public.push_subscriptions enable row level security;
+
+-- Mỗi user chỉ đọc/tạo/sửa/xóa được đăng ký của chính mình (đổi thiết bị = ghi
+-- đè, chỉ giữ 1 subscription/tài khoản — đơn giản hóa, chấp nhận chỉ thiết bị
+-- đăng ký gần nhất nhận được push).
+drop policy if exists "push_subscriptions_select_own" on public.push_subscriptions;
+create policy "push_subscriptions_select_own"
+  on public.push_subscriptions for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "push_subscriptions_insert_own" on public.push_subscriptions;
+create policy "push_subscriptions_insert_own"
+  on public.push_subscriptions for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "push_subscriptions_update_own" on public.push_subscriptions;
+create policy "push_subscriptions_update_own"
+  on public.push_subscriptions for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "push_subscriptions_delete_own" on public.push_subscriptions;
+create policy "push_subscriptions_delete_own"
+  on public.push_subscriptions for delete
+  using (auth.uid() = user_id);
+
+-- ============================================================================
+-- Analytics tôn trọng riêng tư (Bước 4.1) — nhật ký sự kiện KHÔNG PII: mở
+-- trang, mở/hoàn thành buổi học, dùng tính năng (search, AI chat…). Chỉ ghi
+-- (insert), không sửa/xóa từ client — kiểu "audit log" như admin_audit. Người
+-- dùng có thể tắt hoàn toàn ở trang Hồ sơ (cờ lưu local, xem localPrefsSlice.js
+-- + lib/analytics.js) — khi tắt thì app không insert nữa, không cần cột riêng.
+-- ============================================================================
+create table if not exists public.events (
+  id         bigint generated always as identity primary key,
+  user_id    uuid references auth.users (id) on delete cascade,
+  name       text        not null,
+  props      jsonb       not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.events enable row level security;
+
+-- Chỉ được TẠO sự kiện của chính mình (hoặc user_id null khi chưa đăng nhập,
+-- nếu sau này cho phép); không có policy select/update/delete cho client —
+-- xem/aggregat qua Supabase dashboard hoặc service_role (bỏ qua RLS).
+drop policy if exists "events_insert_own" on public.events;
+create policy "events_insert_own"
+  on public.events for insert
+  with check (auth.uid() = user_id);
+
 -- ----------------------------------------------------------------------------
 -- Thêm admin đầu tiên (chạy 1 lần, đổi email cho đúng tài khoản của bạn):
 --

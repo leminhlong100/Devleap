@@ -7,8 +7,10 @@
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchAll, normalize } from '@/data/searchIndex'
+import { useAnalytics } from '@/composables/useAnalytics'
 
 const router = useRouter()
+const { track } = useAnalytics()
 
 const open = ref(false)
 const query = ref('')
@@ -41,6 +43,7 @@ watch(results, () => {
 
 function openPalette() {
   open.value = true
+  track('search_open') // Bước 4.1 — đo mức dùng tính năng tìm kiếm.
   nextTick(() => inputEl.value?.focus())
 }
 function closePalette() {
@@ -110,6 +113,11 @@ function onKeydown(e) {
   if ((e.metaKey || e.ctrlKey) && (k === 'k' || k === 'K')) {
     e.preventDefault()
     open.value ? closePalette() : openPalette()
+    return
+  }
+  if (open.value && k === 'Escape') {
+    e.preventDefault()
+    closePalette()
     return
   }
   if (!open.value && k === '/' && !inField) {

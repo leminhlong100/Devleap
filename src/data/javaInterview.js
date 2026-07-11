@@ -845,21 +845,28 @@ export const CHEATSHEET = [
 ]
 
 // -------------------- Lộ trình 2 tuần --------------------
+// Mỗi ngày có `goals`: mục tiêu ĐO ĐƯỢC để app tự đánh dấu "hoàn thành ngày"
+// (không cần tick tay). Loại mục tiêu:
+//   { k: 'q', topics: [...] } — ôn HẾT câu hỏi của các chủ đề này (mở đọc đáp án
+//       trong tab Ngân hàng = đã ôn); total = tổng số câu của các topic đó.
+//   { k: 'code', n } — giải được ≥ n bài coding (chạy pass) — đếm dồn cả khóa.
+//   { k: 'mock', n } — hoàn thành ≥ n buổi Mock Interview — đếm dồn cả khóa.
+// `tasks` vẫn là gợi ý luyện tay (không tự chấm). Xem src/lib/crashPlan.js.
 export const CRASH_PLAN = [
-  { day: 1, topic: 'OOP + Interface/Abstract + equals/hashCode', tasks: ['Thuộc 4 tính chất OOP trong 30s', 'Gõ 1 immutable class + override equals/hashCode'] },
-  { day: 2, topic: 'Generics + Exception', tasks: ['Thuộc PECS, checked vs unchecked', 'Trả lời miệng 10 câu chủ đề core'] },
-  { day: 3, topic: 'Collections + Big-O', tasks: ['Vẽ tay cơ chế HashMap', 'Thuộc bảng chọn collection + độ phức tạp'] },
-  { day: 4, topic: 'Stream + Optional + Lambda', tasks: ['Viết 5 pipeline (map/filter/collect/groupingBy)', 'Phân biệt orElse vs orElseGet'] },
-  { day: 5, topic: 'Concurrency cơ bản', tasks: ['Thread/Runnable/Callable, ExecutorService', 'volatile vs synchronized vs Atomic, deadlock'] },
-  { day: 6, topic: 'Spring Boot + REST + DI', tasks: ['Gõ 1 CRUD controller + @RestControllerAdvice', 'Thuộc 3 annotation của @SpringBootApplication'] },
-  { day: 7, topic: 'Ôn + tự test tuần 1', tasks: ['Mock Interview chủ đề Java Core', 'Ghi lại câu chưa chắc'] },
-  { day: 8, topic: 'JPA/Hibernate + N+1', tasks: ['Nhớ owning vs inverse side', 'Fix N+1: JOIN FETCH / EntityGraph'] },
-  { day: 9, topic: '@Transactional + JPQL + DTO', tasks: ['Hiểu propagation, self-invocation', 'Khi nào native query'] },
-  { day: 10, topic: 'Testing (JUnit + Mockito)', tasks: ['@Mock vs @InjectMocks, stub vs verify', 'Viết 3 unit test'] },
-  { day: 11, topic: 'Spring Security + JWT', tasks: ['Flow login → token → filter', 'JWT KHÔNG mã hóa; authn vs authz'] },
-  { day: 12, topic: 'SOLID + Patterns + JVM + System Design', tasks: ['5 nguyên tắc SOLID trong 30s', 'Heap/stack/GC/memory leak', 'Luyện 1-2 walkthrough System Design (rate limiter hoặc URL shortener)'] },
-  { day: 13, topic: 'SQL sâu + Frontend + Stack thực tế + Hạ tầng', tasks: ['Ôn tối ưu query (EXPLAIN/index), composite/covering index', 'Ôn lướt JS core + React/Angular; nhớ Struts/MyBatis/batch trong CV', 'Ôn nhanh Docker/CI-CD/Redis/observability (chủ đề Hạ tầng thực tế)'] },
-  { day: 14, topic: 'Kỹ năng PV + Mock Interview toàn phần', tasks: ['Luyện giới thiệu bản thân 60s (VI+EN) + STAR 2–3 dự án', 'Phỏng vấn thử mọi chủ đề, ôn lại chủ đề điểm thấp'] },
+  { day: 1, topic: 'OOP + Interface/Abstract + equals/hashCode', tasks: ['Thuộc 4 tính chất OOP trong 30s', 'Gõ 1 immutable class + override equals/hashCode'], goals: [{ k: 'q', topics: ['oop'] }] },
+  { day: 2, topic: 'Generics + Exception + Core', tasks: ['Thuộc PECS, checked vs unchecked', 'Trả lời miệng 10 câu chủ đề core'], goals: [{ k: 'q', topics: ['generics', 'exception', 'core'] }] },
+  { day: 3, topic: 'Collections + Big-O', tasks: ['Vẽ tay cơ chế HashMap', 'Thuộc bảng chọn collection + độ phức tạp'], goals: [{ k: 'q', topics: ['collections'] }] },
+  { day: 4, topic: 'Stream + Optional + Lambda', tasks: ['Viết 5 pipeline (map/filter/collect/groupingBy)', 'Phân biệt orElse vs orElseGet'], goals: [{ k: 'q', topics: ['stream'] }, { k: 'code', n: 1 }] },
+  { day: 5, topic: 'Concurrency cơ bản', tasks: ['Thread/Runnable/Callable, ExecutorService', 'volatile vs synchronized vs Atomic, deadlock'], goals: [{ k: 'q', topics: ['concurrency'] }] },
+  { day: 6, topic: 'Spring Boot + REST + DI', tasks: ['Gõ 1 CRUD controller + @RestControllerAdvice', 'Thuộc 3 annotation của @SpringBootApplication'], goals: [{ k: 'q', topics: ['spring', 'rest'] }] },
+  { day: 7, topic: 'Ôn + tự test tuần 1', tasks: ['Mock Interview chủ đề Java Core', 'Ghi lại câu chưa chắc'], goals: [{ k: 'mock', n: 1 }] },
+  { day: 8, topic: 'JPA/Hibernate + N+1', tasks: ['Nhớ owning vs inverse side', 'Fix N+1: JOIN FETCH / EntityGraph'], goals: [{ k: 'q', topics: ['jpa'] }] },
+  { day: 9, topic: '@Transactional + JPQL + DTO', tasks: ['Hiểu propagation, self-invocation', 'Khi nào native query'], goals: [{ k: 'q', topics: ['transaction'] }] },
+  { day: 10, topic: 'Testing (JUnit + Mockito)', tasks: ['@Mock vs @InjectMocks, stub vs verify', 'Viết 3 unit test'], goals: [{ k: 'q', topics: ['testing'] }] },
+  { day: 11, topic: 'Spring Security + JWT', tasks: ['Flow login → token → filter', 'JWT KHÔNG mã hóa; authn vs authz'], goals: [{ k: 'q', topics: ['security'] }] },
+  { day: 12, topic: 'SOLID + Patterns + JVM + System Design', tasks: ['5 nguyên tắc SOLID trong 30s', 'Heap/stack/GC/memory leak', 'Luyện 1-2 walkthrough System Design (rate limiter hoặc URL shortener)'], goals: [{ k: 'q', topics: ['solid', 'jvm', 'design'] }] },
+  { day: 13, topic: 'SQL sâu + Frontend + Stack thực tế + Hạ tầng', tasks: ['Ôn tối ưu query (EXPLAIN/index), composite/covering index', 'Ôn lướt JS core + React/Angular; nhớ Struts/MyBatis/batch trong CV', 'Ôn nhanh Docker/CI-CD/Redis/observability (chủ đề Hạ tầng thực tế)'], goals: [{ k: 'q', topics: ['sql', 'frontend', 'mystack', 'infra'] }] },
+  { day: 14, topic: 'Kỹ năng PV + Mock Interview toàn phần', tasks: ['Luyện giới thiệu bản thân 60s (VI+EN) + STAR 2–3 dự án', 'Phỏng vấn thử mọi chủ đề, ôn lại chủ đề điểm thấp'], goals: [{ k: 'q', topics: ['scenario', 'behavioral'] }, { k: 'mock', n: 2 }] },
 ]
 
 // -------------------- Coding challenge (chạy thật qua run-java) --------------------

@@ -1,5 +1,6 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { cardsFromTerms } from '@/data/tools'
 import { generateCard } from '@/lib/aiChat'
@@ -7,13 +8,18 @@ import BottomSheet from '@/components/common/BottomSheet.vue'
 import WordDraftFields from '@/components/common/WordDraftFields.vue'
 
 /**
- * Nút nổi "Thêm từ" hiện ở MỌI trang — cho phép lưu nhanh 1 từ đang học được
- * (vd gặp trong sách, video, hội thoại ngoài đời) mà không cần chuyển tới
- * 🔖 Từ vựng & câu đã lưu. Luồng 2 bước: (1) gõ từ, để AI tạo nháp; (2) xem
- * lại nháp AI tạo (nghĩa/IPA/ví dụ/loại từ/họ từ/cụm từ) — sửa/xóa/thêm tự do
- * rồi mới bấm Lưu, không lưu thẳng "mù" như trước.
+ * Nút nổi "Thêm từ" — cho phép lưu nhanh 1 từ đang học được (vd gặp trong
+ * sách, video, hội thoại ngoài đời) mà không cần chuyển tới 🔖 Từ vựng & câu
+ * đã lưu. Chỉ hiện trên các trang liên quan từ vựng tiếng Anh (route có
+ * meta.vocabFab: IELTS, Giao Tiếp, Shadowing, Khu công cụ) — ẩn ở trang chủ,
+ * khóa Java, tiến độ, admin... để đỡ che màn hình những chỗ không liên quan.
+ * Luồng 2 bước: (1) gõ từ, để AI tạo nháp; (2) xem lại nháp AI tạo (nghĩa/
+ * IPA/ví dụ/loại từ/họ từ/cụm từ) — sửa/xóa/thêm tự do rồi mới bấm Lưu.
  */
 const POS_OPTIONS = ['Danh từ', 'Động từ', 'Tính từ', 'Trạng từ', 'Cụm từ', 'Giới từ', 'Liên từ', 'Thán từ']
+
+const route = useRoute()
+const visible = computed(() => !!route.meta?.vocabFab)
 
 const user = useUserStore()
 const open = ref(false)
@@ -36,6 +42,12 @@ function show() {
 function close() {
   open.value = false
 }
+
+// Rời khỏi trang có FAB (vd bấm link trong sheet) thì đóng sheet luôn, tránh
+// nổi lơ lửng trên trang không liên quan.
+watch(visible, (v) => {
+  if (!v) open.value = false
+})
 
 async function generate() {
   const t = term.value.trim()
@@ -105,7 +117,7 @@ function save() {
 </script>
 
 <template>
-  <button class="quick-add-fab" title="Thêm từ mới đang học" aria-label="Thêm từ mới" @click="show">➕📝</button>
+  <button v-if="visible" class="quick-add-fab" title="Thêm từ mới đang học" aria-label="Thêm từ mới" @click="show">➕📝</button>
 
   <BottomSheet v-model="open">
     <div class="qa-body">

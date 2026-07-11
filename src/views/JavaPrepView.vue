@@ -19,6 +19,7 @@ import {
   javaSrsId,
 } from '@/data/javaInterview'
 import { computeReadiness, readinessLabel } from '@/lib/readiness'
+import { dayGoals, goalStatus, planStatus } from '@/lib/crashPlan'
 
 const route = useRoute()
 const router = useRouter()
@@ -83,7 +84,11 @@ const filteredQuestions = computed(() => {
 function toggleOpen(id) {
   const s = new Set(opened.value)
   if (s.has(id)) s.delete(id)
-  else s.add(id)
+  else {
+    s.add(id)
+    // Mở đọc đáp án = đã ôn câu này → nạp cho tiến độ Lộ trình 2 tuần.
+    user.markQuestionStudied(id)
+  }
   opened.value = s
 }
 
@@ -105,6 +110,38 @@ const readinessColor = computed(() => {
   if (s >= 60) return '#FFB020'
   return '#ff5f57'
 })
+
+// —— Lộ trình 2 tuần: tự đánh dấu ngày hoàn thành theo KẾT QUẢ ——
+// Bối cảnh chấm mục tiêu: câu đã ôn (mở đọc), số bài coding đã giải, số mock.
+const planCtx = computed(() => ({
+  studied: new Set(user.javaPrep?.studiedQuestions || []),
+  solvedCount: (user.javaPrep?.solvedChallenges || []).length,
+  mockCount: user.javaPrep?.mocksTaken || 0,
+}))
+const plan = computed(() => planStatus(planCtx.value))
+// Ngày -> danh sách mục tiêu kèm trạng thái (đủ để render checklist).
+function goalsForDay(d) {
+  return dayGoals(d).map((g) => ({ ...g, ...goalStatus(g, planCtx.value) }))
+}
+function isDayComplete(day) {
+  return plan.value.days.find((x) => x.day === day)?.done || false
+}
+// Nhảy tới đúng chỗ để làm mục tiêu (đổi tab / mở filter / vào phòng mock).
+function goToGoal(jump) {
+  if (!jump) return
+  if (jump.tab === 'mock') {
+    router.push({ name: 'java-mock' })
+    return
+  }
+  if (jump.tab === 'bank') {
+    filterTopic.value = jump.topic || ''
+    filterLevel.value = ''
+    onlyReview.value = false
+    onlyDue.value = false
+  }
+  tab.value = jump.tab
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 // —— Kỹ năng phỏng vấn ——
 const skills = INTERVIEW_SKILLS
@@ -215,11 +252,56 @@ onMounted(() => {
 
     <!-- ===== Lộ trình 2 tuần ===== -->
     <section v-if="tab === 'plan'" class="plan">
-      <div v-for="d in CRASH_PLAN" :key="d.day" class="plan-day" :class="{ wk2: d.day > 7 }">
-        <span class="day-no">Ngày {{ d.day }}</span>
-        <div>
-          <h3>{{ d.topic }}</h3>
-          <ul><li v-for="(t, i) in d.tasks" :key="i">{{ t }}</li></ul>
+      <!-- Tổng quan tiến độ + "hôm nay làm gì" -->
+      <div class="plan-hero">
+        <div class="ph-top">
+          <div>
+            <b class="ph-title">Tiến độ lộ trình</b>
+            <span class="ph-sub">Ngày tự đánh dấu ✓ khi bạn ôn hết câu / giải coding / xong mock — không cần tick tay.</span>
+          </div>
+          <span class="ph-count">{{ plan.doneCount }}/{{ plan.total }} ngày</span>
+        </div>
+        <div class="ph-bar"><span :style="{ width: (plan.doneCount / plan.total) * 100 + '%' }"></span></div>
+        <p v-if="plan.today" class="ph-today">
+          👉 <b>Hôm nay: Ngày {{ plan.today }}</b> — {{ CRASH_PLAN[plan.today - 1].topic }}
+        </p>
+        <p v-else class="ph-today done">🎉 Bạn đã hoàn thành cả 14 ngày. Ôn lại chỗ điểm thấp &amp; luyện thêm Mock Interview nhé!</p>
+      </div>
+
+      <div
+        v-for="d in CRASH_PLAN"
+        :key="d.day"
+        class="plan-day"
+        :class="{ wk2: d.day > 7, done: isDayComplete(d.day), today: d.day === plan.today }"
+      >
+        <span class="day-no">
+          <span class="day-mark">{{ isDayComplete(d.day) ? '✓' : d.day }}</span>
+          <small>Ngày {{ d.day }}</small>
+        </span>
+        <div class="day-body">
+          <div class="day-head">
+            <h3>{{ d.topic }}</h3>
+            <span v-if="isDayComplete(d.day)" class="pill ok">✓ Hoàn thành</span>
+            <span v-else-if="d.day === plan.today" class="pill now">Hôm nay</span>
+          </div>
+
+          <!-- Mục tiêu đo được (app tự chấm) -->
+          <ul class="goals">
+            <li v-for="(g, gi) in goalsForDay(d)" :key="gi" :class="{ ok: g.done }">
+              <span class="gk">{{ g.done ? '✅' : '⬜' }}</span>
+              <span class="gl">{{ g.label }}</span>
+              <span class="gc">{{ g.cur }}/{{ g.total }}</span>
+              <button v-if="!g.done" class="go" @click="goToGoal(g.jump)">
+                {{ g.k === 'mock' ? 'Vào mock →' : g.k === 'code' ? 'Mở coding →' : 'Ôn ngay →' }}
+              </button>
+            </li>
+          </ul>
+
+          <!-- Gợi ý luyện tay (không tự chấm) -->
+          <details class="hand">
+            <summary>✍️ Luyện tay (gợi ý, không tính điểm)</summary>
+            <ul><li v-for="(t, i) in d.tasks" :key="i">{{ t }}</li></ul>
+          </details>
         </div>
       </div>
     </section>
@@ -568,9 +650,65 @@ onMounted(() => {
   border-color: transparent;
 }
 /* Plan */
+.plan-hero {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.ph-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ph-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: block;
+}
+.ph-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.ph-count {
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--purple);
+  background: var(--purple-soft);
+  padding: 4px 12px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.ph-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--line-soft);
+  overflow: hidden;
+  margin: 12px 0 10px;
+}
+.ph-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #6c5ce7, #00c281);
+  transition: width 0.35s ease;
+}
+.ph-today {
+  font-size: 13.5px;
+  color: var(--slate);
+  line-height: 1.5;
+}
+.ph-today.done {
+  color: #00a86f;
+  font-weight: 600;
+}
 .plan-day {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   background: var(--surface);
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--purple);
@@ -581,24 +719,140 @@ onMounted(() => {
 .plan-day.wk2 {
   border-left-color: #00c281;
 }
+.plan-day.done {
+  border-left-color: #00c281;
+  background: rgba(0, 194, 129, 0.05);
+}
+.plan-day.today {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 2px var(--purple-soft);
+}
 .day-no {
-  font-weight: 800;
-  color: var(--purple);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
   white-space: nowrap;
-  font-size: 13.5px;
-  min-width: 62px;
+  min-width: 52px;
 }
-.plan-day.wk2 .day-no {
-  color: #00c281;
+.day-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--purple);
+  background: var(--purple-soft);
 }
-.plan-day h3 {
+.plan-day.wk2 .day-mark {
+  color: #00a86f;
+  background: rgba(0, 194, 129, 0.14);
+}
+.plan-day.done .day-mark {
+  color: #fff;
+  background: #00c281;
+}
+.day-no small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted-2);
+}
+.day-body {
+  flex: 1;
+  min-width: 0;
+}
+.day-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.day-head h3 {
   font-size: 15.5px;
   font-weight: 800;
-  margin-bottom: 6px;
 }
-.plan-day ul {
+.pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.pill.ok {
+  color: #00a86f;
+  background: rgba(0, 194, 129, 0.15);
+}
+.pill.now {
+  color: var(--purple);
+  background: var(--purple-soft);
+}
+.goals {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+.goals li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-soft, rgba(127, 127, 127, 0.05));
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.goals li.ok {
+  opacity: 0.7;
+}
+.goals .gk {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.goals .gl {
+  flex: 1;
+  font-weight: 600;
+  color: var(--slate);
+  line-height: 1.4;
+}
+.goals li.ok .gl {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted-2);
+}
+.goals .gc {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+.goals .go {
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: #fff;
+  background: var(--purple);
+  padding: 5px 11px;
+  border-radius: 8px;
+}
+.hand {
+  font-size: 13px;
+}
+.hand summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.hand ul {
   padding-left: 18px;
-  font-size: 13.5px;
+  margin-top: 6px;
+  font-size: 13px;
   line-height: 1.55;
   color: var(--muted);
 }

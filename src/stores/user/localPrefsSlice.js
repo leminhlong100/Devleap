@@ -1,5 +1,6 @@
 import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
 import { javaSrsId } from '@/data/javaInterview'
+import { isOptedOut as isAnalyticsOptedOut, setOptedOut as persistAnalyticsOptOut } from '@/lib/analytics'
 
 /**
  * Tùy chọn chỉ lưu LOCAL, không đồng bộ cloud và không nằm trong
@@ -38,8 +39,11 @@ const DEFAULT_CONVO = {
 // — không cần cột Supabase riêng, `srs` đã đồng bộ cloud sẵn.
 // reviewQuestions/topicScores/bestScore/solvedChallenges không đồng bộ cloud để
 // khỏi đổi schema Supabase; có thể nâng cấp sync sau.
+// `studiedQuestions`: id các câu đã MỞ ĐỌC đáp án trong tab Ngân hàng — tín hiệu
+//   "đã ôn" để Lộ trình 2 tuần tự đánh dấu ngày hoàn thành (xem lib/crashPlan.js).
+// `mocksTaken`: đếm dồn số buổi Mock Interview đã hoàn thành (mục tiêu ngày 7/14).
 const JAVA_PREP_KEY = 'devleap:javaprep:v1'
-const DEFAULT_JAVA_PREP = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [], solvedChallenges: [] }
+const DEFAULT_JAVA_PREP = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [], solvedChallenges: [], studiedQuestions: [], mocksTaken: 0 }
 
 export function state() {
   return {
@@ -50,6 +54,10 @@ export function state() {
     ieltsTrack,
     // Kết quả phỏng vấn thử Java — chỉ local.
     javaPrep: { ...DEFAULT_JAVA_PREP },
+    // Đã tắt analytics ẩn danh chưa (Bước 4.1) — chỉ local, nguồn sự thật thật
+    // sự là localStorage riêng ở lib/analytics.js (để track() đọc được cả
+    // ngoài Pinia); field này chỉ để UI trang Hồ sơ phản ứng (reactive).
+    analyticsOptOut: isAnalyticsOptedOut(),
   }
 }
 
@@ -80,6 +88,12 @@ export const actions = {
   setConvoPrefs(patch = {}) {
     this.convoPrefs = { ...this.convoPrefs, ...patch }
     this.persistConvo()
+  },
+
+  /** Bật/tắt analytics ẩn danh ở thiết bị này (Bước 4.1, trang Hồ sơ). */
+  setAnalyticsOptOut(value) {
+    this.analyticsOptOut = !!value
+    persistAnalyticsOptOut(this.analyticsOptOut)
   },
 
   /**
@@ -121,6 +135,9 @@ export const actions = {
           topicScores: j.topicScores && typeof j.topicScores === 'object' ? j.topicScores : {},
           reviewQuestions: Array.isArray(j.reviewQuestions) ? j.reviewQuestions : [],
           solvedChallenges: Array.isArray(j.solvedChallenges) ? j.solvedChallenges : [],
+          studiedQuestions: Array.isArray(j.studiedQuestions) ? j.studiedQuestions : [],
+          // Người dùng cũ chưa có counter: coi báo cáo gần nhất là ít nhất 1 buổi.
+          mocksTaken: Number.isFinite(j.mocksTaken) ? j.mocksTaken : j.lastReport ? 1 : 0,
         }
       }
     } catch {
@@ -150,6 +167,7 @@ export const actions = {
       bestScore: Math.max(this.javaPrep.bestScore || 0, overall),
       lastReport: { ...report, overall, at: Date.now() },
       topicScores: scores,
+      mocksTaken: (this.javaPrep.mocksTaken || 0) + 1,
     }
     try {
       localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
@@ -190,6 +208,24 @@ export const actions = {
     const id = String(questionId || '').trim()
     if (!id || !this.javaPrep.reviewQuestions?.includes(id)) return
     this.reviewCard(javaSrsId(id), grade)
+  },
+
+  /**
+   * Đánh dấu một câu hỏi đã ĐƯỢC ÔN (mở đọc đáp án trong tab Ngân hàng). Chỉ thêm
+   * (không bỏ) — dùng để Lộ trình 2 tuần tự tính ngày hoàn thành. Idempotent.
+   * @param {string} questionId id câu trong QUESTION_BANK.
+   */
+  markQuestionStudied(questionId) {
+    const id = String(questionId || '').trim()
+    if (!id) return
+    const list = Array.isArray(this.javaPrep.studiedQuestions) ? this.javaPrep.studiedQuestions : []
+    if (list.includes(id)) return
+    this.javaPrep = { ...this.javaPrep, studiedQuestions: [...list, id] }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
   },
 
   /** Đánh dấu một bài coding đã giải được (chạy ra kết quả đúng) — nạp cho Readiness meter. */

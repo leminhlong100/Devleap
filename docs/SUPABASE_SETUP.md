@@ -102,6 +102,36 @@ Khu quản trị cần thêm quyền đặc biệt và một khóa server (khôn
 
 ---
 
+## 7. (Tùy chọn) Bật nhắc học qua Web Push thật (Bước 3.3)
+
+Khác Notification cục bộ (chỉ chạy khi tab đang mở), Web Push gửi được cả khi
+app đã đóng — cần 1 cặp khóa VAPID + bảng `push_subscriptions` (đã có trong
+`schema.sql` mục 2) + 1 Netlify Scheduled Function chạy mỗi giờ.
+
+1. **Sinh cặp khóa VAPID** (chỉ 1 lần cho cả site):
+   ```
+   npx web-push generate-vapid-keys
+   ```
+2. **Khóa công khai** — đặt ở cả 2 chỗ, phải TRÙNG nhau:
+   - `.env.local` / Netlify env: `VITE_VAPID_PUBLIC_KEY=<public key>`
+   - Netlify env: `VAPID_PUBLIC_KEY=<public key>` (function đọc tên này trước,
+     `VITE_VAPID_PUBLIC_KEY` chỉ là dự phòng).
+3. **Khóa riêng tư** — CHỈ đặt ở Netlify env, không bao giờ đưa vào `.env.local`
+   hay commit vào repo: `VAPID_PRIVATE_KEY=<private key>`.
+4. Function `netlify/functions/send-study-reminders.js` tự chạy mỗi giờ
+   (`export const config = { schedule: '0 * * * *' }`) — Netlify tự nhận diện
+   khi deploy, không cần cấu hình thêm trong `netlify.toml`. Nó dùng lại
+   `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_URL` đã đặt ở mục 6.
+5. Người học bật nhắc học ở trang **Hồ sơ & cài đặt** (`/profile`) → mục
+   "Nhắc học kể cả khi app đã đóng" → trình duyệt xin quyền Notification rồi
+   lưu subscription vào `push_subscriptions`.
+
+> Giả định đơn giản hóa: server coi TOÀN BỘ người dùng ở múi giờ Việt Nam
+> (UTC+7) — sản phẩm chỉ phục vụ người học Việt, không hỏi/lưu timezone riêng.
+> Xem chi tiết trong `netlify/functions/send-study-reminders.js`.
+
+---
+
 ## Cơ chế đồng bộ (tóm tắt)
 
 - Tiến độ luôn ghi **localStorage** trước (tức thì, chạy được offline).

@@ -52,20 +52,21 @@ function open(c) {
     </p>
 
     <div class="filters">
-      <span
+      <button
         v-for="f in filters"
         :key="f"
+        type="button"
         class="filter"
         :class="{ on: active === f }"
         @click="active = f"
-        >{{ f }}</span
-      >
+      >{{ f }}</button>
     </div>
 
     <div class="grid">
-      <div
+      <button
         v-for="c in shown"
         :key="c.id"
+        type="button"
         class="course-card"
         :style="{ cursor: c.locked ? 'default' : 'pointer', opacity: c.locked ? 0.92 : 1 }"
         @click="open(c)"
@@ -87,11 +88,11 @@ function open(c) {
           <div v-if="c.active" class="progress-wrap">
             <div class="progress-top"><span>Tiến độ</span><span class="pct">{{ progressOf(c) }}%</span></div>
             <div class="track"><div class="fill" :style="{ width: progressOf(c) + '%' }"></div></div>
-            <button class="cta">{{ c.cta }}</button>
+            <span class="cta">{{ c.cta }}</span>
           </div>
-          <button v-else class="locked-btn">🔔 Thông báo khi mở</button>
+          <span v-else class="locked-btn">🔔 Thông báo khi mở</span>
         </div>
-      </div>
+      </button>
 
       <!-- add-new placeholder -->
       <div class="add-card">
@@ -145,6 +146,7 @@ function open(c) {
 .filter {
   padding: 9px 18px;
   border-radius: 99px;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
   color: var(--slate);
@@ -179,6 +181,12 @@ function open(c) {
   box-shadow: 0 12px 34px rgba(108, 92, 231, 0.07);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
   transition: all 0.18s;
 }
 @media (hover: hover) {
@@ -275,10 +283,10 @@ function open(c) {
   background: var(--grad-brand);
 }
 .cta {
+  display: block;
+  text-align: center;
   margin-top: 18px;
   width: 100%;
-  border: none;
-  cursor: pointer;
   font-size: 15px;
   font-weight: 700;
   color: #fff;
@@ -287,10 +295,11 @@ function open(c) {
   background: var(--grad-purple);
 }
 .locked-btn {
+  display: block;
+  text-align: center;
   margin-top: 18px;
   width: 100%;
   border: 1px dashed rgba(108, 92, 231, 0.3);
-  cursor: default;
   font-size: 15px;
   font-weight: 700;
   color: var(--muted-2);
