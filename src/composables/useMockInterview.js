@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { interviewTurn, interviewReport } from '@/lib/javaInterview'
 import { pickInterviewSet, topicLabel } from '@/data/javaInterview'
 import { friendlyAiError } from '@/lib/aiError'
@@ -378,6 +378,10 @@ export function useMockInterview() {
   function toggleAutoSpeak() {
     autoSpeak.value = !autoSpeak.value
   }
+
+  // Rời trang giữa lúc đang nghe -> dừng luôn recognizer, tránh phiên nhận diện
+  // mồ côi tiếp tục giữ micro chạy nền sau khi component đã bị huỷ.
+  onUnmounted(stopMic)
 
   return {
     phase,

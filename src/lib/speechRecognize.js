@@ -66,14 +66,15 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
       }, ms)
     }
     rec.onresult = (e) => {
-      // Chỉ ghép các kết quả ĐÃ CHỐT (isFinal) vào transcript để chấm điểm;
-      // kết quả tạm vẫn dùng để reset đồng hồ im lặng (báo "còn đang nói").
-      const finalText = Array.from(e.results)
-        .filter((r) => r.isFinal)
-        .map((r) => r[0]?.transcript || '')
-        .join(' ')
-        .trim()
-      if (finalText) transcript = finalText
+      // Chỉ xử lý kết quả MỚI (từ e.resultIndex), không duyệt lại toàn bộ e.results
+      // từ đầu mỗi sự kiện — ở continuous=true mảng results phình dần suốt phiên
+      // nghe và sự kiện bắn rất dày, duyệt lại từ đầu mỗi lần sẽ nghẽn luồng chính.
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const t = (e.results[i][0]?.transcript || '').trim()
+          if (t) transcript = transcript ? `${transcript} ${t}` : t
+        }
+      }
       armSilence() // có tiếng nói (kể cả tạm) -> đặt lại đồng hồ im lặng
     }
     rec.onerror = (e) => {

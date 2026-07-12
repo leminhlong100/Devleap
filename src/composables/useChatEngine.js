@@ -1,4 +1,4 @@
-import { ref, computed, reactive, watch, onMounted } from 'vue'
+import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
 import { coachTurn, roleplayTurn, debriefTurn, reFeedback, getHint, getIdea, translateToVi } from '@/lib/aiChat'
 import { friendlyAiError } from '@/lib/aiError'
 import { speak, canSpeak } from '@/lib/speak'
@@ -234,6 +234,11 @@ export function useChatEngine(props) {
   }
 
   onMounted(startSession)
+  // Rời trang giữa lúc đang nghe -> dừng luôn recognizer, tránh phiên nhận diện
+  // mồ côi tiếp tục giữ micro chạy nền sau khi component đã bị huỷ.
+  onUnmounted(() => {
+    if (listening.value) recognizer?.stop()
+  })
 
   // Lịch sử gọn để gửi backend: assistant -> message, user -> text.
   function historyFor(upto = messages.value.length) {

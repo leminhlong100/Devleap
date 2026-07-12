@@ -58,9 +58,12 @@ export function createRecognizer({ lang = 'en-US', silenceMs = 3000, leadMs = 80
   }
 
   rec.onresult = (e) => {
+    // Chỉ xử lý các kết quả MỚI (từ e.resultIndex) — không duyệt lại toàn bộ
+    // e.results từ đầu mỗi lần. Ở continuous=true, mảng results phình dần suốt
+    // phiên nghe; nếu duyệt lại từ đầu mỗi sự kiện (bắn rất dày khi đang nói),
+    // chi phí tăng dần theo thời gian nói -> nghẽn luồng chính, đứng cả trang.
     let interim = ''
-    finalText = ''
-    for (let i = 0; i < e.results.length; i++) {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript
       if (e.results[i].isFinal) finalText += t
       else interim += t
