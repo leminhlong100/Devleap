@@ -4,6 +4,7 @@
  * tiếng Anh thay vì gõ, luyện phát âm + phản xạ giao tiếp.
  */
 import { recognitionSupported } from './speechRecognize'
+import { stopSpeaking } from './speak'
 
 function getCtor() {
   if (typeof window === 'undefined') return null
@@ -88,6 +89,8 @@ export function createRecognizer({ lang = 'en-US', silenceMs = 3000, leadMs = 80
   const nativeStop = rec.stop.bind(rec)
   rec.start = () => {
     stopped = false
+    // Dừng TTS đang đọc trước khi nghe — TTS + STT đồng thời làm đứng tab Chrome.
+    stopSpeaking()
     nativeStart()
     armSilence(leadMs)
   }

@@ -63,6 +63,21 @@ export function canSpeak() {
 }
 
 /**
+ * Dừng NGAY mọi lời đọc đang phát/đang xếp hàng của SpeechSynthesis.
+ * QUAN TRỌNG: gọi hàm này TRƯỚC khi bắt đầu SpeechRecognition (nghe). Chạy đồng
+ * thời TTS (đọc to) + STT (nghe) là nguyên nhân đã biết làm ĐỨNG CẢ TAB trên
+ * Chrome — nhất là ở trang vừa có nút 🔊 "Nghe mẫu"/AI tự đọc, vừa có nút 🎤.
+ */
+export function stopSpeaking() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  try {
+    window.speechSynthesis.cancel()
+  } catch {
+    /* một số máy ném lỗi khi hàng đợi rỗng — bỏ qua */
+  }
+}
+
+/**
  * Thang tốc độ Listening tăng dần theo tuần (docs/KE_HOACH_DO_KHO_KHOA_HOC.md mục 3):
  * Tuần 1–2 ~100 WPM (TTS chậm) -> Tuần 3–4 ~120 -> Tuần 5–6 ~140 -> Tuần 7–8 ~150–160
  * (tốc độ tự nhiên). `rate` của Web Speech API là hệ số tương đối (1.0 = giọng mặc định

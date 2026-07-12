@@ -2,7 +2,7 @@
  * Bọc Web Speech API (SpeechRecognition) để nhận dạng MỘT lần nói.
  * Chỉ chạy trên trình duyệt hỗ trợ (Chrome/Edge); Firefox/Safari cũ thì không.
  */
-import { canSpeak } from './speak'
+import { canSpeak, stopSpeaking } from './speak'
 
 function getSR() {
   if (typeof window === 'undefined') return null
@@ -36,11 +36,21 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
   const SR = getSR()
   let rec = null
   let silenceTimer = null
+  let hardTimer = null
+  const clearHard = () => {
+    if (hardTimer) {
+      clearTimeout(hardTimer)
+      hardTimer = null
+    }
+  }
   const promise = new Promise((resolve, reject) => {
     if (!SR) {
       reject(new Error('unsupported'))
       return
     }
+    // Dừng mọi TTS đang đọc TRƯỚC khi nghe — chạy đồng thời TTS + STT là nguyên
+    // nhân đã biết làm đứng cả tab trên Chrome (trang này vừa có 🔊 vừa có 🎤).
+    stopSpeaking()
     rec = new SR()
     rec.lang = lang
     // interimResults = true: nhận cả kết quả tạm (từng từ đang nói) để reset đồng
@@ -79,16 +89,30 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
     }
     rec.onerror = (e) => {
       clearSilence()
+      clearHard()
       reject(new Error(e.error || 'speech-error'))
     }
     rec.onend = () => {
       clearSilence()
+      clearHard()
       resolve(transcript)
     }
     try {
       rec.start()
       armSilence(leadMs) // chờ rộng hơn cho lần bắt đầu nói; có tiếng rồi mới đếm silenceMs
+      // Chốt chặn cuối: nếu engine không bao giờ onend/onerror (bị treo im lặng),
+      // vẫn buộc dừng + kết thúc để UI không kẹt ở trạng thái "Đang nghe…" mãi.
+      hardTimer = setTimeout(() => {
+        try {
+          rec?.stop()
+        } catch {
+          /* đã dừng */
+        }
+        resolve(transcript)
+      }, leadMs + silenceMs + 5000)
     } catch (err) {
+      clearSilence()
+      clearHard()
       reject(err)
     }
   })
@@ -99,6 +123,7 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
         clearTimeout(silenceTimer)
         silenceTimer = null
       }
+      clearHard()
       try {
         rec?.stop()
       } catch {
