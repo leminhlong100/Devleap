@@ -5,7 +5,6 @@ import { useUserStore } from '@/stores/user'
 import VocabCard from '@/components/day/VocabCard.vue'
 import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
 import AiChat from '@/components/day/AiChat.vue'
-import PronunciationDrill from '@/components/day/PronunciationDrill.vue'
 import IntonationTrainer from '@/components/day/IntonationTrainer.vue'
 import ShadowingBeat from '@/components/day/ShadowingBeat.vue'
 import FluencyRetell from '@/components/day/FluencyRetell.vue'
@@ -17,8 +16,7 @@ import QuizTool from '@/components/tools/QuizTool.vue'
 import VoiceRecorder from '@/components/day/VoiceRecorder.vue'
 import { getCommDay } from '@/data/courseComm'
 import { commReflexGroups } from '@/data/commReflexPhrases'
-import { commRevengeScene, commWeakPairGroups } from '@/lib/commStats'
-import { focusForWeek } from '@/data/minimalPairs'
+import { commRevengeScene } from '@/lib/commStats'
 import { commMilestoneOf } from '@/data/milestones'
 import { speak } from '@/lib/speak'
 import { hapticSuccess } from '@/lib/haptics'
@@ -152,36 +150,6 @@ function onVocabComplete(r) {
   if (d.value) user.recordVocabDay('comm', d.value.week, d.value.n, r.score, r.total, 0.7)
 }
 
-// —— Luyện phát âm (Trục A): điểm đọc-to + số lần "nghe nhầm" của buổi ——
-// PronunciationDrill emit số khách quan; giữ lại để đưa vào context debrief (LLM
-// chỉ tham khảo khi viết nhận xét "độ dễ hiểu", không tự chấm phát âm).
-const pron = ref({ pronScore: null, confusions: 0, attempted: 0 })
-function onPronStats(s) {
-  pron.value = s || { pronScore: null, confusions: 0, attempted: 0 }
-}
-watch(d, () => (pron.value = { pronScore: null, confusions: 0, attempted: 0 }))
-// Cụm sống còn để luyện đọc-to: ưu tiên từ vựng của buổi (có sẵn IPA).
-const pronItems = computed(() => (d.value ? [...d.value.vocab, ...d.value.reviewVocab] : []))
-
-// —— Remediation cá nhân hóa (kế hoạch cải tiến #8) ——
-// Mỗi lượt cặp tối thiểu bị "nghe nhầm" -> ghi vào hồ sơ âm hay lẫn (dồn qua cả khóa).
-function onMpAttempt(e) {
-  if (e && e.group) user.recordCommConfusion(e.group, !!e.confused)
-}
-// Nhóm âm học viên hay lẫn THẬT SỰ. Block "phục thù phát âm" chỉ hiện các âm KHÁC
-// trọng tâm tuần (để bổ sung, không lặp drill tuần); riêng buổi mission hiện mọi
-// âm yếu để "vá" trước khi ra trận thật.
-const weakGroups = computed(() => commWeakPairGroups(user))
-const remedialGroups = computed(() => {
-  if (!d.value) return []
-  const weak = weakGroups.value
-  if (!weak.length) return []
-  if (d.value.isMission) return weak
-  const wkKeys = new Set(focusForWeek(d.value.week, 'comm').map((g) => g.key))
-  return weak.filter((g) => !wkKeys.has(g.key))
-})
-const remedialKeys = computed(() => remedialGroups.value.map((g) => g.key))
-
 // —— Shadowing chấm nhịp (Đợt A #3): 1 câu/buổi, ưu tiên câu người học sẽ NÓI
 // (dòng "B:" trong hội thoại mẫu), bỏ tiền tố người nói; rơi về câu mẫu/cụm nếu vắng.
 function stripSpeaker(line) {
@@ -247,11 +215,6 @@ const aiContext = computed(() => {
   if (d.value.scenario) ctx.fixedScenario = d.value.scenario
   // Chống điểm ảo (#7): buổi Boss chấm rubric -> BẮT BUỘC nói bằng giọng (khóa gõ tay).
   if (d.value.isBoss) ctx.voiceRequired = true
-  // Số phát âm khách quan (chỉ khi người học đã thử) -> debrief đánh giá "độ dễ hiểu".
-  if (pron.value.attempted > 0) {
-    ctx.pronScore = pron.value.pronScore
-    ctx.confusions = pron.value.confusions
-  }
   return ctx
 })
 
@@ -418,30 +381,6 @@ const milestoneSentences = computed(() => (d.value ? (d.value.phrases || []).sli
           :key="'into-' + d.week + '-' + d.n"
           :yesno="d.intonation.yesno"
           :statement="d.intonation.statement"
-        />
-
-        <!-- 2c) LUYỆN PHÁT ÂM — đọc-to cụm sống còn + cặp tối thiểu theo tuần -->
-        <PronunciationDrill
-          v-if="pronItems.length"
-          :key="'pron-' + d.week + '-' + d.n"
-          :items="pronItems"
-          :week="d.week"
-          :vocab-terms="pronItems.map((v) => v.term)"
-          course="comm"
-          @stats="onPronStats"
-          @mp-attempt="onMpAttempt"
-        />
-
-        <!-- 2c1) PHỤC THÙ PHÁT ÂM — remediation cá nhân hóa theo âm HAY LẪN thật
-             (kế hoạch cải tiến #8): chỉ hiện khi có âm yếu ngoài trọng tâm tuần. -->
-        <PronunciationDrill
-          v-if="remedialKeys.length"
-          :key="'pron-rem-' + d.week + '-' + d.n + '-' + remedialKeys.join('')"
-          :week="d.week"
-          course="comm"
-          :priority-groups="remedialKeys"
-          pairs-only
-          @mp-attempt="onMpAttempt"
         />
 
         <!-- 2c2) SHADOWING CHẤM NHỊP — 1 câu/buổi, bắt chước nhịp trọng âm của mẫu -->
