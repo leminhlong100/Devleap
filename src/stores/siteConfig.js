@@ -69,6 +69,11 @@ export const useSiteConfigStore = defineStore('siteConfig', {
     /** Chế độ hiển thị của một khóa ('public' | 'hidden' | 'restricted'). */
     courseMode: (s) => (id) => normalizeMode(s.courses[id]),
     /**
+     * Khóa có XUẤT HIỆN trong thư viện khóa học không (chỉ 'hidden' mới ẩn hẳn).
+     * Khóa 'restricted' vẫn hiện — chỉ chặn ĐĂNG KÝ/vào học ở `courseEnabled`.
+     */
+    courseVisible: (s) => (id) => normalizeMode(s.courses[id]) !== 'hidden',
+    /**
      * Người dùng có được thấy/vào khóa này không.
      *  - 'public'     : luôn được.
      *  - 'hidden'     : không bao giờ.

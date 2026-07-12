@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useUserStore } from '@/stores/user'
 import { routeGuardDecision, courseIdForRoute } from '@/router/guard'
 import { setRouteDirection } from '@/composables/useRouteTransition'
 import { navStart, navDone } from '@/composables/useNavProgress'
@@ -233,6 +234,15 @@ router.beforeEach(async (to) => {
   const courseId = courseIdForRoute(to)
   if (courseId && site.loaded && !site.courseEnabled(courseId, auth.isAdmin)) {
     return { name: 'courses', query: { disabled: courseId } }
+  }
+
+  // Chưa "Đăng ký" khóa này thì chưa cho vào học trực tiếp bằng URL — đưa về
+  // thư viện khóa học để bấm Đăng ký trước (admin luôn được vào thẳng).
+  if (courseId && !auth.isAdmin) {
+    const user = useUserStore()
+    if (!user.isEnrolled(courseId)) {
+      return { name: 'courses', query: { enroll: courseId } }
+    }
   }
   return true
 })

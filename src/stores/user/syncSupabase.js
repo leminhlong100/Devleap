@@ -73,7 +73,7 @@ export const actions = {
       const { data, error } = await supabase
         .from('progress')
         .select(
-          'xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, topics, shadowing_scores, dictation_scores, week_feedback, week_xp, week_xp_key, leaderboard_opt_in, leaderboard_name',
+          'xp, streak, badges, last_study_date, known_cards, srs, completed, quiz_scores, saved_words, topics, shadowing_scores, dictation_scores, week_feedback, week_xp, week_xp_key, leaderboard_opt_in, leaderboard_name, enrolled',
         )
         .eq('user_id', userId)
         .maybeSingle()
@@ -99,6 +99,7 @@ export const actions = {
           weekXpKey: data.week_xp_key || null,
           leaderboardOptIn: !!data.leaderboard_opt_in,
           leaderboardName: data.leaderboard_name || '',
+          enrolled: data.enrolled || [],
         }
         this.applySnapshot(mergeSnapshots(local, remote))
       }
@@ -163,6 +164,7 @@ export const actions = {
           week_xp_key: s.weekXpKey,
           leaderboard_opt_in: s.leaderboardOptIn,
           leaderboard_name: s.leaderboardName,
+          enrolled: s.enrolled,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
@@ -208,6 +210,7 @@ export function mergeSnapshots(local, remote) {
     missions: mergeMissions(local.missions, remote.missions),
     realTalks: mergeMissions(local.realTalks, remote.realTalks),
     checklists: mergeChecklists(local.checklists, remote.checklists),
+    enrolled: union(local.enrolled, remote.enrolled),
     speakingLog: mergeSpeakingLog(local.speakingLog, remote.speakingLog),
     speakingStreak: Math.max(local.speakingStreak || 0, remote.speakingStreak || 0),
     lastSpeakingDate: laterDate(local.lastSpeakingDate, remote.lastSpeakingDate),

@@ -30,6 +30,10 @@ export function state() {
     // { [key]: [bool, bool, …] } theo thứ tự mục. Local-only (như writings) để
     // khóa hoàn thành buổi mà không phải đổi schema bảng progress.
     checklists: {},
+    // Danh sách id khóa đã "Đăng ký" (tự chọn bắt đầu học) — khóa chưa có trong
+    // đây thì thư viện khóa học hiện nút Đăng ký thay vì tiến độ, và router chặn
+    // vào thẳng bằng URL. Xem `isEnrolled` bên dưới.
+    enrolled: [],
   }
 }
 
@@ -47,6 +51,11 @@ export const getters = {
   isDone: (s) => (course, week, day) => (s.completed[course] || []).includes(dayKey(week, day)),
   /** Trạng thái tick của checklist một ngày (mảng bool theo thứ tự mục). */
   checklistState: (s) => (course, week, day) => s.checklists[`${course}:${week}:${day}`] || [],
+  /**
+   * Đã "vào học" khóa này chưa — đã bấm Đăng ký, HOẶC (tương thích ngược) đã có
+   * ít nhất 1 buổi hoàn thành từ trước khi khái niệm Đăng ký tồn tại.
+   */
+  isEnrolled: (s) => (courseId) => s.enrolled.includes(courseId) || (s.completed[courseId] || []).length > 0,
   /**
    * Đã hoàn thành ít nhất 1 buổi hôm nay chưa — dùng để cảnh báo "sắp đứt streak".
    * Trả về HÀM (như `isCardDue`) chứ không phải boolean trực tiếp: Pinia cache
@@ -204,6 +213,13 @@ export const actions = {
     this.checklists[`${course}:${week}:${day}`] = Array.isArray(arr) ? arr.slice() : []
     this.persist()
   },
+
+  /** "Đăng ký" một khóa — đánh dấu đã chọn học để thư viện + router cho vào. */
+  enroll(courseId) {
+    if (!courseId || this.enrolled.includes(courseId)) return
+    this.enrolled.push(courseId)
+    this.persist()
+  },
 }
 
 /** Phần của snapshot bền hóa thuộc slice này. */
@@ -218,6 +234,7 @@ export function pick(s) {
     knownCards: s.knownCards,
     completed: s.completed,
     checklists: s.checklists,
+    enrolled: s.enrolled,
   }
 }
 
@@ -233,6 +250,7 @@ export function applyDefaults(s = {}) {
     knownCards: Array.isArray(s.knownCards) ? s.knownCards : [],
     completed: { java: [], ielts: [], comm: [], ...(s.completed || {}) },
     checklists: s.checklists && typeof s.checklists === 'object' ? s.checklists : {},
+    enrolled: Array.isArray(s.enrolled) ? s.enrolled : [],
   }
 }
 

@@ -16,15 +16,29 @@ const site = useSiteConfigStore()
 const filters = ['Tất cả', '💻 Lập trình', '🗣️ Tiếng Anh']
 const active = ref('Tất cả')
 
-// Ẩn khóa bị admin ẩn/giới hạn (lớp phủ site), rồi lọc theo bộ lọc danh mục.
-// Admin luôn thấy mọi khóa; khóa 'restricted' chỉ hiện với người được cấp quyền.
-const visible = computed(() => courses.filter((c) => site.courseEnabled(c.id, auth.isAdmin)))
+// Ẩn khóa bị admin ẩn hẳn (lớp phủ site), rồi lọc theo bộ lọc danh mục. Khóa
+// 'restricted' vẫn HIỆN trong thư viện (chỉ chặn đăng ký/vào học) — chỉ 'hidden'
+// mới biến mất khỏi danh sách.
+const visible = computed(() => courses.filter((c) => site.courseVisible(c.id)))
 const shown = computed(() =>
   active.value === 'Tất cả' ? visible.value : visible.value.filter((c) => c.category === active.value),
 )
 
 // Vừa bị chặn khỏi một khóa đã tắt (router chuyển về đây kèm ?disabled=id).
 const disabledNotice = computed(() => route.query.disabled || '')
+// Vừa bị chặn vào học vì chưa đăng ký (router chuyển về đây kèm ?enroll=id).
+const enrollNotice = computed(() => route.query.enroll || '')
+
+// Khóa 'restricted' mà người dùng hiện tại KHÔNG có quyền vào — chỉ admin hoặc
+// người được cấp quyền (site.courseEnabled) mới đăng ký/học được khóa này.
+function permissionLocked(c) {
+  return site.courseMode(c.id) === 'restricted' && !site.courseEnabled(c.id, auth.isAdmin)
+}
+
+// Đã đăng ký (tự chọn bắt đầu học) khóa này chưa.
+function enrolledIn(c) {
+  return user.isEnrolled(c.id)
+}
 
 // % tiến độ thật theo từng khóa (các khóa khác giữ giá trị biên tập sẵn).
 function progressOf(c) {
@@ -34,7 +48,9 @@ function progressOf(c) {
 }
 
 function open(c) {
-  if (c.routeName) router.push({ name: c.routeName })
+  if (!c.routeName || permissionLocked(c)) return
+  if (!enrolledIn(c)) user.enroll(c.id)
+  router.push({ name: c.routeName })
 }
 </script>
 
@@ -49,6 +65,9 @@ function open(c) {
 
     <p v-if="disabledNotice" class="disabled-note">
       Khóa học này hiện đang tạm ẩn. Vui lòng quay lại sau nhé!
+    </p>
+    <p v-if="enrollNotice" class="disabled-note">
+      Hãy bấm "Đăng ký" ở khóa học bên dưới trước khi vào học nhé!
     </p>
 
     <div class="filters">
@@ -68,7 +87,10 @@ function open(c) {
         :key="c.id"
         type="button"
         class="course-card"
-        :style="{ cursor: c.locked ? 'default' : 'pointer', opacity: c.locked ? 0.92 : 1 }"
+        :style="{
+          cursor: c.locked || permissionLocked(c) ? 'default' : 'pointer',
+          opacity: c.locked || permissionLocked(c) ? 0.92 : 1,
+        }"
         @click="open(c)"
       >
         <div class="banner" :style="{ background: c.banner }">
@@ -85,12 +107,14 @@ function open(c) {
             <span :style="{ color: c.levelColor, fontWeight: 700 }">● {{ c.level }}</span>
           </div>
 
-          <div v-if="c.active" class="progress-wrap">
+          <span v-if="!c.active" class="locked-btn">🔔 Thông báo khi mở</span>
+          <span v-else-if="permissionLocked(c)" class="locked-btn">🔒 Cần được cấp quyền</span>
+          <span v-else-if="!enrolledIn(c)" class="cta">📝 Đăng ký</span>
+          <div v-else class="progress-wrap">
             <div class="progress-top"><span>Tiến độ</span><span class="pct">{{ progressOf(c) }}%</span></div>
             <div class="track"><div class="fill" :style="{ width: progressOf(c) + '%' }"></div></div>
             <span class="cta">{{ c.cta }}</span>
           </div>
-          <span v-else class="locked-btn">🔔 Thông báo khi mở</span>
         </div>
       </button>
 

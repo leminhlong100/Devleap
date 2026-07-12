@@ -23,6 +23,7 @@ create table if not exists public.progress (
   week_xp_key      text,
   leaderboard_opt_in boolean not null default false,
   leaderboard_name text,
+  enrolled       jsonb       not null default '[]'::jsonb,
   updated_at     timestamptz not null default now()
 );
 
@@ -64,6 +65,11 @@ alter table public.progress
   add column if not exists leaderboard_opt_in boolean not null default false;
 alter table public.progress
   add column if not exists leaderboard_name text;
+
+-- Nâng cấp DB đã tạo trước khi có "Đăng ký khóa học": thêm cột danh sách khóa
+-- đã đăng ký (thư viện khóa học chỉ hiện tiến độ/cho vào học sau khi đăng ký).
+alter table public.progress
+  add column if not exists enrolled jsonb not null default '[]'::jsonb;
 
 -- Bật RLS: mặc định chặn hết, chỉ mở đúng các policy bên dưới.
 alter table public.progress enable row level security;
