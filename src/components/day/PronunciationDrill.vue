@@ -1,7 +1,15 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+/**
+ * QUAN TRỌNG: block này KHÔNG dùng SpeechRecognition (STT) để chấm — chỉ ghi
+ * âm (MediaRecorder) rồi cho học viên TỰ ĐÁNH GIÁ + nghe lại bản ghi của mình.
+ * Trang buổi comm vừa có 🔊 "Nghe mẫu" (TTS) vừa có nhiều mic khác nhau; bật
+ * SpeechRecognition ở block này từng làm ĐỨNG CẢ TAB (TTS+STT chạy chồng nhau
+ * là bug đã biết của Chrome). Ghi âm thường (MediaRecorder) không đụng tới
+ * SpeechRecognition nên không dính bug đó. Xem thêm lib/speak.js#stopSpeaking.
+ */
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
-import { recognizeOnce, recognitionSupported } from '@/lib/speechRecognize'
+import { recordingSupported, startRecording } from '@/lib/recorder'
 import SpeechSupportNote from '@/components/common/SpeechSupportNote.vue'
 import { pairsForWeek } from '@/data/minimalPairs'
 
@@ -50,86 +58,105 @@ watch(
   },
   { immediate: true },
 )
-const mpBusy = ref(-1)
+const mpBusy = ref(-1) // index đang GHI ÂM (chưa dừng)
 const mpErr = ref('')
+let mpRecHandle = null
 
 function playMinimalTarget(i) {
   const pair = minimalPairs.value[i]
   if (speakable && pair) speak(pair[mpTarget.value[i]])
 }
 
-async function tryMinimalPair(i) {
+function revoke(url) {
+  if (url) {
+    try {
+      URL.revokeObjectURL(url)
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+// Ghi âm đơn giản (MediaRecorder) — KHÔNG chấm tự động. Bấm lần 1 để bắt đầu
+// ghi, bấm lại để dừng -> hiện nút nghe lại bản ghi + tự đánh giá đúng/sai.
+async function toggleMinimalPair(i) {
+  if (mpBusy.value === i) {
+    try {
+      const blob = await mpRecHandle?.stop()
+      if (blob) {
+        revoke(mpResults.value[i]?.audioUrl)
+        mpResults.value[i] = { audioUrl: URL.createObjectURL(blob), ok: null, selfAssessed: false }
+      }
+    } catch {
+      mpErr.value = 'Ghi âm lỗi — kiểm tra micro.'
+    } finally {
+      mpRecHandle = null
+      mpBusy.value = -1
+    }
+    return
+  }
   if (!recordable || mpBusy.value >= 0) return
   mpErr.value = ''
-  mpBusy.value = i
   try {
-    const { promise } = recognizeOnce({ lang: 'en-US' })
-    const heard = await promise
-    const said = norm(heard)
-    const pair = minimalPairs.value[i]
-    const target = norm(pair[mpTarget.value[i]])
-    const other = norm(pair[1 - mpTarget.value[i]])
-    // So khớp CHÍNH XÁC (không dùng includes) — mục đích chính là bắt lỗi thiếu
-    // âm cuối, một match lỏng sẽ che mất đúng lỗi cần phát hiện.
-    const ok = !!said && said === target
-    const confused = !ok && said === other
-    mpResults.value[i] = { heard: heard || '(không nghe rõ)', ok, confused }
-    // Ghi 1 lần thử THẬT (đối chiếu STT) vào hồ sơ "âm hay lẫn" -> remediation (#8).
-    emit('mpAttempt', { group: pairGroups.value[i] || mpFocus.value.groupKey, confused })
+    mpRecHandle = await startRecording()
+    mpBusy.value = i
   } catch {
-    mpErr.value = 'Không nghe được — kiểm tra micro & dùng Chrome/Edge.'
-  } finally {
-    mpBusy.value = -1
+    mpErr.value = 'Không dùng được micro — kiểm tra quyền truy cập.'
   }
 }
 
 const list = computed(() => props.items.filter((x) => x && x.term).slice(0, 8))
 const speakable = canSpeak()
-const recordable = recognitionSupported()
+const recordable = recordingSupported()
 
-const results = ref([]) // null | { heard, ok }
+const results = ref([]) // null | { audioUrl, ok, selfAssessed }
 watch(list, (v) => (results.value = v.map(() => null)), { immediate: true })
 
-const busyIndex = ref(-1)
+const busyIndex = ref(-1) // index đang GHI ÂM (chưa dừng)
 const err = ref('')
+let recHandle = null
 
 function play(term) {
   if (speakable) speak(term)
 }
 
-function norm(s) {
-  return String(s || '')
-    .toLowerCase()
-    .replace(/[.,!?;:"'’]/g, '')
-    .trim()
-}
-
-async function tryPronounce(i) {
+// Ghi âm đơn giản (MediaRecorder) — KHÔNG chấm tự động, chỉ ghi + cho nghe lại
+// rồi tự đánh giá đúng/sai bằng 2 nút bên dưới.
+async function toggleRecord(i) {
+  if (busyIndex.value === i) {
+    try {
+      const blob = await recHandle?.stop()
+      if (blob) {
+        revoke(results.value[i]?.audioUrl)
+        results.value[i] = { audioUrl: URL.createObjectURL(blob), ok: null, selfAssessed: false }
+      }
+    } catch {
+      err.value = 'Ghi âm lỗi — kiểm tra micro.'
+    } finally {
+      recHandle = null
+      busyIndex.value = -1
+    }
+    return
+  }
   if (!recordable || busyIndex.value >= 0) return
   err.value = ''
-  busyIndex.value = i
   try {
-    const { promise } = recognizeOnce({ lang: 'en-US' })
-    const heard = await promise
-    const target = norm(list.value[i].term)
-    const said = norm(heard)
-    // Khớp nếu nói trúng từ/cụm mục tiêu (chứa hoặc bằng).
-    const ok = !!said && (said === target || said.includes(target) || target.includes(said))
-    results.value[i] = { heard: heard || '(không nghe rõ)', ok }
-  } catch (e) {
-    err.value = 'Không nghe được — kiểm tra micro & dùng Chrome/Edge.'
-  } finally {
-    busyIndex.value = -1
+    recHandle = await startRecording()
+    busyIndex.value = i
+  } catch {
+    err.value = 'Không dùng được micro — kiểm tra quyền truy cập.'
   }
 }
 
-// Không có SpeechRecognition (Safari/iOS): không chấm máy được, cho tự đánh
-// giá "Đọc được / Chưa được" thay vì khoá chết cả phần luyện phát âm.
+// Tự đánh giá "Đọc được / Chưa được" — dùng cho CẢ 2 trường hợp: đã ghi âm
+// xong (nghe lại rồi tự chấm), lẫn khi trình duyệt không ghi âm được.
 function selfAssess(i, ok) {
-  results.value[i] = { heard: '(tự đánh giá)', ok, selfAssessed: true }
+  results.value[i] = { ...(results.value[i] || {}), ok, selfAssessed: true }
 }
 function selfAssessMp(i, ok) {
-  mpResults.value[i] = { heard: '(tự đánh giá)', ok, selfAssessed: true, confused: false }
+  mpResults.value[i] = { ...(mpResults.value[i] || {}), ok, selfAssessed: true }
+  // Tự báo cáo (không còn chấm máy) — dùng làm tín hiệu gần đúng cho remediation (#8).
+  emit('mpAttempt', { group: pairGroups.value[i] || mpFocus.value.groupKey, confused: !ok })
 }
 
 const doneCount = computed(() => results.value.filter((r) => r && r.ok).length)
@@ -145,7 +172,9 @@ const pronStats = computed(() => {
   const all = [...results.value, ...(showMinimalPairs.value ? mpResults.value : [])].filter(Boolean)
   const attempted = all.length
   const correct = all.filter((r) => r.ok).length
-  const confusions = mpResults.value.filter((r) => r && r.confused).length
+  // Không còn STT nên không biết "nghe nhầm thành từ khác" chính xác — dùng tự
+  // đánh giá SAI ở cặp tối thiểu làm tín hiệu gần đúng thay thế.
+  const confusions = mpResults.value.filter((r) => r && r.selfAssessed && !r.ok).length
   return {
     attempted,
     confusions,
@@ -158,6 +187,11 @@ function markDone() {
   isDone.value = true
   emit('done')
 }
+
+onUnmounted(() => {
+  results.value.forEach((r) => revoke(r?.audioUrl))
+  mpResults.value.forEach((r) => revoke(r?.audioUrl))
+})
 </script>
 
 <template>
@@ -182,15 +216,15 @@ function markDone() {
         </div>
         <span class="wt-badge" :class="{ ok: enough }">{{ doneCount }}/{{ list.length }}</span>
       </div>
-      <p class="quiz-intro">Bấm 🔊 nghe mẫu, rồi bấm 🎤 và đọc to. Hệ thống chấm xem em nói có trúng không. <b>{{ tip }}</b></p>
+      <p class="quiz-intro">Bấm 🔊 nghe mẫu, rồi bấm 🎤 ghi âm giọng đọc, nghe lại rồi tự chấm. <b>{{ tip }}</b></p>
       <SpeechSupportNote
         :visible="!recordable"
-        text="Trình duyệt chưa hỗ trợ nhận diện giọng nói — hãy dùng Chrome/Edge để máy tự chấm. Ở đây em vẫn nghe mẫu rồi tự đánh giá bằng 2 nút bên dưới."
+        text="Trình duyệt chưa hỗ trợ ghi âm — hãy nghe mẫu rồi tự đánh giá bằng 2 nút bên dưới."
       />
       <p v-if="err" class="quiz-intro warn">⚠️ {{ err }}</p>
 
       <div class="pd-grid">
-        <div v-for="(it, i) in list" :key="i" class="pd-card" :class="{ ok: results[i] && results[i].ok, bad: results[i] && !results[i].ok }">
+        <div v-for="(it, i) in list" :key="i" class="pd-card" :class="{ ok: results[i] && results[i].ok, bad: results[i] && results[i].ok === false }">
           <div class="pd-term">{{ it.term }}</div>
           <div v-if="it.ipa" class="pd-ipa">{{ it.ipa }}</div>
           <div class="pd-actions">
@@ -199,21 +233,23 @@ function markDone() {
               v-if="recordable"
               class="pd-btn mic"
               :class="{ rec: busyIndex === i }"
-              @click="tryPronounce(i)"
+              @click="toggleRecord(i)"
               :disabled="busyIndex >= 0 && busyIndex !== i"
-              aria-label="Đọc to"
+              aria-label="Ghi âm"
             >
-              {{ busyIndex === i ? '● Đang nghe…' : '🎤 Đọc' }}
+              {{ busyIndex === i ? '⏹️ Dừng' : '🎤 Ghi âm' }}
             </button>
-            <template v-else>
-              <button class="pd-btn self-ok" @click="selfAssess(i, true)" aria-label="Đọc được">✅ Đọc được</button>
-              <button class="pd-btn self-bad" @click="selfAssess(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
-            </template>
           </div>
-          <div v-if="results[i]" class="pd-feedback">
+          <div v-if="results[i]?.audioUrl" class="pd-playback">
+            <audio :src="results[i].audioUrl" controls></audio>
+          </div>
+          <div v-if="!recordable || results[i]?.audioUrl" class="pd-actions">
+            <button class="pd-btn self-ok" @click="selfAssess(i, true)" aria-label="Đọc được">✅ Đọc được</button>
+            <button class="pd-btn self-bad" @click="selfAssess(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
+          </div>
+          <div v-if="results[i] && results[i].selfAssessed" class="pd-feedback">
             <span v-if="results[i].ok" class="pd-ok">✓ Tốt!</span>
-            <span v-else-if="results[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
-            <span v-else class="pd-bad">✕ Nghe ra: “{{ results[i].heard }}”</span>
+            <span v-else class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
           </div>
         </div>
       </div>
@@ -232,10 +268,10 @@ function markDone() {
           <h2 class="step-title">🎯 Tuần này: {{ mpFocus.groupLabel }}</h2>
         </div>
       </div>
-      <p class="quiz-intro">Bấm 🔊 nghe từ CẦN đọc, rồi bấm 🎤 đọc đúng từ đó (không phải từ còn lại trong cặp). <b>{{ mpFocus.tip }}</b></p>
+      <p class="quiz-intro">Bấm 🔊 nghe từ CẦN đọc, rồi bấm 🎤 ghi âm đọc đúng từ đó, nghe lại rồi tự chấm. <b>{{ mpFocus.tip }}</b></p>
       <SpeechSupportNote
         :visible="!recordable"
-        text="Không có mic chấm điểm — nghe kỹ 2 từ khác nhau ở đâu rồi tự đánh giá xem mình phát âm đúng chưa."
+        text="Không ghi âm được — nghe kỹ 2 từ khác nhau ở đâu rồi tự đánh giá xem mình phát âm đúng chưa."
       />
       <p v-if="mpErr" class="quiz-intro warn">⚠️ {{ mpErr }}</p>
 
@@ -244,7 +280,7 @@ function markDone() {
           v-for="(pair, i) in minimalPairs"
           :key="i"
           class="pd-card"
-          :class="{ ok: mpResults[i] && mpResults[i].ok, bad: mpResults[i] && !mpResults[i].ok }"
+          :class="{ ok: mpResults[i] && mpResults[i].ok, bad: mpResults[i] && mpResults[i].ok === false }"
         >
           <div class="pd-term">{{ pair[mpTarget[i]] }}</div>
           <div class="pd-ipa">(khác với “{{ pair[1 - mpTarget[i]] }}”)</div>
@@ -254,22 +290,23 @@ function markDone() {
               v-if="recordable"
               class="pd-btn mic"
               :class="{ rec: mpBusy === i }"
-              @click="tryMinimalPair(i)"
+              @click="toggleMinimalPair(i)"
               :disabled="mpBusy >= 0 && mpBusy !== i"
-              aria-label="Đọc to"
+              aria-label="Ghi âm"
             >
-              {{ mpBusy === i ? '● Đang nghe…' : '🎤 Đọc' }}
+              {{ mpBusy === i ? '⏹️ Dừng' : '🎤 Ghi âm' }}
             </button>
-            <template v-else>
-              <button class="pd-btn self-ok" @click="selfAssessMp(i, true)" aria-label="Đọc được">✅ Đọc được</button>
-              <button class="pd-btn self-bad" @click="selfAssessMp(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
-            </template>
           </div>
-          <div v-if="mpResults[i]" class="pd-feedback">
+          <div v-if="mpResults[i]?.audioUrl" class="pd-playback">
+            <audio :src="mpResults[i].audioUrl" controls></audio>
+          </div>
+          <div v-if="!recordable || mpResults[i]?.audioUrl" class="pd-actions">
+            <button class="pd-btn self-ok" @click="selfAssessMp(i, true)" aria-label="Đọc được">✅ Đọc được</button>
+            <button class="pd-btn self-bad" @click="selfAssessMp(i, false)" aria-label="Chưa đọc được">🙁 Chưa được</button>
+          </div>
+          <div v-if="mpResults[i] && mpResults[i].selfAssessed" class="pd-feedback">
             <span v-if="mpResults[i].ok" class="pd-ok">✓ Đúng!</span>
-            <span v-else-if="mpResults[i].confused" class="pd-bad">✕ Nghe ra “{{ pair[1 - mpTarget[i]] }}” — chú ý âm cuối!</span>
-            <span v-else-if="mpResults[i].selfAssessed" class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
-            <span v-else class="pd-bad">✕ Nghe ra: “{{ mpResults[i].heard }}”</span>
+            <span v-else class="pd-bad">Luyện thêm rồi thử lại nhé.</span>
           </div>
         </div>
       </div>
@@ -363,6 +400,13 @@ function markDone() {
 .pd-btn.self-bad:active {
   background: var(--bg-danger);
   border-color: var(--border-danger);
+}
+.pd-playback {
+  margin-top: 8px;
+}
+.pd-playback audio {
+  width: 100%;
+  height: 32px;
 }
 .pd-feedback {
   margin-top: 8px;
