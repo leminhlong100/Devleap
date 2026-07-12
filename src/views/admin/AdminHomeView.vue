@@ -114,19 +114,21 @@ const moduleGroups = groupedModules()
       <div v-if="quizCourses.length" class="panels">
         <div v-for="c in quizCourses" :key="c" class="panel">
           <h3 class="panel-h">Kiểm tra · {{ COURSE_LABEL[c] }}</h3>
-          <table class="qtbl">
-            <thead>
-              <tr><th>Bài</th><th class="num">Lượt làm</th><th class="num">Tỉ lệ đậu</th><th class="num">Điểm TB</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="q in stats.quizzes[c]" :key="q.scope">
-                <td>{{ scopeLabel(q.scope) }}</td>
-                <td class="num">{{ q.takers }}</td>
-                <td class="num"><span class="rate" :class="{ low: q.passRate < 60 }">{{ q.passRate }}%</span></td>
-                <td class="num">{{ q.avgPct }}%</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="qtbl-wrap">
+            <table class="qtbl">
+              <thead>
+                <tr><th>Bài</th><th class="num">Lượt làm</th><th class="num">Tỉ lệ đậu</th><th class="num">Điểm TB</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="q in stats.quizzes[c]" :key="q.scope">
+                  <td>{{ scopeLabel(q.scope) }}</td>
+                  <td class="num">{{ q.takers }}</td>
+                  <td class="num"><span class="rate" :class="{ low: q.passRate < 60 }">{{ q.passRate }}%</span></td>
+                  <td class="num">{{ q.avgPct }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -304,6 +306,9 @@ const moduleGroups = groupedModules()
 }
 
 /* Quiz table */
+.qtbl-wrap {
+  overflow-x: auto;
+}
 .qtbl {
   width: 100%;
   border-collapse: collapse;
@@ -410,5 +415,24 @@ const moduleGroups = groupedModules()
   font-size: 13.5px;
   color: var(--muted);
   line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .kpis {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .kpi {
+    padding: 12px 14px;
+  }
+  .kpi-n {
+    font-size: 20px;
+  }
+  .panels {
+    grid-template-columns: 1fr;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -736,4 +736,41 @@ const toggleWeek = (k) => (openWeek[k] = !openWeek[k])
   font-size: 10.5px;
   padding: 1px 7px;
 }
+
+@media (max-width: 720px) {
+  .mode-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .tg-name {
+    min-width: 0;
+  }
+  .seg {
+    width: 100%;
+  }
+  .seg-btn {
+    flex: 1;
+  }
+  .c-row,
+  .w-row {
+    flex-wrap: wrap;
+  }
+  .c-meta,
+  .c-file {
+    margin-left: 24px;
+    flex-basis: 100%;
+  }
+  .w-title {
+    flex-basis: 100%;
+    margin-left: 24px;
+  }
+  .c-body {
+    padding-left: 10px;
+    margin-left: 6px;
+  }
+  .d-list {
+    padding-left: 14px;
+  }
+}
 </style>

@@ -1,12 +1,32 @@
 <script setup>
+import { ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import BottomSheet from '@/components/common/BottomSheet.vue'
 import { adminModules } from './adminModules'
 
 const route = useRoute()
+const mobileNavOpen = ref(false)
+
+watch(() => route.fullPath, () => {
+  mobileNavOpen.value = false
+})
 </script>
 
 <template>
   <div class="admin">
+    <header class="admin-topbar">
+      <button
+        type="button"
+        class="admin-menu-btn"
+        aria-label="Mở menu quản trị"
+        :aria-expanded="mobileNavOpen"
+        @click="mobileNavOpen = true"
+      >
+        ☰
+      </button>
+      <span class="admin-topbar-title">⚙️ Quản trị</span>
+    </header>
+
     <aside class="admin-side">
       <RouterLink :to="{ name: 'admin-home' }" class="admin-brand">
         ⚙️ Quản trị
@@ -25,6 +45,21 @@ const route = useRoute()
       <RouterLink :to="{ name: 'home' }" class="admin-back">← Về trang chính</RouterLink>
     </aside>
 
+    <BottomSheet v-model="mobileNavOpen">
+      <nav class="admin-nav admin-nav-sheet">
+        <RouterLink
+          v-for="m in adminModules"
+          :key="m.key"
+          :to="m.route"
+          class="admin-nav-link"
+          :class="{ active: route.name === m.route.name }"
+        >
+          <span class="ic">{{ m.icon }}</span> {{ m.title }}
+        </RouterLink>
+      </nav>
+      <RouterLink :to="{ name: 'home' }" class="admin-back admin-back-sheet">← Về trang chính</RouterLink>
+    </BottomSheet>
+
     <main class="admin-main">
       <RouterView />
     </main>
@@ -39,6 +74,9 @@ const route = useRoute()
   min-height: calc(100dvh - 76px);
   max-width: var(--container);
   margin: 0 auto;
+}
+.admin-topbar {
+  display: none;
 }
 .admin-side {
   display: flex;
@@ -95,26 +133,53 @@ const route = useRoute()
   padding: 32px var(--space-page-x) 64px;
   min-width: 0;
 }
-@media (max-width: 760px) {
+@media (max-width: 720px) {
   .admin {
     grid-template-columns: 1fr;
   }
-  .admin-side {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .admin-topbar {
+    display: flex;
     align-items: center;
-    border-right: none;
-    border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+    gap: 10px;
     padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
   }
-  .admin-brand {
-    padding: 0 8px 0 0;
+  .admin-menu-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: none;
+    background: var(--line-soft, rgba(108, 92, 231, 0.08));
+    border-radius: 11px;
+    color: var(--ink);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-  .admin-nav {
-    flex-direction: row;
+  .admin-topbar-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ink);
   }
-  .admin-back {
-    margin: 0 0 0 auto;
+  .admin-side {
+    display: none;
+  }
+  .admin-nav-sheet {
+    padding-top: 4px;
+  }
+  .admin-nav-sheet .admin-nav-link {
+    min-height: 44px;
+  }
+  .admin-back-sheet {
+    display: block;
+    margin-top: 10px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
   }
   .admin-main {
     padding: 22px 16px 48px;

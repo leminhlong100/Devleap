@@ -3,6 +3,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { courses } from '@/data/courses'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import {
   listUsers,
   getUserDetail,
@@ -219,6 +220,16 @@ async function runPending() {
   }
 }
 
+const accountColumns = [
+  { key: 'name', label: 'Người học', primary: true },
+  { key: 'xp', label: 'XP', numeric: true },
+  { key: 'streak', label: 'Chuỗi', numeric: true },
+  { key: 'badges', label: 'Huy hiệu', numeric: true },
+  { key: 'completedCount', label: 'Buổi', numeric: true },
+  { key: 'activity', label: 'Hoạt động' },
+  { key: 'actions', label: '', numeric: true },
+]
+
 const confirmText = computed(() => {
   const p = pending.value
   if (!p) return {}
@@ -265,43 +276,27 @@ const confirmText = computed(() => {
       {{ filtered.length }} tài khoản{{ query ? ` khớp “${query}”` : '' }} · trang {{ pageClamped }}/{{ totalPages }}
     </div>
 
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Người học</th>
-            <th class="num">XP</th>
-            <th class="num">Chuỗi</th>
-            <th class="num">Huy hiệu</th>
-            <th class="num">Buổi</th>
-            <th>Hoạt động</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="u in paged" :key="u.id" :class="{ sel: u.id === detailId }">
-            <td>
-              <div class="u-name">
-                {{ u.name || '(không tên)' }}
-                <span v-if="u.isAdmin" class="badge-admin">admin</span>
-                <span v-if="u.id === myId" class="badge-me">bạn</span>
-              </div>
-              <div class="u-mail">{{ u.email }}</div>
-            </td>
-            <td class="num">{{ u.xp }}</td>
-            <td class="num">{{ u.streak }}</td>
-            <td class="num">{{ u.badges }}</td>
-            <td class="num">{{ u.completedCount }}</td>
-            <td>
-              <span class="act" :class="activity(u.lastStudyDate).cls">{{ activity(u.lastStudyDate).label }}</span>
-            </td>
-            <td class="right">
-              <button class="link" @click="openDetail(u.id)">Chi tiết</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <AdminDataTable
+      :columns="accountColumns"
+      :rows="paged"
+      row-key="id"
+      :row-class="(u) => ({ sel: u.id === detailId })"
+    >
+      <template #cell-name="{ row: u }">
+        <div class="u-name">
+          {{ u.name || '(không tên)' }}
+          <span v-if="u.isAdmin" class="badge-admin">admin</span>
+          <span v-if="u.id === myId" class="badge-me">bạn</span>
+        </div>
+        <div class="u-mail">{{ u.email }}</div>
+      </template>
+      <template #cell-activity="{ row: u }">
+        <span class="act" :class="activity(u.lastStudyDate).cls">{{ activity(u.lastStudyDate).label }}</span>
+      </template>
+      <template #cell-actions="{ row: u }">
+        <button class="link" @click="openDetail(u.id)">Chi tiết</button>
+      </template>
+    </AdminDataTable>
 
     <div v-if="totalPages > 1" class="pager">
       <button class="btn ghost sm" :disabled="pageClamped <= 1" @click="goPage(pageClamped - 1)">← Trước</button>
@@ -539,35 +534,11 @@ const confirmText = computed(() => {
   color: var(--muted);
   font-size: 13.5px;
 }
-.tbl-wrap {
-  overflow-x: auto;
+:deep(tr.sel td) {
+  background: var(--purple-soft);
 }
-.tbl {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.tbl th {
-  text-align: left;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--muted-2);
-  padding: 8px 12px;
-  border-bottom: 1.5px solid rgba(108, 92, 231, 0.12);
-  white-space: nowrap;
-}
-.tbl th.num,
-.tbl td.num {
-  text-align: right;
-  width: 74px;
-}
-.tbl td {
-  padding: 12px;
-  border-bottom: 1px solid rgba(108, 92, 231, 0.1);
-  vertical-align: middle;
-}
-.tbl tr.sel td {
+:deep(.adt-card.sel) {
+  border-color: var(--purple);
   background: var(--purple-soft);
 }
 .u-name {
@@ -600,10 +571,6 @@ const confirmText = computed(() => {
   background: var(--chip-bg);
   padding: 2px 7px;
   border-radius: 99px;
-}
-.right {
-  text-align: right;
-  white-space: nowrap;
 }
 .link {
   border: none;
@@ -829,7 +796,7 @@ const confirmText = computed(() => {
   justify-content: flex-end;
   gap: 10px;
 }
-@media (max-width: 600px) {
+@media (max-width: 720px) {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
   }

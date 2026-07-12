@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import {
   getFeedbackStats,
   listRecordings,
@@ -112,6 +113,20 @@ async function clearName(entry) {
   }
 }
 
+const recordingColumns = [
+  { key: 'label', label: 'Mốc', primary: true },
+  { key: 'userId', label: 'Người dùng' },
+  { key: 'createdAt', label: 'Thời điểm' },
+  { key: 'listen', label: 'Nghe' },
+  { key: 'actions', label: '', numeric: true },
+]
+const leaderboardColumns = [
+  { key: 'displayName', label: 'Tên hiển thị', primary: true },
+  { key: 'email', label: 'Email' },
+  { key: 'weekXp', label: 'XP tuần', numeric: true },
+  { key: 'actions', label: '', numeric: true },
+]
+
 // Chiều rộng đoạn bar cảm nhận (%) theo tổng số lượt của tuần đó.
 function seg(row, kind) {
   const total = row.easy + row.ok + row.hard + row.skipped
@@ -169,50 +184,43 @@ function seg(row, kind) {
   <section v-show="tab === 'recordings'">
     <div v-if="recLoading" class="muted pad">Đang tải…</div>
     <div v-else-if="!recordings.length" class="muted pad">Chưa có ghi âm nào.</div>
-    <table v-else class="tbl">
-      <thead>
-        <tr><th>Mốc</th><th>Người dùng</th><th>Thời điểm</th><th>Nghe</th><th></th></tr>
-      </thead>
-      <tbody>
-        <tr v-for="r in recordings" :key="r.path">
-          <td>
-            <div class="r-label">{{ r.label }}</div>
-            <div class="r-sub">{{ fmtSize(r.size) }}</div>
-          </td>
-          <td><code class="uid">{{ shortId(r.userId) }}</code></td>
-          <td class="r-date">{{ fmtDate(r.createdAt) }}</td>
-          <td>
-            <audio v-if="r.url" :src="r.url" controls preload="none" class="player"></audio>
-            <span v-else class="muted">—</span>
-          </td>
-          <td class="right"><button class="link del" @click="removeRecording(r)">Xóa</button></td>
-        </tr>
-      </tbody>
-    </table>
+    <AdminDataTable v-else :columns="recordingColumns" :rows="recordings" row-key="path">
+      <template #cell-label="{ row: r }">
+        <div class="r-label">{{ r.label }}</div>
+        <div class="r-sub">{{ fmtSize(r.size) }}</div>
+      </template>
+      <template #cell-userId="{ row: r }">
+        <code class="uid">{{ shortId(r.userId) }}</code>
+      </template>
+      <template #cell-createdAt="{ row: r }">
+        <span class="r-date">{{ fmtDate(r.createdAt) }}</span>
+      </template>
+      <template #cell-listen="{ row: r }">
+        <audio v-if="r.url" :src="r.url" controls preload="none" class="player"></audio>
+        <span v-else class="muted">—</span>
+      </template>
+      <template #cell-actions="{ row: r }">
+        <button class="link del" @click="removeRecording(r)">Xóa</button>
+      </template>
+    </AdminDataTable>
   </section>
 
   <!-- Tab: Leaderboard -->
   <section v-show="tab === 'leaderboard'">
     <div v-if="lbLoading" class="muted pad">Đang tải…</div>
     <div v-else-if="!entries.length" class="muted pad">Chưa có ai tham gia leaderboard.</div>
-    <table v-else class="tbl">
-      <thead>
-        <tr><th>Tên hiển thị</th><th>Email</th><th class="num">XP tuần</th><th></th></tr>
-      </thead>
-      <tbody>
-        <tr v-for="e in entries" :key="e.id">
-          <td>
-            <span v-if="e.displayName" class="lb-name">{{ e.displayName }}</span>
-            <span v-else class="muted">(ẩn danh)</span>
-          </td>
-          <td class="r-sub">{{ e.email }}</td>
-          <td class="num">{{ e.weekXp }}</td>
-          <td class="right">
-            <button class="link del" :disabled="!e.displayName" @click="clearName(e)">Xóa tên</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <AdminDataTable v-else :columns="leaderboardColumns" :rows="entries" row-key="id">
+      <template #cell-displayName="{ row: e }">
+        <span v-if="e.displayName" class="lb-name">{{ e.displayName }}</span>
+        <span v-else class="muted">(ẩn danh)</span>
+      </template>
+      <template #cell-email="{ row: e }">
+        <span class="r-sub">{{ e.email }}</span>
+      </template>
+      <template #cell-actions="{ row: e }">
+        <button class="link del" :disabled="!e.displayName" @click="clearName(e)">Xóa tên</button>
+      </template>
+    </AdminDataTable>
   </section>
 </template>
 
@@ -374,31 +382,6 @@ function seg(row, kind) {
   opacity: 0.5;
 }
 
-/* Bảng chung */
-.tbl {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.tbl th {
-  text-align: left;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--muted-2);
-  padding: 8px 12px;
-  border-bottom: 1.5px solid rgba(108, 92, 231, 0.12);
-}
-.tbl th.num,
-.tbl td.num {
-  text-align: right;
-  width: 90px;
-}
-.tbl td {
-  padding: 12px;
-  border-bottom: 1px solid rgba(108, 92, 231, 0.1);
-  vertical-align: middle;
-}
 .r-label {
   font-weight: 700;
   color: var(--ink);
@@ -423,13 +406,15 @@ function seg(row, kind) {
   height: 34px;
   max-width: 220px;
 }
+@media (max-width: 720px) {
+  .player {
+    width: 100%;
+    max-width: none;
+  }
+}
 .lb-name {
   font-weight: 700;
   color: var(--ink);
-}
-.right {
-  text-align: right;
-  white-space: nowrap;
 }
 .link {
   border: none;

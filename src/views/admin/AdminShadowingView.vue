@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import { parseVideoId, loadYouTubeApi } from '@/lib/youtube'
 import { fetchClipList, fetchClip, saveClip, deleteClip } from '@/lib/shadowingRepo'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 // Thang nghe "thật hóa dần" (docs/KE_HOACH_CAI_TIEN_GIAO_TIEP.md mục 3.5):
@@ -21,6 +22,14 @@ async function reloadList() {
   }
 }
 onMounted(reloadList)
+
+const clipColumns = [
+  { key: 'title', label: 'Tiêu đề', primary: true },
+  { key: 'level', label: 'Cấp độ' },
+  { key: 'week', label: 'Tuần' },
+  { key: 'sentenceCount', label: 'Số câu', numeric: true },
+  { key: 'actions', label: '', numeric: true },
+]
 
 // —— Trình soạn 1 bài ——
 const urlInput = ref('')
@@ -462,26 +471,25 @@ onBeforeUnmount(() => {
     <h2 class="sec-head">Clip đã có</h2>
     <div v-if="listLoading" class="muted">Đang tải…</div>
     <div v-else-if="!clips.length" class="muted">Chưa có clip nào. Tạo bài đầu tiên ở trên.</div>
-    <table v-else class="tbl">
-      <thead>
-        <tr><th>Tiêu đề</th><th>Cấp độ</th><th>Tuần</th><th>Số câu</th><th></th></tr>
-      </thead>
-      <tbody>
-        <tr v-for="c in clips" :key="c.videoId">
-          <td>
-            <div class="c-title">{{ c.title }}</div>
-            <div class="c-sub">{{ c.topic }}</div>
-          </td>
-          <td><span class="lvl">{{ c.level }}</span></td>
-          <td><span v-if="c.week" class="lvl">Tuần {{ c.week }}</span><span v-else class="muted">—</span></td>
-          <td>{{ c.sentenceCount }}</td>
-          <td class="row-actions">
-            <button class="link" @click="editExisting(c.videoId)">Sửa</button>
-            <button class="link del" @click="removeClip(c.videoId)">Xóa</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <AdminDataTable v-else :columns="clipColumns" :rows="clips" row-key="videoId">
+      <template #cell-title="{ row: c }">
+        <div class="c-title">{{ c.title }}</div>
+        <div class="c-sub">{{ c.topic }}</div>
+      </template>
+      <template #cell-level="{ row: c }">
+        <span class="lvl">{{ c.level }}</span>
+      </template>
+      <template #cell-week="{ row: c }">
+        <span v-if="c.week" class="lvl">Tuần {{ c.week }}</span>
+        <span v-else class="muted">—</span>
+      </template>
+      <template #cell-actions="{ row: c }">
+        <span class="row-actions">
+          <button class="link" @click="editExisting(c.videoId)">Sửa</button>
+          <button class="link del" @click="removeClip(c.videoId)">Xóa</button>
+        </span>
+      </template>
+    </AdminDataTable>
   </section>
 </template>
 
@@ -863,33 +871,6 @@ onBeforeUnmount(() => {
   color: var(--muted);
   font-size: 14px;
 }
-.tbl {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.tbl th:nth-child(2),
-.tbl td:nth-child(2) {
-  width: 90px;
-}
-.tbl th:nth-child(3),
-.tbl td:nth-child(3) {
-  width: 90px;
-}
-.tbl th {
-  text-align: left;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--muted-2);
-  padding: 8px 12px;
-  border-bottom: 1.5px solid rgba(108, 92, 231, 0.12);
-}
-.tbl td {
-  padding: 14px 12px;
-  border-bottom: 1px solid rgba(108, 92, 231, 0.12);
-  vertical-align: middle;
-}
 .c-title {
   font-weight: 700;
   color: var(--ink);
@@ -928,12 +909,20 @@ onBeforeUnmount(() => {
 .link.del {
   color: var(--text-danger);
 }
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .meta-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
-  .meta-grid .field:last-child {
-    grid-column: 1 / -1;
+  .transport {
+    flex-wrap: wrap;
+  }
+  .row-bar {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .row-bar .spacer {
+    flex-basis: 100%;
+    height: 0;
   }
 }
 </style>
