@@ -18,10 +18,12 @@ export function canListen() {
 /**
  * Tạo bộ nhận diện cho MỘT lượt nói (tự dừng khi học viên ngừng nói HẲN).
  *
- * Quan trọng: dùng `continuous = true` + tự đếm im lặng thay vì `continuous = false`.
- * Nếu để `false`, engine tự cắt ngay khi người nói ngắt hơi/nghĩ giữa câu — nên câu
- * dài (nhất là khi trả lời phỏng vấn) hay bị "chưa nói xong đã ngắt". Ở đây ta để
- * engine chạy liên tục, chỉ dừng khi im lặng đủ lâu (silenceMs) sau khi đã nói.
+ * QUAN TRỌNG: dùng `continuous = false`, KHÔNG bật `true`. Từng thử bật
+ * `continuous = true` + tự đếm im lặng để câu dài không bị cắt giữa chừng khi
+ * người nói ngắt hơi, nhưng đây là bug đã biết của Chrome (đặc biệt mobile):
+ * mảng `results` phình vô hạn suốt phiên + engine có thể rơi vào vòng lặp nội
+ * bộ khiến CẢ TAB ĐỨNG HẲN (không F5 được, phải mở tab mới) — nặng hơn nhiều
+ * so với việc bị cắt sớm giữa câu. Giữ `false` để đổi lấy ổn định.
  * @param {{ lang?: string, silenceMs?: number, leadMs?: number,
  *           onResult?: (t:{final:string, interim:string})=>void,
  *           onError?: (err:string)=>void, onEnd?: (finalText:string)=>void }} opts
@@ -34,7 +36,7 @@ export function createRecognizer({ lang = 'en-US', silenceMs = 3000, leadMs = 80
   const rec = new Ctor()
   rec.lang = lang
   rec.interimResults = true // cập nhật chữ ngay khi đang nói
-  rec.continuous = true // không tự cắt khi ngắt hơi giữa câu — ta tự đếm im lặng
+  rec.continuous = false // xem cảnh báo ở JSDoc trên — continuous=true từng làm đứng cả tab
   rec.maxAlternatives = 1
 
   let finalText = ''

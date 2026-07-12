@@ -26,8 +26,11 @@ export function speechSupport() {
  * Bắt đầu nghe một câu. Trả về { promise, stop }.
  * - promise resolve bằng chuỗi văn bản nhận dạng được (có thể rỗng nếu không nghe rõ).
  * - stop() dừng nghe sớm (kết thúc câu nhanh hơn chờ im lặng).
- * - silenceMs: thời gian im lặng (ms) trước khi tự dừng. Đặt continuous = true để
- *   không bị cắt ngay khi ngắt hơi giữa câu, rồi tự đếm im lặng dài hơn để dừng.
+ * - silenceMs: thời gian im lặng (ms) trước khi tự dừng.
+ * QUAN TRỌNG: `continuous = false` — KHÔNG bật `true`. Đây là bug đã biết của
+ * Chrome (đặc biệt mobile): mảng results phình vô hạn + engine có thể rơi vào
+ * vòng lặp nội bộ khiến CẢ TAB ĐỨNG HẲN (không F5 được). Xem cảnh báo tương tự
+ * ở lib/listen.js.
  */
 export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 } = {}) {
   const SR = getSR()
@@ -44,10 +47,7 @@ export function recognizeOnce({ lang = 'en-US', silenceMs = 1500, leadMs = 5000 
     // hồ im lặng liên tục khi đọc chậm — không bị tự dừng giữa câu dài.
     rec.interimResults = true
     rec.maxAlternatives = 1
-    // continuous = true: không tự dừng khi người dùng ngắt nghỉ ngắn giữa câu.
-    // Thay vào đó ta tự đếm im lặng (silenceMs) — nói xong nghỉ đủ lâu mới dừng,
-    // nên câu dài có chỗ ngắt hơi vẫn thu trọn vẹn thay vì bị cắt giữa chừng.
-    rec.continuous = true
+    rec.continuous = false // xem cảnh báo ở JSDoc trên — continuous=true từng làm đứng cả tab
     let transcript = ''
     const clearSilence = () => {
       if (silenceTimer) {
