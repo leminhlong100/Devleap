@@ -8,7 +8,8 @@
  * không phải tải các chunk MD nặng.
  */
 import { javaWeeks, javaTotals } from './course'
-import { ieltsWeeks, ieltsTotals } from './courseIelts'
+import { ieltsWeeks } from './courseIelts'
+import { ieltsBookTotals } from './ieltsBook'
 import { commTotals } from './courseComm'
 import { INTERVIEW_TOTALS } from './javaInterview'
 
@@ -58,9 +59,10 @@ export const courses = [
     routeName: 'ielts',
     emoji: '🎯',
     name: 'IELTS Cơ Bản',
-    desc: 'Nền tảng 4 kỹ năng Listening, Reading, Writing & Speaking — hiểu nhanh, học 1 giờ/ngày, không nản.',
-    weeks: ieltsTotals.weeks,
-    lessons: ieltsTotals.lessons,
+    desc: 'Học theo sách “IELTS 4 kỹ năng cho người bắt đầu từ con số âm” — 15 buổi: ngữ pháp, từ vựng, nghe/nói/đọc/viết, có AI luyện tập.',
+    weeks: ieltsBookTotals.days,
+    unit: 'buổi',
+    lessons: ieltsBookTotals.days,
     level: 'Cơ bản',
     levelColor: '#00C281',
     banner: 'linear-gradient(135deg,#00D68F,#00a86f)',
@@ -147,11 +149,11 @@ export const bandLadder = [
 
 export const ieltsMeta = {
   bannerGrad: 'linear-gradient(150deg,#00D68F,#00966a)',
-  badge: '🎯 IELTS · CƠ BẢN · 8 TUẦN',
-  title: 'IELTS Cơ Bản —\n8 Tuần Tự Tin Đầu Tiên',
-  desc: 'Bắt đầu từ con số 0, mỗi ngày chỉ 15–20 phút. Lộ trình chia nhỏ theo từng kỹ năng để bạn luôn thấy tiến bộ — học vui, không nản.',
-  continueLabel: '▶ Bắt đầu Tuần 1',
+  badge: '🎯 IELTS · CƠ BẢN · THEO SÁCH · 15 BUỔI',
+  title: 'IELTS Cơ Bản —\nTừ Con Số Âm',
+  desc: 'Bám sát sách “IELTS 4 kỹ năng cho người bắt đầu từ con số âm — Tập 1”. Mỗi buổi một Day: ngữ pháp, từ vựng, nghe/nói/đọc/viết, có flashcard, luyện phát âm và AI trợ giảng.',
+  continueLabel: '▶ Bắt đầu Day 1',
   continue: { week: 1, day: 1 },
-  goalTitle: 'Đích đến: tự tin bước vào phòng thi IELTS!',
-  goalSub: 'Hoàn thành 8 tuần để mở huy hiệu IELTS Starter 🎖️',
+  goalTitle: 'Đích đến: nền tảng 4 kỹ năng vững vàng!',
+  goalSub: 'Hoàn thành 15 buổi để mở huy hiệu IELTS Starter 🎖️',
 }

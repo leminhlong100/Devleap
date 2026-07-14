@@ -19,3 +19,11 @@ npm-debug.log*
 # Design handoff bundle (kept locally, not part of the app build)
 Devleap - Nền tảng học lập trình-handoff/
 Devleap - Nền tảng học lập trình-handoff.zip
+
+# Sách IELTS: bỏ ảnh & audio GỐC (nặng, chỉ dùng để số hóa) — GIỮ file .md đã
+# số hóa vì app nạp nội dung khóa học từ IELTS/day-*.md. Anchor /IELTS/ để KHÔNG
+# đụng public/ielts (asset web, cần commit).
+/IELTS/**/*.jpg
+/IELTS/**/*.jpeg
+/IELTS/**/*.png
+/IELTS/**/*.mp3

@@ -11,7 +11,7 @@
  * Tìm kiếm bỏ dấu tiếng Việt nên gõ "ke thua" vẫn ra "kế thừa".
  */
 import { javaWeeksData } from './course'
-import { ieltsWeeksData } from './courseIelts'
+import { ieltsBookDays, IELTS_BOOK_WEEK } from './ieltsBook'
 import { commWeeksData } from './courseComm'
 
 /** Bỏ dấu tiếng Việt + thường hóa để so khớp không phân biệt dấu/hoa-thường. */
@@ -112,97 +112,77 @@ export function buildSearchIndex() {
     }
   }
 
-  // -------------------- IELTS --------------------
+  // -------------------- IELTS (theo sách — 15 buổi) --------------------
   const ivVocabSeen = new Map()
   const itTermSeen = new Map()
 
-  for (const week of ieltsWeeksData) {
-    const wctx = `IELTS · Tuần ${week.num}`
-    const day1Route = { name: 'ielts-day', params: { week: week.num, day: week.days[0]?.n ?? 1 } }
+  for (const day of ieltsBookDays) {
+    const dctx = `IELTS · Day ${day.day}`
+    const route = { name: 'ielts-day', params: { week: IELTS_BOOK_WEEK, day: day.day } }
 
-    week.days.forEach((day, idx) => {
-      const rhythm = week.rhythm[idx] || null
-      const title = clean(rhythm?.task?.replace(/\s*\.?\s*$/, '')) || `Buổi học ${day.n}`
-      const route = { name: 'ielts-day', params: { week: week.num, day: day.n } }
-      const snippet = clip([rhythm?.product, ...(day.checklist || [])].filter(Boolean).map(clean).join(' · '))
+    entries.push(
+      finalize({
+        id: `ielts-l-${day.day}`,
+        type: 'lesson',
+        course: 'ielts',
+        courseLabel: 'IELTS',
+        icon: '🎧',
+        title: clean(day.title) || `Day ${day.day}`,
+        subtitle: `${dctx}${day.topicVocabulary ? ' · ' + clean(day.topicVocabulary) : ''}`,
+        snippet: clip((day.grammar || []).map((g) => clean(g.title)).join(' · ')),
+        week: IELTS_BOOK_WEEK,
+        day: day.day,
+        route,
+        keywords: [clean(day.title), clean(day.topicVocabulary), ...(day.grammar || []).map((g) => clean(g.title))],
+      }),
+    )
 
-      entries.push(
-        finalize({
-          id: `ielts-l-${week.num}-${day.n}`,
-          type: 'lesson',
-          course: 'ielts',
-          courseLabel: 'IELTS',
-          icon: '🎧',
-          title,
-          subtitle: `${wctx} · Buổi ${day.n} · ${clean(week.title)}`,
-          snippet,
-          week: week.num,
-          day: day.n,
-          route,
-          keywords: [
-            clean(week.title),
-            clean(week.subtitle),
-            clean(rhythm?.product),
-            clean(rhythm?.review),
-            ...(day.checklist || []).map(clean),
-          ],
-        }),
-      )
-    })
-
-    // Từ vựng IELTS (theo chủ đề, cấp tuần) -> điều hướng tới buổi 1 của tuần.
-    for (const theme of week.vocabThemes || []) {
-      for (const word of theme.words || []) {
-        const key = normalize(word)
-        if (!key) continue
-        const hit = ivVocabSeen.get(key)
-        if (hit) {
-          hit._count++
-          continue
-        }
-        const e = finalize({
-          id: `ielts-v-${week.num}-${key}`,
-          type: 'vocab',
-          course: 'ielts',
-          courseLabel: 'IELTS',
-          icon: '🔤',
-          title: clean(word),
-          subtitle: `Từ vựng · ${clean(theme.title)} · ${wctx}`,
-          snippet: '',
-          week: week.num,
-          day: week.days[0]?.n ?? 1,
-          route: day1Route,
-          keywords: [clean(theme.title)],
-        })
-        e._count = 1
-        ivVocabSeen.set(key, e)
-        entries.push(e)
+    // Từ vựng của buổi -> điều hướng tới đúng buổi (dedup theo từ).
+    for (const word of day.vocab?.words || []) {
+      const key = normalize(word.term)
+      if (!key) continue
+      const hit = ivVocabSeen.get(key)
+      if (hit) {
+        hit._count++
+        continue
       }
+      const e = finalize({
+        id: `ielts-v-${day.day}-${key}`,
+        type: 'vocab',
+        course: 'ielts',
+        courseLabel: 'IELTS',
+        icon: '🔤',
+        title: clean(word.term),
+        subtitle: `Từ vựng · ${clean(day.topicVocabulary)} · ${dctx}`,
+        snippet: clean(word.vi),
+        week: IELTS_BOOK_WEEK,
+        day: day.day,
+        route,
+        keywords: [clean(word.vi), clean(day.topicVocabulary)],
+      })
+      e._count = 1
+      ivVocabSeen.set(key, e)
+      entries.push(e)
     }
 
-    // Ngữ pháp + chủ đề từ vựng + kỹ năng = thuật ngữ IELTS.
-    const topics = [
-      ...(week.grammar || []).map((g) => ({ t: g.title, k: 'Ngữ pháp' })),
-      ...(week.vocabThemes || []).map((v) => ({ t: v.title, k: 'Chủ đề từ vựng' })),
-      ...(week.skills || []).map((s) => ({ t: s.title, k: 'Kỹ năng' })),
-    ]
-    for (const top of topics) {
-      const title = clean(top.t)
+    // Ngữ pháp = thuật ngữ IELTS.
+    for (const g of day.grammar || []) {
+      const title = clean(g.title)
       const key = normalize(title)
       if (!key || itTermSeen.has(key)) continue
       const e = finalize({
-        id: `ielts-t-${week.num}-${itTermSeen.size}`,
+        id: `ielts-t-${day.day}-${itTermSeen.size}`,
         type: 'term',
         course: 'ielts',
         courseLabel: 'IELTS',
         icon: '📖',
         title,
-        subtitle: `${top.k} · ${wctx}`,
+        subtitle: `Ngữ pháp · ${dctx}`,
         snippet: '',
-        week: week.num,
-        day: week.days[0]?.n ?? 1,
-        route: day1Route,
-        keywords: [clean(week.title)],
+        week: IELTS_BOOK_WEEK,
+        day: day.day,
+        route,
+        keywords: [clean(day.title)],
       })
       itTermSeen.set(key, e)
       entries.push(e)

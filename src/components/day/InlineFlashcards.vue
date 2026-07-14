@@ -7,6 +7,11 @@ import { previewInterval, intervalLabel } from '@/lib/srs'
 const props = defineProps({
   vocab: { type: Array, default: () => [] }, // [{term, vi, ipa, illo}]
   title: { type: String, default: 'Ôn nhanh — nhớ lại nghĩa' },
+  // Số thẻ tối đa trong một phiên (mặc định 8 để giữ hành vi cũ; khóa theo sách
+  // truyền số lớn hơn để học trọn nhóm từ của buổi).
+  limit: { type: Number, default: 8 },
+  // Nhãn eyebrow — cho phép đổi tiêu đề nhỏ theo ngữ cảnh (vd học nhóm phrasal verb).
+  eyebrow: { type: String, default: 'ÔN ĐẦU GIỜ · NHỚ LẠI CHỦ ĐỘNG' },
 })
 const emit = defineEmits(['done'])
 
@@ -18,7 +23,7 @@ const speakable = canSpeak()
 const cards = computed(() =>
   props.vocab
     .filter((v) => v && v.term)
-    .slice(0, 8)
+    .slice(0, props.limit)
     .map((v) => ({ ...v, srsId: `ielts:${String(v.term).trim().toLowerCase()}` })),
 )
 
@@ -76,7 +81,7 @@ function grade(g) {
   <section class="step-card ifc-section">
     <div class="step-head">
       <div>
-        <div class="eyebrow" :class="{ green: finished }">ÔN ĐẦU GIỜ · NHỚ LẠI CHỦ ĐỘNG</div>
+        <div class="eyebrow" :class="{ green: finished }">{{ eyebrow }}</div>
         <h2 class="step-title">🧠 {{ title }}</h2>
       </div>
       <span class="wt-badge" :class="{ ok: finished }">Thuộc {{ masteredCount }}/{{ total }}</span>

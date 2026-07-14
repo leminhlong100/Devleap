@@ -62,17 +62,18 @@ const routes = [
     meta: { requiresAuth: true, title: 'Phỏng vấn thử với AI' },
   },
 
-  // Khóa IELTS — lộ trình 8 tuần
+  // Khóa IELTS — theo sách "IELTS 4 kỹ năng cho người bắt đầu từ con số âm" (15 buổi)
   {
     path: '/courses/ielts',
     name: 'ielts',
-    component: () => import('@/views/IeltsCourseView.vue'),
-    meta: { requiresAuth: true, vocabFab: true, title: 'Khóa IELTS 8 tuần', description: 'Lộ trình IELTS 8 tuần: từ vựng, ngữ pháp, luyện nghe/nói/đọc/viết có chấm điểm.' },
+    component: () => import('@/views/IeltsBookCourseView.vue'),
+    meta: { requiresAuth: true, vocabFab: true, title: 'Khóa IELTS cơ bản', description: 'Học IELTS từ con số âm theo sách: ngữ pháp, từ vựng, nghe/nói/đọc/viết — mỗi buổi một Day.' },
   },
   {
+    // Giữ path :week/:day để tương thích link cũ & chỉ mục tìm kiếm; khóa mới luôn dùng week=1, day=<buổi>.
     path: '/courses/ielts/week/:week/day/:day',
     name: 'ielts-day',
-    component: () => import('@/views/IeltsDayView.vue'),
+    component: () => import('@/views/IeltsBookDayView.vue'),
     props: true,
     meta: { requiresAuth: true, vocabFab: true, title: 'Buổi học IELTS' },
   },

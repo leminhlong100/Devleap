@@ -1,5 +1,5 @@
 import { dayKey, ymd, isoWeekKey } from './helpers'
-import { computeIeltsProgress, getIeltsDay } from '@/data/courseIelts'
+import { computeIeltsBookProgress, getBookDay } from '@/data/ieltsBook'
 import { computeJavaProgress, getJavaDay } from '@/data/course'
 import { computeCommProgress, getCommDay } from '@/data/courseComm'
 import { maybeRequestNotificationPermission } from '@/lib/studyReminder'
@@ -72,16 +72,16 @@ export const getters = {
   nextLesson() {
     const out = []
     if (this.completed.ielts.length) {
-      const prog = computeIeltsProgress(this.completed.ielts, (w) => this.quizPassed('ielts', `week:${w}`))
+      const prog = computeIeltsBookProgress(this.completed.ielts)
       if (!prog.allDone) {
-        const day = getIeltsDay(prog.continue.week, prog.continue.day)
+        const day = getBookDay(prog.continue.day)
         out.push({
           course: 'ielts',
           label: 'IELTS',
           route: 'ielts-day',
           week: prog.continue.week,
           day: prog.continue.day,
-          title: day?.title || '',
+          title: day?.title || `Day ${prog.continue.day}`,
         })
       }
     }

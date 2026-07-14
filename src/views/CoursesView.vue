@@ -102,7 +102,7 @@ function open(c) {
           <h3 class="c-name">{{ c.name }}</h3>
           <p class="c-desc">{{ c.desc }}</p>
           <div class="meta">
-            <span>📅 {{ c.weeks }} tuần</span>
+            <span>📅 {{ c.weeks }} {{ c.unit || 'tuần' }}</span>
             <span>📚 {{ c.lessons }} bài</span>
             <span :style="{ color: c.levelColor, fontWeight: 700 }">● {{ c.level }}</span>
           </div>
