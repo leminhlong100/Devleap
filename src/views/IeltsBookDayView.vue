@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/user'
 import VocabCard from '@/components/day/VocabCard.vue'
 import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
 import TypedCheckList from '@/components/day/TypedCheckList.vue'
+import ReadingHomework from '@/components/day/ReadingHomework.vue'
 import PronunciationCheck from '@/components/day/PronunciationCheck.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getBookDay, computeIeltsBookProgress, isBookDayUnlocked, IELTS_BOOK_WEEK } from '@/data/ieltsBook'
@@ -99,6 +100,13 @@ const translatePassed = computed(() => !!d.value && (!translateNeeded.value || u
 function onTranslateDone() {
   if (d.value) user.recordQuiz('ielts', scope('translate'), translateItems.value.length, translateItems.value.length, 1)
 }
+// —— Homework đọc hiểu (Day 2+): dùng từ khóa trả lời ngắn, chấm ngay (cổng bắt buộc) ——
+const readingItems = computed(() => d.value?.homework?.reading || [])
+const readingNeeded = computed(() => readingItems.value.length > 0)
+const readingPassed = computed(() => !!d.value && (!readingNeeded.value || user.quizPassed('ielts', scope('reading'))))
+function onReadingDone() {
+  if (d.value) user.recordQuiz('ielts', scope('reading'), readingItems.value.length, readingItems.value.length, 1)
+}
 // Phát âm — máy chấm, KHÔNG bắt buộc để qua buổi (STT không có trên mọi trình duyệt).
 function onPronDone() {
   if (d.value) user.recordQuiz('ielts', scope('pron'), pronItems.value.length, pronItems.value.length, 1)
@@ -106,11 +114,14 @@ function onPronDone() {
 
 // Hoàn thành buổi: buộc học viên LÀM các hoạt động chính ngay trên web —
 // ngữ pháp + nghe-gõ + dịch (đều chấm tự động). Phần nào buổi không có thì tự bỏ qua.
-const dayReady = computed(() => grammarPassed.value && listeningPassed.value && translatePassed.value)
+const dayReady = computed(
+  () => grammarPassed.value && listeningPassed.value && translatePassed.value && readingPassed.value,
+)
 const nextGateLabel = computed(() => {
   if (!grammarPassed.value) return '🔒 Làm bài tập ngữ pháp trước'
   if (!listeningPassed.value) return '🔒 Làm bài nghe chữ cái trước'
   if (!translatePassed.value) return '🔒 Làm bài dịch trước'
+  if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
   return '✓ Đánh dấu hoàn thành'
 })
 
@@ -156,6 +167,39 @@ function goDay(n) {
       </header>
 
       <div class="main">
+        <!-- ════ READING SKILLS (lý thuyết) ════ -->
+        <section v-if="d.reading" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">READING SKILLS</div>
+              <h2 class="step-title">📚 Kỹ năng đọc — từ khóa (keywords)</h2>
+            </div>
+          </div>
+          <div class="prose" v-html="d.reading"></div>
+        </section>
+
+        <!-- ════ WRITING SKILLS (lý thuyết) ════ -->
+        <section v-if="d.writing" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">WRITING SKILLS</div>
+              <h2 class="step-title">✍️ Kỹ năng viết — IELTS Writing Task 2</h2>
+            </div>
+          </div>
+          <div class="prose" v-html="d.writing"></div>
+        </section>
+
+        <!-- ════ SPEAKING SKILLS (lý thuyết) ════ -->
+        <section v-if="d.speaking" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">SPEAKING SKILLS</div>
+              <h2 class="step-title">🗣️ Kỹ năng nói — định dạng bài thi</h2>
+            </div>
+          </div>
+          <div class="prose" v-html="d.speaking"></div>
+        </section>
+
         <!-- ════ NGỮ PHÁP ════ -->
         <section v-if="d.grammar.length" class="step-card">
           <div class="step-head">
@@ -348,12 +392,15 @@ function goDay(n) {
           @done="onTranslateDone"
         />
 
+        <!-- ════ HOMEWORK — ĐỌC HIỂU (chấm ngay, bắt buộc) ════ -->
+        <ReadingHomework v-if="readingItems.length" :items="readingItems" @done="onReadingDone" />
+
         <!-- CHECKPOINT -->
         <section class="checkpoint" :class="{ done }">
           <div class="cp-emoji">{{ done ? '✅' : '🎯' }}</div>
           <div class="cp-text">
             <h3>{{ done ? `Đã hoàn thành Day ${d.n}!` : `Hoàn thành Day ${d.n} 🎉` }}</h3>
-            <p v-if="!done">Làm xong các bài <b>làm ngay</b> (ngữ pháp · nghe chữ cái · dịch) rồi đánh dấu hoàn thành để nhận <b>+50 XP</b>.</p>
+            <p v-if="!done">Làm xong các bài <b>làm ngay</b> (các mục ghi <b>BẮT BUỘC</b>) rồi đánh dấu hoàn thành để nhận <b>+50 XP</b>.</p>
             <p v-else>Đã xong {{ bookProgress.doneDays }}/{{ bookProgress.totalDays }} buổi. Hoàn thành buổi để mở buổi kế tiếp 🔓</p>
           </div>
           <div class="cp-cta">

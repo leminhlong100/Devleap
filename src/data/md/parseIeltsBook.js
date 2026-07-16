@@ -212,12 +212,52 @@ function collectAnswerKey(lines) {
   return map
 }
 
+/** Lấy giá trị sau nhãn in đậm "**Nhãn:** giá trị" (khoan dung dấu `-` đầu dòng). */
+function pullField(lines, labelRe) {
+  for (const raw of lines) {
+    const m = labelRe.exec(raw)
+    if (m) return raw.slice(m.index + m[0].length).trim()
+  }
+  return ''
+}
+
+/**
+ * Bài tập ĐỌC HIỂU (Day 2+): mỗi "### Bài tập N — …" gồm câu hỏi song ngữ, đoạn văn
+ * song ngữ, từ khóa gợi ý, đáp án ngắn (chấm được, biến thể tách bằng "|") và
+ * answer key (đáp án mẫu đầy đủ). Trả về mảng object cho ReadingHomework.vue.
+ */
+function parseReadingExercise(sec) {
+  const nm = /(\d+)/.exec(sec.heading)
+  const dashM = /^\s*bài tập\s*\d+\s*[—–-]\s*(.+)$/i.exec(sec.heading)
+  const answerRaw = pullField(sec.lines, /(?:-\s*)?\*\*\s*đáp án ngắn\s*:?\s*\*\*/i)
+  const keywordsRaw = pullField(sec.lines, /(?:-\s*)?\*\*\s*từ khóa gợi ý\s*:?\s*\*\*/i)
+  return {
+    n: nm ? Number(nm[1]) : 0,
+    title: dashM ? dashM[1].trim() : sec.heading.trim(),
+    question: pullField(sec.lines, /(?:-\s*)?\*\*\s*câu hỏi\s*\(en\)\s*:?\s*\*\*/i),
+    questionVi: pullField(sec.lines, /(?:-\s*)?\*\*\s*câu hỏi\s*\(vi\)\s*:?\s*\*\*/i),
+    passage: pullField(sec.lines, /(?:-\s*)?\*\*\s*đoạn văn\s*\(en\)\s*:?\s*\*\*/i),
+    passageVi: pullField(sec.lines, /(?:-\s*)?\*\*\s*đoạn văn\s*\(vi\)\s*:?\s*\*\*/i),
+    keywords: keywordsRaw
+      .split(/[·|]/)
+      .map((k) => k.trim())
+      .filter(Boolean),
+    answer: answerRaw
+      .split('|')
+      .map((a) => a.trim())
+      .filter(Boolean),
+    model: pullField(sec.lines, ANSWER_KEY_RE),
+  }
+}
+
 function parseHomework(lines) {
   const subs = splitByLevel(lines, 3)
-  const hw = { translate: [], mcq: [], cloze: [] }
+  const hw = { translate: [], mcq: [], cloze: [], reading: [] }
   for (const s of subs) {
     const key = collectAnswerKey(s.lines)
-    if (/^i\./i.test(s.heading) || /dịch/i.test(s.heading)) {
+    if (/bài tập/i.test(s.heading)) {
+      hw.reading.push(parseReadingExercise(s))
+    } else if (/^i\./i.test(s.heading) || /dịch/i.test(s.heading)) {
       // "1. Cô ấy tạo một tài khoản. (account)"
       const beforeKey = takeBeforeKey(s.lines)
       for (const raw of beforeKey) {
@@ -317,7 +357,7 @@ export function parseIeltsBookDay(raw) {
   let reading = ''
   let writing = ''
   let speaking = ''
-  let homework = { translate: [], mcq: [], cloze: [] }
+  let homework = { translate: [], mcq: [], cloze: [], reading: [] }
 
   for (const sec of h2) {
     const h = sec.heading
