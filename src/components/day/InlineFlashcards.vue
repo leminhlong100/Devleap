@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
+import { hapticLight } from '@/lib/haptics'
 import { useUserStore } from '@/stores/user'
 import { previewInterval, intervalLabel } from '@/lib/srs'
+import { useSwipe } from '@/composables/useSwipe'
 
 const props = defineProps({
   vocab: { type: Array, default: () => [] }, // [{term, vi, ipa, illo}]
@@ -29,15 +31,25 @@ const cards = computed(() =>
 
 // Hàng đợi phiên: thẻ "chưa nhớ" được đẩy xuống cuối để ÔN LẠI NGAY trong buổi.
 const queue = ref([])
-const revealed = ref(false)
+const flipped = ref(false)
 const mastered = ref(new Set())
+const busy = ref(false) // đang chạy hiệu ứng bay ra -> khóa thao tác kép
+
+// Vuốt ngang (chỉ sau khi đã lật thẻ): phải = "Nhớ được", trái = "Chưa nhớ".
+// Nút bấm vẫn là đường chính; vuốt chỉ là lối tắt như bản Flashcard thanh công cụ.
+const swipe = useSwipe({
+  enabled: () => flipped.value && !busy.value,
+  onCommit: (direction) => grade(direction === 'right' ? 'good' : 'again'),
+})
 
 watch(
   cards,
   (v) => {
     queue.value = v.map((c) => c.srsId)
-    revealed.value = false
+    flipped.value = false
     mastered.value = new Set()
+    busy.value = false
+    swipe.reset()
   },
   { immediate: true },
 )
@@ -55,26 +67,42 @@ function nextLabel(grade) {
   return intervalLabel(previewInterval(card, grade))
 }
 
-function reveal() {
-  revealed.value = true
-}
 function sayWord() {
   if (speakable && current.value) speak(current.value.term)
 }
 
+function onCardClick() {
+  // Vừa vuốt xong thì bỏ qua click "ảo" trình duyệt bắn ra khi thả tay.
+  if (swipe.hasDragged.value || busy.value) return
+  flipped.value = !flipped.value
+}
+
 function grade(g) {
   const card = current.value
-  if (!card) return
+  if (!card || busy.value) return
+  busy.value = true
+  hapticLight() // gõ nhẹ xác nhận (nút bấm lẫn vuốt đều qua đây)
   user.reviewCard(card.srsId, g) // nuôi lịch SRS + thưởng XP (nếu đến hạn)
-  const id = queue.value.shift()
-  if (g === 'again') {
-    queue.value.push(id) // chưa nhớ -> ôn lại cuối hàng đợi ngay trong phiên
-  } else {
+  if (g !== 'again') {
     mastered.value = new Set(mastered.value).add(card.term)
   }
-  revealed.value = false
-  if (queue.value.length === 0) emit('done')
+  // Chờ thẻ bay ra / lật lại rồi mới đổi sang thẻ kế cho mượt.
+  setTimeout(() => {
+    const id = queue.value.shift()
+    if (g === 'again') queue.value.push(id) // chưa nhớ -> ôn lại cuối hàng đợi ngay
+    flipped.value = false
+    busy.value = false
+    swipe.reset()
+    if (queue.value.length === 0) emit('done')
+  }, 260)
 }
+
+const cardWrapStyle = computed(() => ({
+  transform: `translateX(${swipe.dx.value}px) rotate(${swipe.dx.value / 24}deg)`,
+  transition: swipe.dragging.value ? 'none' : 'transform 0.25s ease',
+}))
+const leftHintOpacity = computed(() => (swipe.state.value.direction === 'left' ? swipe.state.value.ratio : 0))
+const rightHintOpacity = computed(() => (swipe.state.value.direction === 'right' ? swipe.state.value.ratio : 0))
 </script>
 
 <template>
@@ -97,31 +125,48 @@ function grade(g) {
         <span v-if="masteredCount" class="ifc-mastered">✅ đã thuộc {{ masteredCount }}</span>
       </div>
 
-      <div class="ifc-card2" :class="{ flipped: revealed }" @click="!revealed && reveal()">
-        <template v-if="!revealed">
-          <span class="ifc2-emoji">{{ current.illo || '📝' }}</span>
-          <span class="ifc2-term">{{ current.term }}</span>
-          <span class="ifc2-ask">Nghĩa tiếng Việt là gì?</span>
-        </template>
-        <template v-else>
-          <span class="ifc2-vi">{{ current.vi || '—' }}</span>
-          <span v-if="current.ipa" class="ifc2-ipa">{{ current.term }} {{ current.ipa }}</span>
-          <button v-if="speakable" class="ifc2-say" @click.stop="sayWord" aria-label="Nghe phát âm">🔊 Nghe</button>
-        </template>
+      <div
+        class="ifc-wrap"
+        :style="cardWrapStyle"
+        @click="onCardClick"
+        @pointerdown="swipe.onPointerDown"
+        @pointermove="swipe.onPointerMove"
+        @pointerup="swipe.onPointerUp"
+        @pointercancel="swipe.onPointerCancel"
+      >
+        <span class="ifc-hint-swipe left" :style="{ opacity: leftHintOpacity }">❌ Chưa nhớ</span>
+        <span class="ifc-hint-swipe right" :style="{ opacity: rightHintOpacity }">🙂 Nhớ được</span>
+
+        <div class="ifc-3d" :class="{ flipped }">
+          <!-- FRONT -->
+          <div class="ifc-face front">
+            <span class="ifc-badge">Còn {{ queue.length }} thẻ</span>
+            <span class="ifc-emoji">{{ current.illo || '📝' }}</span>
+            <span class="ifc-term">{{ current.term }}</span>
+            <span class="ifc-tip">👆 Bấm để xem nghĩa</span>
+          </div>
+          <!-- BACK -->
+          <div class="ifc-face back">
+            <div class="ifc-back-label">NGHĨA TIẾNG VIỆT</div>
+            <div class="ifc-vi">{{ current.vi || '—' }}</div>
+            <div v-if="current.ipa" class="ifc-ipa">{{ current.term }} {{ current.ipa }}</div>
+            <button v-if="speakable" class="ifc-say" @click.stop="sayWord" aria-label="Nghe phát âm">🔊 Nghe</button>
+          </div>
+        </div>
       </div>
 
-      <!-- chưa lật: nút lật; đã lật: tự chấm -> nuôi SRS -->
-      <div v-if="!revealed" class="ifc-actions">
-        <button class="ifc-reveal" @click="reveal">Lật xem nghĩa →</button>
+      <!-- chưa lật: nhắc lật; đã lật: tự chấm -> nuôi SRS -->
+      <div v-if="!flipped" class="ifc-actions">
+        <button class="ifc-reveal" @click.stop="flipped = true">Lật xem nghĩa →</button>
       </div>
       <div v-else class="ifc-grades">
-        <button class="ifc-grade again" @click="grade('again')">
+        <button class="ifc-grade again" @click.stop="grade('again')">
           ❌ Chưa nhớ<small>{{ nextLabel('again') }}</small>
         </button>
-        <button class="ifc-grade good" @click="grade('good')">
+        <button class="ifc-grade good" @click.stop="grade('good')">
           🙂 Nhớ được<small>{{ nextLabel('good') }}</small>
         </button>
-        <button class="ifc-grade easy" @click="grade('easy')">
+        <button class="ifc-grade easy" @click.stop="grade('easy')">
           ⚡ Quá dễ<small>{{ nextLabel('easy') }}</small>
         </button>
       </div>
@@ -153,56 +198,146 @@ function grade(g) {
   color: var(--text-success, #00966a);
   font-weight: 600;
 }
-.ifc-card2 {
-  min-height: 150px;
-  border: 1.5px solid var(--border-accent, rgba(108, 92, 231, 0.4));
-  border-radius: 16px;
-  background: var(--surface-1, #fbfbfe);
+
+/* ---- Thẻ lật 3D + vuốt (giống Flashcard thanh công cụ) ---- */
+.ifc-wrap {
+  position: relative;
+  perspective: 1400px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  cursor: pointer;
+  touch-action: pan-y;
+  user-select: none;
+}
+.ifc-3d {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.ifc-3d.flipped {
+  transform: rotateY(180deg);
+}
+.ifc-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 22px;
-  cursor: pointer;
+  gap: 10px;
+  padding: 24px;
   text-align: center;
 }
-.ifc-card2.flipped {
-  background: var(--bg-accent, #f2f0ff);
+.ifc-face.front {
+  background: linear-gradient(150deg, #6c5ce7, #4b3bc4);
+  box-shadow: 0 14px 34px rgba(108, 92, 231, 0.32);
 }
-.ifc2-emoji {
-  font-size: 26px;
+.ifc-badge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.18);
+  padding: 4px 11px;
+  border-radius: 99px;
 }
-.ifc2-term {
-  font-size: 24px;
+.ifc-emoji {
+  font-size: 46px;
+  line-height: 1;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+}
+.ifc-term {
+  font-size: 30px;
   font-weight: 800;
-  color: var(--ink, #1e1e2e);
+  color: #fff;
+  letter-spacing: -0.5px;
+  word-break: break-word;
 }
-.ifc2-ask {
+.ifc-tip {
+  position: absolute;
+  bottom: 16px;
   font-size: 13px;
-  color: var(--muted-2, #9a9ab0);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
 }
-.ifc2-vi {
-  font-size: 22px;
+.ifc-face.back {
+  transform: rotateY(180deg);
+  background: var(--surface, #fff);
+  border: 2px solid var(--green, #00d68f);
+  box-shadow: 0 14px 34px rgba(0, 214, 143, 0.18);
+}
+.ifc-back-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #00c281;
+}
+.ifc-vi {
+  font-size: 26px;
   font-weight: 800;
   color: var(--purple-deep, #4b3bc4);
+  letter-spacing: -0.3px;
+  word-break: break-word;
 }
-.ifc2-ipa {
+.ifc-ipa {
   font-size: 14px;
   color: var(--muted, #76768e);
 }
-.ifc2-say {
-  margin-top: 6px;
+.ifc-say {
+  margin-top: 4px;
   border: 1px solid var(--border-strong, rgba(108, 92, 231, 0.22));
   background: var(--surface);
   border-radius: 99px;
-  padding: 6px 16px;
+  padding: 8px 18px;
+  min-height: 44px;
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   color: var(--ink, #1e1e2e);
 }
+.ifc-say:active {
+  transform: scale(0.96);
+}
+
+/* Gợi ý vuốt (hiện mờ dần theo tay) */
+.ifc-hint-swipe {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 13px;
+  border-radius: 99px;
+  color: #fff;
+  pointer-events: none;
+  transition: opacity 0.08s linear;
+}
+.ifc-hint-swipe.left {
+  left: 12px;
+  background: rgba(255, 71, 87, 0.92);
+}
+.ifc-hint-swipe.right {
+  right: 12px;
+  background: rgba(0, 214, 143, 0.92);
+}
+
 .ifc-actions {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   justify-content: center;
 }
@@ -226,7 +361,7 @@ function grade(g) {
   background: var(--purple-deep, #4b3bc4);
 }
 .ifc-grades {
-  margin-top: 14px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
@@ -303,6 +438,12 @@ function grade(g) {
   line-height: 1.5;
 }
 @media (max-width: 560px) {
+  .ifc-3d {
+    height: 260px;
+  }
+  .ifc-term {
+    font-size: 26px;
+  }
   .ifc-grade {
     font-size: 12.5px;
   }
