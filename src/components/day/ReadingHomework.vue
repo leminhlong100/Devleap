@@ -92,7 +92,7 @@ function firstAnswer(i) {
       <span class="wt-badge" :class="{ ok: allDone }">{{ okCount }}/{{ items.length }}</span>
     </div>
     <p class="quiz-intro">
-      {{ intro || 'Đọc câu hỏi và đoạn văn, xác định từ khóa rồi gõ cụm từ trả lời chính. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Làm đúng cả 5 bài để hoàn thành buổi.' }}
+      {{ intro || 'Đọc câu hỏi và đoạn văn, xác định từ khóa rồi gõ cụm từ trả lời chính. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Làm đúng tất cả các bài để hoàn thành buổi.' }}
     </p>
 
     <ol class="rh-list">

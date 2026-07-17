@@ -7,6 +7,7 @@ import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
 import TypedCheckList from '@/components/day/TypedCheckList.vue'
 import ReadingHomework from '@/components/day/ReadingHomework.vue'
 import PronunciationCheck from '@/components/day/PronunciationCheck.vue'
+import DictationCloze from '@/components/day/DictationCloze.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getBookDay, computeIeltsBookProgress, isBookDayUnlocked, IELTS_BOOK_WEEK } from '@/data/ieltsBook'
 import { speak } from '@/lib/speak'
@@ -46,6 +47,14 @@ const letterItems = computed(() => {
 })
 const alphabetAudios = computed(() => (d.value?.audio || []).filter((a) => /alphabet/i.test(a.url || a.file || '')))
 const practiceAudios = computed(() => (d.value?.audio || []).filter((a) => /practice/i.test(a.url || a.file || '')))
+// Audio kỹ năng nói (Speaking Part 1…) — buổi Reading/Writing/Speaking có thể kèm bản ghi câu hỏi mẫu.
+const speakingAudios = computed(() => (d.value?.audio || []).filter((a) => /speaking/i.test(a.url || a.file || '')))
+// Dictation (Day 3+): điền chỗ trống theo bản ghi thật (Audio 1).
+const dictation = computed(() => d.value?.listening?.dictation || null)
+const dictationAudios = computed(() => (d.value?.audio || []).filter((a) => /dictation/i.test(a.url || a.file || '')))
+const dictationCount = computed(() => Object.keys(dictation.value?.answers || {}).length)
+// Practice 2 (Day 5+): nghe cùng bản ghi rồi chọn đáp án đúng (MCQ) — ôn nhanh, không bắt buộc.
+const listeningMcq = computed(() => d.value?.listening?.mcq || [])
 // Audio 2 (bản ghi thật): q = phần đầu "Mr / Miss / Jane…"; đáp án = HỌ được đánh vần
 // (từ answer key). Chấp nhận gõ họ hoặc cả "tiền tố + họ".
 const practiceItems = computed(() =>
@@ -71,8 +80,20 @@ const translateItems = computed(() =>
 // —— Phát âm: máy chấm (10 từ đầu) ——
 const pronItems = computed(() => (d.value?.vocabCards || []).slice(0, 10).map((v) => ({ term: v.term, ipa: v.ipa || '' })))
 
-// —— CỔNG NGỮ PHÁP: bài "Điền thì hiện tại đơn" (Homework III) ≥70% ——
-const grammarQuiz = computed(() => d.value?.homework?.cloze || [])
+// —— CỔNG NGỮ PHÁP: bài luyện ngữ pháp của buổi (Homework III) ≥70% ——
+// Buổi có "Điền động từ" (cloze) hoặc "Chọn đại từ" (choice) — dùng cái nào có mặt.
+const grammarIsChoice = computed(() => !(d.value?.homework?.cloze?.length) && (d.value?.homework?.choice?.length || 0) > 0)
+// Buổi kỹ năng (Reading/Writing/Speaking, không có Basic Grammar): cloze là bài
+// ĐIỀN PARAPHRASE hoàn thành mở bài Opinion Essay — nhãn nói theo hướng viết, không
+// phải "dạng đúng của từ" (chia động từ) như buổi ngữ pháp.
+const grammarIsWritingCloze = computed(
+  () => !grammarIsChoice.value && !!d.value?.writing && !(d.value?.grammar?.length) && (d.value?.homework?.cloze?.length || 0) > 0,
+)
+const grammarQuiz = computed(() => {
+  const hw = d.value?.homework
+  if (!hw) return []
+  return hw.cloze?.length ? hw.cloze : hw.choice || []
+})
 const grammarNeeded = computed(() => grammarQuiz.value.length > 0)
 const grammarPassed = computed(
   () => !!d.value && (!grammarNeeded.value || user.grammarDayPassed('ielts', IELTS_BOOK_WEEK, d.value.n)),
@@ -90,10 +111,14 @@ function onVocabComplete(r) {
 
 // —— Các cổng "làm tại chỗ" khác (bắt buộc để hoàn thành buổi) ——
 const scope = (name) => `day:${d.value?.n}:${name}`
-const listeningNeeded = computed(() => letterItems.value.length > 0)
+// Cổng nghe: buổi có bảng chữ cái (nghe-gõ) HOẶC bài chép chính tả (dictation).
+const listeningNeeded = computed(() => letterItems.value.length > 0 || !!dictation.value)
 const listeningPassed = computed(() => !!d.value && (!listeningNeeded.value || user.quizPassed('ielts', scope('listen'))))
 function onListeningDone() {
   if (d.value) user.recordQuiz('ielts', scope('listen'), letterItems.value.length, letterItems.value.length, 1)
+}
+function onDictationDone() {
+  if (d.value) user.recordQuiz('ielts', scope('listen'), dictationCount.value, dictationCount.value, 1)
 }
 const translateNeeded = computed(() => translateItems.value.length > 0)
 const translatePassed = computed(() => !!d.value && (!translateNeeded.value || user.quizPassed('ielts', scope('translate'))))
@@ -118,8 +143,8 @@ const dayReady = computed(
   () => grammarPassed.value && listeningPassed.value && translatePassed.value && readingPassed.value,
 )
 const nextGateLabel = computed(() => {
-  if (!grammarPassed.value) return '🔒 Làm bài tập ngữ pháp trước'
-  if (!listeningPassed.value) return '🔒 Làm bài nghe chữ cái trước'
+  if (!grammarPassed.value) return grammarIsWritingCloze.value ? '🔒 Làm bài điền mở bài trước' : '🔒 Làm bài tập ngữ pháp trước'
+  if (!listeningPassed.value) return dictation.value ? '🔒 Làm bài chép chính tả trước' : '🔒 Làm bài nghe chữ cái trước'
   if (!translatePassed.value) return '🔒 Làm bài dịch trước'
   if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
   return '✓ Đánh dấu hoàn thành'
@@ -172,7 +197,7 @@ function goDay(n) {
           <div class="step-head">
             <div>
               <div class="eyebrow">READING SKILLS</div>
-              <h2 class="step-title">📚 Kỹ năng đọc — từ khóa (keywords)</h2>
+              <h2 class="step-title">📚 Kỹ năng đọc (Reading)</h2>
             </div>
           </div>
           <div class="prose" v-html="d.reading"></div>
@@ -183,7 +208,7 @@ function goDay(n) {
           <div class="step-head">
             <div>
               <div class="eyebrow">WRITING SKILLS</div>
-              <h2 class="step-title">✍️ Kỹ năng viết — IELTS Writing Task 2</h2>
+              <h2 class="step-title">✍️ Kỹ năng viết (Writing)</h2>
             </div>
           </div>
           <div class="prose" v-html="d.writing"></div>
@@ -195,6 +220,12 @@ function goDay(n) {
             <div>
               <div class="eyebrow">SPEAKING SKILLS</div>
               <h2 class="step-title">🗣️ Kỹ năng nói — định dạng bài thi</h2>
+            </div>
+          </div>
+          <div v-if="speakingAudios.length" class="audio-row">
+            <div v-for="(a, i) in speakingAudios" :key="i" class="audio-item">
+              <span class="audio-label">{{ a.label }}</span>
+              <audio controls preload="none" :src="a.url"></audio>
             </div>
           </div>
           <div class="prose" v-html="d.speaking"></div>
@@ -219,15 +250,15 @@ function goDay(n) {
           <div class="step-head">
             <div>
               <div class="eyebrow" :class="{ green: grammarPassed }">LÀM NGAY · BẮT BUỘC ĐẠT ≥70%</div>
-              <h2 class="step-title">✍️ Điền động từ ở thì hiện tại đơn</h2>
+              <h2 class="step-title">{{ grammarIsChoice ? '✍️ Chọn đáp án đúng' : grammarIsWritingCloze ? '✍️ Điền chỗ trống — hoàn thành mở bài' : '✍️ Điền dạng đúng của từ vào chỗ trống' }}</h2>
             </div>
             <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarPassed ? '✅ Đã đạt' : 'Chưa đạt' }}</span>
           </div>
-          <p class="quiz-intro">Gõ đúng dạng động từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.</p>
+          <p class="quiz-intro">{{ grammarIsChoice ? 'Chọn phương án phù hợp cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.' : grammarIsWritingCloze ? 'Điền từ/cụm từ paraphrase phù hợp vào mỗi chỗ trống (gợi ý nghĩa trong ngoặc). Đạt ≥70% để mở hoàn thành buổi.' : 'Gõ đúng dạng của từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' }}</p>
           <div class="grammar-drill">
             <QuizTool :questions="grammarQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onGrammarComplete" />
           </div>
-          <div v-if="grammarPassed" class="gate-line ok">✅ Bạn đã đạt bài tập ngữ pháp.</div>
+          <div v-if="grammarPassed" class="gate-line ok">{{ grammarIsWritingCloze ? '✅ Bạn đã hoàn thành bài điền mở bài.' : '✅ Bạn đã đạt bài tập ngữ pháp.' }}</div>
         </section>
 
         <!-- ════ TỪ VỰNG ════ -->
@@ -248,7 +279,7 @@ function goDay(n) {
           :vocab="d.vocabCards"
           :limit="30"
           eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
-          title="Thẻ từ vựng Social Media"
+          :title="`Thẻ từ vựng ${d.topicVocabulary}`"
         />
 
         <!-- PHRASAL VERBS + thẻ học -->
@@ -322,8 +353,60 @@ function goDay(n) {
           </div>
         </section>
 
+        <!-- ════ LISTENING — DICTATION (điền chỗ trống theo bản ghi) ════ -->
+        <template v-if="dictation">
+          <!-- Lý thuyết Listening Dictation -->
+          <section v-if="d.listening.intro" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">LISTENING SKILLS</div>
+                <h2 class="step-title">🎧 Kỹ năng nghe — Dictation</h2>
+              </div>
+            </div>
+            <div class="prose" v-html="d.listening.intro"></div>
+          </section>
+
+          <!-- LÀM NGAY: nghe Audio 1 → điền chỗ trống (bắt buộc) -->
+          <DictationCloze
+            :title="dictation.title"
+            :note="dictation.note"
+            :en="dictation.en"
+            :vi="dictation.vi"
+            :answers="dictation.answers"
+            @done="onDictationDone"
+          >
+            <div v-if="dictationAudios.length" class="audio-row">
+              <div v-for="(a, i) in dictationAudios" :key="i" class="audio-item">
+                <span class="audio-label">{{ a.label }}</span>
+                <audio controls preload="none" :src="a.url"></audio>
+              </div>
+            </div>
+          </DictationCloze>
+        </template>
+
+        <!-- ════ LISTENING — PRACTICE 2 (nghe & chọn đáp án) ════ -->
+        <section v-if="listeningMcq.length" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">LISTENING SKILLS · PRACTICE 2</div>
+              <h2 class="step-title">🎧 Nghe &amp; chọn đáp án đúng</h2>
+            </div>
+            <span class="wt-badge">Tự chọn</span>
+          </div>
+          <p class="quiz-intro">Nghe tiếp bản ghi (từ khoảng 2:02) rồi chọn đáp án đúng cho mỗi câu. Ôn nhanh — không bắt buộc để qua buổi.</p>
+          <div v-if="dictationAudios.length" class="audio-row">
+            <div v-for="(a, i) in dictationAudios" :key="i" class="audio-item">
+              <span class="audio-label">{{ a.label }}</span>
+              <audio controls preload="none" :src="a.url"></audio>
+            </div>
+          </div>
+          <div class="grammar-drill">
+            <QuizTool :questions="listeningMcq" mode="practice" :pass-threshold="0.7" embedded />
+          </div>
+        </section>
+
         <!-- ════ LISTENING — ALPHABET ════ -->
-        <section v-if="d.listening" class="step-card">
+        <section v-if="d.listening && d.listening.alphabet.length" class="step-card">
           <div class="step-head">
             <div>
               <div class="eyebrow">LISTENING SKILLS</div>

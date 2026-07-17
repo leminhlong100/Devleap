@@ -32,7 +32,7 @@ function splitByLevel(lines, level) {
 
 /** Parse frontmatter YAML tối giản (đủ cho schema của skill: scalar, [inline list], - {inline obj}). */
 function parseFrontmatter(raw) {
-  const m = /^---\n([\s\S]*?)\n---\n?/.exec(raw)
+  const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
   if (!m) return { data: {}, body: raw }
   const data = {}
   let curKey = null
@@ -159,13 +159,19 @@ const cleanForm = (c) => {
 }
 
 // ————————————————————————— Listening —————————————————————————
+const PASSAGE_EN_RE = /\*\*\s*đoạn văn\s*\(en\)\s*:?\s*\*\*/i
+const PASSAGE_VI_RE = /\*\*\s*đoạn văn\s*\(vi\)\s*:?\s*\*\*/i
+
 function parseListening(lines) {
   const subs = splitByLevel(lines, 3)
   let alphabet = []
-  let intro = ''
+  let introRaw = ''
   let practice = []
   let practiceIntro = ''
+  let dictation = null
+  let mcq = []
   for (const s of subs) {
+    const hasPassage = s.lines.some((l) => PASSAGE_EN_RE.test(l))
     if (/alphabet/i.test(s.heading)) {
       // Bảng chữ cái xếp 3 cặp (Chữ|IPA) mỗi hàng -> tách thành từng cặp.
       for (const r of parseTable(s.lines)) {
@@ -175,20 +181,63 @@ function parseListening(lines) {
           if (letter) alphabet.push({ letter, ipa })
         }
       }
-      // Phần văn xuôi (không phải bảng) -> intro.
-      intro = md(s.lines.filter((l) => !l.trim().startsWith('|')).join('\n'))
+      // Phần văn xuôi (không phải bảng) -> intro (không kèm lại heading; view tự đặt tiêu đề).
+      introRaw += (introRaw ? '\n\n' : '') + s.lines.filter((l) => !l.trim().startsWith('|')).join('\n')
+    } else if (hasPassage) {
+      // Bài chép chính tả (dictation): đoạn văn EN có chỗ trống (n), có bản VI đối chiếu.
+      dictation = parseDictation(s)
     } else if (/practice/i.test(s.heading)) {
-      // Đề nằm TRƯỚC nhãn "Answer Key"; đáp án (họ được đánh vần) nằm sau.
       const before = takeBeforeKey(s.lines)
       const key = collectAnswerKey(s.lines)
-      practiceIntro = before.filter((l) => !/^\s*\d+\.\s/.test(l)).join('\n').trim()
-      for (const l of before) {
-        const m = /^\s*(\d+)\.\s+(.+)$/.exec(l)
-        if (m) practice.push({ n: Number(m[1]), prompt: m[2].trim(), answer: key[Number(m[1])] || '' })
+      // Có dòng phương án "a) … · b) …" -> bài nghe TRẮC NGHIỆM (chọn đáp án đúng).
+      const hasOptions = before.some((l) => /^[a-c]\)\s/.test(l.trim()))
+      if (hasOptions) {
+        mcq.push(...parseMcq(before, key))
+      } else {
+        // Đề fill-in nằm TRƯỚC nhãn "Answer Key"; đáp án (họ được đánh vần) nằm sau.
+        practiceIntro = before.filter((l) => !/^\s*\d+\.\s/.test(l)).join('\n').trim()
+        for (const l of before) {
+          const m = /^\s*(\d+)\.\s+(.+)$/.exec(l)
+          if (m) practice.push({ n: Number(m[1]), prompt: m[2].trim(), answer: key[Number(m[1])] || '' })
+        }
       }
+    } else {
+      // Văn xuôi giới thiệu khác (vd "IELTS Listening Dictation là gì?") -> giữ cả heading.
+      introRaw += (introRaw ? '\n\n' : '') + `### ${s.heading}\n\n` + s.lines.join('\n')
     }
   }
-  return { alphabet, intro, practice, practiceIntro: md(practiceIntro) }
+  return { alphabet, intro: md(introRaw), practice, practiceIntro: md(practiceIntro), dictation, mcq }
+}
+
+/** Cắt các dòng NẰM GIỮA hai mốc (sau startRe, trước endRe). */
+function sliceBetween(lines, startRe, endRe) {
+  const out = []
+  let started = false
+  for (const l of lines) {
+    if (!started) {
+      if (startRe.test(l)) started = true
+      continue
+    }
+    if (endRe.test(l)) break
+    out.push(l)
+  }
+  return out.join('\n').trim()
+}
+
+/** Bài dictation: ghi chú (blockquote) + đoạn EN có chỗ trống (n) + đoạn VI + đáp án theo số. */
+function parseDictation(sec) {
+  const { lines } = sec
+  return {
+    title: sec.heading.trim(),
+    note: md(takeBefore(lines, PASSAGE_EN_RE).join('\n')),
+    en: sliceBetween(lines, PASSAGE_EN_RE, PASSAGE_VI_RE),
+    vi: sliceBetween(lines, PASSAGE_VI_RE, ANSWER_KEY_RE),
+    answers: collectAnswerKey(lines),
+  }
+}
+function takeBefore(lines, re) {
+  const i = lines.findIndex((l) => re.test(l))
+  return i === -1 ? lines : lines.slice(0, i)
 }
 
 // ————————————————————————— Homework —————————————————————————
@@ -252,7 +301,7 @@ function parseReadingExercise(sec) {
 
 function parseHomework(lines) {
   const subs = splitByLevel(lines, 3)
-  const hw = { translate: [], mcq: [], cloze: [], reading: [] }
+  const hw = { translate: [], mcq: [], cloze: [], choice: [], reading: [] }
   for (const s of subs) {
     const key = collectAnswerKey(s.lines)
     if (/bài tập/i.test(s.heading)) {
@@ -270,11 +319,34 @@ function parseHomework(lines) {
       }
     } else if (/chọn đáp án|^ii\./i.test(s.heading)) {
       hw.mcq = parseMcq(takeBeforeKey(s.lines), key)
+    } else if (/đại từ/i.test(s.heading)) {
+      // Chọn đại từ đúng: mỗi câu có nhóm "(A / B)" -> QuizTool MCQ (chỗ trống + phương án).
+      hw.choice = parseChoice(takeBeforeKey(s.lines), key)
     } else if (/điền vào|^iii\./i.test(s.heading)) {
       hw.cloze = parseCloze(takeBeforeKey(s.lines), key)
     }
   }
   return hw
+}
+
+/** "1. (He / She / It) is essential..." + key "It" -> {q,opts,correct,ex} cho QuizTool. */
+function parseChoice(lines, key) {
+  const out = []
+  for (const raw of lines) {
+    const m = /^\s*(\d+)\.\s+(.+)$/.exec(raw)
+    if (!m) continue
+    const n = Number(m[1])
+    const optM = /\(([^)]*\/[^)]*)\)/.exec(m[2]) // nhóm có dấu "/" phân tách phương án
+    if (!optM) continue
+    const opts = optM[1].split('/').map((s) => s.trim()).filter(Boolean)
+    if (opts.length < 2) continue
+    const q = m[2].replace(optM[0], '_____').replace(/\s+/g, ' ').trim()
+    const ans = (key[n] || '').trim()
+    let correct = opts.findIndex((o) => o.toLowerCase() === ans.toLowerCase())
+    if (correct < 0) correct = 0
+    out.push({ q, opts, correct, ex: ans ? `Đáp án: ${ans}` : '' })
+  }
+  return out
 }
 
 /** Lấy các dòng TRƯỚC nhãn "**Answer Key**" (phần đề bài). */
@@ -357,7 +429,7 @@ export function parseIeltsBookDay(raw) {
   let reading = ''
   let writing = ''
   let speaking = ''
-  let homework = { translate: [], mcq: [], cloze: [], reading: [] }
+  let homework = { translate: [], mcq: [], cloze: [], choice: [], reading: [] }
 
   for (const sec of h2) {
     const h = sec.heading
