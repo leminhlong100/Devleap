@@ -121,20 +121,29 @@ function parseGrammar(lines) {
 }
 
 // ————————————————————————— Vocabulary —————————————————————————
+// Một hàng "Từ | Nghĩa | Ví dụ (song ngữ)" -> object dùng chung cho words/adverbs/phrases.
+function mapWordRow(r) {
+  const { term, pos } = splitTerm(r[0] || '')
+  const ex = splitBilingual(r[2] || '')
+  return { term, pos, vi: (r[1] || '').trim(), exEn: ex.en, exVi: ex.vi }
+}
+
 function parseVocabulary(lines) {
   const subs = splitByLevel(lines, 3)
   let topic = ''
   let words = []
   let phrasals = []
   let wordForms = []
+  let adverbs = [] // Day 7+: bảng Trạng từ (Adverbs) đi kèm bảng Tính từ
+  let phrases = [] // Day 7+: bảng Adjective Phrases (cụm tính từ + giới từ)
   for (const s of subs) {
     if (/topic vocabulary/i.test(s.heading)) {
       topic = s.heading.replace(/topic vocabulary:\s*/i, '').trim()
-      words = parseTable(s.lines).map((r) => {
-        const { term, pos } = splitTerm(r[0] || '')
-        const ex = splitBilingual(r[2] || '')
-        return { term, pos, vi: (r[1] || '').trim(), exEn: ex.en, exVi: ex.vi }
-      })
+      words = parseTable(s.lines).map(mapWordRow)
+    } else if (/adjective phrase|cụm tính từ/i.test(s.heading)) {
+      phrases = parseTable(s.lines).map(mapWordRow)
+    } else if (/adverb|trạng từ/i.test(s.heading)) {
+      adverbs = parseTable(s.lines).map(mapWordRow)
     } else if (/phrasal/i.test(s.heading)) {
       phrasals = parseTable(s.lines).map((r) => {
         const ex = splitBilingual(r[2] || '')
@@ -151,7 +160,7 @@ function parseVocabulary(lines) {
       }))
     }
   }
-  return { topic, words, phrasals, wordForms }
+  return { topic, words, phrasals, wordForms, adverbs, phrases }
 }
 const cleanForm = (c) => {
   const t = (c || '').trim()
@@ -424,7 +433,7 @@ export function parseIeltsBookDay(raw) {
 
   const h2 = splitByLevel(lines, 2)
   let grammar = []
-  let vocab = { topic: '', words: [], phrasals: [], wordForms: [] }
+  let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [] }
   let listening = null
   let reading = ''
   let writing = ''

@@ -316,6 +316,133 @@ describe('getBookDay(6) — file day-06.md thật', () => {
   })
 })
 
+const SAMPLE7 = `---
+day: 7
+title: "Adjectives & Adverbs · Remote Work · Listening Part 1"
+sections: [grammar, vocabulary, listening, homework]
+topicVocabulary: "Remote Work"
+---
+
+# Day 7 — Adjectives & Adverbs
+
+> **Aims:** Adjectives & Adverbs / Remote Work / Listening Part 1
+
+## Basic Grammar
+### 1. Lý thuyết
+Tính từ bổ nghĩa cho danh từ; trạng từ bổ nghĩa cho động từ.
+
+## Basic Vocabulary
+### Topic vocabulary: Remote Work — Tính từ (Adjectives)
+| Từ vựng | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| Flexible (adj) | Linh hoạt | I like flexible hours. (Tôi thích giờ làm việc linh hoạt.) |
+| Convenient (adj) | Thuận tiện | Working from home is convenient. (Làm việc từ xa rất thuận tiện.) |
+
+### Trạng từ (Adverbs)
+| Từ vựng | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| Effectively (adv) | Một cách hiệu quả | I can work effectively at home. (Tôi có thể làm việc hiệu quả ở nhà.) |
+| Remotely (adv) | Từ xa | I can connect with my team remotely. (Tôi có thể kết nối với đội của mình từ xa.) |
+
+### Adjective Phrases (Cụm tính từ)
+| Từ vựng | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| Dependent on | Phụ thuộc vào | Many employees are dependent on technology. (Nhiều nhân viên phụ thuộc vào công nghệ.) |
+| Reliant on | Dựa vào | Many workers are reliant on internet connectivity. (Nhiều nhân viên dựa vào kết nối internet.) |
+
+## Listening Skills
+### Listening Part 1 — dạng bài
+Nghe điền thông tin vào mẫu ghi chú.
+
+### Bài luyện — Wayside Camera Club (Audio 8)
+> 🎧 Nghe Audio 8 và điền vào chỗ trống.
+
+**Đoạn văn (EN):**
+
+Home address: 52 (1)_____ Street, Peacetown
+
+Type of membership: (4)_____ membership (£30)
+
+**Đoạn văn (VI):**
+
+Địa chỉ nhà: 52 (1)_____ Street, Peacetown
+
+**Answer Key** (nghe & điền):
+1. Marrowfield
+4. Full
+
+## Homework
+### I. Dịch sang tiếng Anh
+1. Giờ làm việc của tôi linh hoạt. (Flexible)
+2. Rất tiện lợi khi có một siêu thị gần nhà tôi. (Convenient)
+
+**Answer Key**:
+1. My working hours are flexible.
+2. It's convenient to have a supermarket near my house.
+
+### Điền vào chỗ trống bằng cụm tính từ
+1. After the training, I felt more _____ the software. (thoải mái với)
+2. He is _____ public transportation for his commute. (phụ thuộc vào)
+
+**Answer Key**:
+1. comfortable with
+2. reliant on
+`
+
+describe('parseIeltsBookDay() — Day 7: adjectives/adverbs + phrases + listening form + phrase-cloze', () => {
+  const d = parseIeltsBookDay(SAMPLE7)
+
+  it('parse 3 nhóm từ vựng: tính từ (words), trạng từ (adverbs), cụm tính từ (phrases)', () => {
+    expect(d.vocab.words).toHaveLength(2)
+    expect(d.vocab.words[0].term).toBe('Flexible')
+    expect(d.vocab.words[0].pos).toBe('adj')
+    expect(d.vocab.adverbs).toHaveLength(2)
+    expect(d.vocab.adverbs[0].term).toBe('Effectively')
+    expect(d.vocab.adverbs[1].term).toBe('Remotely')
+    expect(d.vocab.phrases).toHaveLength(2)
+    expect(d.vocab.phrases[0].term).toBe('Dependent on')
+    expect(d.vocab.phrases[0].vi).toBe('Phụ thuộc vào')
+  })
+
+  it('Listening form completion -> dictation (chỗ trống theo số + đáp án)', () => {
+    expect(d.listening.dictation).toBeTruthy()
+    expect(d.listening.dictation.en).toContain('(1)_____')
+    expect(d.listening.dictation.answers[1]).toBe('Marrowfield')
+    expect(d.listening.dictation.answers[4]).toBe('Full')
+    expect(d.listening.intro).toContain('mẫu ghi chú')
+  })
+
+  it('Homework: dịch (translate) + điền cụm tính từ (cloze, đáp án nhiều từ)', () => {
+    expect(d.homework.translate).toHaveLength(2)
+    expect(d.homework.translate[0].answer).toContain('My working hours are flexible.')
+    expect(d.homework.cloze).toHaveLength(2)
+    expect(d.homework.cloze[0].answer).toContain('comfortable with')
+    expect(d.homework.cloze[1].answer).toContain('reliant on')
+    // đáp án cụm là nhiều từ (có khoảng trắng) -> view dùng nhãn "điền cụm từ"
+    expect(d.homework.cloze.every((c) => c.answer.some((a) => /\s/.test(a)))).toBe(true)
+  })
+})
+
+describe('getBookDay(7) — file day-07.md thật', () => {
+  it('Day 7 có grammar, 10 tính từ + 10 trạng từ + 10 cụm tính từ, dictation 10 ô, dịch 10 + cloze 10', () => {
+    const d = getBookDay(7)
+    expect(d).toBeTruthy()
+    expect(d.grammar.length).toBeGreaterThan(0)
+    expect(d.vocabCards).toHaveLength(10)
+    expect(d.vocab.adverbs).toHaveLength(10)
+    expect(d.vocab.phrases).toHaveLength(10)
+    expect(Object.keys(d.listening.dictation.answers)).toHaveLength(10)
+    expect(d.listening.dictation.answers[1]).toBe('Marrowfield')
+    expect(d.listening.dictation.answers[10]).toBe('dark')
+    expect(d.homework.translate).toHaveLength(10)
+    expect(d.homework.cloze).toHaveLength(10)
+    expect(d.homework.cloze[0].answer).toContain('comfortable with')
+    expect(d.homework.cloze[8].answer).toContain('dependent on')
+    // buổi ngữ pháp: không dùng chọn-đại-từ
+    expect(d.homework.choice).toHaveLength(0)
+  })
+})
+
 describe('getBookDay(3) — file day-03.md thật', () => {
   it('Day 3 có grammar, dictation 22 chỗ trống, và homework dịch/mcq/chọn-đại-từ', () => {
     const d = getBookDay(3)

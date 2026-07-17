@@ -27,6 +27,13 @@ const done = computed(() => !!d.value && user.isDone('ielts', IELTS_BOOK_WEEK, d
 const phrasalCards = computed(() =>
   (d.value?.vocab.phrasals || []).map((p) => ({ term: p.term, vi: p.vi, ipa: '', illo: '🔗' })),
 )
+// Day 7+: Trạng từ (Adverbs) & Adjective Phrases — mỗi nhóm có danh sách + thẻ SRS.
+const adverbCards = computed(() =>
+  (d.value?.vocab.adverbs || []).map((a) => ({ term: a.term, vi: a.vi, ipa: '', illo: '⚡' })),
+)
+const phraseCards = computed(() =>
+  (d.value?.vocab.phrases || []).map((p) => ({ term: p.term, vi: p.vi, ipa: '', illo: '🧷' })),
+)
 const wordFormCards = computed(() =>
   (d.value?.vocab.wordForms || []).map((w) => ({
     term: w.base,
@@ -49,6 +56,8 @@ const alphabetAudios = computed(() => (d.value?.audio || []).filter((a) => /alph
 const practiceAudios = computed(() => (d.value?.audio || []).filter((a) => /practice/i.test(a.url || a.file || '')))
 // Audio kỹ năng nói (Speaking Part 1…) — buổi Reading/Writing/Speaking có thể kèm bản ghi câu hỏi mẫu.
 const speakingAudios = computed(() => (d.value?.audio || []).filter((a) => /speaking/i.test(a.url || a.file || '')))
+// Audio ví dụ mẫu (Listening Part 1 có lời giải sẵn) — phát kèm phần lý thuyết/ví dụ.
+const exampleAudios = computed(() => (d.value?.audio || []).filter((a) => /example/i.test(a.url || a.file || '')))
 // Dictation (Day 3+): điền chỗ trống theo bản ghi thật (Audio 1).
 const dictation = computed(() => d.value?.listening?.dictation || null)
 const dictationAudios = computed(() => (d.value?.audio || []).filter((a) => /dictation/i.test(a.url || a.file || '')))
@@ -88,6 +97,17 @@ const grammarIsChoice = computed(() => !(d.value?.homework?.cloze?.length) && (d
 // phải "dạng đúng của từ" (chia động từ) như buổi ngữ pháp.
 const grammarIsWritingCloze = computed(
   () => !grammarIsChoice.value && !!d.value?.writing && !(d.value?.grammar?.length) && (d.value?.homework?.cloze?.length || 0) > 0,
+)
+// Buổi ngữ pháp mà bài điền là CỤM TỪ (vd tính từ + giới từ: "comfortable with") —
+// nhận biết qua đáp án nhiều từ (có khoảng trắng). Nhãn nói "điền cụm từ", không phải
+// "dạng đúng của từ" (chia động từ / danh từ) như Day 4–5.
+const grammarIsPhraseCloze = computed(
+  () =>
+    !grammarIsChoice.value &&
+    !grammarIsWritingCloze.value &&
+    (d.value?.grammar?.length || 0) > 0 &&
+    (d.value?.homework?.cloze || []).length > 0 &&
+    (d.value?.homework?.cloze || []).every((c) => (c.answer || []).some((a) => /\s/.test(a))),
 )
 const grammarQuiz = computed(() => {
   const hw = d.value?.homework
@@ -250,11 +270,11 @@ function goDay(n) {
           <div class="step-head">
             <div>
               <div class="eyebrow" :class="{ green: grammarPassed }">LÀM NGAY · BẮT BUỘC ĐẠT ≥70%</div>
-              <h2 class="step-title">{{ grammarIsChoice ? '✍️ Chọn đáp án đúng' : grammarIsWritingCloze ? '✍️ Điền chỗ trống — hoàn thành mở bài' : '✍️ Điền dạng đúng của từ vào chỗ trống' }}</h2>
+              <h2 class="step-title">{{ grammarIsChoice ? '✍️ Chọn đáp án đúng' : grammarIsWritingCloze ? '✍️ Điền chỗ trống — hoàn thành mở bài' : grammarIsPhraseCloze ? '✍️ Điền cụm từ vào chỗ trống' : '✍️ Điền dạng đúng của từ vào chỗ trống' }}</h2>
             </div>
             <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarPassed ? '✅ Đã đạt' : 'Chưa đạt' }}</span>
           </div>
-          <p class="quiz-intro">{{ grammarIsChoice ? 'Chọn phương án phù hợp cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.' : grammarIsWritingCloze ? 'Điền từ/cụm từ paraphrase phù hợp vào mỗi chỗ trống (gợi ý nghĩa trong ngoặc). Đạt ≥70% để mở hoàn thành buổi.' : 'Gõ đúng dạng của từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' }}</p>
+          <p class="quiz-intro">{{ grammarIsChoice ? 'Chọn phương án phù hợp cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.' : grammarIsWritingCloze ? 'Điền từ/cụm từ paraphrase phù hợp vào mỗi chỗ trống (gợi ý nghĩa trong ngoặc). Đạt ≥70% để mở hoàn thành buổi.' : grammarIsPhraseCloze ? 'Điền cụm từ (tính từ + giới từ) phù hợp vào mỗi chỗ trống — gợi ý nghĩa tiếng Việt trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' : 'Gõ đúng dạng của từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' }}</p>
           <div class="grammar-drill">
             <QuizTool :questions="grammarQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onGrammarComplete" />
           </div>
@@ -280,6 +300,54 @@ function goDay(n) {
           :limit="30"
           eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
           :title="`Thẻ từ vựng ${d.topicVocabulary}`"
+        />
+
+        <!-- TRẠNG TỪ (ADVERBS) + thẻ học — Day 7+ -->
+        <section v-if="d.vocab.adverbs && d.vocab.adverbs.length" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">BASIC VOCABULARY · ADVERBS</div>
+              <h2 class="step-title">⚡ Trạng từ (Adverbs)</h2>
+            </div>
+          </div>
+          <ul class="pv-list">
+            <li v-for="(a, i) in d.vocab.adverbs" :key="i" @click="say(a.exEn || a.term)">
+              <span class="pv-term">{{ a.term }}</span>
+              <span class="pv-vi">{{ a.vi }}</span>
+              <span class="pv-ex" v-if="a.exEn">“{{ a.exEn }}” 🔊</span>
+            </li>
+          </ul>
+        </section>
+        <InlineFlashcards
+          v-if="adverbCards.length"
+          :vocab="adverbCards"
+          :limit="20"
+          eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
+          title="Thẻ trạng từ (Adverbs)"
+        />
+
+        <!-- ADJECTIVE PHRASES (cụm tính từ) + thẻ học — Day 7+ -->
+        <section v-if="d.vocab.phrases && d.vocab.phrases.length" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">BASIC VOCABULARY · ADJECTIVE PHRASES</div>
+              <h2 class="step-title">🧷 Cụm tính từ (Adjective Phrases)</h2>
+            </div>
+          </div>
+          <ul class="pv-list">
+            <li v-for="(p, i) in d.vocab.phrases" :key="i" @click="say(p.exEn || p.term)">
+              <span class="pv-term">{{ p.term }}</span>
+              <span class="pv-vi">{{ p.vi }}</span>
+              <span class="pv-ex" v-if="p.exEn">“{{ p.exEn }}” 🔊</span>
+            </li>
+          </ul>
+        </section>
+        <InlineFlashcards
+          v-if="phraseCards.length"
+          :vocab="phraseCards"
+          :limit="20"
+          eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
+          title="Thẻ cụm tính từ (Adjective Phrases)"
         />
 
         <!-- PHRASAL VERBS + thẻ học -->
@@ -361,6 +429,12 @@ function goDay(n) {
               <div>
                 <div class="eyebrow">LISTENING SKILLS</div>
                 <h2 class="step-title">🎧 Kỹ năng nghe — Dictation</h2>
+              </div>
+            </div>
+            <div v-if="exampleAudios.length" class="audio-row">
+              <div v-for="(a, i) in exampleAudios" :key="i" class="audio-item">
+                <span class="audio-label">{{ a.label }}</span>
+                <audio controls preload="none" :src="a.url"></audio>
               </div>
             </div>
             <div class="prose" v-html="d.listening.intro"></div>
