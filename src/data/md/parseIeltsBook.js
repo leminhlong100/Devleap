@@ -136,12 +136,15 @@ function parseVocabulary(lines) {
   let wordForms = []
   let adverbs = [] // Day 7+: bảng Trạng từ (Adverbs) đi kèm bảng Tính từ
   let phrases = [] // Day 7+: bảng Adjective Phrases (cụm tính từ + giới từ)
+  let collocations = [] // Day 9+: bảng "Useful Phrases" (cụm từ/collocation thông dụng)
   for (const s of subs) {
     if (/topic vocabulary/i.test(s.heading)) {
       topic = s.heading.replace(/topic vocabulary:\s*/i, '').trim()
       words = parseTable(s.lines).map(mapWordRow)
     } else if (/adjective phrase|cụm tính từ/i.test(s.heading)) {
       phrases = parseTable(s.lines).map(mapWordRow)
+    } else if (/useful phrase|collocation|cụm từ hữu ích/i.test(s.heading)) {
+      collocations = parseTable(s.lines).map(mapWordRow)
     } else if (/adverb|trạng từ/i.test(s.heading)) {
       adverbs = parseTable(s.lines).map(mapWordRow)
     } else if (/phrasal/i.test(s.heading)) {
@@ -160,7 +163,7 @@ function parseVocabulary(lines) {
       }))
     }
   }
-  return { topic, words, phrasals, wordForms, adverbs, phrases }
+  return { topic, words, phrasals, wordForms, adverbs, phrases, collocations }
 }
 const cleanForm = (c) => {
   const t = (c || '').trim()
@@ -199,7 +202,8 @@ function parseListening(lines) {
       const before = takeBeforeKey(s.lines)
       const key = collectAnswerKey(s.lines)
       // Có dòng phương án "a) … · b) …" -> bài nghe TRẮC NGHIỆM (chọn đáp án đúng).
-      const hasOptions = before.some((l) => /^[a-c]\)\s/.test(l.trim()))
+      // Chấp nhận tới 7 phương án (a–g) cho dạng ghép (matching) của Listening Part 2.
+      const hasOptions = before.some((l) => /^[a-z]\)\s/.test(l.trim()))
       if (hasOptions) {
         mcq.push(...parseMcq(before, key))
       } else {
@@ -384,10 +388,10 @@ function parseMcq(lines, key) {
 function finishMcq(cur, key) {
   const opts = cur.optLine
     .split('·')
-    .map((s) => s.trim().replace(/^[a-c]\)\s*/, '').trim())
+    .map((s) => s.trim().replace(/^[a-z]\)\s*/, '').trim())
     .filter(Boolean)
   const ans = key[cur.n] || ''
-  const letterM = /^([a-c])\)/.exec(ans)
+  const letterM = /^([a-z])\)/.exec(ans)
   let correct = 0
   if (letterM) correct = letterM[1].charCodeAt(0) - 97
   else {
@@ -433,7 +437,7 @@ export function parseIeltsBookDay(raw) {
 
   const h2 = splitByLevel(lines, 2)
   let grammar = []
-  let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [] }
+  let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [], collocations: [] }
   let listening = null
   let reading = ''
   let writing = ''

@@ -34,6 +34,10 @@ const adverbCards = computed(() =>
 const phraseCards = computed(() =>
   (d.value?.vocab.phrases || []).map((p) => ({ term: p.term, vi: p.vi, ipa: '', illo: '🧷' })),
 )
+// Day 9+: Useful Phrases (cụm từ/collocation thông dụng) — danh sách + thẻ SRS.
+const collocationCards = computed(() =>
+  (d.value?.vocab.collocations || []).map((p) => ({ term: p.term, vi: p.vi, ipa: '', illo: '💬' })),
+)
 const wordFormCards = computed(() =>
   (d.value?.vocab.wordForms || []).map((w) => ({
     term: w.base,
@@ -64,6 +68,15 @@ const dictationAudios = computed(() => (d.value?.audio || []).filter((a) => /dic
 const dictationCount = computed(() => Object.keys(dictation.value?.answers || {}).length)
 // Practice 2 (Day 5+): nghe cùng bản ghi rồi chọn đáp án đúng (MCQ) — ôn nhanh, không bắt buộc.
 const listeningMcq = computed(() => d.value?.listening?.mcq || [])
+// Listening Part 2 (Day 9+): buổi nghe CHỈ có MCQ + ghép (matching), không alphabet/dictation
+// -> chính bài trắc nghiệm này là CỔNG nghe BẮT BUỘC (≥70%), thay cho nghe-gõ/chép chính tả.
+const listeningQuizGate = computed(
+  () => listeningMcq.value.length > 0 && !dictation.value && letterItems.value.length === 0,
+)
+const listeningQuizAudios = computed(() => (d.value?.audio || []).filter((a) => /part2/i.test(a.url || a.file || '')))
+function onListeningQuizComplete(r) {
+  if (d.value) user.recordQuiz('ielts', scope('listen'), r.score, r.total, 0.7)
+}
 // Audio 2 (bản ghi thật): q = phần đầu "Mr / Miss / Jane…"; đáp án = HỌ được đánh vần
 // (từ answer key). Chấp nhận gõ họ hoặc cả "tiền tố + họ".
 const practiceItems = computed(() =>
@@ -84,6 +97,11 @@ function onAudio2Done() {
 // —— Homework I (dịch): gõ → chấm ngay ——
 const translateItems = computed(() =>
   (d.value?.homework?.translate || []).map((t) => ({ q: t.vi, hint: t.hint, answer: t.answer, say: t.answer })),
+)
+// Day 9+: bài "Viết câu hoàn chỉnh" dùng chung bucket dịch nhưng đề là TỪ GỢI Ý tiếng
+// Anh ("(I / eat / dinner) …"), không phải câu tiếng Việt -> đổi nhãn cho đúng.
+const translateIsSentenceBuild = computed(
+  () => translateItems.value.length > 0 && translateItems.value.every((t) => /\s\/\s/.test(t.q || '')),
 )
 
 // —— Phát âm: máy chấm (10 từ đầu) ——
@@ -132,7 +150,7 @@ function onVocabComplete(r) {
 // —— Các cổng "làm tại chỗ" khác (bắt buộc để hoàn thành buổi) ——
 const scope = (name) => `day:${d.value?.n}:${name}`
 // Cổng nghe: buổi có bảng chữ cái (nghe-gõ) HOẶC bài chép chính tả (dictation).
-const listeningNeeded = computed(() => letterItems.value.length > 0 || !!dictation.value)
+const listeningNeeded = computed(() => letterItems.value.length > 0 || !!dictation.value || listeningQuizGate.value)
 const listeningPassed = computed(() => !!d.value && (!listeningNeeded.value || user.quizPassed('ielts', scope('listen'))))
 function onListeningDone() {
   if (d.value) user.recordQuiz('ielts', scope('listen'), letterItems.value.length, letterItems.value.length, 1)
@@ -163,9 +181,14 @@ const dayReady = computed(
   () => grammarPassed.value && listeningPassed.value && translatePassed.value && readingPassed.value,
 )
 const nextGateLabel = computed(() => {
-  if (!grammarPassed.value) return grammarIsWritingCloze.value ? '🔒 Làm bài điền mở bài trước' : '🔒 Làm bài tập ngữ pháp trước'
-  if (!listeningPassed.value) return dictation.value ? '🔒 Làm bài chép chính tả trước' : '🔒 Làm bài nghe chữ cái trước'
-  if (!translatePassed.value) return '🔒 Làm bài dịch trước'
+  if (!grammarPassed.value) return grammarIsWritingCloze.value ? '🔒 Làm bài điền chỗ trống trước' : '🔒 Làm bài tập ngữ pháp trước'
+  if (!listeningPassed.value)
+    return dictation.value
+      ? '🔒 Làm bài chép chính tả trước'
+      : listeningQuizGate.value
+        ? '🔒 Làm bài nghe (Part 2) trước'
+        : '🔒 Làm bài nghe chữ cái trước'
+  if (!translatePassed.value) return translateIsSentenceBuild.value ? '🔒 Làm bài viết câu trước' : '🔒 Làm bài dịch trước'
   if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
   return '✓ Đánh dấu hoàn thành'
 })
@@ -270,15 +293,15 @@ function goDay(n) {
           <div class="step-head">
             <div>
               <div class="eyebrow" :class="{ green: grammarPassed }">LÀM NGAY · BẮT BUỘC ĐẠT ≥70%</div>
-              <h2 class="step-title">{{ grammarIsChoice ? '✍️ Chọn đáp án đúng' : grammarIsWritingCloze ? '✍️ Điền chỗ trống — hoàn thành mở bài' : grammarIsPhraseCloze ? '✍️ Điền cụm từ vào chỗ trống' : '✍️ Điền dạng đúng của từ vào chỗ trống' }}</h2>
+              <h2 class="step-title">{{ grammarIsChoice ? '✍️ Chọn đáp án đúng' : grammarIsWritingCloze ? '✍️ Điền chỗ trống hoàn thành câu' : grammarIsPhraseCloze ? '✍️ Điền cụm từ vào chỗ trống' : '✍️ Điền dạng đúng của từ vào chỗ trống' }}</h2>
             </div>
             <span class="wt-badge" :class="{ ok: grammarPassed }">{{ grammarPassed ? '✅ Đã đạt' : 'Chưa đạt' }}</span>
           </div>
-          <p class="quiz-intro">{{ grammarIsChoice ? 'Chọn phương án phù hợp cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.' : grammarIsWritingCloze ? 'Điền từ/cụm từ paraphrase phù hợp vào mỗi chỗ trống (gợi ý nghĩa trong ngoặc). Đạt ≥70% để mở hoàn thành buổi.' : grammarIsPhraseCloze ? 'Điền cụm từ (tính từ + giới từ) phù hợp vào mỗi chỗ trống — gợi ý nghĩa tiếng Việt trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' : 'Gõ đúng dạng của từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' }}</p>
+          <p class="quiz-intro">{{ grammarIsChoice ? 'Chọn phương án phù hợp cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.' : grammarIsWritingCloze ? 'Điền từ/cụm từ phù hợp vào mỗi chỗ trống (gợi ý nghĩa trong ngoặc). Đạt ≥70% để mở hoàn thành buổi.' : grammarIsPhraseCloze ? 'Điền cụm từ (tính từ + giới từ) phù hợp vào mỗi chỗ trống — gợi ý nghĩa tiếng Việt trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' : 'Gõ đúng dạng của từ trong ngoặc. Đạt ≥70% để mở hoàn thành buổi.' }}</p>
           <div class="grammar-drill">
             <QuizTool :questions="grammarQuiz" mode="practice" :pass-threshold="0.7" embedded @complete="onGrammarComplete" />
           </div>
-          <div v-if="grammarPassed" class="gate-line ok">{{ grammarIsWritingCloze ? '✅ Bạn đã hoàn thành bài điền mở bài.' : '✅ Bạn đã đạt bài tập ngữ pháp.' }}</div>
+          <div v-if="grammarPassed" class="gate-line ok">{{ grammarIsWritingCloze ? '✅ Bạn đã hoàn thành bài điền chỗ trống.' : '✅ Bạn đã đạt bài tập ngữ pháp.' }}</div>
         </section>
 
         <!-- ════ TỪ VỰNG ════ -->
@@ -348,6 +371,30 @@ function goDay(n) {
           :limit="20"
           eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
           title="Thẻ cụm tính từ (Adjective Phrases)"
+        />
+
+        <!-- USEFUL PHRASES (cụm từ hữu ích) + thẻ học — Day 9+ -->
+        <section v-if="d.vocab.collocations && d.vocab.collocations.length" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">BASIC VOCABULARY · USEFUL PHRASES</div>
+              <h2 class="step-title">💬 Cụm từ hữu ích (Useful Phrases)</h2>
+            </div>
+          </div>
+          <ul class="pv-list">
+            <li v-for="(p, i) in d.vocab.collocations" :key="i" @click="say(p.exEn || p.term)">
+              <span class="pv-term">{{ p.term }}</span>
+              <span class="pv-vi">{{ p.vi }}</span>
+              <span class="pv-ex" v-if="p.exEn">“{{ p.exEn }}” 🔊</span>
+            </li>
+          </ul>
+        </section>
+        <InlineFlashcards
+          v-if="collocationCards.length"
+          :vocab="collocationCards"
+          :limit="20"
+          eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
+          title="Thẻ cụm từ hữu ích (Useful Phrases)"
         />
 
         <!-- PHRASAL VERBS + thẻ học -->
@@ -458,8 +505,31 @@ function goDay(n) {
           </DictationCloze>
         </template>
 
-        <!-- ════ LISTENING — PRACTICE 2 (nghe & chọn đáp án) ════ -->
-        <section v-if="listeningMcq.length" class="step-card">
+        <!-- ════ LISTENING — PART 2 (nghe → chọn đáp án & ghép) · CỔNG BẮT BUỘC · Day 9+ ════ -->
+        <section v-if="listeningQuizGate" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow" :class="{ green: listeningPassed }">LÀM NGAY · NGHE PART 2 · BẮT BUỘC ĐẠT ≥70%</div>
+              <h2 class="step-title">🎧 Nghe &amp; chọn / ghép đáp án</h2>
+            </div>
+            <span class="wt-badge" :class="{ ok: listeningPassed }">{{ listeningPassed ? '✅ Đã đạt' : 'Chưa đạt' }}</span>
+          </div>
+          <div v-if="d.listening && d.listening.intro" class="prose" v-html="d.listening.intro"></div>
+          <div v-if="listeningQuizAudios.length" class="audio-row">
+            <div v-for="(a, i) in listeningQuizAudios" :key="i" class="audio-item">
+              <span class="audio-label">{{ a.label }}</span>
+              <audio controls preload="none" :src="a.url"></audio>
+            </div>
+          </div>
+          <p class="quiz-intro">Nghe bản ghi rồi chọn đáp án đúng (câu 11–13) và ghép yêu cầu phù hợp (câu 16–20). Đạt ≥70% để mở hoàn thành buổi.</p>
+          <div class="grammar-drill">
+            <QuizTool :questions="listeningMcq" mode="practice" :pass-threshold="0.7" embedded @complete="onListeningQuizComplete" />
+          </div>
+          <div v-if="listeningPassed" class="gate-line ok">✅ Bạn đã hoàn thành bài nghe Part 2.</div>
+        </section>
+
+        <!-- ════ LISTENING — PRACTICE 2 (nghe & chọn đáp án) · buổi có dictation ════ -->
+        <section v-if="listeningMcq.length && dictation" class="step-card">
           <div class="step-head">
             <div>
               <div class="eyebrow">LISTENING SKILLS · PRACTICE 2</div>
@@ -538,14 +608,16 @@ function goDay(n) {
         <!-- ════ LUYỆN PHÁT ÂM — MÁY CHẤM ════ -->
         <PronunciationCheck v-if="pronItems.length" :items="pronItems" @done="onPronDone" />
 
-        <!-- ════ HOMEWORK I — DỊCH (chấm ngay) ════ -->
+        <!-- ════ HOMEWORK I — DỊCH / VIẾT CÂU (chấm ngay) ════ -->
         <TypedCheckList
           v-if="translateItems.length"
           :items="translateItems"
-          eyebrow="HOMEWORK · DỊCH (S + V + O) · BẮT BUỘC"
-          title="🌐 Dịch câu sang tiếng Anh"
-          intro="Gõ câu tiếng Anh rồi bấm Kiểm tra. Sai sẽ hiện đáp án; khi bạn gõ lại thì đáp án ẩn đi để tự nhớ. Dịch đúng hết mới hoàn thành."
-          done-label="Đã hoàn thành bài dịch."
+          :eyebrow="translateIsSentenceBuild ? 'HOMEWORK · VIẾT CÂU HOÀN CHỈNH · BẮT BUỘC' : 'HOMEWORK · DỊCH (S + V + O) · BẮT BUỘC'"
+          :title="translateIsSentenceBuild ? '🧩 Viết câu hoàn chỉnh' : '🌐 Dịch câu sang tiếng Anh'"
+          :intro="translateIsSentenceBuild
+            ? 'Dùng từ gợi ý và đúng thì (Present Continuous / Past Simple), gõ CẢ CÂU tiếng Anh rồi bấm Kiểm tra. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Viết đúng hết mới hoàn thành.'
+            : 'Gõ câu tiếng Anh rồi bấm Kiểm tra. Sai sẽ hiện đáp án; khi bạn gõ lại thì đáp án ẩn đi để tự nhớ. Dịch đúng hết mới hoàn thành.'"
+          :done-label="translateIsSentenceBuild ? 'Đã hoàn thành bài viết câu.' : 'Đã hoàn thành bài dịch.'"
           @done="onTranslateDone"
         />
 
