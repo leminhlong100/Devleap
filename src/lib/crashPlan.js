@@ -96,3 +96,20 @@ export function planStatus(ctx) {
     allDone: !firstUndone,
   }
 }
+
+/**
+ * Tiến độ khóa "Java Phỏng Vấn Cấp Tốc" gói thành một % (0-100) cho thẻ Thư
+ * viện khóa học — dựa trên số ngày đã hoàn thành của Lộ trình 2 tuần. Nhận
+ * thẳng state `user.javaPrep` (song song computeJavaProgress/computeIeltsProgress).
+ * @param {{ studiedQuestions?: string[], solvedChallenges?: string[], mocksTaken?: number }} javaPrep
+ * @returns {{ pct:number, doneCount:number, total:number }}
+ */
+export function computeJavaPrepProgress(javaPrep = {}) {
+  const ctx = {
+    studied: new Set(javaPrep?.studiedQuestions || []),
+    solvedCount: (javaPrep?.solvedChallenges || []).length,
+    mockCount: javaPrep?.mocksTaken || 0,
+  }
+  const { doneCount, total } = planStatus(ctx)
+  return { pct: total ? Math.round((doneCount / total) * 100) : 0, doneCount, total }
+}
