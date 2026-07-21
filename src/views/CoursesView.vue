@@ -7,6 +7,8 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { courses } from '@/data/courses'
 import { computeJavaProgress } from '@/data/course'
 import { computeIeltsProgress } from '@/data/courseIelts'
+import { computeCommProgress } from '@/data/courseComm'
+import { computeJavaPrepProgress } from '@/lib/crashPlan'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,7 +45,10 @@ function enrolledIn(c) {
 // % tiến độ thật theo từng khóa (các khóa khác giữ giá trị biên tập sẵn).
 function progressOf(c) {
   if (c.id === 'java') return computeJavaProgress(user.completed.java).pct
+  if (c.id === 'java-prep') return computeJavaPrepProgress(user.javaPrep).pct
   if (c.id === 'ielts') return computeIeltsProgress(user.completed.ielts).pct
+  if (c.id === 'comm')
+    return computeCommProgress(user.completed.comm || [], (w) => user.quizPassed('comm', `week:${w}`)).pct
   return c.progress
 }
 

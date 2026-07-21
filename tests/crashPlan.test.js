@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { dayGoals, goalStatus, isDayDone, planStatus } from '../src/lib/crashPlan.js'
+import { dayGoals, goalStatus, isDayDone, planStatus, computeJavaPrepProgress } from '../src/lib/crashPlan.js'
 import { CRASH_PLAN, QUESTION_BANK } from '../src/data/javaInterview.js'
 
 const idsOfTopics = (...topics) => QUESTION_BANK.filter((q) => topics.includes(q.topic)).map((q) => q.id)
@@ -94,5 +94,31 @@ describe('lib/crashPlan — isDayDone & planStatus', () => {
     const streamIds = new Set(idsOfTopics('stream'))
     expect(isDayDone(day4, { ...emptyCtx(), studied: streamIds, solvedCount: 0 })).toBe(false) // thiếu coding
     expect(isDayDone(day4, { ...emptyCtx(), studied: streamIds, solvedCount: 1 })).toBe(true)
+  })
+})
+
+describe('lib/crashPlan — computeJavaPrepProgress', () => {
+  it('state rỗng / undefined -> 0%', () => {
+    expect(computeJavaPrepProgress().pct).toBe(0)
+    expect(computeJavaPrepProgress({}).pct).toBe(0)
+    expect(computeJavaPrepProgress({}).total).toBe(CRASH_PLAN.length)
+  })
+
+  it('làm hết mọi mục tiêu -> 100%', () => {
+    const p = computeJavaPrepProgress({
+      studiedQuestions: QUESTION_BANK.map((q) => q.id),
+      solvedChallenges: ['a', 'b', 'c', 'd', 'e'],
+      mocksTaken: 2,
+    })
+    expect(p.pct).toBe(100)
+    expect(p.doneCount).toBe(CRASH_PLAN.length)
+  })
+
+  it('xong 1 ngày -> % = round(1/total*100), cập nhật (không kẹt ở 0)', () => {
+    const day1 = CRASH_PLAN.find((d) => d.day === 1)
+    const p = computeJavaPrepProgress({ studiedQuestions: dayGoals(day1)[0].ids })
+    expect(p.doneCount).toBe(1)
+    expect(p.pct).toBe(Math.round((1 / CRASH_PLAN.length) * 100))
+    expect(p.pct).toBeGreaterThan(0)
   })
 })
