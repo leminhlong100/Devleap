@@ -73,7 +73,12 @@ const listeningMcq = computed(() => d.value?.listening?.mcq || [])
 const listeningQuizGate = computed(
   () => listeningMcq.value.length > 0 && !dictation.value && letterItems.value.length === 0,
 )
-const listeningQuizAudios = computed(() => (d.value?.audio || []).filter((a) => /part2/i.test(a.url || a.file || '')))
+// Nhãn "Part N" cho buổi nghe hiểu — lấy từ tiêu đề buổi (Day 9 = Part 2, Day 11 = Part 3…).
+const listeningPartLabel = computed(() => {
+  const m = /part\s*(\d+)/i.exec(d.value?.title || '')
+  return m ? `Part ${m[1]}` : 'Part 2'
+})
+const listeningQuizAudios = computed(() => (d.value?.audio || []).filter((a) => /part\d/i.test(a.url || a.file || '')))
 function onListeningQuizComplete(r) {
   if (d.value) user.recordQuiz('ielts', scope('listen'), r.score, r.total, 0.7)
 }
@@ -186,7 +191,7 @@ const nextGateLabel = computed(() => {
     return dictation.value
       ? '🔒 Làm bài chép chính tả trước'
       : listeningQuizGate.value
-        ? '🔒 Làm bài nghe (Part 2) trước'
+        ? `🔒 Làm bài nghe (${listeningPartLabel.value}) trước`
         : '🔒 Làm bài nghe chữ cái trước'
   if (!translatePassed.value) return translateIsSentenceBuild.value ? '🔒 Làm bài viết câu trước' : '🔒 Làm bài dịch trước'
   if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
@@ -509,7 +514,7 @@ function goDay(n) {
         <section v-if="listeningQuizGate" class="step-card">
           <div class="step-head">
             <div>
-              <div class="eyebrow" :class="{ green: listeningPassed }">LÀM NGAY · NGHE PART 2 · BẮT BUỘC ĐẠT ≥70%</div>
+              <div class="eyebrow" :class="{ green: listeningPassed }">LÀM NGAY · NGHE {{ listeningPartLabel.toUpperCase() }} · BẮT BUỘC ĐẠT ≥70%</div>
               <h2 class="step-title">🎧 Nghe &amp; chọn / ghép đáp án</h2>
             </div>
             <span class="wt-badge" :class="{ ok: listeningPassed }">{{ listeningPassed ? '✅ Đã đạt' : 'Chưa đạt' }}</span>
@@ -521,11 +526,11 @@ function goDay(n) {
               <audio controls preload="none" :src="a.url"></audio>
             </div>
           </div>
-          <p class="quiz-intro">Nghe bản ghi rồi chọn đáp án đúng (câu 11–13) và ghép yêu cầu phù hợp (câu 16–20). Đạt ≥70% để mở hoàn thành buổi.</p>
+          <p class="quiz-intro">Nghe bản ghi rồi chọn đáp án đúng cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.</p>
           <div class="grammar-drill">
             <QuizTool :questions="listeningMcq" mode="practice" :pass-threshold="0.7" embedded @complete="onListeningQuizComplete" />
           </div>
-          <div v-if="listeningPassed" class="gate-line ok">✅ Bạn đã hoàn thành bài nghe Part 2.</div>
+          <div v-if="listeningPassed" class="gate-line ok">✅ Bạn đã hoàn thành bài nghe {{ listeningPartLabel }}.</div>
         </section>
 
         <!-- ════ LISTENING — PRACTICE 2 (nghe & chọn đáp án) · buổi có dictation ════ -->

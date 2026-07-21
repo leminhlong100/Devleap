@@ -47,7 +47,10 @@ function sayExample() {
         VÍ DỤ
         <button v-if="speakable" class="speak-ex" title="Nghe câu ví dụ" @click="sayExample">🔊</button>
       </div>
-      <div class="vex-en">{{ parts[0] }}<b>{{ vocab.term }}</b>{{ parts[1] || '' }}</div>
+      <div class="vex-en">
+        <template v-if="parts.length > 1">{{ parts[0] }}<b>{{ vocab.term }}</b>{{ parts[1] || '' }}</template>
+        <template v-else>{{ parts[0] }}</template>
+      </div>
       <div v-if="vocab.exVi" class="vex-vi">{{ vocab.exVi }}</div>
     </div>
   </div>
