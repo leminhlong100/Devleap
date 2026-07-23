@@ -443,6 +443,161 @@ describe('getBookDay(7) — file day-07.md thật', () => {
   })
 })
 
+describe('splitReadingTranslation — giấu bản dịch bài đọc mặc định', () => {
+  const SAMPLE_READ = `---
+day: 99
+title: "Reading test"
+sections: [reading]
+---
+
+# Day 99
+
+## Reading Skills
+### 2. Reading Passage — Ants
+**A** The ants are tiny and usually nest between rocks.
+
+> **Bản dịch (tham khảo):**
+> **A** Những con kiến rất nhỏ và thường làm tổ giữa các khe đá.
+
+### 3. Questions 1–5
+Match each statement with Nigel Franks.
+`
+  const d = parseIeltsBookDay(SAMPLE_READ)
+
+  it('reading (body) giữ đoạn EN + bảng câu hỏi, KHÔNG còn bản dịch', () => {
+    expect(d.reading).toContain('usually nest between rocks')
+    expect(d.reading).toContain('Nigel Franks')
+    expect(d.reading).not.toContain('Bản dịch')
+    expect(d.reading).not.toContain('Những con kiến rất nhỏ')
+  })
+
+  it('readingVi chứa bản dịch (để bọc trong <details> ẩn mặc định)', () => {
+    expect(d.readingVi).toContain('Những con kiến rất nhỏ')
+    // đã bỏ dòng tiêu đề "**Bản dịch…**"
+    expect(d.readingVi).not.toContain('tham khảo')
+  })
+
+  it('buổi không có blockquote dịch: readingVi rỗng, reading nguyên vẹn', () => {
+    const d2 = parseIeltsBookDay(SAMPLE)
+    expect(d2.readingVi).toBe('')
+    expect(d2.reading).toContain('40 câu hỏi')
+  })
+})
+
+describe('getBookDay(10) — file day-10.md thật: tách bản dịch bài đọc', () => {
+  it('reading body có đoạn EN + bảng người, bản dịch nằm ở readingVi', () => {
+    const d = getBookDay(10)
+    expect(d).toBeTruthy()
+    expect(d.reading).toContain('nest between rocks')
+    expect(d.reading).toContain('Nigel Franks') // bảng câu hỏi vẫn còn
+    expect(d.reading).not.toContain('Những con kiến rất nhỏ') // bản dịch đã tách ra
+    expect(d.readingVi).toContain('Những con kiến rất nhỏ')
+  })
+})
+
+describe('parseWriting — tách đề bài + ẩn bài mẫu', () => {
+  const SAMPLE_WRITE = `---
+day: 98
+title: "Writing test"
+sections: [writing]
+---
+
+# Day 98
+
+## Writing Skills
+### 1. Writing Task 2 — Opinion: viết Kết bài
+Ở buổi này ta học cách viết Kết bài.
+
+> **Đề bài mẫu (Remote Work):** *Some people believe that working from home is more beneficial. To what extent do you agree?*
+> *(Một số người tin rằng làm việc tại nhà tốt hơn.)*
+
+### 2. Sample essay 1 — Phản đối
+| Phần | Câu tiếng Anh | Bản dịch |
+| --- | --- | --- |
+| Introduction | Many people work from home. | Nhiều người làm việc tại nhà. |
+
+### 3. Sample essay 2 — Ủng hộ
+| Phần | Câu tiếng Anh | Bản dịch |
+| --- | --- | --- |
+| Introduction | Today, many employees prefer working from home. | Ngày nay nhiều nhân viên thích làm tại nhà. |
+`
+  const d = parseIeltsBookDay(SAMPLE_WRITE)
+
+  it('rút đề bài (prompt) từ blockquote "Đề bài", bỏ markdown', () => {
+    expect(d.writingTask).toBeTruthy()
+    expect(d.writingTask.prompt).toContain('working from home is more beneficial')
+    expect(d.writingTask.prompt).not.toContain('*')
+  })
+
+  it('lý thuyết (writing) giữ phần dạy, KHÔNG còn bài mẫu', () => {
+    expect(d.writing).toContain('viết Kết bài')
+    expect(d.writing).not.toContain('Many people work from home')
+    expect(d.writing).not.toContain('Today, many employees prefer')
+  })
+
+  it('bài mẫu nằm ở writingSamples (để ẩn tới khi nộp)', () => {
+    expect(d.writingSamples).toContain('Many people work from home')
+    expect(d.writingSamples).toContain('Today, many employees prefer')
+  })
+})
+
+describe('getBookDay(10) — writing thật: đề bài + bài mẫu tách riêng', () => {
+  it('có writingTask.prompt; bài mẫu ra khỏi lý thuyết', () => {
+    const d = getBookDay(10)
+    expect(d.writingTask?.prompt).toContain('working from home')
+    // 2 bài Sample essay đã tách sang writingSamples
+    expect(d.writingSamples).toContain('Many people today work from home')
+    expect(d.writing).not.toContain('Many people today work from home')
+    expect(d.writing).toContain('Kết bài') // lý thuyết còn nguyên
+  })
+})
+
+describe('parseSpeaking — tách câu hỏi + ẩn câu trả lời mẫu', () => {
+  const SAMPLE_SPEAK = `---
+day: 97
+title: "Speaking test"
+sections: [speaking]
+---
+
+# Day 97
+
+## Speaking Skills
+### 1. Speaking Part 1 — Habitual Questions
+Dạng hỏi về thói quen.
+
+> **Câu hỏi mẫu:** *"How often do you exercise?"* (Bạn tập thể dục thường xuyên như thế nào?)
+
+> **Ví dụ mẫu:** *"I exercise **three times a week**. I usually go to the gym."*
+
+### 2. Cụm từ mẫu
+| Cụm từ | IPA | Tiếng Việt |
+| --- | --- | --- |
+| I try to exercise regularly. | /.../ | Tôi cố gắng tập đều. |
+`
+  const d = parseIeltsBookDay(SAMPLE_SPEAK)
+
+  it('rút câu hỏi (prompt) bỏ ngoặc dịch + markdown', () => {
+    expect(d.speakingTask).toBeTruthy()
+    expect(d.speakingTask.prompt).toBe('How often do you exercise?')
+  })
+
+  it('rút câu trả lời mẫu (sample) và GỠ khỏi lý thuyết', () => {
+    expect(d.speakingTask.sample).toContain('I exercise three times a week')
+    expect(d.speaking).not.toContain('I exercise three times a week') // đã ẩn
+    expect(d.speaking).toContain('Dạng hỏi về thói quen') // lý thuyết còn
+    expect(d.speaking).toContain('Cụm từ mẫu') // bảng cụm từ còn
+  })
+})
+
+describe('getBookDay(10) — speaking thật: câu hỏi + câu mẫu tách riêng', () => {
+  it('có speakingTask.prompt & sample; câu mẫu ẩn khỏi lý thuyết', () => {
+    const d = getBookDay(10)
+    expect(d.speakingTask?.prompt).toContain('How often do you exercise')
+    expect(d.speakingTask?.sample).toContain('three to four times a week')
+    expect(d.speaking).not.toContain('it helps me stay fit and relieve stress')
+  })
+})
+
 describe('getBookDay(3) — file day-03.md thật', () => {
   it('Day 3 có grammar, dictation 22 chỗ trống, và homework dịch/mcq/chọn-đại-từ', () => {
     const d = getBookDay(3)

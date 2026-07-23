@@ -6,8 +6,13 @@ import VocabCard from '@/components/day/VocabCard.vue'
 import InlineFlashcards from '@/components/day/InlineFlashcards.vue'
 import TypedCheckList from '@/components/day/TypedCheckList.vue'
 import ReadingHomework from '@/components/day/ReadingHomework.vue'
+import MistakeReview from '@/components/day/MistakeReview.vue'
+import CountdownTimer from '@/components/day/CountdownTimer.vue'
 import PronunciationCheck from '@/components/day/PronunciationCheck.vue'
 import DictationCloze from '@/components/day/DictationCloze.vue'
+import WritingCoach from '@/components/day/WritingCoach.vue'
+import SpeakingCoach from '@/components/day/SpeakingCoach.vue'
+import AudioPlayer from '@/components/day/AudioPlayer.vue'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getBookDay, computeIeltsBookProgress, isBookDayUnlocked, IELTS_BOOK_WEEK } from '@/data/ieltsBook'
 import { speak } from '@/lib/speak'
@@ -19,6 +24,19 @@ const user = useUserStore()
 
 const d = computed(() => getBookDay(props.day))
 const say = (t) => speak(t)
+
+// —— Sổ lỗi (ôn ngắt quãng xuyên buổi): gom câu sai từ các hoạt động chấm được ——
+const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)
+// Từ payload QuizTool.complete ({ wrong:[{q, correct}] }) -> thêm vào sổ lỗi.
+function collectQuizMistakes(kind, r) {
+  if (!d.value || !Array.isArray(r?.wrong)) return
+  for (const w of r.wrong) {
+    user.addMistake({ id: `ielts:${kind}:${d.value.n}:${slug(w.q)}`, q: w.q, answer: w.correct, kind })
+  }
+}
+function onReadingMistake(m) {
+  if (d.value) user.addMistake({ id: `ielts:reading:${d.value.n}:${m.n}`, q: m.q, answer: m.answer, kind: 'reading' })
+}
 
 const bookProgress = computed(() => computeIeltsBookProgress(user.completed.ielts || []))
 const done = computed(() => !!d.value && user.isDone('ielts', IELTS_BOOK_WEEK, d.value.n))
@@ -81,6 +99,7 @@ const listeningPartLabel = computed(() => {
 const listeningQuizAudios = computed(() => (d.value?.audio || []).filter((a) => /part\d/i.test(a.url || a.file || '')))
 function onListeningQuizComplete(r) {
   if (d.value) user.recordQuiz('ielts', scope('listen'), r.score, r.total, 0.7)
+  collectQuizMistakes('listen', r)
 }
 // Audio 2 (bản ghi thật): q = phần đầu "Mr / Miss / Jane…"; đáp án = HỌ được đánh vần
 // (từ answer key). Chấp nhận gõ họ hoặc cả "tiền tố + họ".
@@ -143,6 +162,7 @@ const grammarPassed = computed(
 )
 function onGrammarComplete(r) {
   if (d.value) user.recordGrammarDay('ielts', IELTS_BOOK_WEEK, d.value.n, r.score, r.total, 0.7)
+  collectQuizMistakes('grammar', r)
 }
 
 // —— Quiz phrasal verb (Homework II) — ôn nhanh, không bắt buộc ——
@@ -150,6 +170,7 @@ const vocabQuiz = computed(() => d.value?.homework?.mcq || [])
 const vocabPassed = computed(() => !!d.value && user.vocabDayPassed('ielts', IELTS_BOOK_WEEK, d.value.n))
 function onVocabComplete(r) {
   if (d.value) user.recordVocabDay('ielts', IELTS_BOOK_WEEK, d.value.n, r.score, r.total, 0.7)
+  collectQuizMistakes('vocab', r)
 }
 
 // —— Các cổng "làm tại chỗ" khác (bắt buộc để hoàn thành buổi) ——
@@ -171,6 +192,8 @@ function onTranslateDone() {
 // —— Homework đọc hiểu (Day 2+): dùng từ khóa trả lời ngắn, chấm ngay (cổng bắt buộc) ——
 const readingItems = computed(() => d.value?.homework?.reading || [])
 const readingNeeded = computed(() => readingItems.value.length > 0)
+// Thời gian khuyến nghị luyện tính giờ cho phần đọc (~1.5 phút/câu, tối thiểu 3').
+const readingMinutes = computed(() => Math.max(3, Math.round(readingItems.value.length * 1.5)))
 const readingPassed = computed(() => !!d.value && (!readingNeeded.value || user.quizPassed('ielts', scope('reading'))))
 function onReadingDone() {
   if (d.value) user.recordQuiz('ielts', scope('reading'), readingItems.value.length, readingItems.value.length, 1)
@@ -180,10 +203,21 @@ function onPronDone() {
   if (d.value) user.recordQuiz('ielts', scope('pron'), pronItems.value.length, pronItems.value.length, 1)
 }
 
+// —— Cổng VIẾT (buổi kỹ năng có đề Writing): phải TỰ VIẾT & nộp (AI chấm) mới qua buổi ——
+const writingNeeded = computed(() => !!d.value?.writingTask)
+const writingPassed = computed(
+  () => !!d.value && (!writingNeeded.value || user.writingDone('ielts', IELTS_BOOK_WEEK, d.value.n)),
+)
+
 // Hoàn thành buổi: buộc học viên LÀM các hoạt động chính ngay trên web —
-// ngữ pháp + nghe-gõ + dịch (đều chấm tự động). Phần nào buổi không có thì tự bỏ qua.
+// ngữ pháp + nghe-gõ + dịch + đọc hiểu + (buổi kỹ năng) viết. Phần nào buổi không có thì tự bỏ qua.
 const dayReady = computed(
-  () => grammarPassed.value && listeningPassed.value && translatePassed.value && readingPassed.value,
+  () =>
+    grammarPassed.value &&
+    listeningPassed.value &&
+    translatePassed.value &&
+    readingPassed.value &&
+    writingPassed.value,
 )
 const nextGateLabel = computed(() => {
   if (!grammarPassed.value) return grammarIsWritingCloze.value ? '🔒 Làm bài điền chỗ trống trước' : '🔒 Làm bài tập ngữ pháp trước'
@@ -195,6 +229,7 @@ const nextGateLabel = computed(() => {
         : '🔒 Làm bài nghe chữ cái trước'
   if (!translatePassed.value) return translateIsSentenceBuild.value ? '🔒 Làm bài viết câu trước' : '🔒 Làm bài dịch trước'
   if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
+  if (!writingPassed.value) return '🔒 Nộp bài viết (AI chấm) trước'
   return '✓ Đánh dấu hoàn thành'
 })
 
@@ -240,6 +275,9 @@ function goDay(n) {
       </header>
 
       <div class="main">
+        <!-- ÔN LẠI LỖI CŨ (ôn ngắt quãng xuyên buổi) — hiện đầu buổi khi có câu tới hạn -->
+        <MistakeReview />
+
         <!-- ════ READING SKILLS (lý thuyết) ════ -->
         <section v-if="d.reading" class="step-card">
           <div class="step-head">
@@ -249,6 +287,10 @@ function goDay(n) {
             </div>
           </div>
           <div class="prose" v-html="d.reading"></div>
+          <details v-if="d.readingVi" class="vi-details">
+            <summary>🇻🇳 Xem bản dịch tiếng Việt — chỉ mở khi cần (nên thử đọc tiếng Anh trước)</summary>
+            <div class="prose vi-prose" v-html="d.readingVi"></div>
+          </details>
         </section>
 
         <!-- ════ WRITING SKILLS (lý thuyết) ════ -->
@@ -262,6 +304,9 @@ function goDay(n) {
           <div class="prose" v-html="d.writing"></div>
         </section>
 
+        <!-- LUYỆN VIẾT + AI CHẤM — tự viết trước, bài mẫu hé lộ sau khi nộp -->
+        <WritingCoach v-if="d.writingTask" :day="d" />
+
         <!-- ════ SPEAKING SKILLS (lý thuyết) ════ -->
         <section v-if="d.speaking" class="step-card">
           <div class="step-head">
@@ -271,13 +316,13 @@ function goDay(n) {
             </div>
           </div>
           <div v-if="speakingAudios.length" class="audio-row">
-            <div v-for="(a, i) in speakingAudios" :key="i" class="audio-item">
-              <span class="audio-label">{{ a.label }}</span>
-              <audio controls preload="none" :src="a.url"></audio>
-            </div>
+            <AudioPlayer v-for="(a, i) in speakingAudios" :key="i" :label="a.label" :src="a.url" />
           </div>
           <div class="prose" v-html="d.speaking"></div>
         </section>
+
+        <!-- LUYỆN NÓI + AI CHẤM — tự nói trước, câu mẫu hé lộ sau khi thử -->
+        <SpeakingCoach v-if="d.speakingTask" :day="d" />
 
         <!-- ════ NGỮ PHÁP ════ -->
         <section v-if="d.grammar.length" class="step-card">
@@ -484,10 +529,7 @@ function goDay(n) {
               </div>
             </div>
             <div v-if="exampleAudios.length" class="audio-row">
-              <div v-for="(a, i) in exampleAudios" :key="i" class="audio-item">
-                <span class="audio-label">{{ a.label }}</span>
-                <audio controls preload="none" :src="a.url"></audio>
-              </div>
+              <AudioPlayer v-for="(a, i) in exampleAudios" :key="i" :label="a.label" :src="a.url" />
             </div>
             <div class="prose" v-html="d.listening.intro"></div>
           </section>
@@ -502,10 +544,7 @@ function goDay(n) {
             @done="onDictationDone"
           >
             <div v-if="dictationAudios.length" class="audio-row">
-              <div v-for="(a, i) in dictationAudios" :key="i" class="audio-item">
-                <span class="audio-label">{{ a.label }}</span>
-                <audio controls preload="none" :src="a.url"></audio>
-              </div>
+              <AudioPlayer v-for="(a, i) in dictationAudios" :key="i" :label="a.label" :src="a.url" />
             </div>
           </DictationCloze>
         </template>
@@ -521,10 +560,7 @@ function goDay(n) {
           </div>
           <div v-if="d.listening && d.listening.intro" class="prose" v-html="d.listening.intro"></div>
           <div v-if="listeningQuizAudios.length" class="audio-row">
-            <div v-for="(a, i) in listeningQuizAudios" :key="i" class="audio-item">
-              <span class="audio-label">{{ a.label }}</span>
-              <audio controls preload="none" :src="a.url"></audio>
-            </div>
+            <AudioPlayer v-for="(a, i) in listeningQuizAudios" :key="i" :label="a.label" :src="a.url" />
           </div>
           <p class="quiz-intro">Nghe bản ghi rồi chọn đáp án đúng cho mỗi câu. Đạt ≥70% để mở hoàn thành buổi.</p>
           <div class="grammar-drill">
@@ -544,10 +580,7 @@ function goDay(n) {
           </div>
           <p class="quiz-intro">Nghe tiếp bản ghi (từ khoảng 2:02) rồi chọn đáp án đúng cho mỗi câu. Ôn nhanh — không bắt buộc để qua buổi.</p>
           <div v-if="dictationAudios.length" class="audio-row">
-            <div v-for="(a, i) in dictationAudios" :key="i" class="audio-item">
-              <span class="audio-label">{{ a.label }}</span>
-              <audio controls preload="none" :src="a.url"></audio>
-            </div>
+            <AudioPlayer v-for="(a, i) in dictationAudios" :key="i" :label="a.label" :src="a.url" />
           </div>
           <div class="grammar-drill">
             <QuizTool :questions="listeningMcq" mode="practice" :pass-threshold="0.7" embedded />
@@ -563,10 +596,7 @@ function goDay(n) {
             </div>
           </div>
           <div v-if="alphabetAudios.length" class="audio-row">
-            <div v-for="(a, i) in alphabetAudios" :key="i" class="audio-item">
-              <span class="audio-label">{{ a.label }}</span>
-              <audio controls preload="none" :src="a.url"></audio>
-            </div>
+            <AudioPlayer v-for="(a, i) in alphabetAudios" :key="i" :label="a.label" :src="a.url" />
           </div>
           <div class="alpha-grid">
             <button v-for="a in d.listening.alphabet" :key="a.letter" class="alpha-cell" @click="say(a.letter)">
@@ -603,10 +633,7 @@ function goDay(n) {
           @done="onAudio2Done"
         >
           <div v-if="practiceAudios.length" class="audio-row">
-            <div v-for="(a, i) in practiceAudios" :key="i" class="audio-item">
-              <span class="audio-label">{{ a.label }}</span>
-              <audio controls preload="none" :src="a.url"></audio>
-            </div>
+            <AudioPlayer v-for="(a, i) in practiceAudios" :key="i" :label="a.label" :src="a.url" />
           </div>
         </TypedCheckList>
 
@@ -627,7 +654,10 @@ function goDay(n) {
         />
 
         <!-- ════ HOMEWORK — ĐỌC HIỂU (chấm ngay, bắt buộc) ════ -->
-        <ReadingHomework v-if="readingItems.length" :items="readingItems" @done="onReadingDone" />
+        <div v-if="readingItems.length" class="reading-timer">
+          <CountdownTimer :minutes="readingMinutes" label="Đọc & trả lời trong" />
+        </div>
+        <ReadingHomework v-if="readingItems.length" :items="readingItems" @done="onReadingDone" @mistake="onReadingMistake" />
 
         <!-- CHECKPOINT -->
         <section class="checkpoint" :class="{ done }">
@@ -722,6 +752,37 @@ function goDay(n) {
 }
 .eyebrow.green {
   color: #00966a;
+}
+.reading-timer {
+  margin-bottom: 2px;
+}
+.vi-details {
+  margin-top: 16px;
+  border: 1px solid rgba(108, 92, 231, 0.22);
+  border-radius: 14px;
+  background: rgba(108, 92, 231, 0.04);
+  overflow: hidden;
+}
+.vi-details > summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #6c5ce7;
+  list-style: none;
+  user-select: none;
+}
+.vi-details > summary::-webkit-details-marker {
+  display: none;
+}
+.vi-details > summary::before {
+  content: '▸ ';
+}
+.vi-details[open] > summary::before {
+  content: '▾ ';
+}
+.vi-prose {
+  padding: 0 16px 14px;
 }
 .gram-block + .gram-block {
   margin-top: 18px;

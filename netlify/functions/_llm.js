@@ -696,6 +696,26 @@ export function buildSystemPrompt(context = {}) {
     ].join('\n')
   }
 
+  // Giải thích "vì sao" đáp án đúng/sai cho một câu quiz (QuizTool).
+  if (mode === 'explain') {
+    return [
+      'You are a patient English tutor for a Vietnamese learner.',
+      "The user message contains a quiz question, optionally its options, the correct answer, and the learner's answer.",
+      'Explain in VIETNAMESE, briefly (1-3 sentences), WHY the correct answer is right. If the learner\'s answer is given and differs (wrong), also say briefly why it is wrong.',
+      'You may quote English words/phrases, but the explanation itself is Vietnamese. No preamble, do not repeat the whole question, no markdown.',
+    ].join('\n')
+  }
+
+  // Chấm PARAPHRASE: đáp án của học viên có CÙNG NGHĨA với đáp án mong đợi không (đọc hiểu).
+  if (mode === 'equiv') {
+    return [
+      "You judge whether a learner's short answer means essentially the SAME as the expected answer for a reading comprehension question.",
+      'The user message has the expected answer and the learner\'s answer.',
+      'Allow paraphrase, synonyms, different word order, extra/missing articles. Reject if the meaning differs, is wrong, or is empty.',
+      'Reply with ONLY one word: YES or NO. Nothing else.',
+    ].join('\n')
+  }
+
   const { vocabLine, grammarLine, topic } = contextLines(context)
 
   if (mode === 'hint') {
@@ -763,13 +783,13 @@ export async function runChat({ messages = [], context = {}, persona, mode } = {
   const m = mode || context.mode
 
   // Chế độ phụ trợ: trả text ngắn.
-  if (m === 'translate' || m === 'hint' || m === 'idea' || m === 'word') {
+  if (m === 'translate' || m === 'hint' || m === 'idea' || m === 'word' || m === 'explain' || m === 'equiv') {
     const reply = await askLLM({
       key,
       system: buildSystemPrompt({ ...context, mode: m }),
       messages,
-      temperature: m === 'translate' || m === 'word' ? 0.2 : 0.6,
-      maxTokens: m === 'word' ? 40 : 200,
+      temperature: m === 'translate' || m === 'word' || m === 'equiv' ? 0.1 : m === 'explain' ? 0.3 : 0.6,
+      maxTokens: m === 'word' ? 40 : m === 'equiv' ? 5 : m === 'explain' ? 240 : 200,
     })
     return { reply }
   }
