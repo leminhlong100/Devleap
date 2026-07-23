@@ -58,45 +58,25 @@ async function answer(el, itemIndex, value) {
   await nextTick()
 }
 
-describe('ReadingHomework — chế độ active recall', () => {
-  it('mặc định GIẤU đoạn văn gợi ý và từ khóa (không lộ đáp án)', () => {
+describe('ReadingHomework', () => {
+  it('hiện sẵn đoạn văn và từ khóa của mỗi câu (không ẩn phao)', () => {
     const { el } = mount(ITEMS)
-    expect(el.textContent).not.toContain('birds using a stick')
-    expect(el.textContent).not.toContain('C Tim Caro')
-    // nút phao có mặt
-    expect(byText(el, 'button', 'Xem đoạn gợi ý')).toBeTruthy()
-    expect(byText(el, 'button', 'Xem từ khóa')).toBeTruthy()
-    // đếm tự lực khởi tạo 0/2
-    expect(el.querySelector('.rh-solo').textContent).toContain('0/2')
-  })
-
-  it('bấm "Xem đoạn gợi ý" mới hiện đoạn văn và đánh dấu có dùng phao', async () => {
-    const { el } = mount(ITEMS)
-    byText(el, 'button', 'Xem đoạn gợi ý').click()
-    await nextTick()
     expect(el.textContent).toContain('birds using a stick')
-    // trả lời đúng câu này -> tag "có phao", KHÔNG tính tự lực
-    await answer(el, 0, 'Tim Caro')
-    const item0 = q(el, '.rh-item')[0]
-    expect(item0.querySelector('.rh-tag').textContent).toContain('có phao')
-    expect(el.querySelector('.rh-solo').textContent).toContain('0/2')
+    expect(el.textContent).toContain('C Tim Caro')
+    // đếm 0/2 lúc khởi tạo
+    expect(el.querySelector('.wt-badge').textContent).toContain('0/2')
   })
 
-  it('trả lời đúng KHÔNG mở phao -> tag "tự lực" + tăng đếm tự lực; xong hết phát done', async () => {
+  it('trả lời đúng -> khóa câu + hiện câu trả lời mẫu; xong hết phát done', async () => {
     const { el, events } = mount(ITEMS)
-    // Câu 1 tự lực
     await answer(el, 0, 'C')
     const item0 = q(el, '.rh-item')[0]
-    expect(item0.querySelector('.rh-tag').textContent).toContain('tự lực')
-    expect(el.querySelector('.rh-solo').textContent).toContain('1/2')
-    // sau khi đúng, đoạn văn bằng chứng tự hé lộ để đối chiếu
-    expect(el.textContent).toContain('birds using a stick')
+    expect(item0.querySelector('.rh-model').textContent).toContain('C (Tim Caro)')
     expect(events.done).toBe(0)
-    // Câu 2 tự lực -> hoàn thành -> emit done
+    // Câu 2 đúng -> hoàn thành -> emit done
     await answer(el, 1, 'Nigel Franks')
-    expect(el.querySelector('.rh-solo').textContent).toContain('2/2')
     expect(events.done).toBe(1)
-    expect(el.querySelector('.gate-line').textContent).toContain('không cần phao')
+    expect(el.querySelector('.gate-line').textContent).toContain('hoàn thành')
   })
 
   it('trả lời SAI hiện đáp án ngắn rồi ẩn khi gõ lại; không phát done sớm', async () => {
