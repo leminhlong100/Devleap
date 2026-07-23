@@ -112,6 +112,96 @@ function splitTerm(cell) {
   return { term: cell.trim(), pos: '' }
 }
 
+// ————————————————————————— Reading —————————————————————————
+/**
+ * Tách blockquote "Bản dịch (tham khảo)" ra khỏi phần đọc để GIẤU mặc định
+ * (active-recall: học viên đọc tiếng Anh trước, chỉ mở bản dịch khi cần). Trả về
+ * { bodyLines, viLines } — viLines đã bỏ dấu ">" đầu dòng. Không có blockquote
+ * dịch thì bodyLines = nguyên bản, viLines = [].
+ */
+function splitReadingTranslation(lines) {
+  const start = lines.findIndex((l) => /^\s*>\s*\*\*\s*bản dịch/i.test(l))
+  if (start === -1) return { bodyLines: lines, viLines: [] }
+  let end = start
+  while (end < lines.length && /^\s*>/.test(lines[end])) end++
+  // Bỏ dòng tiêu đề "**Bản dịch…**" (summary của <details> đã nói rồi) + dấu ">".
+  const viLines = lines
+    .slice(start, end)
+    .map((l) => l.replace(/^\s*>\s?/, ''))
+    .filter((l) => !/^\*\*\s*bản dịch[^*]*\*\*\s*:?\s*$/i.test(l.trim()))
+  const bodyLines = [...lines.slice(0, start), ...lines.slice(end)]
+  return { bodyLines, viLines }
+}
+
+// ————————————————————————— Writing —————————————————————————
+/**
+ * Tách phần Writing thành: lý thuyết (html) + ĐỀ BÀI (task.prompt, rút từ
+ * blockquote "Đề bài…") + BÀI MẪU (samplesHtml, các mục "### Sample essay/bài
+ * hoàn chỉnh") để ẨN cho tới khi học viên tự viết & nộp (active-recall). Buổi
+ * không có đề/bài mẫu vẫn parse an toàn (task=null, samplesHtml='').
+ */
+function parseWriting(lines) {
+  const stripInline = (s) => s.replace(/[*_`]/g, '').trim()
+  const promptFrom = (ls) => {
+    for (const l of ls) {
+      const m = /\*\*\s*đề bài[^*]*\*\*\s*:?\s*(.+)$/i.exec(l.replace(/^\s*>\s?/, ''))
+      if (m) return stripInline(m[1])
+    }
+    return ''
+  }
+  const firstH = lines.findIndex((l) => /^###\s/.test(l))
+  const preamble = firstH === -1 ? lines : lines.slice(0, firstH)
+  const subs = firstH === -1 ? [] : splitByLevel(lines, 3)
+  let prompt = promptFrom(preamble)
+  const bodyParts = []
+  const sampleParts = []
+  if (preamble.join('\n').trim()) bodyParts.push(preamble.join('\n'))
+  for (const s of subs) {
+    if (!prompt) prompt = promptFrom(s.lines)
+    const block = `### ${s.heading}\n${s.lines.join('\n')}`
+    if (/sample essay|bài mẫu|bài viết mẫu|bài hoàn chỉnh|model (essay|answer)/i.test(s.heading)) sampleParts.push(block)
+    else bodyParts.push(block)
+  }
+  return {
+    html: md(bodyParts.join('\n\n')),
+    samplesHtml: md(sampleParts.join('\n\n')),
+    task: prompt ? { prompt } : null,
+  }
+}
+
+// ————————————————————————— Speaking —————————————————————————
+/**
+ * Tách Speaking thành: lý thuyết (html) + đề nói (task = { prompt, sample }).
+ * prompt lấy từ blockquote "Câu hỏi mẫu", sample (câu trả lời mẫu) lấy từ "Ví dụ
+ * mẫu" và ĐƯỢC GỠ khỏi lý thuyết để ẩn tới khi học viên tự nói (active-recall).
+ */
+function parseSpeaking(lines) {
+  const stripInline = (s) => s.replace(/[*_`]/g, '').trim()
+  const quoted = (s) => {
+    const m = /["“](.+?)["”]/.exec(s)
+    return (m ? m[1] : s).trim()
+  }
+  let prompt = ''
+  let sample = ''
+  const body = []
+  for (const l of lines) {
+    const b = l.replace(/^\s*>\s?/, '')
+    const pm = /\*\*\s*câu hỏi mẫu\s*:?\s*\*\*\s*(.+)$/i.exec(b)
+    const sm = /\*\*\s*ví dụ mẫu\s*:?\s*\*\*\s*(.+)$/i.exec(b)
+    if (pm) {
+      prompt = quoted(stripInline(pm[1].replace(/\([^)]*\)\s*$/, '')))
+      body.push(l) // câu hỏi vẫn hiện trong lý thuyết
+      continue
+    }
+    if (sm) {
+      sample = quoted(stripInline(sm[1]))
+      continue // ẨN câu trả lời mẫu khỏi lý thuyết
+    }
+    body.push(l)
+  }
+  return { html: md(body.join('\n')), task: prompt ? { prompt, sample } : null }
+}
+
 // ————————————————————————— Grammar —————————————————————————
 function parseGrammar(lines) {
   return splitByLevel(lines, 3).map((s) => ({
@@ -440,8 +530,12 @@ export function parseIeltsBookDay(raw) {
   let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [], collocations: [] }
   let listening = null
   let reading = ''
+  let readingVi = ''
   let writing = ''
+  let writingSamples = ''
+  let writingTask = null
   let speaking = ''
+  let speakingTask = null
   let homework = { translate: [], mcq: [], cloze: [], choice: [], reading: [] }
 
   for (const sec of h2) {
@@ -449,9 +543,22 @@ export function parseIeltsBookDay(raw) {
     if (/basic grammar/i.test(h)) grammar = parseGrammar(sec.lines)
     else if (/basic vocabulary/i.test(h)) vocab = parseVocabulary(sec.lines)
     else if (/listening/i.test(h)) listening = parseListening(sec.lines)
-    else if (/reading/i.test(h)) reading = md(sec.lines.join('\n'))
-    else if (/writing/i.test(h)) writing = md(sec.lines.join('\n'))
-    else if (/speaking/i.test(h)) speaking = md(sec.lines.join('\n'))
+    else if (/reading/i.test(h)) {
+      const { bodyLines, viLines } = splitReadingTranslation(sec.lines)
+      reading = md(bodyLines.join('\n'))
+      readingVi = md(viLines.join('\n'))
+    }
+    else if (/writing/i.test(h)) {
+      const w = parseWriting(sec.lines)
+      writing = w.html
+      writingSamples = w.samplesHtml
+      writingTask = w.task
+    }
+    else if (/speaking/i.test(h)) {
+      const sp = parseSpeaking(sec.lines)
+      speaking = sp.html
+      speakingTask = sp.task
+    }
     else if (/homework/i.test(h)) homework = parseHomework(sec.lines)
   }
 
@@ -466,8 +573,12 @@ export function parseIeltsBookDay(raw) {
     vocab,
     listening,
     reading,
+    readingVi,
     writing,
+    writingSamples,
+    writingTask,
     speaking,
+    speakingTask,
     homework,
   }
 }

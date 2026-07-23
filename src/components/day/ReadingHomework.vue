@@ -1,25 +1,34 @@
 <script setup>
 /**
- * Bài tập ĐỌC HIỂU theo phương pháp từ khóa (Day 2 trở đi). Mỗi bài: đọc câu hỏi
- * + đoạn văn (song ngữ), tìm từ khóa rồi GÕ ĐÁP ÁN NGẮN — chấm ngay tại chỗ:
- * gõ → "Kiểm tra" → SAI mới hiện đáp án; GÕ LẠI thì ẩn đáp án (buộc tự nhớ); ĐÚNG
- * thì khóa câu + hiện đáp án mẫu đầy đủ. Đúng hết → phát 'done' (cổng hoàn thành buổi).
+ * Bài tập ĐỌC HIỂU — chế độ ACTIVE RECALL (Day 2 trở đi).
  *
- * Chấm khoan dung như TypedCheckList: bỏ dấu câu/hoa-thường + bản "lỏng" bỏ a/an/the.
+ * Khác sách in: đề KHÔNG đưa sẵn đoạn văn chứa đáp án + từ khóa nữa. Học viên phải
+ * đọc CẢ bài đọc ở trên rồi tự tìm câu trả lời. Đoạn văn gợi ý & từ khóa trở thành
+ * "phao" TỰ CHỌN — bấm mới hiện, và có bấm thì câu đó tính là "có dùng gợi ý"
+ * (không còn là "tự lực"). Sau khi trả lời ĐÚNG mới hé lộ bằng chứng (đoạn văn +
+ * câu trả lời mẫu) để đối chiếu.
+ *
+ * Chấm: gõ → "Kiểm tra" → SAI mới hiện đáp án ngắn; GÕ LẠI thì ẩn đáp án (buộc tự
+ * nhớ); ĐÚNG thì khóa câu + hé lộ bằng chứng. Đúng hết → phát 'done' (cổng qua buổi).
+ * So khớp khoan dung: bỏ dấu câu/hoa-thường + bản "lỏng" bỏ a/an/the.
  */
 import { ref, computed, watch } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
+import { checkParaphrase } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 const props = defineProps({
   // [{ n, title, question, questionVi, passage, passageVi, keywords[], answer[], model }]
   items: { type: Array, default: () => [] },
   eyebrow: { type: String, default: 'HOMEWORK · ĐỌC HIỂU · BẮT BUỘC' },
-  title: { type: String, default: '📖 Đọc hiểu — dùng từ khóa trả lời' },
+  title: { type: String, default: '📖 Đọc hiểu — tự tìm trong bài' },
   intro: { type: String, default: '' },
 })
-const emit = defineEmits(['done'])
+const emit = defineEmits(['done', 'mistake'])
 
 const speakable = canSpeak()
+const { isOnline } = useOnlineStatus()
 
 function norm(s) {
   return String(s || '')
@@ -40,18 +49,32 @@ function accepts(item) {
 
 const typed = ref([])
 const status = ref([]) // null | 'ok' | 'wrong'
-const showVi = ref([])
+const showVi = ref([]) // hé lộ bản dịch của đoạn gợi ý
+const showPassage = ref([]) // "phao" 1: đoạn văn chứa đáp án
+const showKeys = ref([]) // "phao" 2: từ khóa gợi ý
+const usedHint = ref([]) // đã bấm ít nhất một "phao" cho câu này
+const aiChecking = ref([]) // đang nhờ AI kiểm tra nghĩa
+const aiMsg = ref([]) // thông báo kết quả AI ('' | 'no')
 watch(
   () => props.items,
   (v) => {
     typed.value = v.map(() => '')
     status.value = v.map(() => null)
     showVi.value = v.map(() => false)
+    showPassage.value = v.map(() => false)
+    showKeys.value = v.map(() => false)
+    usedHint.value = v.map(() => false)
+    aiChecking.value = v.map(() => false)
+    aiMsg.value = v.map(() => '')
   },
   { immediate: true },
 )
 
 const okCount = computed(() => status.value.filter((s) => s === 'ok').length)
+// Số câu làm đúng mà KHÔNG dùng phao — thước đo "tự lực" để tạo động lực đọc thật.
+const soloCount = computed(
+  () => props.items.filter((_, i) => status.value[i] === 'ok' && !usedHint.value[i]).length,
+)
 const allDone = computed(() => props.items.length > 0 && okCount.value === props.items.length)
 let emitted = false
 watch(allDone, (v) => {
@@ -61,6 +84,14 @@ watch(allDone, (v) => {
   }
 })
 
+function revealPassage(i) {
+  showPassage.value[i] = true
+  usedHint.value[i] = true
+}
+function revealKeys(i) {
+  showKeys.value[i] = true
+  usedHint.value[i] = true
+}
 function check(i) {
   const val = typed.value[i]
   if (!val || !val.trim()) return
@@ -69,9 +100,36 @@ function check(i) {
   const tl = normLoose(val)
   const ok = acc.some((a) => norm(a) === t || normLoose(a) === tl)
   status.value[i] = ok ? 'ok' : 'wrong'
+  // Trả lời đúng → hé lộ luôn đoạn văn bằng chứng để đối chiếu (không tính là dùng phao).
+  if (ok) showPassage.value[i] = true
+  // Trả lời sai → ghi vào "sổ lỗi" để ôn ngắt quãng ở các buổi sau.
+  else emit('mistake', { n: props.items[i]?.n || i + 1, q: props.items[i]?.question || '', answer: firstAnswer(i) })
 }
 function onInput(i) {
   if (status.value[i] === 'wrong') status.value[i] = null
+  aiMsg.value[i] = ''
+}
+// Nhờ AI xem câu trả lời có CÙNG NGHĨA với đáp án không (chấp nhận paraphrase).
+async function aiCheck(i) {
+  if (aiChecking.value[i] || !isOnline.value) return
+  const val = typed.value[i]
+  if (!val || !val.trim()) return
+  aiChecking.value[i] = true
+  aiMsg.value[i] = ''
+  try {
+    const expected = firstAnswer(i) || props.items[i]?.model || ''
+    const ok = await checkParaphrase(expected, val)
+    if (ok) {
+      status.value[i] = 'ok'
+      showPassage.value[i] = true
+    } else {
+      aiMsg.value[i] = 'no'
+    }
+  } catch (e) {
+    aiMsg.value[i] = friendlyAiError(e).message
+  } finally {
+    aiChecking.value[i] = false
+  }
 }
 function readAloud(i) {
   const p = props.items[i]
@@ -92,14 +150,21 @@ function firstAnswer(i) {
       <span class="wt-badge" :class="{ ok: allDone }">{{ okCount }}/{{ items.length }}</span>
     </div>
     <p class="quiz-intro">
-      {{ intro || 'Đọc câu hỏi và đoạn văn, xác định từ khóa rồi gõ cụm từ trả lời chính. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Làm đúng tất cả các bài để hoàn thành buổi.' }}
+      {{ intro || 'Đọc kỹ bài đọc ở trên, rồi tự tìm câu trả lời — đừng vội bấm phao. Bí quá mới mở “đoạn gợi ý” hoặc “từ khóa”. Sai sẽ hiện đáp án; gõ lại thì ẩn đi. Làm đúng hết để hoàn thành buổi.' }}
     </p>
+    <div class="rh-solo" :class="{ perfect: allDone && soloCount === items.length }">
+      🏅 Tự lực: <b>{{ soloCount }}/{{ items.length }}</b>
+      <span class="rh-solo-hint">(làm đúng mà không mở phao)</span>
+    </div>
 
     <ol class="rh-list">
       <li v-for="(it, i) in items" :key="i" class="rh-item" :class="status[i]">
         <div class="rh-top">
           <span class="rh-badge">Bài tập {{ it.n || i + 1 }}</span>
           <span v-if="it.title" class="rh-topic">{{ it.title }}</span>
+          <span v-if="status[i] === 'ok'" class="rh-tag" :class="usedHint[i] ? 'hint' : 'solo'">
+            {{ usedHint[i] ? '✓ có phao' : '🏅 tự lực' }}
+          </span>
         </div>
 
         <div class="rh-q">
@@ -107,7 +172,17 @@ function firstAnswer(i) {
           <span v-if="it.questionVi" class="rh-q-vi">{{ it.questionVi }}</span>
         </div>
 
-        <article class="rh-passage">
+        <!-- PHAO (tự chọn) — chỉ hiện khi bấm; bấm là câu tính "có phao" -->
+        <div v-if="status[i] !== 'ok'" class="rh-hints">
+          <button v-if="it.passage && !showPassage[i]" class="rh-hint-btn" @click="revealPassage(i)">
+            🔍 Xem đoạn gợi ý
+          </button>
+          <button v-if="it.keywords && it.keywords.length && !showKeys[i]" class="rh-hint-btn" @click="revealKeys(i)">
+            🔑 Xem từ khóa
+          </button>
+        </div>
+
+        <article v-if="showPassage[i] && it.passage" class="rh-passage">
           <p class="rh-passage-en">{{ it.passage }}</p>
           <button
             v-if="speakable"
@@ -117,13 +192,13 @@ function firstAnswer(i) {
           >
             🔊 Nghe đọc
           </button>
-          <button class="rh-vi-toggle" @click="showVi[i] = !showVi[i]">
+          <button v-if="it.passageVi" class="rh-vi-toggle" @click="showVi[i] = !showVi[i]">
             {{ showVi[i] ? 'Ẩn bản dịch' : 'Xem bản dịch' }}
           </button>
           <p v-if="showVi[i] && it.passageVi" class="rh-passage-vi">{{ it.passageVi }}</p>
         </article>
 
-        <div v-if="it.keywords && it.keywords.length" class="rh-keys">
+        <div v-if="showKeys[i] && it.keywords && it.keywords.length" class="rh-keys">
           <span class="rh-keys-label">🔑 Từ khóa gợi ý:</span>
           <span v-for="(k, ki) in it.keywords" :key="ki" class="rh-key">{{ k }}</span>
         </div>
@@ -145,6 +220,19 @@ function firstAnswer(i) {
 
         <div v-if="status[i] === 'wrong'" class="rh-answer">
           💡 Đáp án: <b>{{ firstAnswer(i) }}</b> — gõ lại cho đúng nhé (đáp án sẽ ẩn khi bạn gõ).
+          <div class="rh-ai">
+            <button
+              v-if="isOnline && !aiChecking[i]"
+              class="rh-ai-btn"
+              type="button"
+              @click="aiCheck(i)"
+            >
+              🤖 Câu của tôi cùng nghĩa mà? Nhờ AI kiểm tra
+            </button>
+            <span v-else-if="aiChecking[i]" class="rh-ai-loading">🤖 AI đang kiểm tra…</span>
+            <span v-if="aiMsg[i] === 'no'" class="rh-ai-no">AI: chưa cùng nghĩa với đáp án — thử diễn đạt lại nhé.</span>
+            <span v-else-if="aiMsg[i]" class="rh-ai-no">⚠️ {{ aiMsg[i] }}</span>
+          </div>
         </div>
         <div v-if="status[i] === 'ok' && it.model" class="rh-model">
           ✓ Câu trả lời mẫu: <b>{{ it.model }}</b>
@@ -152,15 +240,35 @@ function firstAnswer(i) {
       </li>
     </ol>
 
-    <div v-if="allDone" class="gate-line ok">✅ Đã hoàn thành bài đọc hiểu — dùng từ khóa chính xác!</div>
+    <div v-if="allDone" class="gate-line ok">
+      {{ soloCount === items.length ? '🏅 Xuất sắc — đúng hết mà không cần phao!' : '✅ Đã hoàn thành bài đọc hiểu — dùng từ khóa chính xác!' }}
+    </div>
   </section>
 </template>
 
 <style scoped src="./ieltsDaySection.css"></style>
 <style scoped>
+.rh-solo {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-2);
+}
+.rh-solo b {
+  color: #00966a;
+  font-weight: 900;
+}
+.rh-solo.perfect b {
+  color: #f5a623;
+}
+.rh-solo-hint {
+  font-weight: 600;
+  color: var(--muted-3);
+  font-size: 12px;
+}
 .rh-list {
   list-style: none;
-  margin: 8px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -194,6 +302,21 @@ function firstAnswer(i) {
   font-size: 14.5px;
   color: var(--ink);
 }
+.rh-tag {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.rh-tag.solo {
+  background: rgba(245, 166, 35, 0.14);
+  color: #b5730b;
+}
+.rh-tag.hint {
+  background: rgba(108, 92, 231, 0.1);
+  color: #6c5ce7;
+}
 .rh-q {
   margin-top: 12px;
   display: flex;
@@ -208,6 +331,27 @@ function firstAnswer(i) {
 .rh-q-vi {
   font-size: 13.5px;
   color: var(--muted);
+}
+.rh-hints {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rh-hint-btn {
+  border: 1px dashed rgba(108, 92, 231, 0.45);
+  background: var(--surface);
+  color: #6c5ce7;
+  border-radius: 99px;
+  padding: 7px 14px;
+  min-height: 40px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.rh-hint-btn:active {
+  background: rgba(108, 92, 231, 0.08);
 }
 .rh-passage {
   margin-top: 12px;
@@ -317,6 +461,35 @@ function firstAnswer(i) {
   margin-top: 8px;
   font-size: 13.5px;
   color: var(--text-danger, #d1495b);
+}
+.rh-ai {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.rh-ai-btn {
+  border: 1px dashed rgba(108, 92, 231, 0.5);
+  background: var(--surface);
+  color: #6c5ce7;
+  border-radius: 99px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 38px;
+}
+.rh-ai-loading {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6c5ce7;
+}
+.rh-ai-no {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted-2);
 }
 .rh-model {
   margin-top: 8px;
