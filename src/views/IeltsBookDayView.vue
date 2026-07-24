@@ -98,6 +98,28 @@ const audio2Graded = computed(
 function onAudio2Done() {
   if (d.value) user.recordQuiz('ielts', scope('audio2'), practiceItems.value.length, practiceItems.value.length, 1)
 }
+// Listening Part 4 (Day 13+): bài nghe ĐIỀN TỪ (note/form completion) — không có
+// alphabet/dictation/MCQ. Giữ nguyên chỗ trống trong câu hỏi để học viên biết điền vào đâu.
+const noteItems = computed(() =>
+  (d.value?.listening?.practice || []).map((p) => ({
+    q: String(p.prompt || '').replace(/_{2,}/g, ' ______ ').replace(/\s{2,}/g, ' ').trim(),
+    answer: p.answer || '',
+  })),
+)
+// Chính phiếu điền từ này là CỔNG nghe BẮT BUỘC (điền đúng hết) khi buổi nghe chỉ có
+// note completion (không alphabet/dictation/MCQ).
+const listenNoteGate = computed(
+  () =>
+    noteItems.value.length > 0 &&
+    noteItems.value.every((it) => it.answer && it.answer.length) &&
+    letterItems.value.length === 0 &&
+    !dictation.value &&
+    listeningMcq.value.length === 0,
+)
+const listeningTranscript = computed(() => d.value?.listening?.transcript || '')
+function onNoteGateDone() {
+  if (d.value) user.recordQuiz('ielts', scope('listen'), noteItems.value.length, noteItems.value.length, 1)
+}
 
 // —— Homework I (dịch): gõ → chấm ngay ——
 const translateItems = computed(() =>
@@ -155,7 +177,9 @@ function onVocabComplete(r) {
 // —— Các cổng "làm tại chỗ" khác (bắt buộc để hoàn thành buổi) ——
 const scope = (name) => `day:${d.value?.n}:${name}`
 // Cổng nghe: buổi có bảng chữ cái (nghe-gõ) HOẶC bài chép chính tả (dictation).
-const listeningNeeded = computed(() => letterItems.value.length > 0 || !!dictation.value || listeningQuizGate.value)
+const listeningNeeded = computed(
+  () => letterItems.value.length > 0 || !!dictation.value || listeningQuizGate.value || listenNoteGate.value,
+)
 const listeningPassed = computed(() => !!d.value && (!listeningNeeded.value || user.quizPassed('ielts', scope('listen'))))
 function onListeningDone() {
   if (d.value) user.recordQuiz('ielts', scope('listen'), letterItems.value.length, letterItems.value.length, 1)
@@ -190,7 +214,7 @@ const nextGateLabel = computed(() => {
   if (!listeningPassed.value)
     return dictation.value
       ? '🔒 Làm bài chép chính tả trước'
-      : listeningQuizGate.value
+      : listeningQuizGate.value || listenNoteGate.value
         ? `🔒 Làm bài nghe (${listeningPartLabel.value}) trước`
         : '🔒 Làm bài nghe chữ cái trước'
   if (!translatePassed.value) return translateIsSentenceBuild.value ? '🔒 Làm bài viết câu trước' : '🔒 Làm bài dịch trước'
@@ -533,6 +557,49 @@ function goDay(n) {
           <div v-if="listeningPassed" class="gate-line ok">✅ Bạn đã hoàn thành bài nghe {{ listeningPartLabel }}.</div>
         </section>
 
+        <!-- ════ LISTENING — PART 4 (nghe → điền từ / note completion) · CỔNG BẮT BUỘC · Day 13+ ════ -->
+        <template v-if="listenNoteGate">
+          <!-- Lý thuyết Part 4 (đặc điểm & cách làm) -->
+          <section v-if="d.listening.intro" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">LISTENING SKILLS · {{ listeningPartLabel.toUpperCase() }}</div>
+                <h2 class="step-title">🎧 Kỹ năng nghe — {{ listeningPartLabel }} (điền từ)</h2>
+              </div>
+            </div>
+            <div class="prose" v-html="d.listening.intro"></div>
+          </section>
+
+          <!-- LÀM NGAY: nghe bản ghi → điền từ còn thiếu (bắt buộc điền đúng hết) -->
+          <TypedCheckList
+            :items="noteItems"
+            graded
+            :eyebrow="`LÀM NGAY · NGHE ${listeningPartLabel.toUpperCase()} · BẮT BUỘC ĐIỀN ĐÚNG HẾT`"
+            title="🎧 Nghe Audio &amp; điền từ còn thiếu (Q31–40)"
+            intro="Bật bản ghi, nghe và điền MỘT từ vào mỗi chỗ trống rồi bấm Kiểm tra. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Điền đúng hết là hoàn thành!"
+            done-label="Đã hoàn thành bài nghe (điền từ)."
+            @done="onNoteGateDone"
+          >
+            <div v-if="listeningQuizAudios.length" class="audio-row">
+              <div v-for="(a, i) in listeningQuizAudios" :key="i" class="audio-item">
+                <span class="audio-label">{{ a.label }}</span>
+                <audio controls preload="none" :src="a.url"></audio>
+              </div>
+            </div>
+          </TypedCheckList>
+
+          <!-- Bản ghi (transcript) — đối chiếu SAU khi làm -->
+          <section v-if="listeningTranscript" class="step-card">
+            <div class="step-head">
+              <div>
+                <div class="eyebrow">THAM KHẢO · SAU KHI LÀM</div>
+                <h2 class="step-title">📄 Bản ghi (transcript) &amp; giải thích</h2>
+              </div>
+            </div>
+            <div class="prose" v-html="listeningTranscript"></div>
+          </section>
+        </template>
+
         <!-- ════ LISTENING — PRACTICE 2 (nghe & chọn đáp án) · buổi có dictation ════ -->
         <section v-if="listeningMcq.length && dictation" class="step-card">
           <div class="step-head">
@@ -591,7 +658,7 @@ function goDay(n) {
 
         <!-- Audio 2 (bản ghi thật) — nghe & ĐIỀN, CHẤM NGAY (đã có answer key) -->
         <TypedCheckList
-          v-if="practiceItems.length"
+          v-if="practiceItems.length && !listenNoteGate"
           :items="practiceItems"
           :graded="audio2Graded"
           eyebrow="NGHE & CHẤM · BẢN GHI THẬT (AUDIO 2)"

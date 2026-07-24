@@ -182,9 +182,14 @@ function parseListening(lines) {
   let practiceIntro = ''
   let dictation = null
   let mcq = []
+  let transcript = ''
   for (const s of subs) {
     const hasPassage = s.lines.some((l) => PASSAGE_EN_RE.test(l))
-    if (/alphabet/i.test(s.heading)) {
+    if (/transcript|bản ghi|phân tích/i.test(s.heading)) {
+      // Bản ghi (Part 4 note completion): hiện SAU khi làm bài để đối chiếu — không
+      // đưa vào intro (kẻo lộ đáp án ở đầu phần nghe).
+      transcript += (transcript ? '\n\n' : '') + `### ${s.heading}\n\n` + s.lines.join('\n')
+    } else if (/alphabet/i.test(s.heading)) {
       // Bảng chữ cái xếp 3 cặp (Chữ|IPA) mỗi hàng -> tách thành từng cặp.
       for (const r of parseTable(s.lines)) {
         for (let i = 0; i + 1 < r.length; i += 2) {
@@ -219,7 +224,7 @@ function parseListening(lines) {
       introRaw += (introRaw ? '\n\n' : '') + `### ${s.heading}\n\n` + s.lines.join('\n')
     }
   }
-  return { alphabet, intro: md(introRaw), practice, practiceIntro: md(practiceIntro), dictation, mcq }
+  return { alphabet, intro: md(introRaw), practice, practiceIntro: md(practiceIntro), dictation, mcq, transcript: md(transcript) }
 }
 
 /** Cắt các dòng NẰM GIỮA hai mốc (sau startRe, trước endRe). */
