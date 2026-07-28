@@ -1,0 +1,19 @@
+# Chuẩn hóa kết thúc dòng. Repo VỐN đã lưu toàn bộ file text bằng LF; khai báo
+# `eol=lf` để working tree trên Windows cũng giữ LF, hết cảnh báo
+# "LF will be replaced by CRLF" mỗi lần commit (Git Bash, Node/Vite, Vitest đều
+# đọc LF bình thường). Không đổi nội dung file nào đã commit.
+* text=auto eol=lf
+
+# Nhị phân — Git không được đụng vào nội dung/kết thúc dòng.
+*.mp3 binary
+*.wav binary
+*.m4a binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.heic binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
