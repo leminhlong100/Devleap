@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
 // Cấu hình test riêng (tách khỏi vite.config build) — vẫn dùng chung alias '@'
-// để import như trong app. Fixtures parser đọc thẳng từ weeks/ & Base_English/.
+// để import như trong app. Fixtures parser đọc thẳng từ weeks/ & IELTS/.
 export default defineConfig({
   plugins: [vue()],
   resolve: {

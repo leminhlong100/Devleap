@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Theo dõi các phần tử có [data-agenda-key] trong trang buổi học (DayView/IeltsDayView)
+// Theo dõi các phần tử có [data-agenda-key] trong trang buổi học (DayView/IeltsBookDayView/CommDayView)
 // để AgendaRail biết mục nào đang hiện trên màn hình (thanh ngang mobile) và để bấm
 // vào một mục trong rail có thể cuộn tới đúng phần tương ứng. Dùng document.querySelectorAll
 // thay vì template ref vì chỉ có đúng 1 buổi học được mount tại một thời điểm.

@@ -2,7 +2,7 @@
  * Bộ đề kiểm tra cuối tuần / cuối khóa.
  *
  * Chiến lược "kết hợp": ưu tiên ngân hàng đề riêng nếu đã soạn trong MD
- * (`week.weekTest` cho Java, `week.weekQuiz` cho IELTS); nếu chưa có thì GOM
+ * (`week.weekTest` cho Java, `week.weekQuiz` cho Giao Tiếp); nếu chưa có thì GOM
  * các câu "Quiz Nhanh" của mọi ngày trong tuần thành một bài kiểm tra. Nhờ vậy
  * tính năng chạy được ngay với nội dung hiện có, đồng thời chừa sẵn chỗ nâng cấp
  * sang đề chuyên biệt bám mục tiêu tuần sau này.
@@ -10,12 +10,10 @@
  * Hình dạng câu hỏi giống parseQuiz: { q, opts, correct, ex }.
  */
 import { javaWeeksData } from './course'
-import { ieltsWeeksData } from './courseIelts'
 import { commWeeksData } from './courseComm'
 
-const dataOf = (course) =>
-  course === 'ielts' ? ieltsWeeksData : course === 'comm' ? commWeeksData : javaWeeksData
-const courseLabel = (course) => (course === 'ielts' ? 'IELTS' : course === 'comm' ? 'Giao Tiếp' : 'Java')
+const dataOf = (course) => (course === 'comm' ? commWeeksData : javaWeeksData)
+const courseLabel = (course) => (course === 'comm' ? 'Giao Tiếp' : 'Java')
 
 // Gom các câu quiz nhanh của mọi ngày trong tuần thành một danh sách.
 const aggregateDayQuizzes = (week) => week.days.flatMap((d) => d.quiz || [])
@@ -32,7 +30,7 @@ function objectivesOf(course, week) {
 export function getWeekQuiz(course, weekNum) {
   const week = dataOf(course).find((w) => w.num === Number(weekNum))
   if (!week) return null
-  // Ngân hàng đề riêng nếu đã soạn (Java: weekTest; IELTS/Giao Tiếp: weekQuiz);
+  // Ngân hàng đề riêng nếu đã soạn (Java: weekTest; Giao Tiếp: weekQuiz);
   // nếu chưa thì gom quiz các ngày.
   const dedicated = week.weekTest?.length ? week.weekTest : week.weekQuiz?.length ? week.weekQuiz : null
   const questions = dedicated || aggregateDayQuizzes(week)

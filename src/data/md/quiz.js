@@ -1,6 +1,6 @@
 /**
  * Parser khối quiz trắc nghiệm dùng chung cho cả Java (weeks/) lẫn IELTS
- * (Base_English/). Format mỗi câu trong khoảng [start, end):
+ * (Comm_English/). Format mỗi câu trong khoảng [start, end):
  *   1. Câu hỏi?            (mục danh sách có số)
  *      - [ ] Phương án sai
  *      - [x] Phương án đúng

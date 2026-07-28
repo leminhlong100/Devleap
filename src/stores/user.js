@@ -16,7 +16,7 @@ import * as sync from './user/syncSupabase'
  * Lưu danh sách ngày đã hoàn thành theo từng khóa (`completed.java`,
  * `completed.ielts`), từ đó suy ra: mở khóa tuần kế, streak, XP, huy hiệu.
  * Cấu trúc tuần/ngày (số ngày mỗi tuần) sống ở tầng dữ liệu khóa học
- * (`data/course.js`, `data/courseIelts.js`) để store không phải kéo các chunk
+ * (`data/course.js`, `data/ieltsBook.js`) để store không phải kéo các chunk
  * Markdown nặng — view truyền `totalDays` vào khi cần tính hoàn thành tuần.
  *
  * Lưu trữ 2 lớp:

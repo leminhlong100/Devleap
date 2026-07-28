@@ -1,7 +1,9 @@
 /**
- * Parser cho khóa IELTS nền tảng — Base_English/NenTang_TuanN.md.
+ * Parser cho khóa tiếng Anh tổ chức THEO TUẦN — hiện dùng cho "Giao Tiếp Thực
+ * Chiến" (Comm_English/ThucChien_TuanN.md, xem ./parseComm.js bọc thêm section
+ * 🎭 tình huống).
  *
- * Khác với khóa Java (mỗi ngày là một section đầy đủ), IELTS tổ chức nội dung
+ * Khác với khóa Java (mỗi ngày là một section đầy đủ), khuôn này tổ chức nội dung
  * theo CHỦ ĐỀ ở cấp tuần:
  *   # Tuần N — Title (phụ đề tiếng Việt)
  *   ## 🎯 Mục tiêu & Trọng tâm tuần  (+ ### Nhịp học hằng ngày = bảng theo ngày)
@@ -13,8 +15,8 @@
  *   ## 📝 Kịch bản bài học           (### Bài học N.M)
  *   ## ✅ Quiz tuần N
  *
- * "Ngày" IELTS chỉ là checklist; nội dung học nằm ở cấp tuần (grammar/vocab),
- * nên getIeltsDay (ở courseIelts.js) ghép checklist của ngày + ngữ cảnh tuần.
+ * "Ngày" chỉ là checklist; nội dung học nằm ở cấp tuần (grammar/vocab), nên
+ * getEnglishDay (ở ../englishDay.js) ghép checklist của ngày + ngữ cảnh tuần.
  */
 import { parseQuiz } from './quiz'
 import { buildGrammarDrills } from './grammarDrills'
@@ -215,7 +217,7 @@ function parseChecklist(lines) {
   return items
 }
 
-export function parseIeltsWeek(raw) {
+export function parseEnglishWeek(raw) {
   const lines = raw.split(/\r?\n/)
   const meta = parseTitle(raw)
 

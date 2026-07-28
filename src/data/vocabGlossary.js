@@ -1,6 +1,6 @@
 /**
  * Glossary từ vựng IELTS nền tảng — biên soạn tay cho mọi từ trong
- * Base_English/NenTang_TuanN.md (mục "🗂️ Phòng từ vựng → Từ chính: …").
+ * Comm_English/ThucChien_TuanN.md (mục "🗂️ Phòng từ vựng → Từ chính: …").
  *
  * MD nguồn chỉ liệt kê *danh sách từ* (không IPA / nghĩa / ví dụ), nên file này
  * bổ sung phần còn thiếu để VocabCard và Flashcard hiển thị đầy đủ:

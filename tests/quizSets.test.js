@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { getWeekQuiz, getFinalQuiz, getQuizSet, weekQuizCount } from '@/data/quizSets'
 
-// Các bài kiểm tra này chạy trên dữ liệu thật (parse từ weeks/*.md & Base_English/*.md
+// Các bài kiểm tra này chạy trên dữ liệu thật (parse từ weeks/*.md & Comm_English/*.md
 // qua import.meta.glob), nên chỉ kiểm tra bất biến về cấu trúc, không hard-code nội dung.
 
 const isQuestion = (q) =>

@@ -9,7 +9,7 @@ import {
   parseIntonation,
   parseListening,
 } from '@/data/md/parseComm'
-import { parseIeltsWeek } from '@/data/md/parseIelts'
+import { parseEnglishWeek } from '@/data/md/parseEnglishWeek'
 
 const DIR = path.resolve(process.cwd(), 'Comm_English')
 const read = (f) => fs.readFileSync(path.join(DIR, f), 'utf8')
@@ -47,7 +47,7 @@ describe('parseScenarios() — section 🎭 Tình huống thực chiến', () =>
   })
 })
 
-describe('parseCommWeek() — bọc parseIeltsWeek + scenarios', () => {
+describe('parseCommWeek() — bọc parseEnglishWeek + scenarios', () => {
   const raw = read('ThucChien_Tuan1.md')
 
   it('giữ nguyên dữ liệu IELTS-style (num, days, vocab, quiz)', () => {
@@ -59,12 +59,12 @@ describe('parseCommWeek() — bọc parseIeltsWeek + scenarios', () => {
     expect(w.weekQuiz.length).toBeGreaterThanOrEqual(6)
   })
 
-  it('gắn thêm scenarios[] không phá cấu trúc parseIeltsWeek', () => {
+  it('gắn thêm scenarios[] không phá cấu trúc parseEnglishWeek', () => {
     const w = parseCommWeek(raw)
-    const base = parseIeltsWeek(raw)
+    const base = parseEnglishWeek(raw)
     expect(Array.isArray(w.scenarios)).toBe(true)
     expect(w.scenarios.length).toBe(6)
-    // các khóa của parseIeltsWeek vẫn còn nguyên
+    // các khóa của parseEnglishWeek vẫn còn nguyên
     expect(Object.keys(base).every((k) => k in w)).toBe(true)
   })
 })

@@ -1,155 +1,15 @@
 /**
- * Dữ liệu khóa IELTS nền tảng — nạp & parse từ Base_English/*.md lúc chạy.
- * Cấu trúc tuần xem ./md/parseIelts.js. "Ngày" IELTS là checklist; nội dung học
- * (grammar/vocab/lesson script) ở cấp tuần nên getIeltsDay ghép cả hai lại.
+ * Dựng CHI TIẾT MỘT BUỔI cho khóa tiếng Anh tổ chức theo TUẦN (khuôn
+ * ./md/parseEnglishWeek.js). Nội dung học (grammar/vocab/kịch bản) nằm ở cấp
+ * tuần còn "ngày" chỉ là checklist, nên `getEnglishDay()` ghép checklist của
+ * ngày với ngữ cảnh tuần rồi cắt phần thuộc về buổi đó (cửa sổ từ vựng trượt,
+ * ngữ pháp trọng tâm, kho đặt câu…).
+ *
+ * Hiện dùng cho khóa "Giao Tiếp Thực Chiến" (xem ./courseComm.js). Tách riêng
+ * khỏi file dữ liệu khóa để unit-test được và để khóa khác cùng khuôn dùng lại.
  */
-import { parseIeltsWeek } from './md/parseIelts'
 import { decorateVocab } from './md/vocab'
 import { lookupVocab } from './vocabGlossary'
-import { getIeltsInput } from './ieltsInput'
-import { getGrammarExtra } from './ieltsGrammarExtra'
-
-const rawFiles = import.meta.glob('../../Base_English/*.md', { query: '?raw', import: 'default', eager: true })
-
-// Track A (Work & Life English, mặc định) thay Tuần 6–8 bằng bản "*_Work.md";
-// Track B (IELTS Bridge) giữ nguyên các file gốc. Tuần 1–5 dùng chung cho cả hai track.
-const baseRaw = {}
-const workRaw = {}
-for (const [path, mod] of Object.entries(rawFiles)) {
-  if (/_Work\.md$/.test(path)) workRaw[path] = mod
-  else baseRaw[path] = mod
-}
-
-const TRACK_KEY = 'devleap:ielts-track:v1'
-/** Đọc track đã lưu (mặc định 'A' — Work & Life English). Đổi track cần tải lại trang. */
-function readTrackPref() {
-  try {
-    return localStorage.getItem(TRACK_KEY) === 'B' ? 'B' : 'A'
-  } catch {
-    return 'A'
-  }
-}
-export function setIeltsTrackPref(track) {
-  try {
-    localStorage.setItem(TRACK_KEY, track === 'B' ? 'B' : 'A')
-  } catch {
-    // localStorage không khả dụng (SSR/test) -> bỏ qua, track vẫn dùng mặc định
-  }
-}
-export const ieltsTrack = readTrackPref()
-
-const baseWeeksRaw = Object.values(baseRaw).map((raw) => parseIeltsWeek(raw)).filter((w) => w.num > 0)
-const workWeeksRaw = Object.values(workRaw).map((raw) => parseIeltsWeek(raw)).filter((w) => w.num > 0)
-const weeksCache = {}
-
-/** Dựng danh sách tuần cho một track cụ thể ('A' | 'B'), có cache lại. */
-export function getIeltsWeeksData(track) {
-  const key = track === 'B' ? 'B' : 'A'
-  if (weeksCache[key]) return weeksCache[key]
-  const workNums = new Set(workWeeksRaw.map((w) => w.num))
-  const weeks = (
-    key === 'A' ? [...baseWeeksRaw.filter((w) => !workNums.has(w.num)), ...workWeeksRaw] : baseWeeksRaw
-  )
-    .map(mergeGrammarExtra)
-    .sort((a, b) => a.num - b.num)
-  weeksCache[key] = weeks
-  return weeks
-}
-
-// Chuẩn hóa câu hỏi để so trùng khi gộp bài tập (bỏ dấu câu, gộp khoảng trắng).
-const drillKey = (q) => String(q || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
-
-/**
- * Gộp bài tập biên soạn thêm (ieltsGrammarExtra) vào mỗi điểm ngữ pháp — để buổi
- * học mới có đủ 6–10 câu (cổng ≥70% mới có ý nghĩa). Dedup theo câu hỏi, cắt ≤10.
- */
-function mergeGrammarExtra(week) {
-  for (const g of week.grammar || []) {
-    const extra = getGrammarExtra(week.num, g.title)
-    if (!extra.length) continue
-    const seen = new Set((g.drills || []).map((d) => drillKey(d.q)))
-    for (const d of extra) {
-      const k = drillKey(d.q)
-      if (seen.has(k)) continue
-      seen.add(k)
-      g.drills.push(d)
-    }
-    g.drills = g.drills.slice(0, 10)
-  }
-  return week
-}
-
-export const ieltsWeeksData = getIeltsWeeksData(ieltsTrack)
-
-export const ieltsTotals = {
-  weeks: ieltsWeeksData.length,
-  lessons: ieltsWeeksData.reduce((sum, w) => sum + w.days.length, 0),
-}
-
-// MD IELTS không có emoji ở tiêu đề tuần — giữ icon biên tập theo kỹ năng.
-const ICONS = ['🧭', '🎧', '📖', '✍️', '📝', '🗣️', '💬', '🎯']
-
-// -------------------- Cấu trúc tuần (để suy ra tiến độ) --------------------
-export const ieltsWeekStructure = ieltsWeeksData.map((w, i) => ({
-  num: w.num,
-  icon: ICONS[i % ICONS.length],
-  title: w.title,
-  sub: w.subtitle || `${w.days.length} ngày học`,
-  dayNums: w.days.map((d) => d.n),
-}))
-
-const isWeekDone = (wk, completed) => wk.dayNums.every((d) => completed.includes(`${wk.num}:${d}`))
-
-/**
- * Trạng thái mỗi tuần (done/current/locked).
- * Một tuần coi là "done" (để mở tuần kế) khi ĐÃ XONG HẾT NGÀY **và** ĐÃ ĐẠT bài
- * kiểm tra tuần — đúng yêu cầu "pass hết mới qua tuần mới". `isWeekPassed` do view
- * truyền vào (đọc từ store); mặc định luôn true để tương thích ngược.
- */
-export function computeIeltsStatuses(completed = [], isWeekPassed = () => true) {
-  const map = {}
-  let prevDone = true
-  for (const wk of ieltsWeekStructure) {
-    const done = isWeekDone(wk, completed) && isWeekPassed(wk.num)
-    map[wk.num] = done ? 'done' : prevDone ? 'current' : 'locked'
-    prevDone = done
-  }
-  return map
-}
-
-/** Dựng mảng tuần kèm trạng thái mở khóa theo tiến độ hiện tại. */
-export function computeIeltsWeeks(completed = [], isWeekPassed = () => true) {
-  const statuses = computeIeltsStatuses(completed, isWeekPassed)
-  return ieltsWeekStructure.map((w) => ({ num: w.num, icon: w.icon, title: w.title, sub: w.sub, status: statuses[w.num] }))
-}
-
-/** Tóm tắt tiến độ IELTS: số tuần xong, % theo ngày, tuần hiện tại & buổi học tiếp theo. */
-export function computeIeltsProgress(completed = [], isWeekPassed = () => true) {
-  const statuses = computeIeltsStatuses(completed, isWeekPassed)
-  const doneWeeks = ieltsWeekStructure.filter((w) => statuses[w.num] === 'done').length
-  const cur = ieltsWeekStructure.find((w) => statuses[w.num] === 'current')
-  let next
-  if (cur) {
-    // Còn ngày chưa xong -> tới ngày đó; đã xong hết ngày nhưng chưa đạt bài kiểm tra
-    // tuần -> đưa về ngày CUỐI (nơi có thẻ "tổng hợp + bài kiểm tra tuần").
-    const firstUndone = cur.dayNums.find((d) => !completed.includes(`${cur.num}:${d}`))
-    next = { week: cur.num, day: firstUndone ?? cur.dayNums[cur.dayNums.length - 1] }
-  } else {
-    const last = ieltsWeekStructure[ieltsWeekStructure.length - 1]
-    next = { week: last.num, day: last.dayNums[0] }
-  }
-  const totalDays = ieltsWeekStructure.reduce((s, w) => s + w.dayNums.length, 0)
-  return {
-    doneWeeks,
-    totalWeeks: ieltsWeekStructure.length,
-    currentWeek: cur ? cur.num : ieltsWeekStructure.length,
-    continue: next,
-    allDone: !cur,
-    doneDays: completed.length,
-    totalDays,
-    pct: totalDays ? Math.round((completed.length / totalDays) * 100) : 0,
-  }
-}
 
 /**
  * Khoảng [start, end) của buổi thứ `dayIdx` khi chia đều `total` mục cho `totalDays`
@@ -324,7 +184,7 @@ function grammarTokens(title) {
 /**
  * Quyết định mỗi NGÀY dạy điểm ngữ pháp nào — KHỚP tiêu đề/checklist ngày với mục
  * ngữ pháp, KHÔNG gán theo vị trí. Sửa cảnh "tiêu đề một đằng, nội dung một nẻo"
- * khi thứ tự mục ngữ pháp ≠ thứ tự dạy (vd Tuần 4) hoặc tuần có ít điểm hơn số ngày.
+ * khi thứ tự mục ngữ pháp ≠ thứ tự dạy hoặc tuần có ít điểm hơn số ngày.
  * Trả về mảng theo từng ngày: { mode: 'new'|'review'|'final', focusIdx: number|null }.
  */
 export function assignWeekGrammar(week) {
@@ -386,16 +246,14 @@ export function assignWeekGrammar(week) {
   })
 }
 
-// Bản đồ mặc định (chưa có tiến độ) — dùng cho re-export.
-export const ieltsWeeks = computeIeltsWeeks([])
-
-export function getIeltsWeek(num, weeksData = ieltsWeeksData) {
+/** Tìm một tuần trong dữ liệu đã parse. */
+export function getEnglishWeek(num, weeksData = []) {
   return weeksData.find((w) => w.num === Number(num)) || null
 }
 
-/** Chi tiết một ngày IELTS = checklist của ngày + ngữ cảnh tuần (grammar/vocab). */
-export function getIeltsDay(weekNum, dayNum, weeksData = ieltsWeeksData) {
-  const week = getIeltsWeek(weekNum, weeksData)
+/** Chi tiết một ngày = checklist của ngày + ngữ cảnh tuần (grammar/vocab). */
+export function getEnglishDay(weekNum, dayNum, weeksData = []) {
+  const week = getEnglishWeek(weekNum, weeksData)
   if (!week) return null
   const idx = week.days.findIndex((d) => d.n === Number(dayNum))
   const day = idx >= 0 ? week.days[idx] : week.days[0]
@@ -494,10 +352,6 @@ export function getIeltsDay(weekNum, dayNum, weeksData = ieltsWeeksData) {
   const [bs, be] = chunkRange(bank.length, totalDays, idx)
   const sentenceBank = bank.slice(bs, be)
 
-  // —— NGUỒN NHẬP THẬT của buổi: bài đọc ngắn + bài nghe (tên/số) kèm câu hỏi.
-  // Curate ở data/ieltsInput.js (markdown tuần không có bài đọc/nghe đúng nghĩa).
-  const input = getIeltsInput(week.num, day.n)
-
   return {
     n: day.n,
     title,
@@ -513,8 +367,6 @@ export function getIeltsDay(weekNum, dayNum, weeksData = ieltsWeeksData) {
     phrases,
     sentences,
     grammarExamples, // câu đúng của ngày -> luyện nghe & phát âm
-    reading: input?.reading || null, // bài đọc hiểu ngắn của buổi (null nếu chưa có)
-    listening: input?.listening || null, // bài nghe (tên/số) của buổi (null nếu chưa có)
     sentenceBank, // câu mở đầu để đặt câu (Production)
     lessonScript: week.lessonScripts[idx] || null,
     skills: week.skills, // bài giảng & khung mẫu của tuần (bài đọc, script nghe, khung Speaking/Writing…)
@@ -526,7 +378,7 @@ export function getIeltsDay(weekNum, dayNum, weeksData = ieltsWeeksData) {
     // ngữ cảnh tuần để điều hướng
     week: week.num,
     weekTitle: week.title,
-    milestone: week.milestone || '', // mốc kiểm tra thật của tuần (thay nhãn "Band 6.5")
+    milestone: week.milestone || '', // mốc kiểm tra thật của tuần
     totalDays: week.days.length,
     prevDay: idx > 0 ? week.days[idx - 1].n : null,
     nextDay: idx < week.days.length - 1 ? week.days[idx + 1].n : null,

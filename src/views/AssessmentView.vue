@@ -5,7 +5,6 @@ import { useUserStore } from '@/stores/user'
 import QuizTool from '@/components/tools/QuizTool.vue'
 import { getQuizSet } from '@/data/quizSets'
 import { computeJavaProgress, javaWeekStructure } from '@/data/course'
-import { computeIeltsProgress } from '@/data/courseIelts'
 import { computeCommProgress } from '@/data/courseComm'
 
 // Bài kiểm tra cuối tuần/cuối khóa. Route: /courses/:course/test/:scope
@@ -18,11 +17,9 @@ const set = computed(() => getQuizSet(props.course, props.scope))
 
 // Thi cuối khóa chỉ mở khi đã hoàn thành toàn bộ lộ trình. Chặn cả khi gõ thẳng URL.
 const courseDone = computed(() =>
-  props.course === 'ielts'
-    ? computeIeltsProgress(user.completed.ielts, (n) => user.quizPassed('ielts', `week:${n}`)).allDone
-    : props.course === 'comm'
-      ? computeCommProgress(user.completed.comm || [], (n) => user.quizPassed('comm', `week:${n}`)).allDone
-      : computeJavaProgress(user.completed.java).allDone,
+  props.course === 'comm'
+    ? computeCommProgress(user.completed.comm || [], (n) => user.quizPassed('comm', `week:${n}`)).allDone
+    : computeJavaProgress(user.completed.java).allDone,
 )
 const finalLocked = computed(() => props.scope === 'final' && !courseDone.value)
 
@@ -37,8 +34,8 @@ const weekLocked = computed(() => {
   return !wk.dayNums.every((d) => completed.includes(`${wk.num}:${d}`))
 })
 
-const courseRoute = computed(() => (props.course === 'ielts' ? 'ielts' : props.course === 'comm' ? 'comm' : 'java'))
-const courseLabel = computed(() => (props.course === 'ielts' ? 'IELTS' : props.course === 'comm' ? 'Giao Tiếp' : 'Java'))
+const courseRoute = computed(() => (props.course === 'comm' ? 'comm' : 'java'))
+const courseLabel = computed(() => (props.course === 'comm' ? 'Giao Tiếp' : 'Java'))
 
 watchEffect(() => {
   if (finalLocked.value || weekLocked.value) {

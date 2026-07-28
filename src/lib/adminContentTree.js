@@ -1,5 +1,5 @@
 import { javaWeeksData } from '@/data/course'
-import { ieltsWeeksData } from '@/data/courseIelts'
+import { ieltsBookDays, IELTS_BOOK_WEEK } from '@/data/ieltsBook'
 import { commWeeksData } from '@/data/courseComm'
 
 /**
@@ -13,6 +13,24 @@ import { commWeeksData } from '@/data/courseComm'
  * `buildContentTree` nhận dữ liệu tuần qua tham số (mặc định = bản parse thật) để
  * test được với fixture nhẹ.
  */
+
+/**
+ * Khóa IELTS tổ chức theo BUỔI (Day 1–15) chứ không theo tuần — gói thành MỘT
+ * "tuần" ảo để dùng chung khuôn cây nội dung với Java/Comm.
+ */
+const ieltsAsWeeks = () => [
+  {
+    num: IELTS_BOOK_WEEK,
+    title: 'Theo sách — 15 buổi',
+    days: ieltsBookDays.map((d) => ({
+      n: d.day,
+      title: d.title || '',
+      emoji: '🎧',
+      vocab: d.vocab?.words || [],
+      quiz: d.grammar || [],
+    })),
+  },
+]
 
 // Các mảng ở cấp BUỔI đáng đếm (khác nhau giữa khóa: Java giàu, IELTS/Comm là checklist).
 const DAY_BADGES = [
@@ -67,12 +85,12 @@ function buildCourse(key, label, file, weeksData) {
 /** Cây nội dung 3 khóa. Truyền dữ liệu để test; mặc định dùng bản parse thật. */
 export function buildContentTree({
   java = javaWeeksData,
-  ielts = ieltsWeeksData,
+  ielts = ieltsAsWeeks(),
   comm = commWeeksData,
 } = {}) {
   return [
     buildCourse('java', 'Java 12 Tuần', 'weeks/*.md', java),
-    buildCourse('ielts', 'IELTS Cơ Bản', 'Base_English/*.md', ielts),
+    buildCourse('ielts', 'IELTS Cơ Bản', 'IELTS/day-*.md', ielts),
     buildCourse('comm', 'Giao Tiếp Thực Chiến', 'Comm_English/*.md', comm),
   ]
 }

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { courses } from '@/data/courses'
 import { computeJavaProgress } from '@/data/course'
-import { computeIeltsProgress } from '@/data/courseIelts'
+import { computeIeltsBookProgress } from '@/data/ieltsBook'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,7 +43,7 @@ function enrolledIn(c) {
 // % tiến độ thật theo từng khóa (các khóa khác giữ giá trị biên tập sẵn).
 function progressOf(c) {
   if (c.id === 'java') return computeJavaProgress(user.completed.java).pct
-  if (c.id === 'ielts') return computeIeltsProgress(user.completed.ielts).pct
+  if (c.id === 'ielts') return computeIeltsBookProgress(user.completed.ielts).pct
   return c.progress
 }
 

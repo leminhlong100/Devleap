@@ -114,6 +114,34 @@ export function getBookDay(dayNum) {
 }
 
 /**
+ * Adapter cho KHU CÔNG CỤ (Flashcard/Quiz làm lại theo buổi, xem views/ToolsView.vue
+ * và components/tools/LessonPicker.vue) — trả về cùng khuôn với `getJavaDay`:
+ * { n, week, title, vocab[], reviewVocab[], quiz[] }. Khóa theo sách chưa gom
+ * quiz ở cấp buổi nên `quiz` rỗng (bài tập nằm trong từng khối của trang học).
+ */
+export function getIeltsDay(weekNum, dayNum) {
+  const d = getBookDay(dayNum)
+  if (!d) return null
+  return {
+    n: d.n,
+    week: IELTS_BOOK_WEEK,
+    title: d.title,
+    vocab: d.vocabCards,
+    reviewVocab: [],
+    quiz: [],
+  }
+}
+
+/** Cả khóa gói thành MỘT "tuần" (khóa tính theo buổi) — dùng cho chế độ ôn cả tuần. */
+export function getIeltsWeek() {
+  return {
+    num: IELTS_BOOK_WEEK,
+    title: 'IELTS Cơ Bản — theo sách',
+    days: parsedDays.map((d) => ({ n: d.day })),
+  }
+}
+
+/**
  * Tiến độ khóa IELTS (theo buổi, trên tổng 15 buổi của sách). `completed` = mảng
  * "1:n" của store. Buổi kế = buổi CHƯA hoàn thành đầu tiên trong 1..15 (kể cả
  * buổi chưa số hóa — để "Học tiếp" luôn tiến về phía trước khi thêm Day mới).

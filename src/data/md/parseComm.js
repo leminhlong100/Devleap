@@ -1,7 +1,7 @@
 /**
  * Parser cho khóa "Giao Tiếp Thực Chiến" — Comm_English/ThucChien_TuanN.md.
  *
- * TÁI DÙNG parseIeltsWeek() nguyên vẹn cho các section cũ (mục tiêu, ngữ pháp,
+ * TÁI DÙNG parseEnglishWeek() nguyên vẹn cho các section cũ (mục tiêu, ngữ pháp,
  * từ vựng, lịch 7 ngày, quiz tuần) — file MD giữ đúng khuôn IELTS. Khóa này CHỈ
  * thêm 1 section mới:
  *
@@ -21,9 +21,9 @@
  * Quy ước map buổi ↔ tình huống: `Tình huống N.D` = Tuần N, Buổi D. Ngày không có
  * roleplay (mission/boss) thì không cần khai báo tình huống — getCommDay tự trả null.
  */
-import { parseIeltsWeek } from './parseIelts'
+import { parseEnglishWeek } from './parseEnglishWeek'
 
-/** Tách theo heading cấp `level` (## hoặc ###), bỏ qua code fence. (bản gọn của parseIelts) */
+/** Tách theo heading cấp `level` (## hoặc ###), bỏ qua code fence. (bản gọn của parseEnglishWeek) */
 function splitByLevel(lines, level) {
   const prefix = '#'.repeat(level) + ' '
   const sections = []
@@ -259,7 +259,7 @@ export function parseListening(raw) {
  * @param {string} raw
  */
 export function parseCommWeek(raw) {
-  const week = parseIeltsWeek(raw)
+  const week = parseEnglishWeek(raw)
   return {
     ...week,
     scenarios: parseScenarios(raw),

@@ -1,13 +1,13 @@
 /**
  * Dữ liệu khóa "Giao Tiếp Thực Chiến" — nạp & parse từ Comm_English/*.md lúc chạy.
  *
- * TÁI DÙNG tối đa hạ tầng IELTS: parseCommWeek (= parseIeltsWeek + scenarios) và
- * getIeltsDay() (nhận `weeksData` nên dùng lại được cho khóa comm). File này chỉ
- * thêm phần RIÊNG của khóa: bản đồ tuần, tiến độ, và getCommDay() — ghép ngày học
- * IELTS-style với TÌNH HUỐNG roleplay của buổi theo quy ước `N.D` (Tuần N · Buổi D).
+ * TÁI DÙNG hạ tầng khóa tiếng Anh theo tuần: parseCommWeek (= parseEnglishWeek +
+ * scenarios) và getEnglishDay() (nhận `weeksData`). File này chỉ thêm phần RIÊNG
+ * của khóa: bản đồ tuần, tiến độ, và getCommDay() — ghép ngày học
+ * theo tuần với TÌNH HUỐNG roleplay của buổi theo quy ước `N.D` (Tuần N · Buổi D).
  */
 import { parseCommWeek } from './md/parseComm'
-import { getIeltsDay } from './courseIelts'
+import { getEnglishDay } from './englishDay'
 
 const rawFiles = import.meta.glob('../../Comm_English/*.md', { query: '?raw', import: 'default', eager: true })
 
@@ -145,11 +145,11 @@ const RECALL_SCENE = {
 }
 
 /**
- * Chi tiết một buổi khóa comm = ngày học IELTS-style (checklist + cụm + quiz) +
+ * Chi tiết một buổi khóa comm = ngày học theo tuần (checklist + cụm + quiz) +
  * TÌNH HUỐNG roleplay của buổi (nếu có) đã đóng gói sẵn cho useChatEngine.
  */
 export function getCommDay(weekNum, dayNum) {
-  const base = getIeltsDay(weekNum, dayNum, commWeeksData)
+  const base = getEnglishDay(weekNum, dayNum, commWeeksData)
   if (!base) return null
   const week = getCommWeek(weekNum)
   const sc = (week?.scenarios || []).find((s) => s.day === base.n) || null

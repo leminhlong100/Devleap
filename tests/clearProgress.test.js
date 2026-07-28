@@ -33,7 +33,6 @@ describe('clearLocalProgress — xóa dữ liệu tiến độ, giữ tùy chọ
   it('GIỮ nguyên tùy chọn cấp app', () => {
     localStorage.setItem('devleap:theme', 'dark')
     localStorage.setItem('devleap:haptics', 'off')
-    localStorage.setItem('devleap:ielts-track:v1', 'B')
     localStorage.setItem('devleap:install-dismissed-at', '123')
     localStorage.setItem('devleap:reminder-hour', '20')
     localStorage.setItem('ipa:hello', 'həˈloʊ')
@@ -42,7 +41,6 @@ describe('clearLocalProgress — xóa dữ liệu tiến độ, giữ tùy chọ
 
     expect(localStorage.getItem('devleap:theme')).toBe('dark')
     expect(localStorage.getItem('devleap:haptics')).toBe('off')
-    expect(localStorage.getItem('devleap:ielts-track:v1')).toBe('B')
     expect(localStorage.getItem('devleap:install-dismissed-at')).toBe('123')
     expect(localStorage.getItem('devleap:reminder-hour')).toBe('20')
     expect(localStorage.getItem('ipa:hello')).toBe('həˈloʊ')

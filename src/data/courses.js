@@ -1,19 +1,18 @@
 /**
  * Dữ liệu khóa học & lộ trình.
  * Bản đồ tuần và chi tiết ngày được parse runtime từ Markdown:
- *   - Java  → weeks/*.md         (xem ./course.js)
- *   - IELTS → Base_English/*.md  (xem ./courseIelts.js)
+ *   - Java  → weeks/*.md      (xem ./course.js)
+ *   - IELTS → IELTS/day-*.md  (xem ./ieltsBook.js)
  * File này giữ phần biên tập (banner, mô tả khóa, giai đoạn, kỹ năng IELTS).
  * Lưu ý: nội dung trang chủ (features/steps) tách sang ./home.js để trang chủ
  * không phải tải các chunk MD nặng.
  */
 import { javaWeeks, javaTotals } from './course'
-import { ieltsWeeks } from './courseIelts'
 import { ieltsBookTotals } from './ieltsBook'
 import { commTotals } from './courseComm'
 import { INTERVIEW_TOTALS } from './javaInterview'
 
-export { javaWeeks, ieltsWeeks }
+export { javaWeeks }
 
 // -------------------- Thư viện khóa học --------------------
 export const courses = [
@@ -115,37 +114,7 @@ export const javaMeta = {
 }
 
 // -------------------- Bản đồ IELTS --------------------
-// `ieltsWeeks` được parse từ Base_English/*.md (re-export ở đầu file).
-
-export const ieltsStages = {
-  1: { icon: '🚀', label: 'Giai đoạn 1 · Khởi động', range: 'Tuần 1' },
-  2: { icon: '👂', label: 'Giai đoạn 2 · Nghe & Đọc', range: 'Tuần 2–3' },
-  4: { icon: '✍️', label: 'Giai đoạn 3 · Viết', range: 'Tuần 4–5' },
-  6: { icon: '🗣️', label: 'Giai đoạn 4 · Nói', range: 'Tuần 6–7' },
-  8: { icon: '🏁', label: 'Về đích', range: 'Tuần 8' },
-}
-
-export const ieltsExplain = [
-  { icon: '🎯', bg: 'rgba(0,214,143,.14)', title: 'IELTS là gì?', desc: 'Kỳ thi đo 4 kỹ năng tiếng Anh, dùng để du học, định cư hay xin việc. Đừng lo — mình bắt đầu từ con số 0.' },
-  { icon: '🎧', bg: 'rgba(108,92,231,.12)', title: '4 kỹ năng', desc: 'Nghe · Đọc · Viết · Nói. Mỗi kỹ năng chấm riêng rồi lấy trung bình ra band tổng.' },
-  { icon: '📊', bg: 'rgba(255,176,32,.16)', title: 'Thang điểm 0–9', desc: 'Band 5.0 là trung bình, 6.5 đủ đi du học phần lớn. Khóa này nhắm mục tiêu Band 6.5.' },
-  { icon: '⏱️', bg: 'rgba(0,184,217,.14)', title: 'Chỉ 15–20 phút/ngày', desc: 'Học từng chút mỗi ngày và giữ streak. Không cần cày 3 tiếng mới giỏi đâu!' },
-]
-
-export const ieltsSkills = [
-  { icon: '🎧', name: 'Listening', time: '~30 phút', desc: '4 phần · 40 câu', bg: 'linear-gradient(135deg,#6C5CE7,#8B7CF0)' },
-  { icon: '📖', name: 'Reading', time: '60 phút', desc: '3 đoạn · 40 câu', bg: 'linear-gradient(135deg,#00B8D9,#3dd7f0)' },
-  { icon: '✍️', name: 'Writing', time: '60 phút', desc: '2 bài (Task 1 & 2)', bg: 'linear-gradient(135deg,#FF7A59,#ff9f85)' },
-  { icon: '🗣️', name: 'Speaking', time: '11–14 phút', desc: 'Phỏng vấn 3 phần', bg: 'linear-gradient(135deg,#00D68F,#34e0a8)' },
-]
-
-export const bandLadder = [
-  { band: '4.0', label: 'Sơ cấp', pct: 38 },
-  { band: '5.0', label: 'Trung bình', pct: 56 },
-  { band: '5.5', label: 'Khá', pct: 66 },
-  { band: '6.5', label: 'Mục tiêu', pct: 82, target: true },
-  { band: '7.5', label: 'Giỏi', pct: 96 },
-]
+// Khóa IELTS theo sách tổ chức theo BUỔI (15 Day) — bản đồ dựng ở ./ieltsBook.js.
 
 export const ieltsMeta = {
   bannerGrad: 'linear-gradient(150deg,#00D68F,#00966a)',

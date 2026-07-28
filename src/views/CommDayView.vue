@@ -848,7 +848,7 @@ details[open] .reflex-caret {
   color: var(--slate);
 }
 
-/* vocab (dùng lại phong cách IeltsDayView) */
+/* vocab */
 .vocab-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

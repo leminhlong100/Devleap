@@ -4,7 +4,7 @@ export const dayKey = (week, day) => `${week}:${day}`
 export const ymd = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 
 // Chuẩn hóa từ để sinh srsId khớp với `cardsFromTerms` (data/tools.js) mà không
-// phải kéo chunk khóa học (course.js/courseIelts.js) nặng vào bundle của store —
+// phải kéo chunk khóa học (course.js/ieltsBook.js) nặng vào bundle của store —
 // xem `data/searchIndex.js#normalize`, cùng logic, cố ý trùng lặp.
 export const normalizeTerm = (str) =>
   (str || '')

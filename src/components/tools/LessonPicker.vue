@@ -18,7 +18,7 @@ const groups = ref([]) // [{ course, courseName, emoji, week, label, days:[...],
 
 const COURSES = [
   { id: 'java', name: 'Java', emoji: '☕', label: 'Ngày', loader: () => import('@/data/course'), getter: 'getJavaDay' },
-  { id: 'ielts', name: 'IELTS', emoji: '🎯', label: 'Buổi', loader: () => import('@/data/courseIelts'), getter: 'getIeltsDay' },
+  { id: 'ielts', name: 'IELTS', emoji: '🎯', label: 'Buổi', loader: () => import('@/data/ieltsBook'), getter: 'getIeltsDay' },
 ]
 
 const unit = () => (props.tool === 'quiz' ? 'câu' : 'từ')

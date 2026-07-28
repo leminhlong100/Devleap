@@ -100,14 +100,6 @@ const routes = [
     meta: { requiresAuth: true, title: 'Tổng kết khóa Giao Tiếp' },
   },
 
-  // So sánh mốc ghi âm (Đầu/Giữa/Cuối khóa) + nhật ký Mission + huy hiệu real-life
-  {
-    path: '/milestones',
-    name: 'milestones',
-    component: () => import('@/views/MilestonesView.vue'),
-    meta: { requiresAuth: true, title: 'Mốc tiến bộ' },
-  },
-
   // Biểu đồ tiến bộ viết & nói (điểm viết theo buổi, phút nói theo tuần)
   {
     path: '/progress',
@@ -127,7 +119,7 @@ const routes = [
 
   // Bài kiểm tra cuối tuần / cuối khóa (lưu điểm) — scope: "week-N" | "final"
   {
-    path: '/courses/:course(java|ielts|comm)/test/:scope',
+    path: '/courses/:course(java|comm)/test/:scope',
     name: 'assessment',
     component: () => import('@/views/AssessmentView.vue'),
     props: true,

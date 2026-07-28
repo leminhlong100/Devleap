@@ -1,5 +1,5 @@
 /**
- * Renderer Markdown dùng chung cho cả khóa Java (weeks/) lẫn IELTS (Base_English/).
+ * Renderer Markdown dùng chung cho cả khóa Java (weeks/) lẫn tiếng Anh (IELTS/, Comm_English/).
  *
  * Vì sao cần lớp này thay vì gọi thẳng marked.parse:
  *   Nội dung khóa học là **Markdown thuần** (không cố ý chèn HTML). Nhưng các

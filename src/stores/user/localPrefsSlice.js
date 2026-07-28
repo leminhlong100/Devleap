@@ -1,11 +1,10 @@
-import { ieltsTrack, setIeltsTrackPref } from '@/data/courseIelts'
 import { javaSrsId } from '@/data/javaInterview'
 import { isOptedOut as isAnalyticsOptedOut, setOptedOut as persistAnalyticsOptOut } from '@/lib/analytics'
 
 /**
  * Tùy chọn chỉ lưu LOCAL, không đồng bộ cloud và không nằm trong
  * snapshot()/applySnapshot() (không phải "tiến độ" mà là "sở thích thiết bị"):
- * persona chat + từ đánh dấu sao, track khóa IELTS nền tảng.
+ * persona chat + từ đánh dấu sao.
  */
 const CONVO_KEY = 'devleap:convo:v1'
 // `activeSaveTopic`: chủ đề đang chọn để gắn vào từ/câu lưu khi chat với AI
@@ -49,9 +48,6 @@ export function state() {
   return {
     // tùy chọn chế độ hội thoại (hiện chỉ có persona lời phê) — chỉ local.
     convoPrefs: { ...DEFAULT_CONVO },
-    // Track khóa IELTS nền tảng ('A' = Work & Life English, mặc định; 'B' = IELTS
-    // Bridge) — chỉ local, đọc từ data/courseIelts.js lúc app khởi động.
-    ieltsTrack,
     // Kết quả phỏng vấn thử Java — chỉ local.
     javaPrep: { ...DEFAULT_JAVA_PREP },
     // Đã tắt analytics ẩn danh chưa (Bước 4.1) — chỉ local, nguồn sự thật thật
@@ -110,17 +106,6 @@ export const actions = {
     const g = cur[k] || { attempts: 0, confused: 0 }
     const next = { attempts: g.attempts + 1, confused: g.confused + (confused ? 1 : 0) }
     this.setConvoPrefs({ commConfusions: { ...cur, [k]: next } })
-  },
-
-  /**
-   * Đổi track khóa IELTS nền tảng ('A'|'B'). Tuần 1–8 được nạp một lần lúc
-   * module tải (xem data/courseIelts.js) nên đổi track cần tải lại trang.
-   */
-  setIeltsTrack(track) {
-    const next = track === 'B' ? 'B' : 'A'
-    if (next === this.ieltsTrack) return
-    setIeltsTrackPref(next)
-    window.location.reload()
   },
 
   /** Nạp kết quả phỏng vấn thử Java từ localStorage (local-only, gọi trong hydrate()). */

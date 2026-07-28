@@ -1,6 +1,5 @@
-/* Style dùng chung giữa các "khối" (section) của buổi học IELTS — tách khỏi
-   IeltsDayView.vue (Bước 3.1) để không lặp lại giữa view và các component con
-   (DayHeader/GrammarSection/WritingSection/MissionSection/WeekTestSection).
+/* Style dùng chung giữa các "khối" (section) của trang buổi học — dùng bởi
+   IeltsBookDayView.vue, CommDayView.vue và ReadingHomework.vue.
    Import qua `<style scoped src="./ieltsDaySection.css">` — mỗi file import vẫn
    được Vue biên dịch scoped RIÊNG cho chính nó (không rò rỉ sang component khác). */
 

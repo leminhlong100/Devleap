@@ -9,7 +9,6 @@ import { useAuthStore } from '@/stores/auth'
 import { features, steps } from '@/data/home'
 import { computeJavaProgress, javaTotals } from '@/data/course'
 import { javaStages, courses } from '@/data/courses'
-import { pendingWeekMission } from '@/lib/missionStats'
 import { useStudyReminder } from '@/composables/useStudyReminder'
 import { useInstallPrompt } from '@/composables/useInstallPrompt'
 import { useOnboardingTour, useOnboardingChecklist } from '@/composables/useOnboarding'
@@ -59,27 +58,12 @@ onMounted(() => {
   prefetchNextLesson(user)
 })
 
-// Bài kiểm tra tuần IELTS đang học chưa đạt (chỉ IELTS có gate theo tuần).
-const ieltsContinue = computed(() => user.nextLesson.find((n) => n.course === 'ielts') || null)
-const remedial = computed(() => {
-  if (!ieltsContinue.value) return null
-  const q = user.quizOf('ielts', `week:${ieltsContinue.value.week}`)
-  return q && !q.passed && q.wrong?.length ? { week: ieltsContinue.value.week } : null
-})
-const pendingMission = computed(() =>
-  ieltsContinue.value ? pendingWeekMission(user, ieltsContinue.value.week) : null,
-)
-
 function goContinue(n) {
   router.push({ name: n.route, params: { week: n.week, day: n.day } })
 }
 function goDueReview() {
   router.push({ name: 'tools-tab', params: { tool: 'flashcard' }, query: { deck: 'due' } })
 }
-function goRemedial() {
-  if (remedial.value) router.push({ name: 'assessment', params: { course: 'ielts', scope: `week-${remedial.value.week}` } })
-}
-
 // Bước 3.1 — mời cài PWA sau khi đã học xong ≥1 buổi (tránh làm phiền khách mới).
 const { isIos, shouldShowInstallCard, promptInstall, dismissInstall } = useInstallPrompt()
 const totalSessions = computed(() => user.completed.java.length + user.completed.ielts.length)
@@ -144,12 +128,7 @@ function checklistCta() {
           <span v-if="streakAtRisk" class="chip chip-warn">⚠️ Sắp đứt streak — học 1 buổi trước 24h nữa</span>
           <span v-if="user.speakingStreak > 0" class="chip">🗣️ Nói {{ user.speakingStreak }} ngày liền</span>
           <button v-if="user.dueTodayCount > 0" type="button" class="chip chip-link" @click="goDueReview">📆 {{ user.dueTodayCount }} từ đến hạn</button>
-          <button v-if="remedial" type="button" class="chip chip-warn chip-link" @click="goRemedial">🎯 Quiz Tuần {{ remedial.week }} chưa đạt</button>
         </div>
-
-        <p v-if="pendingMission" class="today-mission">
-          🌍 Mission Tuần {{ pendingMission.week }} chưa làm: {{ pendingMission.text }}
-        </p>
       </div>
     </section>
 
@@ -629,13 +608,6 @@ function checklistCta() {
 .chip-link:active {
   transform: translateY(0) scale(0.97);
 }
-.today-mission {
-  margin: 16px 0 0;
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--slate);
-}
-
 /* nhắc ôn từ đến hạn */
 .due-wrap {
   padding-top: 6px;

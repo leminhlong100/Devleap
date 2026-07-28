@@ -57,7 +57,7 @@ const ctx = ref(null)
 // Cấu hình theo khóa, dùng chung cho cả chế độ ngày & cả tuần.
 const COURSE_CFG = {
   java: { name: 'Java', route: 'java-day', label: 'Ngày', loader: () => import('@/data/course'), dayGetter: 'getJavaDay', weekGetter: 'getJavaWeek' },
-  ielts: { name: 'IELTS', route: 'ielts-day', label: 'Buổi', loader: () => import('@/data/courseIelts'), dayGetter: 'getIeltsDay', weekGetter: 'getIeltsWeek' },
+  ielts: { name: 'IELTS', route: 'ielts-day', label: 'Buổi', loader: () => import('@/data/ieltsBook'), dayGetter: 'getIeltsDay', weekGetter: 'getIeltsWeek' },
 }
 
 // Gom cả tuần: nối từ vựng (cardsFromTerms tự khử trùng) & câu quiz — CHỈ các ngày

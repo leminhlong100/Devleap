@@ -3,7 +3,7 @@
  *
  * Nội dung bài học được Vite nhúng thẳng vào chunk JS qua
  * `import.meta.glob(..., { eager: true })` (xem src/data/course.js,
- * src/data/courseIelts.js) — KHÔNG fetch file .md rời lúc chạy. Vì vậy
+ * src/data/ieltsBook.js) — KHÔNG fetch file .md rời lúc chạy. Vì vậy
  * "precache buổi kế" thực chất là **nạp trước (warm) chunk route của trang buổi
  * học**: lần `import()` đầu tiên tải chunk về, service worker
  * (stale-while-revalidate, xem public/sw.js) tự giữ lại → mở buổi đó lần sau
@@ -37,7 +37,7 @@ export function prefetchNextLesson(user) {
       const courses = new Set(lessons.map((l) => l.course))
       // `nextLesson()` chỉ trả buổi cho khóa đang học dở → khách mới / đã xong
       // hết sẽ ra rỗng, không warm gì (đúng: chưa có gì để học offline).
-      if (courses.has('ielts')) import('@/views/IeltsDayView.vue').catch(() => {})
+      if (courses.has('ielts')) import('@/views/IeltsBookDayView.vue').catch(() => {})
       if (courses.has('java')) import('@/views/DayView.vue').catch(() => {})
     } catch {
       /* prefetch chỉ là tối ưu — lỗi không được nổi lên app */

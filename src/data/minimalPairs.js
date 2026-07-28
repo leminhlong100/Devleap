@@ -1,14 +1,12 @@
-// Cặp tối thiểu (minimal pairs) cho luyện phát âm — PronunciationDrill.vue.
-// Mỗi cặp là [từ A, từ B] mà người Việt hay lẫn khi nói/nghe; chấm bằng cách
-// đối chiếu Web Speech API với TỪ THỨ HAI trong cặp (xem giải thích trong
-// PronunciationDrill.vue) nên các cặp phải là 2 TỪ THẬT khác nhau, đủ gần âm
-// để luyện đúng lỗi nhưng đủ khác để ASR phân biệt được khi đọc đúng.
+// Cặp tối thiểu (minimal pairs) cho luyện phát âm. Mỗi cặp là [từ A, từ B] mà
+// người Việt hay lẫn khi nói/nghe; chấm bằng cách đối chiếu Web Speech API với
+// TỪ THỨ HAI trong cặp, nên các cặp phải là 2 TỪ THẬT khác nhau, đủ gần âm để
+// luyện đúng lỗi nhưng đủ khác để ASR phân biệt được khi đọc đúng.
 //
-// Nhóm theo trọng tâm âm, gán theo tuần (assignFocusForWeek) khớp với ngữ pháp
-// tuần đó trong Base_English/*.md (cả 2 track): Tuần 2 số ít/nhiều, Tuần 3
-// present simple ngôi 3, Tuần 4 quá khứ đơn -ed. Tuần 5-7 không có điểm ngữ
-// pháp gắn trực tiếp với 1 âm cụ thể nên xếp theo độ khó tăng dần (nguyên âm
-// nền tảng trước, phụ âm khó "th" sau). Tuần 8 tổng hợp nhóm khó nhất.
+// Nhóm theo trọng tâm âm, gán theo tuần (assignFocusForWeek) tăng dần độ khó:
+// số ít/nhiều -s, ngôi 3 số ít, quá khứ đơn -ed, rồi nguyên âm nền tảng trước
+// và phụ âm khó "th" sau; tuần cuối tổng hợp nhóm khó nhất.
+// `MINIMAL_PAIR_GROUPS` còn được lib/commStats.js dùng để gợi ý cảnh ôn lại.
 export const MINIMAL_PAIR_GROUPS = [
   {
     key: 'plural-s',

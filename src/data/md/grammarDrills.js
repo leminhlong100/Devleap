@@ -3,7 +3,7 @@
  * thay vì chỉ đọc lý thuyết rồi quên.
  *
  * Nguồn dữ liệu: bảng "Lỗi thường gặp" có sẵn trong mỗi mục ngữ pháp
- * (Base_English/*.md), dạng:  | Câu sai | Câu đúng |
+ * (Comm_English/*.md), dạng:  | Câu sai | Câu đúng |
  *
  * Từ mỗi cặp (sai → đúng) sinh MỘT bài tập, chọn dạng tự động:
  *  - cloze (điền chỗ trống): khi khác biệt là THÊM/THAY một cụm liền mạch
