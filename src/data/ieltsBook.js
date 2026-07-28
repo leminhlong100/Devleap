@@ -23,21 +23,31 @@ const GRADS = [
 ]
 const ILLOS = ['📱', '💬', '🖼️', '👥', '🔗', '📢', '⭐', '🔔', '📝', '🌐', '🚀', '🧩']
 
-/** Chèn placeholder {w} vào câu ví dụ để VocabCard tô đậm từ khóa. */
-function withPlaceholder(exEn, term) {
-  if (!exEn || !term) return exEn || ''
-  const re = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es|ed|d)?\\b`, 'i')
-  return re.test(exEn) ? exEn.replace(re, '{w}') : exEn
+/**
+ * Chèn placeholder {w} vào câu ví dụ để VocabCard tô đậm từ khóa. Trả về cả DẠNG THỰC
+ * TẾ xuất hiện trong câu (`exWord`) — câu ví dụ thường dùng dạng biến đổi ("was
+ * constructed" cho từ "construct"), nếu tô đậm bằng `term` thì câu sẽ sai chính tả.
+ */
+function markExample(exEn, term) {
+  if (!exEn || !term) return { ex: exEn || '', exWord: '' }
+  const re = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es|ed|d|ing)?\\b`, 'i')
+  const m = re.exec(exEn)
+  if (!m) return { ex: exEn, exWord: '' }
+  return { ex: exEn.replace(re, '{w}'), exWord: m[0] }
 }
 
 /** Biến 1 dòng từ vựng của sách thành object cho VocabCard. */
 function toVocabCard(w, i) {
+  const { ex, exWord } = markExample(w.exEn, w.term)
   return {
     term: w.term,
     pos: w.pos || '',
     vi: w.vi || '',
     ipa: w.ipa || '',
-    ex: withPlaceholder(w.exEn, w.term),
+    // Day 15+: dạng bị động cần học kèm động từ ("be constructed") — hiện trên thẻ.
+    passive: w.passive || '',
+    ex,
+    exWord,
     exVi: w.exVi || '',
     illo: ILLOS[i % ILLOS.length],
     g1: GRADS[i % GRADS.length][0],

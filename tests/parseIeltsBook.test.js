@@ -560,6 +560,168 @@ describe('getBookDay(14) — file day-14.md thật', () => {
   })
 })
 
+const SAMPLE15 = `---
+day: 15
+title: "The Passive · Map & Process · Listening Part 1"
+sections: [grammar, vocabulary, listening, homework]
+topicVocabulary: "Map & Process"
+---
+
+# Day 15 — The Passive
+
+> **Aims:** The Passive / Map & Process / Listening Part 1
+
+## Basic Grammar
+### 1. Cấu trúc câu bị động
+S + to be + V3/V-ed (+ by O).
+
+## Basic Vocabulary
+### 1. Topic Vocabulary: Bản đồ (map) và quy trình (process)
+| Từ vựng | Cấu trúc bị động (Be + V3) | Nghĩa | Ví dụ |
+| --- | --- | --- | --- |
+| Construct /kənˈstrʌkt/ (v) | be constructed | Được xây dựng | The new bridge was constructed quickly. (Cây cầu mới được xây dựng nhanh chóng.) |
+| Demolish /dɪˈmɒl.ɪʃ/ (v) | be demolished | Được phá hủy | The old building was demolished last year. (Tòa nhà cũ được phá hủy vào năm ngoái.) |
+
+### 2. Prepositional phrase — cụm giới từ chỉ vị trí
+| Cụm từ | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| To the west of /tuː ðə west əv/ | Ở phía tây của | The city is to the west of the mountains. (Thành phố nằm ở phía tây của dãy núi.) |
+
+## Listening Skills
+### Listening Part 1 — dạng Form Completion
+Điền thông tin còn thiếu vào biểu mẫu.
+
+### Practice — Part 1 (Q1–10): Nghe & điền vào biểu mẫu
+1. Role — _____ (Vai trò)
+2. Location — Fordham _____ Centre (Trung tâm ... Fordham)
+
+**Answer Key**:
+1. receptionist
+2. Medical
+
+### Bản ghi (transcript) & giải thích đáp án
+**GREG:** So this is a position for a **receptionist (Q1)**.
+
+## Homework
+### I. Chia động từ trong ngoặc
+1. The old library was _____ to make way for a new one. (demolish)
+2. The old wall was _____ to create a larger space. (knock down)
+
+**Answer Key**:
+1. demolished
+2. knocked down
+
+### II. Chuyển đổi các câu sau sang dạng bị động
+1. They demolished the old building.
+2. The workers are constructing a new school.
+
+**Answer Key**:
+1. The old building was demolished.
+2. A new school is being constructed.
+
+### III. Dịch sang tiếng Anh
+1. Công viên ở phía tây của trường học. (to the west of)
+
+**Answer Key**:
+1. The park is to the west of the school.
+`
+
+describe('parseIeltsBookDay() — Day 15: bảng 4 cột (dạng bị động) + cụm giới từ + viết lại câu', () => {
+  const d = parseIeltsBookDay(SAMPLE15)
+
+  it('bảng từ vựng 4 cột: tách dạng bị động ra field riêng, nghĩa/ví dụ vẫn đúng', () => {
+    expect(d.vocab.topic).toBe('Bản đồ (map) và quy trình (process)')
+    expect(d.vocab.words).toHaveLength(2)
+    expect(d.vocab.words[0].term).toBe('Construct')
+    expect(d.vocab.words[0].ipa).toBe('/kənˈstrʌkt/')
+    expect(d.vocab.words[0].pos).toBe('v')
+    expect(d.vocab.words[0].passive).toBe('be constructed')
+    expect(d.vocab.words[0].vi).toBe('Được xây dựng')
+    expect(d.vocab.words[0].exEn).toBe('The new bridge was constructed quickly.')
+    expect(d.vocab.words[0].exVi).toBe('Cây cầu mới được xây dựng nhanh chóng.')
+    expect(d.vocab.words[1].passive).toBe('be demolished')
+  })
+
+  it('bảng "Prepositional phrase" -> nhóm prepositions riêng (có IPA)', () => {
+    expect(d.vocab.prepositions).toHaveLength(1)
+    expect(d.vocab.prepositions[0].term).toBe('To the west of')
+    expect(d.vocab.prepositions[0].ipa).toBe('/tuː ðə west əv/')
+    expect(d.vocab.prepositions[0].vi).toBe('Ở phía tây của')
+    // không bị nhận nhầm sang các nhóm khác
+    expect(d.vocab.collocations).toHaveLength(0)
+    expect(d.vocab.phrases).toHaveLength(0)
+  })
+
+  it('Listening Part 1 form completion -> practice có đáp án + transcript tách riêng', () => {
+    expect(d.listening.practice).toHaveLength(2)
+    expect(d.listening.practice[0].answer).toBe('receptionist')
+    expect(d.listening.practice[1].answer).toBe('Medical')
+    expect(d.listening.dictation).toBeNull()
+    expect(d.listening.mcq).toHaveLength(0)
+    // transcript nằm ngoài intro để không lộ đáp án trước khi làm
+    expect(d.listening.transcript).toContain('receptionist')
+    expect(d.listening.intro).not.toContain('receptionist')
+  })
+
+  it('Homework: I -> cloze (chia động từ), II -> rewrite (bị động), III -> translate', () => {
+    expect(d.homework.cloze).toHaveLength(2)
+    expect(d.homework.cloze[0].answer).toContain('demolished')
+    expect(d.homework.cloze[1].answer).toContain('knocked down')
+    expect(d.homework.rewrite).toHaveLength(2)
+    expect(d.homework.rewrite[0].prompt).toBe('They demolished the old building.')
+    expect(d.homework.rewrite[0].answer).toContain('The old building was demolished.')
+    expect(d.homework.rewrite[1].answer).toContain('A new school is being constructed.')
+    expect(d.homework.translate).toHaveLength(1)
+    expect(d.homework.translate[0].answer).toBe('The park is to the west of the school.')
+    expect(d.homework.translate[0].hint).toBe('to the west of')
+    // "Chia động từ" KHÔNG rơi vào bucket dịch dù đứng ở mục I
+    expect(d.homework.translate.every((t) => !/library/.test(t.vi))).toBe(true)
+    expect(d.homework.mcq).toHaveLength(0)
+  })
+})
+
+describe('getBookDay(15) — file day-15.md thật', () => {
+  it('Day 15 có grammar, 28 động từ bị động + 8 cụm giới từ, nghe Part 1 điền 10 ô, cloze 10 + rewrite 5 + dịch 8', () => {
+    const d = getBookDay(15)
+    expect(d).toBeTruthy()
+    expect(d.grammar).toHaveLength(4)
+    // từ vựng: mỗi thẻ đều có IPA + dạng bị động, không trùng từ (tránh trùng key khi render)
+    expect(d.vocabCards).toHaveLength(28)
+    expect(d.vocabCards.every((v) => v.ipa.startsWith('/'))).toBe(true)
+    expect(d.vocabCards.every((v) => v.passive.startsWith('be '))).toBe(true)
+    expect(new Set(d.vocabCards.map((v) => v.term)).size).toBe(28)
+    expect(d.vocab.prepositions).toHaveLength(8)
+    // Listening Part 1 (Q1–10): phiếu điền từ là cổng nghe -> mọi câu phải có đáp án
+    expect(d.listening.practice).toHaveLength(10)
+    expect(d.listening.practice.every((p) => p.answer.length > 0)).toBe(true)
+    expect(d.listening.practice[0].n).toBe(1)
+    expect(d.listening.practice[9].n).toBe(10)
+    expect(d.listening.practice[2].answer).toBe('Chastons')
+    expect(d.listening.practice[8].answer).toContain('1.15')
+    expect(d.listening.dictation).toBeNull()
+    expect(d.listening.mcq).toHaveLength(0)
+    expect(d.listening.transcript).toContain('Employment Agency')
+    // audio nghe Part 1 phải khớp bộ lọc /part\d/ của view
+    expect(d.audio).toHaveLength(1)
+    expect(d.audio[0].url).toMatch(/part\d/)
+    // Homework: 3 mục, mục nào cũng có đáp án đầy đủ
+    expect(d.homework.cloze).toHaveLength(10)
+    expect(d.homework.cloze.every((c) => c.answer.length > 0)).toBe(true)
+    // đáp án không PHẢI toàn cụm nhiều từ -> view dùng nhãn "điền dạng đúng của từ"
+    expect(d.homework.cloze.every((c) => c.answer.some((a) => /\s/.test(a)))).toBe(false)
+    expect(d.homework.rewrite).toHaveLength(5)
+    expect(d.homework.rewrite.every((r) => r.answer.length > 0)).toBe(true)
+    expect(d.homework.rewrite[3].answer).toContain('The factory will be closed next month.')
+    expect(d.homework.translate).toHaveLength(8)
+    expect(d.homework.translate.every((t) => t.answer.length > 0)).toBe(true)
+    expect(d.homework.translate[7].answer).toBe('The gym is to the right of the library.')
+    // buổi ngữ pháp: không dùng MCQ / chọn-đại-từ / đọc hiểu
+    expect(d.homework.mcq).toHaveLength(0)
+    expect(d.homework.choice).toHaveLength(0)
+    expect(d.homework.reading).toHaveLength(0)
+  })
+})
+
 describe('getBookDay(3) — file day-03.md thật', () => {
   it('Day 3 có grammar, dictation 22 chỗ trống, và homework dịch/mcq/chọn-đại-từ', () => {
     const d = getBookDay(3)

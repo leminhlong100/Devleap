@@ -4,11 +4,14 @@ import { speak, canSpeak } from '@/lib/speak'
 import VocabIllustration from '@/components/common/VocabIllustration.vue'
 
 const props = defineProps({
-  vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exVi, img}
+  vocab: { type: Object, required: true }, // {term, ipa, vi, illo, g1, g2, ex (with {w}), exWord, exVi, img}
 })
 
 const illoBg = computed(() => `linear-gradient(135deg,${props.vocab.g1},${props.vocab.g2})`)
 const parts = computed(() => (props.vocab.ex || '').split('{w}'))
+// Từ được tô đậm trong câu ví dụ = DẠNG THỰC TẾ trong câu ("constructed"), không phải
+// từ gốc ("construct") — nếu buổi chưa cung cấp thì lùi về từ gốc như trước.
+const exWord = computed(() => props.vocab.exWord || props.vocab.term)
 const speakable = canSpeak()
 
 function sayTerm() {
@@ -16,7 +19,7 @@ function sayTerm() {
 }
 function sayExample() {
   // Ghép câu ví dụ hoàn chỉnh (thay {w} bằng từ) rồi đọc to.
-  const ex = (props.vocab.ex || '').replace('{w}', props.vocab.term)
+  const ex = (props.vocab.ex || '').replace('{w}', exWord.value)
   speak(ex || props.vocab.term)
 }
 </script>
@@ -39,7 +42,10 @@ function sayExample() {
           <button v-if="speakable" class="speak" title="Nghe phát âm" @click="sayTerm">🔊</button>
         </div>
         <div v-if="vocab.ipa" class="vipa">{{ vocab.ipa }}</div>
-        <div v-if="vocab.vi" class="vvi">{{ vocab.vi }}</div>
+        <div class="vchips">
+          <span v-if="vocab.passive" class="vpassive">{{ vocab.passive }}</span>
+          <span v-if="vocab.vi" class="vvi">{{ vocab.vi }}</span>
+        </div>
       </div>
     </div>
     <div v-if="vocab.ex" class="vex">
@@ -48,7 +54,7 @@ function sayExample() {
         <button v-if="speakable" class="speak-ex" title="Nghe câu ví dụ" @click="sayExample">🔊</button>
       </div>
       <div class="vex-en">
-        <template v-if="parts.length > 1">{{ parts[0] }}<b>{{ vocab.term }}</b>{{ parts[1] || '' }}</template>
+        <template v-if="parts.length > 1">{{ parts[0] }}<b>{{ exWord }}</b>{{ parts[1] || '' }}</template>
         <template v-else>{{ parts[0] }}</template>
       </div>
       <div v-if="vocab.exVi" class="vex-vi">{{ vocab.exVi }}</div>
@@ -153,9 +159,24 @@ function sayExample() {
   font-weight: 600;
   margin-top: 2px;
 }
-.vvi {
-  display: inline-block;
+/* Mỗi nhãn (dạng bị động / nghĩa) là một pill riêng, xuống dòng khi chật */
+.vchips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 5px;
   margin-top: 7px;
+}
+/* Dạng bị động ("be constructed") — Day 15+ */
+.vpassive {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--purple);
+  background: var(--purple-soft);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+.vvi {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--green-2);

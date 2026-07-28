@@ -38,6 +38,10 @@ const phraseCards = computed(() =>
 const collocationCards = computed(() =>
   (d.value?.vocab.collocations || []).map((p) => ({ term: p.term, vi: p.vi, ipa: '', illo: '💬' })),
 )
+// Day 15+: Prepositional phrases (cụm giới từ chỉ vị trí) — dùng để mô tả bản đồ (map).
+const prepositionCards = computed(() =>
+  (d.value?.vocab.prepositions || []).map((p) => ({ term: p.term, vi: p.vi, ipa: p.ipa || '', illo: '🧭' })),
+)
 const wordFormCards = computed(() =>
   (d.value?.vocab.wordForms || []).map((w) => ({
     term: w.base,
@@ -117,6 +121,15 @@ const listenNoteGate = computed(
     listeningMcq.value.length === 0,
 )
 const listeningTranscript = computed(() => d.value?.listening?.transcript || '')
+// Nhãn khoảng câu của phiếu điền từ ("Q31–40" ở Part 4, "Q1–10" ở Part 1) — lấy từ
+// chính số câu trong sách để không phải sửa view mỗi khi thêm buổi nghe mới.
+const noteRangeLabel = computed(() => {
+  const ns = (d.value?.listening?.practice || []).map((p) => p.n).filter((n) => n > 0)
+  if (!ns.length) return ''
+  const lo = Math.min(...ns)
+  const hi = Math.max(...ns)
+  return lo === hi ? `Q${lo}` : `Q${lo}–${hi}`
+})
 function onNoteGateDone() {
   if (d.value) user.recordQuiz('ielts', scope('listen'), noteItems.value.length, noteItems.value.length, 1)
 }
@@ -129,6 +142,11 @@ const translateItems = computed(() =>
 // Anh ("(I / eat / dinner) …"), không phải câu tiếng Việt -> đổi nhãn cho đúng.
 const translateIsSentenceBuild = computed(
   () => translateItems.value.length > 0 && translateItems.value.every((t) => /\s\/\s/.test(t.q || '')),
+)
+// Day 15+: Homework II "Chuyển câu sang bị động" — đề là câu tiếng Anh chủ động,
+// gõ lại câu bị động (chấm ngay, cổng bắt buộc).
+const rewriteItems = computed(() =>
+  (d.value?.homework?.rewrite || []).map((r) => ({ q: r.prompt, answer: r.answer, say: r.answer?.[0] || '' })),
 )
 
 // —— Phát âm: máy chấm (10 từ đầu) ——
@@ -192,6 +210,12 @@ const translatePassed = computed(() => !!d.value && (!translateNeeded.value || u
 function onTranslateDone() {
   if (d.value) user.recordQuiz('ielts', scope('translate'), translateItems.value.length, translateItems.value.length, 1)
 }
+// Viết lại câu sang bị động (Day 15+) — cổng bắt buộc, gõ đúng hết.
+const rewriteNeeded = computed(() => rewriteItems.value.length > 0)
+const rewritePassed = computed(() => !!d.value && (!rewriteNeeded.value || user.quizPassed('ielts', scope('rewrite'))))
+function onRewriteDone() {
+  if (d.value) user.recordQuiz('ielts', scope('rewrite'), rewriteItems.value.length, rewriteItems.value.length, 1)
+}
 // —— Homework đọc hiểu (Day 2+): dùng từ khóa trả lời ngắn, chấm ngay (cổng bắt buộc) ——
 const readingItems = computed(() => d.value?.homework?.reading || [])
 const readingNeeded = computed(() => readingItems.value.length > 0)
@@ -207,7 +231,8 @@ function onPronDone() {
 // Hoàn thành buổi: buộc học viên LÀM các hoạt động chính ngay trên web —
 // ngữ pháp + nghe-gõ + dịch (đều chấm tự động). Phần nào buổi không có thì tự bỏ qua.
 const dayReady = computed(
-  () => grammarPassed.value && listeningPassed.value && translatePassed.value && readingPassed.value,
+  () =>
+    grammarPassed.value && listeningPassed.value && rewritePassed.value && translatePassed.value && readingPassed.value,
 )
 const nextGateLabel = computed(() => {
   if (!grammarPassed.value) return grammarIsWritingCloze.value ? '🔒 Làm bài điền chỗ trống trước' : '🔒 Làm bài tập ngữ pháp trước'
@@ -217,6 +242,7 @@ const nextGateLabel = computed(() => {
       : listeningQuizGate.value || listenNoteGate.value
         ? `🔒 Làm bài nghe (${listeningPartLabel.value}) trước`
         : '🔒 Làm bài nghe chữ cái trước'
+  if (!rewritePassed.value) return '🔒 Làm bài chuyển câu bị động trước'
   if (!translatePassed.value) return translateIsSentenceBuild.value ? '🔒 Làm bài viết câu trước' : '🔒 Làm bài dịch trước'
   if (!readingPassed.value) return '🔒 Làm bài đọc hiểu trước'
   return '✓ Đánh dấu hoàn thành'
@@ -426,6 +452,31 @@ function goDay(n) {
           title="Thẻ cụm từ hữu ích (Useful Phrases)"
         />
 
+        <!-- PREPOSITIONAL PHRASES (cụm giới từ chỉ vị trí) + thẻ học — Day 15+ -->
+        <section v-if="d.vocab.prepositions && d.vocab.prepositions.length" class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="eyebrow">BASIC VOCABULARY · PREPOSITIONAL PHRASES</div>
+              <h2 class="step-title">🧭 Cụm giới từ chỉ vị trí (mô tả bản đồ)</h2>
+            </div>
+          </div>
+          <ul class="pv-list">
+            <li v-for="(p, i) in d.vocab.prepositions" :key="i" @click="say(p.exEn || p.term)">
+              <span class="pv-term">{{ p.term }}</span>
+              <span v-if="p.ipa" class="pv-ipa">{{ p.ipa }}</span>
+              <span class="pv-vi">{{ p.vi }}</span>
+              <span class="pv-ex" v-if="p.exEn">“{{ p.exEn }}” 🔊</span>
+            </li>
+          </ul>
+        </section>
+        <InlineFlashcards
+          v-if="prepositionCards.length"
+          :vocab="prepositionCards"
+          :limit="20"
+          eyebrow="HỌC THUỘC · THẺ GHI NHỚ"
+          title="Thẻ cụm giới từ chỉ vị trí"
+        />
+
         <!-- PHRASAL VERBS + thẻ học -->
         <section v-if="d.vocab.phrasals.length" class="step-card">
           <div class="step-head">
@@ -575,7 +626,7 @@ function goDay(n) {
             :items="noteItems"
             graded
             :eyebrow="`LÀM NGAY · NGHE ${listeningPartLabel.toUpperCase()} · BẮT BUỘC ĐIỀN ĐÚNG HẾT`"
-            title="🎧 Nghe Audio &amp; điền từ còn thiếu (Q31–40)"
+            :title="`🎧 Nghe Audio rồi điền từ còn thiếu${noteRangeLabel ? ` (${noteRangeLabel})` : ''}`"
             intro="Bật bản ghi, nghe và điền MỘT từ vào mỗi chỗ trống rồi bấm Kiểm tra. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Điền đúng hết là hoàn thành!"
             done-label="Đã hoàn thành bài nghe (điền từ)."
             @done="onNoteGateDone"
@@ -679,6 +730,17 @@ function goDay(n) {
 
         <!-- ════ LUYỆN PHÁT ÂM — MÁY CHẤM ════ -->
         <PronunciationCheck v-if="pronItems.length" :items="pronItems" @done="onPronDone" />
+
+        <!-- ════ HOMEWORK — CHUYỂN CÂU SANG BỊ ĐỘNG (chấm ngay) · Day 15+ ════ -->
+        <TypedCheckList
+          v-if="rewriteItems.length"
+          :items="rewriteItems"
+          eyebrow="HOMEWORK · CHUYỂN SANG CÂU BỊ ĐỘNG · BẮT BUỘC"
+          title="🔄 Viết lại câu ở thể bị động"
+          intro="Đọc câu chủ động rồi gõ lại câu ở THỂ BỊ ĐỘNG (giữ đúng thì của câu gốc) và bấm Kiểm tra. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Viết đúng hết mới hoàn thành."
+          done-label="Đã hoàn thành bài chuyển câu bị động."
+          @done="onRewriteDone"
+        />
 
         <!-- ════ HOMEWORK I — DỊCH / VIẾT CÂU (chấm ngay) ════ -->
         <TypedCheckList
@@ -829,6 +891,11 @@ function goDay(n) {
 .pv-term {
   font-weight: 800;
   color: #6c5ce7;
+}
+.pv-ipa {
+  color: var(--muted-2);
+  font-size: 12px;
+  font-weight: 600;
 }
 .pv-vi {
   color: var(--muted);

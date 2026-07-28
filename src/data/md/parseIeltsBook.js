@@ -128,12 +128,17 @@ function mapWordRow(r) {
   // tách IPA ra field riêng để VocabCard hiện phiên âm và `term` sạch (dùng cho
   // flashcard, tra nghĩa, search index). Buổi không ghi IPA thì ipa = ''.
   const ipaM = /\/[^/]+\//.exec(term)
-  const ex = splitBilingual(r[2] || '')
+  // Day 15+: bảng từ vựng có thể có 4 cột — "Từ | Cấu trúc bị động (Be + V3) | Nghĩa
+  // | Ví dụ". Cột 2 là DẠNG BỊ ĐỘNG cần học kèm ("be constructed"), nên tách ra field
+  // riêng và dịch chuyển nghĩa/ví dụ sang cột 3/4. Bảng 3 cột giữ nguyên như cũ.
+  const wide = r.length >= 4
+  const ex = splitBilingual((wide ? r[3] : r[2]) || '')
   return {
     term: ipaM ? term.replace(ipaM[0], '').replace(/\s+/g, ' ').trim() : term,
     pos,
     ipa: ipaM ? ipaM[0] : '',
-    vi: (r[1] || '').trim(),
+    passive: wide ? (r[1] || '').trim() : '',
+    vi: (wide ? r[2] : r[1] || '').trim(),
     exEn: ex.en,
     exVi: ex.vi,
   }
@@ -148,10 +153,13 @@ function parseVocabulary(lines) {
   let adverbs = [] // Day 7+: bảng Trạng từ (Adverbs) đi kèm bảng Tính từ
   let phrases = [] // Day 7+: bảng Adjective Phrases (cụm tính từ + giới từ)
   let collocations = [] // Day 9+: bảng "Useful Phrases" (cụm từ/collocation thông dụng)
+  let prepositions = [] // Day 15+: bảng "Prepositional phrase" (cụm giới từ chỉ vị trí — mô tả map)
   for (const s of subs) {
     if (/topic vocabulary/i.test(s.heading)) {
-      topic = s.heading.replace(/topic vocabulary:\s*/i, '').trim()
+      topic = s.heading.replace(/^\d+\.\s*/, '').replace(/topic vocabulary:\s*/i, '').trim()
       words = parseTable(s.lines).map(mapWordRow)
+    } else if (/prepositional phrase|cụm giới từ/i.test(s.heading)) {
+      prepositions = parseTable(s.lines).map(mapWordRow)
     } else if (/adjective phrase|cụm tính từ/i.test(s.heading)) {
       phrases = parseTable(s.lines).map(mapWordRow)
     } else if (/useful phrase|collocation|cụm từ hữu ích/i.test(s.heading)) {
@@ -174,7 +182,7 @@ function parseVocabulary(lines) {
       }))
     }
   }
-  return { topic, words, phrasals, wordForms, adverbs, phrases, collocations }
+  return { topic, words, phrasals, wordForms, adverbs, phrases, collocations, prepositions }
 }
 const cleanForm = (c) => {
   const t = (c || '').trim()
@@ -330,11 +338,19 @@ function parseReadingExercise(sec) {
 
 function parseHomework(lines) {
   const subs = splitByLevel(lines, 3)
-  const hw = { translate: [], mcq: [], cloze: [], choice: [], reading: [] }
+  const hw = { translate: [], mcq: [], cloze: [], choice: [], reading: [], rewrite: [] }
   for (const s of subs) {
     const key = collectAnswerKey(s.lines)
     if (/bài tập/i.test(s.heading)) {
       hw.reading.push(parseReadingExercise(s))
+    } else if (/chia động từ/i.test(s.heading)) {
+      // Day 15+: "I. Chia động từ trong ngoặc" là bài ĐIỀN dạng đúng của động từ ->
+      // cloze (cổng ngữ pháp), chứ không phải bài dịch dù đứng ở mục I.
+      hw.cloze = parseCloze(takeBeforeKey(s.lines), key)
+    } else if (/chuyển đổi|sang dạng bị động/i.test(s.heading)) {
+      // Day 15+: "II. Chuyển đổi các câu sang dạng bị động" — đề là câu tiếng Anh chủ
+      // động, học viên gõ lại câu bị động -> bucket riêng (không phải MCQ, không phải dịch).
+      hw.rewrite = parseRewrite(takeBeforeKey(s.lines), key)
     } else if (/^i\./i.test(s.heading) || /dịch/i.test(s.heading)) {
       // "1. Cô ấy tạo một tài khoản. (account)"
       const beforeKey = takeBeforeKey(s.lines)
@@ -419,6 +435,14 @@ function finishMcq(cur, key) {
   return { q: cur.q, opts, correct, ex: ans ? `Đáp án: ${ans}` : '' }
 }
 
+/** "does not understand (doesn't understand)" -> ['does not understand',"doesn't understand"]. */
+function answerVariants(ansRaw) {
+  const parenM = /\(([^)]*)\)\s*$/.exec(ansRaw)
+  const out = [ansRaw.replace(/\s*\([^)]*\)\s*$/, '').trim()]
+  if (parenM) out.push(parenM[1].trim())
+  return out.filter(Boolean)
+}
+
 /** "1. She usually _____ (go) ..." + key "goes" -> {type:'cloze', q, answer[], ex}. */
 function parseCloze(lines, key) {
   const out = []
@@ -427,12 +451,22 @@ function parseCloze(lines, key) {
     if (!m) continue
     const n = Number(m[1])
     const ansRaw = key[n] || ''
-    // "does not understand (doesn't understand)" -> ['does not understand','doesn't understand']
-    const variants = []
-    const parenM = /\(([^)]*)\)\s*$/.exec(ansRaw)
-    variants.push(ansRaw.replace(/\s*\([^)]*\)\s*$/, '').trim())
-    if (parenM) variants.push(parenM[1].trim())
-    out.push({ type: 'cloze', q: m[2].trim(), answer: variants.filter(Boolean), ex: ansRaw ? `Đáp án: ${ansRaw}` : '' })
+    out.push({ type: 'cloze', q: m[2].trim(), answer: answerVariants(ansRaw), ex: ansRaw ? `Đáp án: ${ansRaw}` : '' })
+  }
+  return out
+}
+
+/**
+ * Bài VIẾT LẠI CÂU (Day 15+): đề là một câu tiếng Anh, học viên gõ lại theo yêu cầu
+ * (vd chuyển sang bị động). Trả về { n, prompt, answer[] } cho TypedCheckList graded.
+ */
+function parseRewrite(lines, key) {
+  const out = []
+  for (const raw of lines) {
+    const m = /^\s*(\d+)\.\s+(.+)$/.exec(raw)
+    if (!m) continue
+    const n = Number(m[1])
+    out.push({ n, prompt: m[2].trim(), answer: answerVariants(key[n] || '') })
   }
   return out
 }
@@ -453,12 +487,12 @@ export function parseIeltsBookDay(raw) {
 
   const h2 = splitByLevel(lines, 2)
   let grammar = []
-  let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [], collocations: [] }
+  let vocab = { topic: '', words: [], phrasals: [], wordForms: [], adverbs: [], phrases: [], collocations: [], prepositions: [] }
   let listening = null
   let reading = ''
   let writing = ''
   let speaking = ''
-  let homework = { translate: [], mcq: [], cloze: [], choice: [], reading: [] }
+  let homework = { translate: [], mcq: [], cloze: [], choice: [], reading: [], rewrite: [] }
 
   for (const sec of h2) {
     const h = sec.heading
