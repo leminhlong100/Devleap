@@ -2,6 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { hapticLight, hapticError } from '@/lib/haptics'
+import { explainQuiz } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 // Hai chế độ:
 //  - practice (mặc định): quiz nhanh theo từng ngày, +10 XP mỗi câu đúng.
@@ -20,6 +23,7 @@ const props = defineProps({
 const emit = defineEmits(['complete'])
 
 const user = useUserStore()
+const { isOnline } = useOnlineStatus()
 const isAssessment = computed(() => props.mode === 'assessment')
 
 // Xáo trộn (Fisher–Yates) — chỉ dùng cho bài kiểm tra để mỗi lần làm khác nhau.
@@ -75,6 +79,42 @@ const answered = computed(() =>
 )
 const isLast = computed(() => index.value + 1 >= total.value)
 const progress = computed(() => Math.round(((index.value + (answered.value ? 1 : 0)) / total.value) * 100))
+
+// —— AI "Vì sao?": giải thích đáp án đúng/sai cho câu hiện tại (theo yêu cầu) ——
+const aiWhy = ref('')
+const aiWhyLoading = ref(false)
+const aiWhyErr = ref('')
+watch(index, () => {
+  aiWhy.value = ''
+  aiWhyLoading.value = false
+  aiWhyErr.value = ''
+})
+async function askWhy() {
+  if (aiWhyLoading.value || aiWhy.value || !isOnline.value) return
+  const c = current.value
+  if (!c) return
+  aiWhyLoading.value = true
+  aiWhyErr.value = ''
+  try {
+    let chosen = ''
+    let correctAns = ''
+    if (isText.value) {
+      chosen = typed.value
+      correctAns = (c.answer || [])[0] || ''
+    } else if (isOrder.value) {
+      chosen = orderPicked.value.map((t) => t.w).join(' ')
+      correctAns = (c.answer || [])[0] || ''
+    } else {
+      chosen = c.opts?.[selected.value] ?? ''
+      correctAns = c.opts?.[c.correct] ?? ''
+    }
+    aiWhy.value = await explainQuiz({ question: c.q, options: c.opts || null, correct: correctAns, chosen })
+  } catch (e) {
+    aiWhyErr.value = friendlyAiError(e).message
+  } finally {
+    aiWhyLoading.value = false
+  }
+}
 
 const pct = computed(() => (total.value ? Math.round((score.value / total.value) * 100) : 0))
 const passed = computed(() => pct.value >= props.passThreshold * 100)
@@ -330,7 +370,20 @@ watch(() => props.questions, restart, { immediate: true })
       </template>
 
       <div v-if="answered" class="explain-row">
-        <div class="explain">💡 {{ current.ex }}</div>
+        <div v-if="current.ex" class="explain">💡 {{ current.ex }}</div>
+        <div class="why-block">
+          <button
+            v-if="!aiWhy && !aiWhyLoading && isOnline"
+            class="why-btn"
+            type="button"
+            @click="askWhy"
+          >
+            🤖 Vì sao?
+          </button>
+          <span v-else-if="aiWhyLoading" class="why-loading">🤖 Đang giải thích…</span>
+          <p v-if="aiWhy" class="why-text">🤖 {{ aiWhy }}</p>
+          <p v-if="aiWhyErr" class="why-err">⚠️ {{ aiWhyErr }}</p>
+        </div>
         <button class="next" @click="next">{{ isLast ? 'Xem kết quả' : 'Câu tiếp' }} →</button>
       </div>
     </template>
@@ -668,6 +721,44 @@ watch(() => props.questions, restart, { immediate: true })
   font-size: 14px;
   line-height: 1.55;
   color: var(--ink);
+}
+.why-block {
+  flex-basis: 100%;
+  order: 3;
+}
+.why-btn {
+  border: 1px dashed rgba(108, 92, 231, 0.5);
+  background: var(--surface);
+  color: #6c5ce7;
+  border-radius: 99px;
+  padding: 7px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 38px;
+}
+.why-btn:active {
+  background: rgba(108, 92, 231, 0.08);
+}
+.why-loading {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6c5ce7;
+}
+.why-text {
+  background: rgba(108, 92, 231, 0.06);
+  border-left: 3px solid #6c5ce7;
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.why-err {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e04848;
 }
 .next {
   border: none;

@@ -7,6 +7,7 @@ import { mergeSaved, mergeShadowing, mergeDictation, mergeTopics } from './vocab
 import { mergeWritings } from './writingSlice'
 import { mergeChecklists, mergeWeekXp } from './progressSlice'
 import { mergeSpeakingLog } from './speakingSlice'
+import { mergeMistakes } from './ieltsReviewSlice'
 import { mergeLeaderboardPrefs } from './leaderboardSlice'
 
 /**
@@ -215,5 +216,6 @@ export function mergeSnapshots(local, remote) {
     speakingStreak: Math.max(local.speakingStreak || 0, remote.speakingStreak || 0),
     lastSpeakingDate: laterDate(local.lastSpeakingDate, remote.lastSpeakingDate),
     weekFeedback: mergeWeekFeedback(local.weekFeedback, remote.weekFeedback),
+    mistakes: mergeMistakes(local.mistakes, remote.mistakes),
   }
 }

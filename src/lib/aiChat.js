@@ -115,6 +115,30 @@ export async function generateErrorDrill(errors, context = {}) {
   return reply.questions || []
 }
 
+/**
+ * Giải thích "vì sao" đáp án đúng/sai cho một câu quiz (tiếng Việt). Trả về text.
+ * @param {{ question: string, options?: string[]|null, correct: string, chosen?: string }} q
+ */
+export async function explainQuiz({ question, options, correct, chosen } = {}, context = {}) {
+  const optLine = Array.isArray(options) && options.length ? `Options: ${options.join(' | ')}\n` : ''
+  const text = `Question: ${question}\n${optLine}Correct answer: ${correct}\nLearner's answer: ${chosen || '(để trống)'}`
+  return sendChat({ messages: [{ role: 'user', text }], context, mode: 'explain' })
+}
+
+/**
+ * Nhờ AI xác nhận câu trả lời của học viên có CÙNG NGHĨA với đáp án mong đợi không
+ * (chấm paraphrase cho bài đọc hiểu). Trả về boolean.
+ * @param {string} expected  đáp án mẫu
+ * @param {string} answer    câu học viên gõ
+ */
+export async function checkParaphrase(expected, answer) {
+  const reply = await sendChat({
+    messages: [{ role: 'user', text: `Expected answer: ${expected}\nLearner's answer: ${answer}` }],
+    mode: 'equiv',
+  })
+  return /\byes\b/i.test(String(reply || ''))
+}
+
 /** Gợi ý CÁCH trả lời (tiếng Việt) cho một câu hỏi của AI. */
 export async function getHint(question, context = {}) {
   return sendChat({ messages: [{ role: 'user', text: String(question || '') }], context, mode: 'hint' })

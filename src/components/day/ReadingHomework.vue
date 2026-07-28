@@ -1,25 +1,33 @@
 <script setup>
 /**
- * Bài tập ĐỌC HIỂU theo phương pháp từ khóa (Day 2 trở đi). Mỗi bài: đọc câu hỏi
- * + đoạn văn (song ngữ), tìm từ khóa rồi GÕ ĐÁP ÁN NGẮN — chấm ngay tại chỗ:
- * gõ → "Kiểm tra" → SAI mới hiện đáp án; GÕ LẠI thì ẩn đáp án (buộc tự nhớ); ĐÚNG
- * thì khóa câu + hiện đáp án mẫu đầy đủ. Đúng hết → phát 'done' (cổng hoàn thành buổi).
+ * Bài tập ĐỌC HIỂU (Day 2 trở đi).
  *
- * Chấm khoan dung như TypedCheckList: bỏ dấu câu/hoa-thường + bản "lỏng" bỏ a/an/the.
+ * Mỗi bài đưa sẵn đoạn văn (+ từ khóa gợi ý) chứa đáp án ngay tại câu hỏi — không
+ * ẩn đi, vì không phải buổi nào cũng có một "bài đọc chung" ở trên để tự tìm (Day 2
+ * là 5 đoạn văn độc lập, không có bài đọc chung). Học viên đọc đoạn văn của câu đó
+ * rồi gõ câu trả lời ngắn.
+ *
+ * Chấm: gõ → "Kiểm tra" → SAI mới hiện đáp án ngắn; GÕ LẠI thì ẩn đáp án (buộc tự
+ * nhớ); ĐÚNG thì khóa câu + hé lộ câu trả lời mẫu. Đúng hết → phát 'done' (cổng qua
+ * buổi). So khớp khoan dung: bỏ dấu câu/hoa-thường + bản "lỏng" bỏ a/an/the.
  */
 import { ref, computed, watch } from 'vue'
 import { speak, canSpeak } from '@/lib/speak'
+import { checkParaphrase } from '@/lib/aiChat'
+import { friendlyAiError } from '@/lib/aiError'
+import { useOnlineStatus } from '@/composables/useOnlineStatus'
 
 const props = defineProps({
   // [{ n, title, question, questionVi, passage, passageVi, keywords[], answer[], model }]
   items: { type: Array, default: () => [] },
   eyebrow: { type: String, default: 'HOMEWORK · ĐỌC HIỂU · BẮT BUỘC' },
-  title: { type: String, default: '📖 Đọc hiểu — dùng từ khóa trả lời' },
+  title: { type: String, default: '📖 Đọc hiểu' },
   intro: { type: String, default: '' },
 })
-const emit = defineEmits(['done'])
+const emit = defineEmits(['done', 'mistake'])
 
 const speakable = canSpeak()
+const { isOnline } = useOnlineStatus()
 
 function norm(s) {
   return String(s || '')
@@ -40,13 +48,17 @@ function accepts(item) {
 
 const typed = ref([])
 const status = ref([]) // null | 'ok' | 'wrong'
-const showVi = ref([])
+const showVi = ref([]) // hé lộ bản dịch của đoạn văn
+const aiChecking = ref([]) // đang nhờ AI kiểm tra nghĩa
+const aiMsg = ref([]) // thông báo kết quả AI ('' | 'no')
 watch(
   () => props.items,
   (v) => {
     typed.value = v.map(() => '')
     status.value = v.map(() => null)
     showVi.value = v.map(() => false)
+    aiChecking.value = v.map(() => false)
+    aiMsg.value = v.map(() => '')
   },
   { immediate: true },
 )
@@ -69,9 +81,33 @@ function check(i) {
   const tl = normLoose(val)
   const ok = acc.some((a) => norm(a) === t || normLoose(a) === tl)
   status.value[i] = ok ? 'ok' : 'wrong'
+  // Trả lời sai → ghi vào "sổ lỗi" để ôn ngắt quãng ở các buổi sau.
+  if (!ok) emit('mistake', { n: props.items[i]?.n || i + 1, q: props.items[i]?.question || '', answer: firstAnswer(i) })
 }
 function onInput(i) {
   if (status.value[i] === 'wrong') status.value[i] = null
+  aiMsg.value[i] = ''
+}
+// Nhờ AI xem câu trả lời có CÙNG NGHĨA với đáp án không (chấp nhận paraphrase).
+async function aiCheck(i) {
+  if (aiChecking.value[i] || !isOnline.value) return
+  const val = typed.value[i]
+  if (!val || !val.trim()) return
+  aiChecking.value[i] = true
+  aiMsg.value[i] = ''
+  try {
+    const expected = firstAnswer(i) || props.items[i]?.model || ''
+    const ok = await checkParaphrase(expected, val)
+    if (ok) {
+      status.value[i] = 'ok'
+    } else {
+      aiMsg.value[i] = 'no'
+    }
+  } catch (e) {
+    aiMsg.value[i] = friendlyAiError(e).message
+  } finally {
+    aiChecking.value[i] = false
+  }
 }
 function readAloud(i) {
   const p = props.items[i]
@@ -92,7 +128,7 @@ function firstAnswer(i) {
       <span class="wt-badge" :class="{ ok: allDone }">{{ okCount }}/{{ items.length }}</span>
     </div>
     <p class="quiz-intro">
-      {{ intro || 'Đọc câu hỏi và đoạn văn, xác định từ khóa rồi gõ cụm từ trả lời chính. Sai sẽ hiện đáp án; gõ lại thì đáp án ẩn đi. Làm đúng tất cả các bài để hoàn thành buổi.' }}
+      {{ intro || 'Đọc đoạn văn của mỗi câu rồi gõ cụm từ trả lời chính vào ô. Sai sẽ hiện đáp án; gõ lại thì ẩn đi. Làm đúng hết để hoàn thành buổi.' }}
     </p>
 
     <ol class="rh-list">
@@ -107,7 +143,7 @@ function firstAnswer(i) {
           <span v-if="it.questionVi" class="rh-q-vi">{{ it.questionVi }}</span>
         </div>
 
-        <article class="rh-passage">
+        <article v-if="it.passage" class="rh-passage">
           <p class="rh-passage-en">{{ it.passage }}</p>
           <button
             v-if="speakable"
@@ -117,7 +153,7 @@ function firstAnswer(i) {
           >
             🔊 Nghe đọc
           </button>
-          <button class="rh-vi-toggle" @click="showVi[i] = !showVi[i]">
+          <button v-if="it.passageVi" class="rh-vi-toggle" @click="showVi[i] = !showVi[i]">
             {{ showVi[i] ? 'Ẩn bản dịch' : 'Xem bản dịch' }}
           </button>
           <p v-if="showVi[i] && it.passageVi" class="rh-passage-vi">{{ it.passageVi }}</p>
@@ -145,6 +181,19 @@ function firstAnswer(i) {
 
         <div v-if="status[i] === 'wrong'" class="rh-answer">
           💡 Đáp án: <b>{{ firstAnswer(i) }}</b> — gõ lại cho đúng nhé (đáp án sẽ ẩn khi bạn gõ).
+          <div class="rh-ai">
+            <button
+              v-if="isOnline && !aiChecking[i]"
+              class="rh-ai-btn"
+              type="button"
+              @click="aiCheck(i)"
+            >
+              🤖 Câu của tôi cùng nghĩa mà? Nhờ AI kiểm tra
+            </button>
+            <span v-else-if="aiChecking[i]" class="rh-ai-loading">🤖 AI đang kiểm tra…</span>
+            <span v-if="aiMsg[i] === 'no'" class="rh-ai-no">AI: chưa cùng nghĩa với đáp án — thử diễn đạt lại nhé.</span>
+            <span v-else-if="aiMsg[i]" class="rh-ai-no">⚠️ {{ aiMsg[i] }}</span>
+          </div>
         </div>
         <div v-if="status[i] === 'ok' && it.model" class="rh-model">
           ✓ Câu trả lời mẫu: <b>{{ it.model }}</b>
@@ -152,7 +201,7 @@ function firstAnswer(i) {
       </li>
     </ol>
 
-    <div v-if="allDone" class="gate-line ok">✅ Đã hoàn thành bài đọc hiểu — dùng từ khóa chính xác!</div>
+    <div v-if="allDone" class="gate-line ok">✅ Đã hoàn thành bài đọc hiểu!</div>
   </section>
 </template>
 
@@ -160,7 +209,7 @@ function firstAnswer(i) {
 <style scoped>
 .rh-list {
   list-style: none;
-  margin: 8px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -317,6 +366,35 @@ function firstAnswer(i) {
   margin-top: 8px;
   font-size: 13.5px;
   color: var(--text-danger, #d1495b);
+}
+.rh-ai {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.rh-ai-btn {
+  border: 1px dashed rgba(108, 92, 231, 0.5);
+  background: var(--surface);
+  color: #6c5ce7;
+  border-radius: 99px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 38px;
+}
+.rh-ai-loading {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6c5ce7;
+}
+.rh-ai-no {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted-2);
 }
 .rh-model {
   margin-top: 8px;

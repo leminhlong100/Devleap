@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ieltsBookMap, computeIeltsBookProgress, isBookDayUnlocked, IELTS_BOOK_WEEK } from '@/data/ieltsBook'
+import { ieltsBookMap, computeIeltsBookProgress, isBookDayUnlocked, IELTS_BOOK_WEEK, ieltsBookDays } from '@/data/ieltsBook'
+import { estimateIeltsBand } from '@/lib/ieltsBand'
 import { ieltsMeta } from '@/data/courses'
 
 const router = useRouter()
@@ -10,6 +11,16 @@ const user = useUserStore()
 
 const completed = computed(() => user.completed.ielts || [])
 const progress = computed(() => computeIeltsBookProgress(completed.value))
+
+// Band ước lượng (thô) + kỹ năng yếu nhất — tổng hợp điểm các hoạt động đã chấm.
+const availableDayNums = ieltsBookDays.map((d) => d.day)
+const band = computed(() =>
+  estimateIeltsBand(
+    { quizOf: user.quizOf, writingOf: user.writingOf },
+    availableDayNums,
+    IELTS_BOOK_WEEK,
+  ),
+)
 
 const days = computed(() =>
   ieltsBookMap().map((d) => {
@@ -53,6 +64,27 @@ function continueLearning() {
       </button>
     </header>
 
+    <!-- BAND ƯỚC LƯỢNG + KỸ NĂNG YẾU (hiện khi đã có điểm) -->
+    <section v-if="band.hasData" class="band-card">
+      <div class="band-head">
+        <div>
+          <div class="band-eyebrow">BAND ƯỚC LƯỢNG (THÔ)</div>
+          <div class="band-score">~{{ band.overall.toFixed(1) }}</div>
+        </div>
+        <p v-if="band.weakest" class="band-weak">
+          Yếu nhất: <b>{{ band.weakest.icon }} {{ band.weakest.label }}</b> (~{{ band.weakest.band.toFixed(1) }}) — nên luyện thêm.
+        </p>
+      </div>
+      <ul class="band-skills">
+        <li v-for="s in band.skills" :key="s.key" :class="{ off: !s.has }">
+          <span class="bs-label">{{ s.icon }} {{ s.label }}</span>
+          <span class="bs-bar"><span class="bs-fill" :style="{ width: (s.pct || 0) + '%' }"></span></span>
+          <span class="bs-band">{{ s.has ? '~' + s.band.toFixed(1) : '—' }}</span>
+        </li>
+      </ul>
+      <p class="band-note">Chỉ là ước lượng từ điểm luyện tập trên web — không phải band thi thật.</p>
+    </section>
+
     <!-- LƯỚI 15 BUỔI -->
     <h2 class="sec-title">Lộ trình 15 buổi theo sách</h2>
     <p class="sec-sub">Mỗi buổi bám sát một Day trong sách “IELTS 4 kỹ năng cho người bắt đầu từ con số âm — Tập 1”. Hoàn thành buổi để mở buổi kế.</p>
@@ -84,6 +116,94 @@ function continueLearning() {
   padding: 26px var(--space-page-x) 90px;
   max-width: 960px;
   margin: 0 auto;
+}
+.band-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 26px;
+  background: var(--surface-1, var(--surface));
+}
+.band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.band-eyebrow {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--muted-2);
+}
+.band-score {
+  font-size: 34px;
+  font-weight: 900;
+  color: #6c5ce7;
+  line-height: 1.1;
+}
+.band-weak {
+  font-size: 13.5px;
+  color: var(--slate);
+  background: rgba(255, 176, 32, 0.12);
+  border: 1px solid rgba(255, 176, 32, 0.28);
+  border-radius: 12px;
+  padding: 8px 13px;
+}
+.band-weak b {
+  color: #b5730b;
+}
+.band-skills {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.band-skills li {
+  display: grid;
+  grid-template-columns: 140px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+.band-skills li.off {
+  opacity: 0.5;
+}
+.bs-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.bs-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--track-bg, rgba(0, 0, 0, 0.08));
+  overflow: hidden;
+}
+.bs-fill {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #6c5ce7, #00d68f);
+  transition: width 0.4s;
+}
+.bs-band {
+  font-size: 13px;
+  font-weight: 800;
+  color: #00966a;
+  text-align: right;
+}
+.band-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+@media (max-width: 560px) {
+  .band-skills li {
+    grid-template-columns: 110px 1fr 40px;
+  }
 }
 .back {
   display: inline-flex;
