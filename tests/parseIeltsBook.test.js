@@ -443,6 +443,123 @@ describe('getBookDay(7) — file day-07.md thật', () => {
   })
 })
 
+const SAMPLE14 = `---
+day: 14
+title: "Summary Completion · Discussion Essays · Past Experience"
+sections: [reading, vocabulary, writing, speaking, homework]
+topicVocabulary: "Tackling Obesity"
+---
+
+# Day 14 — Skills
+
+> **Aims:** Reading / Writing / Speaking
+
+## Reading Skills
+### 1. Summary Completion
+Chọn từ trong hộp điền vào bản tóm tắt.
+
+## Basic Vocabulary
+### Topic vocabulary: Tackling Obesity
+| Từ vựng | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| Obesity /oʊˈbiːsɪti/ (n) | Bệnh béo phì | Obesity is a huge problem. (Béo phì là một vấn đề lớn.) |
+| Huge /hjuːdʒ/ (adj) | Khổng lồ | The elephant is huge. (Con voi rất khổng lồ.) |
+
+### Useful Phrases: Các hoạt động khi đi du lịch
+| Cụm từ | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| Explore the city /ɪkˈsplɔːr ðə ˈsɪti/ | Khám phá thành phố | It was exciting to explore the city. (Thật thú vị khi khám phá thành phố.) |
+
+## Writing Skills
+### 1. Dạng Discussion
+Thảo luận cả hai quan điểm.
+
+## Speaking Skills
+### 1. Past Experience Questions
+Dùng thì quá khứ.
+
+## Homework
+### Bài tập 1 — Summary Completion (Q9)
+- **Câu hỏi (EN):** They blame their **9 _____** for being overweight.
+- **Đoạn văn (EN):** …the excuse that they have a slow metabolism.
+- **Đáp án ngắn:** Metabolism | metabolism
+- **Answer Key:** Metabolism — đoạn A nói họ đổ lỗi cho quá trình chuyển hóa.
+
+### I. Sắp xếp lại trật tự từ
+1. enjoyed / school days / Yes, / exciting / were / they / because / my / I
+
+**Answer Key**:
+1. Yes, I enjoyed my school days because they were exciting.
+
+### II. Dịch sang tiếng Anh
+1. Béo phì là một vấn đề sức khỏe nghiêm trọng. (obesity)
+
+**Answer Key**:
+1. Obesity is a serious health issue.
+`
+
+describe('parseIeltsBookDay() — Day 14: IPA trong ô từ vựng + summary completion', () => {
+  const d = parseIeltsBookDay(SAMPLE14)
+
+  it('tách IPA ra field riêng, term giữ lại từ sạch', () => {
+    expect(d.vocab.words).toHaveLength(2)
+    expect(d.vocab.words[0].term).toBe('Obesity')
+    expect(d.vocab.words[0].ipa).toBe('/oʊˈbiːsɪti/')
+    expect(d.vocab.words[0].pos).toBe('n')
+    expect(d.vocab.words[1].term).toBe('Huge')
+    expect(d.vocab.words[1].ipa).toBe('/hjuːdʒ/')
+  })
+
+  it('cụm từ hữu ích (không có từ loại) cũng tách được IPA', () => {
+    expect(d.vocab.collocations).toHaveLength(1)
+    expect(d.vocab.collocations[0].term).toBe('Explore the city')
+    expect(d.vocab.collocations[0].ipa).toBe('/ɪkˈsplɔːr ðə ˈsɪti/')
+  })
+
+  it('homework: đọc hiểu (Q9) + sắp xếp từ và dịch (cùng bucket translate)', () => {
+    expect(d.homework.reading).toHaveLength(1)
+    expect(d.homework.reading[0].answer).toContain('Metabolism')
+    expect(d.homework.translate).toHaveLength(2)
+    expect(d.homework.translate[0].answer).toBe('Yes, I enjoyed my school days because they were exciting.')
+    expect(d.homework.translate[1].answer).toBe('Obesity is a serious health issue.')
+  })
+})
+
+describe('getBookDay(14) — file day-14.md thật', () => {
+  it('Day 14 có Reading/Writing/Speaking, 5 bài summary completion, 26 câu viết/dịch, 37 từ + 20 cụm du lịch', () => {
+    const d = getBookDay(14)
+    expect(d).toBeTruthy()
+    expect(d.reading).toContain('Summary Completion')
+    expect(d.writing).toContain('Discussion')
+    expect(d.speaking).toContain('Past Experience')
+    // Questions 9–13 -> 5 bài đọc hiểu chấm ngay (cổng bắt buộc)
+    expect(d.homework.reading).toHaveLength(5)
+    expect(d.homework.reading[0].answer).toContain('Metabolism')
+    expect(d.homework.reading[4].answer).toContain('Behaviour')
+    for (const b of d.homework.reading) {
+      expect(b.answer.length).toBeGreaterThan(0)
+      expect(b.model.length).toBeGreaterThan(0)
+      expect(b.passage.length).toBeGreaterThan(20)
+    }
+    // Homework I (sắp xếp 6 câu) + II (dịch 20 câu) -> cùng bucket dịch, đều có đáp án
+    expect(d.homework.translate).toHaveLength(26)
+    for (const t of d.homework.translate) expect(t.answer.length).toBeGreaterThan(0)
+    // câu sắp xếp: số "từ" trong đề khớp số từ của đáp án (xếp xong là điền hết)
+    for (const t of d.homework.translate.slice(0, 6)) {
+      const tokens = t.vi.split('/').map((s) => s.trim()).filter(Boolean)
+      expect(tokens.join(' ').split(/\s+/)).toHaveLength(t.answer.split(/\s+/).length)
+    }
+    // từ vựng bài đọc (37 từ, có IPA) + 20 cụm hoạt động du lịch
+    expect(d.vocabCards).toHaveLength(37)
+    expect(d.vocabCards.every((v) => v.ipa.startsWith('/'))).toBe(true)
+    expect(d.vocab.collocations).toHaveLength(20)
+    // buổi kỹ năng: không có Basic Grammar / cloze / mcq
+    expect(d.grammar).toHaveLength(0)
+    expect(d.homework.cloze).toHaveLength(0)
+    expect(d.homework.mcq).toHaveLength(0)
+  })
+})
+
 describe('getBookDay(3) — file day-03.md thật', () => {
   it('Day 3 có grammar, dictation 22 chỗ trống, và homework dịch/mcq/chọn-đại-từ', () => {
     const d = getBookDay(3)

@@ -124,8 +124,19 @@ function parseGrammar(lines) {
 // Một hàng "Từ | Nghĩa | Ví dụ (song ngữ)" -> object dùng chung cho words/adverbs/phrases.
 function mapWordRow(r) {
   const { term, pos } = splitTerm(r[0] || '')
+  // Day 14+: ô từ vựng có thể kèm phiên âm ngay sau từ ("Obesity /oʊˈbiːsɪti/ (n)") —
+  // tách IPA ra field riêng để VocabCard hiện phiên âm và `term` sạch (dùng cho
+  // flashcard, tra nghĩa, search index). Buổi không ghi IPA thì ipa = ''.
+  const ipaM = /\/[^/]+\//.exec(term)
   const ex = splitBilingual(r[2] || '')
-  return { term, pos, vi: (r[1] || '').trim(), exEn: ex.en, exVi: ex.vi }
+  return {
+    term: ipaM ? term.replace(ipaM[0], '').replace(/\s+/g, ' ').trim() : term,
+    pos,
+    ipa: ipaM ? ipaM[0] : '',
+    vi: (r[1] || '').trim(),
+    exEn: ex.en,
+    exVi: ex.vi,
+  }
 }
 
 function parseVocabulary(lines) {
