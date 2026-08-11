@@ -6,10 +6,14 @@
  * Core thì ai cũng ôn được, nhưng câu hỏi khoan vào ĐÚNG hồ sơ này thì chỉ
  * chuẩn bị trước mới trả lời trôi được.
  *
- * Mỗi câu có 4 phần hiển thị trong UI: question (in đậm), whyAsked (khối xám),
+ * Mỗi câu có 5 phần hiển thị trong UI: question (in đậm), whyAsked (khối xám),
  * trap (khối vàng/cam), answerFramework (khung trả lời gợi ý — không phải bài
  * mẫu để đọc, chỉ là dàn ý để người dùng tự viết câu trả lời của mình vào
- * textarea, lưu localStorage qua user.setProfileAnswer()/toggleProfilePrepared()).
+ * textarea, lưu localStorage qua user.setProfileAnswer()/toggleProfilePrepared()),
+ * và myFacts — chất liệu THẬT của chính người dùng, trích từ docs/me
+ * (Redmine 01/2025–07/2026 + Working Report 2025/07–2026/06) để không phải ngồi
+ * nhớ lại số liệu khi viết câu trả lời. Chỗ nào dữ liệu không có thì ghi rõ
+ * [Cần xác nhận: …] — thà thiếu số còn hơn khai số bị đối chiếu ngược.
  */
 export const PROFILE_QUESTIONS = [
   {
@@ -24,6 +28,12 @@ export const PROFILE_QUESTIONS = [
       'Chỉ ra bạn hiểu khác biệt: Action → @RestController, struts-config.xml → annotation, iBatis XML mapper → JPA Repository',
       'Đưa bằng chứng: project migration đã làm trên GitHub',
       'Kết bằng lợi thế: "Vì đã làm legacy, em biết chỗ nào migration hay vỡ — không phải ai học Spring Boot từ đầu cũng biết"',
+    ],
+    myFacts: [
+      'Nói đúng thứ mình dùng: ngoài Struts/iBatis, hệ thống lõi i-PLAT/EFA sinh source từ 定義書 (code generation) — tức bạn quen làm trong khuôn khổ framework do người khác định nghĩa, không phải tự do chọn.',
+      'Bằng chứng học công nghệ mới nhanh và có kết quả: trong kỳ có 871 giờ nghiên cứu kỹ thuật MANG MÃ DỰ ÁN công ty (00000399) — Vue 3, Nuxt.js, Vitest, Claude Code — và đã dùng để tạo màn hình thật CXAM123, CYA0107.',
+      'Bằng chứng nền tảng chuyển được: đã làm ORM + transaction thật trên Oracle, tự viết và tuning PL/SQL (#41518) — phần khó của tầng dữ liệu bạn đã đi qua.',
+      '⚠ Chưa có Spring Boot trong công việc thật → phải có project migration trên GitHub để chỉ vào, xem mục "Spring Boot thực chiến" ở tab Cần cải thiện.',
     ],
     placeholder: "Gợi ý mở đầu: 'Struts và Spring MVC cùng mô hình MVC, điểm khác lớn nhất là...'",
   },
@@ -40,6 +50,11 @@ export const PROFILE_QUESTIONS = [
       'Đánh đổi: JPA che giấu SQL → dễ dính N+1, lazy loading exception nếu không hiểu',
       'Nêu thực tế: nhiều dự án dùng cả hai — JPA cho CRUD, MyBatis/native query cho báo cáo',
     ],
+    myFacts: [
+      'Lợi thế riêng của bạn ở câu này: bạn viết SQL/PL-SQL tay trên hệ thống thật nên NHÌN THẤY hết query — chính nhờ vậy mới phát hiện được plan không ăn index ở #41518 (cost 4.151.927 → 409.692). Người chỉ dùng JPA không có phản xạ đó.',
+      'Ví dụ đúng chỗ nên viết SQL tay: procedure SXA0006 chạy quá 1 tiếng — nghiệp vụ phức tạp, cần kiểm soát plan, không thể để framework sinh giúp.',
+      'Nói được cả mặt trái: vì SQL tay nên khi logic PL/SQL bị sót commit giữa 2 nhánh (#41590) phải tự soát theo comment và test lại — chi phí bảo trì cao hơn.',
+    ],
     placeholder: "Gợi ý mở đầu: 'MyBatis cho em kiểm soát SQL hoàn toàn, còn JPA thì...'",
   },
   {
@@ -54,6 +69,13 @@ export const PROFILE_QUESTIONS = [
       'Nhấn cái khó của maintenance: sửa mà không được vỡ luồng nghiệp vụ đang chạy thật, không có tài liệu đầy đủ, phải đọc code người khác',
       'Kể 1 việc mình chủ động cải thiện, không phải chỉ nhận việc (ví dụ: dựng môi trường Docker/WSL2 cho team)',
       'Nhắc domain: hóa đơn / billing / batch job — nghiệp vụ tài chính đòi độ chính xác tuyệt đối',
+    ],
+    myFacts: [
+      'Số liệu chống lại nhận định "chỉ maintain": 36 ticket / 15 dự án / 12 khách hàng cuối, trong đó 21 ticket là 機能開発 — PHÁT TRIỂN MỚI, không phải sửa lỗi.',
+      'Phát triển mới lớn nhất: #41421 (58 giờ) in hợp đồng PDF kèm chữ ký + thiết kế bảng master mới; #41877 (48 giờ) batch liên kết dữ liệu hóa đơn; #41908 (32,5 giờ) API mới lấy danh sách thẻ thanh toán.',
+      'Việc chủ động, không phải nhận việc: tự xây 2 tool test tự động (101 giờ + 171,5 giờ = 34 người-ngày, có mã dự án riêng 03011562).',
+      'Cái khó của maintenance kể được: 6 lỗi tiềm ẩn có sẵn phải tự tái hiện + đọc source cũ + lập báo cáo nguyên nhân cho khách xác nhận TRƯỚC khi được sửa.',
+      'Chốt bằng độ tin cậy: 0 task trễ hạn, sai số effort −1,1%. [Cần xác nhận: hệ thống phục vụ bao nhiêu thuê bao, bạn đụng bao nhiêu module/bảng — xem mục "Quy mô hệ thống" ở tab Cần cải thiện.]',
     ],
     placeholder: "Gợi ý mở đầu: 'Em maintain hệ thống gồm khoảng ... module, phục vụ ...'",
   },
@@ -70,6 +92,13 @@ export const PROFILE_QUESTIONS = [
       'Nguyên nhân gốc: ví dụ ORA-01861 (literal does not match format string) — do NLS date format khác giữa môi trường',
       'Chặn tái phát: không chỉ fix, mà làm gì để không lặp lại (chuẩn hóa format, thêm test, thêm log) — bước này phân biệt junior với người sắp lên mid, đa số ứng viên dừng ở bước 3',
     ],
+    myFacts: [
+      'Case mạnh nhất (và trung thực nhất) — #41714, 34,5 giờ: chức năng sinh ~10 file JPG mất 10–20 giây, người dùng chuyển màn hình giữa lúc chờ thì file bị thiếu. Em tái hiện đúng khoảng thời gian đó, xác định xử lý bị cắt giữa dòng, khóa thao tác trong lúc xử lý, và cố định 2 test viewpoint mới. Đây là lỗi của chính em ở bước unit test — kể thẳng thì mạnh hơn là giấu.',
+      'Case dữ liệu bị phá — #41670: thông tin tiếp nhận bị ghi đè thành chuỗi "false" khi người khác cập nhật; em truy vết từ log thao tác về xử lý phát hành phiếu tiếp nhận.',
+      'Case khác biệt môi trường — #40696: SESSION TIME OUT chỉ xảy ra trên một số thiết bị khi quay lại màn hình trước sau khi in báo cáo.',
+      'Case ưu tiên cao xử lý trong 1 ngày — #41619: sinh nhầm file JPG do điều kiện lọc cờ ở giá trị biên, 4 giờ.',
+      '👉 Chọn MỘT case và kể trôi trong 2 phút. Đừng kể cả bốn.',
+    ],
     placeholder: "Gợi ý mở đầu: 'Triệu chứng là...; em khoanh vùng bằng cách...'",
   },
   {
@@ -84,6 +113,13 @@ export const PROFILE_QUESTIONS = [
       'Các hướng xử lý: index đúng cột, tránh hàm bọc cột trong WHERE (làm index vô hiệu), giảm subquery lồng, hạn chế SELECT *',
       'Ví dụ thật từ dự án: query nào, chậm bao lâu, sửa gì, còn bao lâu',
       'Nêu mặt trái: index nhiều làm chậm INSERT/UPDATE — biết đánh đổi',
+    ],
+    myFacts: [
+      'Đây là câu ghi điểm mạnh nhất của bạn — #41518 / CATFNL-7552, 24 giờ: procedure SXA0006 chạy quá 1 tiếng không kết thúc tại môi trường khách hàng, môi trường dev vẫn bình thường.',
+      'Cách làm kể được: lấy execution plan ở CẢ HAI môi trường rồi so sánh, phát hiện plan bên khách không dùng index → cost 4.151.927 so với 409.692 (~10 lần), tuning rồi đo lại bằng chính execution plan.',
+      '⚠ Câu vặn chắc chắn tới: "cùng query mà sao 2 môi trường ra plan khác nhau?" → statistics cũ, lượng dữ liệu khác, bind variable peeking. Phải trả lời được, đây là chỗ họ khoan sâu nhất.',
+      '⚠ Câu vặn thứ hai: "em sửa cụ thể là gì?" → nói được giải pháp đã chọn (index/hint/viết lại WHERE) và vì sao chọn nó. [Cần xác nhận: nhớ lại chính xác bản sửa của #41518.]',
+      'Kinh nghiệm Oracle rộng hơn tuning: expdp/DMP, schema, tablespace, procedure, merge logic PL/SQL giữa các nhánh.',
     ],
     placeholder: "Gợi ý mở đầu: 'Em luôn đo trước bằng EXPLAIN, rồi mới sửa. Ví dụ có lần...'",
   },
@@ -100,6 +136,12 @@ export const PROFILE_QUESTIONS = [
       'Nêu nguyên tắc làm việc của mình: code AI sinh vẫn phải review như code người, đặc biệt phần đụng nghiệp vụ tài chính và transaction',
       'Kết: "Em coi AI là người viết nháp rất nhanh, còn trách nhiệm đúng/sai vẫn là của em"',
     ],
+    myFacts: [
+      'Bằng chứng cụ thể hơn "em dùng Copilot": đã dùng Claude / Claude Code để tạo màn hình THẬT trong dự án — CXAM123 và CYA0107 — và tham gia 3 seminar Claude Code nội bộ công ty.',
+      'Có kết quả đo được ở mảng liên quan: cũng trong giai đoạn tự học đó bạn viết unit test bằng Vitest cho màn hình thật CXAM128, CXAM339 — tức output của AI có được test lại, không phải đẩy thẳng lên.',
+      'Nguyên tắc nói ra được: dự án của bạn chạy dữ liệu thuê bao thật của khách Nhật, quy trình bắt buộc có 単体テスト成績書 / 受入テスト成績書 → code AI sinh vẫn phải qua đúng quy trình đó, không có ngoại lệ.',
+      '⚠ [Cần xác nhận: nhớ lại MỘT lần bạn bắt lỗi do AI sinh ra — đây là phần quan trọng nhất của câu này và hồ sơ chưa ghi. Không có ví dụ thì câu trả lời rỗng như mọi ứng viên khác.]',
+    ],
     placeholder: "Gợi ý mở đầu: 'Em dùng AI để...; có lần em bắt được lỗi AI sinh ra khi...'",
   },
   {
@@ -115,6 +157,11 @@ export const PROFILE_QUESTIONS = [
       'Chứng minh quyền sở hữu: "Anh chỉ bất kỳ file nào trong repo, em giải thích được" — và phải nói được thật',
       'Kể một chỗ mình sửa lại so với AI đề xuất, kèm lý do',
     ],
+    myFacts: [
+      'Ranh giới nói được ngay: quyết định thiết kế trong công việc thật là của bạn — ví dụ tách tọa độ in ra bảng master mst_document_coordinate ở #41421 thay vì hard-code, lý do là mỗi局 một mẫu giấy tờ.',
+      'Chứng minh quyền sở hữu code AI hỗ trợ: bạn đã tạo màn hình CXAM123, CYA0107 bằng Claude Code trong dự án thật và vẫn phải lập tài liệu test theo QMS cho chúng → giải thích được từng phần.',
+      '👉 Chuẩn bị bắt buộc: chọn ngẫu nhiên 1 file trong repo cá nhân, xóa và tự viết lại không dùng AI. Viết lại được = sở hữu thật.',
+    ],
     placeholder: "Gợi ý mở đầu: 'Em có dùng AI hỗ trợ phần..., còn kiến trúc/quyết định thiết kế là em tự làm vì...'",
   },
   {
@@ -129,6 +176,12 @@ export const PROFILE_QUESTIONS = [
       'Muốn học được nhiều hơn ở giai đoạn 2–5 năm kinh nghiệm',
       'Có thể nhắc lương như một yếu tố, không phải yếu tố duy nhất',
     ],
+    myFacts: [
+      'Lý do hướng về phía trước, đúng thực tế của bạn: 2 năm làm hệ thống nghiệp vụ lõi bằng framework nội bộ + sinh source từ 定義書 → kỹ thuật bị đóng khung, muốn vào môi trường Spring Boot và hạ tầng hiện đại.',
+      'Nói được thứ mình MANG THEO chứ không chỉ thứ mình muốn: Oracle + tuning, đọc spec 日本語, quy trình QMS của khách Nhật, kinh nghiệm điều tra hệ thống legacy.',
+      '⚠ Đừng nói "công ty cũ ít việc" hay lấy chuyện 871 giờ tự học ra kể như bằng chứng thiếu việc — đó là mã dự án công ty phân bổ, nhưng người ngoài sẽ hiểu sai.',
+      '⚠ Đừng nói xấu framework nội bộ hay quy trình phía Nhật. Nói "em muốn học thêm", không nói "chỗ cũ lạc hậu".',
+    ],
     placeholder: "Gợi ý mở đầu: 'Em muốn tìm môi trường có...'",
   },
   {
@@ -142,6 +195,12 @@ export const PROFILE_QUESTIONS = [
       'Nêu điểm yếu THẬT nhưng không chí mạng cho vị trí đang ứng tuyển',
       'Kèm hành động cụ thể đang làm để cải thiện',
       'Ví dụ: chưa có kinh nghiệm cloud thực chiến → đang tự học AWS cơ bản; tiếng Anh nói còn chậm → đang luyện 30 phút/ngày',
+    ],
+    myFacts: [
+      'Chọn 2 trong các lỗ hổng THẬT (chi tiết + hành động ở tab Cần cải thiện): chưa dùng Spring Boot trong công việc thật · chưa từng review code cho người khác · test tự động phía Java chưa có (chỉ có Vitest cho 2 màn hình) · chưa làm load test · chưa có microservice/Kafka · chưa có chứng chỉ JLPT hay 基本情報.',
+      'An toàn nhất cho vị trí Java backend: nói về review code / mentor (không chí mạng, ai cũng hiểu là do dự án chưa giao) và test tự động (đang có hành động cụ thể).',
+      '⚠ Cân nhắc trước khi nói Spring Boot là điểm yếu nếu vị trí ứng tuyển chính là Spring Boot — khi đó nói ở dạng "đang bổ sung, có sản phẩm chứng minh" thay vì "em yếu".',
+      'Mỗi điểm yếu phải kèm hành động đang làm thật, không phải sẽ làm: project migration, JUnit + Mockito, k6, luyện script tiếng Anh 3 phút mỗi ngày.',
     ],
     placeholder: "Gợi ý mở đầu: 'Điểm em thấy mình còn yếu là..., em đang cải thiện bằng cách...'",
   },
@@ -159,6 +218,12 @@ export const PROFILE_QUESTIONS = [
       'Vì sao gọi method @Transactional từ chính class đó thì KHÔNG có tác dụng (self-invocation bỏ qua proxy)',
       'Propagation REQUIRED vs REQUIRES_NEW',
     ],
+    myFacts: [
+      '⚠ Đây là câu bạn KHÔNG có kinh nghiệm production để đỡ (chưa dùng Spring Boot trong công việc) → phải học thuộc phần cơ chế, không thể ứng biến bằng kinh nghiệm.',
+      'Cái bạn có thật để neo: xử lý giao dịch ở tầng dữ liệu trên Oracle — procedure PL/SQL, batch liên kết dữ liệu (#41877, 48 giờ), batch xóa tài khoản (#41835). Nói được vì sao một batch phải chia lô và commit theo lô.',
+      'Neo bằng bài học thật về tính nhất quán: ở #41780 việc đăng ký lại bản ghi đã xóa mềm gây vi phạm ràng buộc unique → em chuyển INSERT sang UPSERT. Đó là tư duy đúng/sai dữ liệu, cùng gốc với câu hỏi transaction.',
+      '👉 Luyện câu này ở tab Ngân hàng câu hỏi, chủ đề Transaction — mở flashcard và tự nói ra miệng, đừng chỉ đọc.',
+    ],
     placeholder: "Gợi ý mở đầu: '@Transactional hoạt động qua proxy AOP, cụ thể là...'",
   },
   {
@@ -174,6 +239,11 @@ export const PROFILE_QUESTIONS = [
       'Cách sửa: @EntityGraph, JOIN FETCH, @BatchSize',
       'Đánh đổi: JOIN FETCH với nhiều collection gây nhân bản dòng',
       'Liên hệ thế mạnh cũ: "Hồi làm iBatis em tự viết SQL nên nhìn thấy hết query; chuyển sang JPA thì query bị ẩn đi, nên em luôn bật log SQL khi dev"',
+    ],
+    myFacts: [
+      'Neo cực mạnh và có số: bạn quen đọc execution plan để tìm truy vấn xấu (#41518, cost giảm ~10 lần) → câu "em phát hiện thế nào" bạn trả lời được bằng phản xạ thật, không phải lý thuyết.',
+      'Cách nối hai vế: "Em làm SQL tay nên nhìn thấy hết query và quen đo bằng execution plan trước khi sửa. Chuyển sang JPA thì query bị ẩn đi, nên em luôn bật show-sql và đếm số query khi dev."',
+      '⚠ Phần cách SỬA (@EntityGraph, JOIN FETCH, @BatchSize) là phần bạn chưa làm thật → phải nhớ chính xác, và nói rõ mức độ: đã đọc/đã thử trong project cá nhân.',
     ],
     placeholder: "Gợi ý mở đầu: 'N+1 là khi..., em phát hiện bằng cách bật show-sql và...'",
   },
@@ -191,6 +261,12 @@ export const PROFILE_QUESTIONS = [
       'GitHub Actions đã cấu hình trong project cá nhân',
       'Kinh nghiệm Docker Compose để chạy môi trường dev',
     ],
+    myFacts: [
+      'Phần Git của bạn mạnh hơn mức "em biết Git" — kể cụ thể: làm việc đa nhánh cho nhiều khách hàng cùng lúc, merge liên nhánh release (#41319 merge vào nhánh phiên bản đang chạy tại局, #41868 merge đối ứng thu tiền từ nhánh CC9 sang nhánh giao hàng 大垣).',
+      'Case Git khó nhất kể được: #41590 — logic PL/SQL bị sót commit giữa 2 nhánh, em phải xác định phạm vi theo comment commit rồi test lại. Và #41736 — so sánh nhánh khách với nhánh gốc release, liệt kê toàn bộ JIRA chỉ có ở nhánh khách (15 giờ).',
+      'Dùng cả Git/GitLab và SVN → nói được khác biệt khi làm việc đa nhánh trên hai hệ.',
+      '⚠ Lỗ hổng thật: không có pipeline CI/CD trong dự án, không dùng Docker, chưa từng review code chính thức. Hành động ở tab Cần cải thiện (Docker multi-stage + GitHub Actions cho project cá nhân). Đừng nhận là có kinh nghiệm CI/CD.',
+    ],
     placeholder: "Gợi ý mở đầu: 'Team em dùng quy trình branch..., khi conflict em xử lý bằng...'",
   },
   {
@@ -207,6 +283,13 @@ export const PROFILE_QUESTIONS = [
       'Hỏi người dùng nghiệp vụ chứ không chỉ hỏi dev',
       'Viết lại tài liệu khi hiểu tới đâu',
     ],
+    myFacts: [
+      'Đây là câu bạn có lợi thế tuyệt đối — mảng bảo trì i-PLAT/EFA: 12 ticket, ~137 giờ, "không có tài liệu, phải tự đọc source cũ, tái hiện hiện tượng, tìm nguyên nhân gốc và đề xuất giải pháp trước khi được phép sửa".',
+      'Bằng chứng bạn thật sự viết lại tài liệu: viết ngược 詳細設計書 (逆おこし) ở #41748 và #41394 — không chỉ nói lý thuyết "sẽ viết tài liệu".',
+      'Bằng chứng điều tra phạm vi ảnh hưởng: #40878 — quét toàn bộ màn hình/batch có dùng một trường (số hợp đồng docomo Hikari), lập danh sách xử lý – ID – vị trí sử dụng.',
+      'Bằng chứng đi từ dữ liệu: #41677 — batch liên kết Cable ID kết thúc cảnh báo, em truy ra 58 bản ghi dữ liệu di trú thiếu 個社ID và luồng đăng ký không sinh bản ghi liên quan.',
+      'Cách so sánh rất riêng của bạn: đối chiếu hành vi giữa 2 sản phẩm cùng gốc (i-PLAT vs EFA) để tìm chỗ lệch — #41113, #40688, #41748.',
+    ],
     placeholder: "Gợi ý mở đầu: 'Em sẽ đọc schema DB trước, vì...'",
   },
   {
@@ -221,6 +304,12 @@ export const PROFILE_QUESTIONS = [
       'Kèm lý do, không kèm lời xin: 2 năm Java + Oracle + kinh nghiệm dự án Nhật + đang bổ sung Spring Boot có sản phẩm chứng minh',
       'Nếu bị vặn "em mới 2 năm mà đòi cao thế" → không hạ giá ngay, hỏi lại về phạm vi công việc và kỳ vọng của vị trí',
       'Hỏi tổng thu nhập chứ không chỉ lương gross: lương tháng 13, thưởng, số ngày phép, chu kỳ review lương',
+    ],
+    myFacts: [
+      'Lý do neo giá — dùng số đo được, không dùng tính từ: 0 task trễ hạn trên 36 ticket · sai số effort ước lượng −1,1% · tuning SQL giảm cost ~10 lần · 2 năm Oracle trên hệ thống production của khách Nhật · đọc được spec 日本語.',
+      'Thêm một luận điểm ít ứng viên 2 năm có: đã tự xây tool test tự động dùng chung cho team (34 người-ngày) và tự phát triển được khi CHƯA có thiết kế chi tiết (#41394).',
+      'Nếu bị vặn "mới 2 năm mà đòi cao thế" → không hạ giá, hỏi lại phạm vi công việc và kỳ vọng của vị trí (xem kịch bản 5.2 ở tab Kỹ năng PV).',
+      '⚠ Đừng lấy con số 748,5 giờ hay 1.864 giờ ra để "cho nghe nhiều" — đó không phải phần việc của bạn, bị hỏi kỹ là mất tin cậy ngay.',
     ],
     placeholder: "Gợi ý mở đầu: 'Mức em mong muốn là 25 triệu, sàn không dưới 22 triệu, vì...'",
   },
@@ -237,6 +326,13 @@ export const PROFILE_QUESTIONS = [
       'OT được tính như thế nào?',
       'Team bao nhiêu người, quy trình review code ra sao?',
       'Sau 1 năm, anh kỳ vọng người ở vị trí này làm được gì mà hiện tại chưa làm được?',
+    ],
+    myFacts: [
+      'Hỏi đúng vào lỗ hổng của bạn thì vừa lấy thông tin vừa cho thấy tự nhận thức: "Ở đây có quy trình review code không, người mới có được review kỹ trong 3 tháng đầu không?" — bạn đang thiếu đúng mảng này.',
+      '"Team có viết test tự động không, mức coverage kỳ vọng thế nào?" — hỏi để biết mình cần bù JUnit/Mockito tới đâu.',
+      '"Hệ thống hiện tại có phải microservice không, có dùng message queue không?" — biết trước để chuẩn bị, và cho thấy bạn quan tâm kiến trúc.',
+      'Câu lọc rủi ro dành riêng cho hồ sơ outsourcing như bạn: công ty đang chạy bao nhiêu khách hàng — phụ thuộc 1 khách là mất khách thì cắt người.',
+      'Nếu là công ty Nhật: hỏi về tỉ lệ onsite tại khách và cách phối hợp với phía Nhật — bạn có sẵn kinh nghiệm này nên câu hỏi rất tự nhiên.',
     ],
     placeholder: "Chọn 2-3 câu trong khung trả lời để hỏi ngược, viết lại theo cách nói tự nhiên của em...",
   },

@@ -57,6 +57,8 @@ const DEFAULT_JAVA_PREP = {
   profilePrepared: [],
   // Checklist trước khi ký hợp đồng (P1-2, Ngày 14) — lưu index đã tick.
   contractChecklistDone: [],
+  // Tab "Cần cải thiện": id các lỗ hổng đã lấp xong (IMPROVEMENT_PLAN).
+  gapsDone: [],
 }
 
 export function state() {
@@ -141,6 +143,7 @@ export const actions = {
           profileAnswers: j.profileAnswers && typeof j.profileAnswers === 'object' ? j.profileAnswers : {},
           profilePrepared: Array.isArray(j.profilePrepared) ? j.profilePrepared : [],
           contractChecklistDone: Array.isArray(j.contractChecklistDone) ? j.contractChecklistDone : [],
+          gapsDone: Array.isArray(j.gapsDone) ? j.gapsDone : [],
         }
       }
     } catch {
@@ -267,6 +270,20 @@ export const actions = {
     const list = Array.isArray(this.javaPrep.profilePrepared) ? this.javaPrep.profilePrepared : []
     const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
     this.javaPrep = { ...this.javaPrep, profilePrepared: next }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
+  },
+
+  /** Tick/bỏ tick một lỗ hổng đã lấp xong ở tab "Cần cải thiện" (IMPROVEMENT_PLAN). */
+  toggleGapDone(gapId) {
+    const id = String(gapId || '').trim()
+    if (!id) return
+    const list = Array.isArray(this.javaPrep.gapsDone) ? this.javaPrep.gapsDone : []
+    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
+    this.javaPrep = { ...this.javaPrep, gapsDone: next }
     try {
       localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
     } catch {

@@ -13,6 +13,8 @@ import {
   CRASH_PLAN,
   CODING_CHALLENGES,
   INTERVIEW_SKILLS,
+  MY_FACTS,
+  IMPROVEMENT_PLAN,
   SALARY_NEGOTIATION,
   JAPAN_KOREA_INTERVIEW,
   INTERVIEW_TOTALS,
@@ -33,6 +35,7 @@ const TABS = [
   { key: 'plan', label: '🗓️ Lộ trình 2 tuần' },
   { key: 'skills', label: '🗣️ Kỹ năng PV' },
   { key: 'profile', label: '👤 Hồ sơ của tôi' },
+  { key: 'gaps', label: '📈 Cần cải thiện' },
   { key: 'cheat', label: '📋 Cheat-sheet' },
   { key: 'bank', label: '📚 Ngân hàng câu hỏi' },
   { key: 'coding', label: '💻 Coding' },
@@ -253,8 +256,21 @@ function goToGoal(jump) {
 
 // —— Kỹ năng phỏng vấn ——
 const skills = INTERVIEW_SKILLS
+const myFacts = MY_FACTS
 const salary = SALARY_NEGOTIATION
 const jpkr = JAPAN_KOREA_INTERVIEW
+
+// —— Cần cải thiện: tick từng mục đã lấp xong, lưu localStorage như checklist hợp đồng ——
+const gaps = IMPROVEMENT_PLAN
+const gapsDone = computed(() => new Set(user.javaPrep?.gapsDone || []))
+const gapsDoneCount = computed(() => gaps.filter((g) => gapsDone.value.has(g.id)).length)
+const openGap = ref(new Set())
+function toggleGap(id) {
+  const s = new Set(openGap.value)
+  if (s.has(id)) s.delete(id)
+  else s.add(id)
+  openGap.value = s
+}
 const contractChecklistDone = computed(() => new Set(user.javaPrep?.contractChecklistDone || []))
 const openStar = ref(new Set())
 const openHr = ref(new Set())
@@ -511,10 +527,36 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- Số liệu thật của tôi — chất liệu để chèn vào mọi câu trả lời -->
+      <div class="sk-block">
+        <h2 class="sk-h">📊 Số liệu thật của tôi</h2>
+        <p class="sk-note">
+          Chèn số vào câu trả lời thì mới có sức nặng. Tất cả số dưới đây tra được ở
+          <code>docs/me</code> — đừng thêm số ngoài bảng này.
+        </p>
+        <div class="fact-grid">
+          <div v-for="g in myFacts.groups" :key="g.title" class="fact-card">
+            <b class="fact-h">{{ g.title }}</b>
+            <div v-for="(it, i) in g.items" :key="i" class="fact-row">
+              <span class="fact-lbl">{{ it.label }}</span>
+              <span class="fact-val">{{ it.value }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="fact-warn">
+          <b>🚫 Đừng khai — nghe hay nhưng sổ sách không đỡ được</b>
+          <ul><li v-for="(d, i) in myFacts.doNotClaim" :key="i">{{ d }}</li></ul>
+        </div>
+        <p class="fact-src">Nguồn: {{ myFacts.source }}</p>
+      </div>
+
       <!-- Kể dự án theo STAR -->
       <div class="sk-block">
         <h2 class="sk-h">🌟 Kể dự án theo STAR</h2>
-        <p class="sk-note">Situation → Task → Action → Result. Nhấn “<b>TÔI làm gì</b>” và kết quả đo được.</p>
+        <p class="sk-note">
+          Situation → Task → Action → Result, dựng từ ticket THẬT của bạn. Nhấn “<b>TÔI làm gì</b>” và kết quả đo được —
+          rồi đọc phần <b>câu vặn sẽ tới</b>, đa số ứng viên chết ở đó chứ không phải ở câu kể.
+        </p>
         <div
           v-for="s in skills.starStories"
           :key="s.id"
@@ -532,6 +574,11 @@ onMounted(() => {
             <p><b class="st t">T · Nhiệm vụ</b>{{ s.task }}</p>
             <p><b class="st a">A · Hành động</b>{{ s.action }}</p>
             <p><b class="st r">R · Kết quả</b>{{ s.result }}</p>
+            <div v-if="s.drills?.length" class="star-drill">
+              <b>🔎 Câu vặn sẽ tới sau story này</b>
+              <ul><li v-for="(d, i) in s.drills" :key="i">{{ d }}</li></ul>
+            </div>
+            <p v-if="s.source" class="star-src">📎 Tra lại: {{ s.source }}</p>
           </div>
         </div>
       </div>
@@ -695,6 +742,10 @@ onMounted(() => {
           <b>Khung trả lời</b>
           <ul><li v-for="(step, i) in q.answerFramework" :key="i">{{ step }}</li></ul>
         </div>
+        <div v-if="q.myFacts?.length" class="pq-block mine">
+          <b>📌 Chất liệu THẬT của bạn (từ docs/me)</b>
+          <ul><li v-for="(f, i) in q.myFacts" :key="i">{{ f }}</li></ul>
+        </div>
 
         <label class="pq-answer-label">Câu trả lời của bạn</label>
         <textarea
@@ -707,6 +758,56 @@ onMounted(() => {
         <button class="pq-done" :class="{ on: profilePrepared.has(q.id) }" @click="user.toggleProfilePrepared(q.id)">
           {{ profilePrepared.has(q.id) ? '✓ Đã chuẩn bị xong — bấm để bỏ' : 'Đã chuẩn bị xong ✓' }}
         </button>
+      </div>
+    </section>
+
+    <!-- ===== Cần cải thiện ===== -->
+    <section v-else-if="tab === 'gaps'" class="gaps">
+      <div class="profile-hero">
+        <div>
+          <b class="ph-title">{{ gaps.length }} lỗ hổng thật trong hồ sơ của bạn</b>
+          <span class="ph-sub">
+            Rút từ <code>docs/me</code>: mục “Điểm yếu cần chuẩn bị”, “Cần bổ sung” và các hạng mục bị chấm 0 trong form
+            đánh giá. Mỗi mục có việc làm được ngay và câu trả lời trung thực dùng được NGAY trong lúc chưa lấp xong —
+            phỏng vấn không chờ bạn lấp hết.
+          </span>
+        </div>
+        <div class="profile-actions">
+          <span class="ph-count">{{ gapsDoneCount }}/{{ gaps.length }} đã lấp</span>
+        </div>
+      </div>
+
+      <div
+        v-for="g in gaps"
+        :key="g.id"
+        class="gap-card"
+        :class="{ done: gapsDone.has(g.id), open: openGap.has(g.id) }"
+      >
+        <div class="gap-head" @click="toggleGap(g.id)">
+          <span class="pq-prio">{{ priorityLabel[g.priority] || '' }}</span>
+          <b class="gap-area">{{ g.area }}</b>
+          <span v-if="gapsDone.has(g.id)" class="pill ok">✓ Đã lấp</span>
+          <span class="caret">{{ openGap.has(g.id) ? '−' : '+' }}</span>
+        </div>
+        <p class="gap-gap">{{ g.gap }}</p>
+
+        <div v-if="openGap.has(g.id)" class="gap-body">
+          <div class="pq-block why">
+            <b>Vì sao mất điểm khi phỏng vấn</b>
+            <p>{{ g.why }}</p>
+          </div>
+          <div class="pq-block framework">
+            <b>Việc làm được ngay</b>
+            <ul><li v-for="(a, i) in g.actions" :key="i">{{ a }}</li></ul>
+          </div>
+          <div class="pq-block mine">
+            <b>🗣️ Nói thế nào nếu bị hỏi ngay hôm nay</b>
+            <p>{{ g.answerIfAsked }}</p>
+          </div>
+          <button class="pq-done" :class="{ on: gapsDone.has(g.id) }" @click="user.toggleGapDone(g.id)">
+            {{ gapsDone.has(g.id) ? '✓ Đã lấp xong — bấm để bỏ' : 'Đánh dấu đã lấp xong ✓' }}
+          </button>
+        </div>
       </div>
     </section>
 
@@ -1427,6 +1528,46 @@ onMounted(() => {
   border-color: var(--purple);
   color: #fff;
 }
+.pq-block.mine {
+  background: #eaf6ff;
+  color: #14496b;
+}
+.pq-block.mine p {
+  margin: 0;
+}
+/* Cần cải thiện */
+.gap-card {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.gap-card.done {
+  border-color: var(--purple);
+  opacity: 0.75;
+}
+.gap-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.gap-area {
+  font-size: 16px;
+  font-weight: 800;
+  flex: 1;
+}
+.gap-gap {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted-2);
+}
+.gap-body {
+  margin-top: 12px;
+}
 /* Bank */
 .filters {
   margin-bottom: 14px;
@@ -1923,6 +2064,89 @@ onMounted(() => {
 .st.t { color: #0984e3; }
 .st.a { color: #d98700; }
 .st.r { color: #00a86f; }
+.star-drill {
+  margin-top: 10px;
+  background: #fff4d6;
+  color: #7a5b00;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.star-drill b {
+  display: block;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+.star-drill ul {
+  padding-left: 18px;
+  margin: 0;
+}
+.star-src {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin: 8px 0 0;
+}
+/* Số liệu thật */
+.fact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.fact-card {
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.fact-h {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+.fact-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+  border-top: 1px dashed var(--line-soft);
+}
+.fact-row:first-of-type {
+  border-top: 0;
+}
+.fact-lbl {
+  font-size: 12px;
+  color: var(--muted-2);
+}
+.fact-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.fact-warn {
+  margin-top: 12px;
+  background: #ffe9e9;
+  color: #8a1f1f;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.fact-warn b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+}
+.fact-warn ul {
+  padding-left: 18px;
+  margin: 0;
+}
+.fact-src {
+  font-size: 11.5px;
+  color: var(--muted-2);
+  margin: 8px 0 0;
+}
 .tip {
   font-size: 13.5px;
   line-height: 1.6;

@@ -4,6 +4,8 @@ import {
   QUESTION_BANK,
   CODING_CHALLENGES,
   INTERVIEW_SKILLS,
+  MY_FACTS,
+  IMPROVEMENT_PLAN,
   LEVELS,
   INTERVIEW_TOTALS,
   CHEATSHEET,
@@ -231,11 +233,98 @@ describe('data/javaInterview — INTERVIEW_SKILLS (cá nhân hóa CV)', () => {
     expect(INTERVIEW_TOTALS.stories).toBe(INTERVIEW_SKILLS.starStories.length)
   })
 
-  it('mỗi STAR story nhắc định lượng số liệu thật (không bịa số) trong result', () => {
+  // Nội dung STAR giờ dựng từ hồ sơ THẬT (docs/me) chứ không còn là khung có chỗ
+  // trống — nên yêu cầu đổi: mỗi story phải có nguồn tra lại được + câu vặn, và số
+  // liệu phải là số thật thay vì lời nhắc "[Nếu nhớ được: …]".
+  it('mỗi STAR story có nguồn tra lại được và ít nhất 1 câu vặn để luyện', () => {
     for (const s of INTERVIEW_SKILLS.starStories) {
-      expect(s.result, `${s.id}.result`).toMatch(/\[Nếu nhớ được:.*\]/)
+      expect(typeof s.source, `${s.id}.source`).toBe('string')
+      expect(s.source.length, `${s.id}.source`).toBeGreaterThan(0)
+      expect(Array.isArray(s.drills) && s.drills.length > 0, `${s.id}.drills`).toBe(true)
     }
     expect(INTERVIEW_SKILLS.dosDonts.dos.some((d) => /số liệu THẬT/.test(d))).toBe(true)
+  })
+
+  it('STAR story mang số liệu định lượng thật, và chỗ chưa có số thì ghi [Cần xác nhận: …]', () => {
+    const quantified = INTERVIEW_SKILLS.starStories.filter((s) => /\d/.test(`${s.task} ${s.action} ${s.result}`))
+    expect(quantified.length).toBe(INTERVIEW_SKILLS.starStories.length)
+    // Không còn placeholder kiểu cũ; chỗ thiếu dữ liệu dùng nhãn [Cần xác nhận: …].
+    const blob = INTERVIEW_SKILLS.starStories.map((s) => `${s.action} ${s.result}`).join(' ')
+    expect(blob).not.toMatch(/\[Nếu nhớ được:/)
+    for (const s of INTERVIEW_SKILLS.starStories) {
+      const text = `${s.situation} ${s.task} ${s.action} ${s.result}`
+      const open = (text.match(/\[/g) || []).length
+      if (open) expect(text, `${s.id} nhãn còn thiếu`).toMatch(/\[Cần xác nhận/)
+    }
+  })
+
+  it('bám đúng số liệu tra được ở docs/me (không bịa số mới)', () => {
+    const blob = [
+      INTERVIEW_SKILLS.selfIntro.vi,
+      INTERVIEW_SKILLS.starStories.map((s) => `${s.situation} ${s.task} ${s.action} ${s.result}`).join(' '),
+      INTERVIEW_SKILLS.hrQuestions.map((h) => h.sample).join(' '),
+    ].join(' ')
+    for (const fact of ['36 ticket', '−1,1%', '4.151.927', '409.692', '58 giờ', '171,5']) {
+      expect(blob.includes(fact), `thiếu số liệu thật: ${fact}`).toBe(true)
+    }
+  })
+})
+
+describe('data/javaInterview — MY_FACTS (bảng số liệu thật)', () => {
+  it('có nguồn, các nhóm số liệu đều có item, và mọi item đủ label + value', () => {
+    expect(MY_FACTS.source).toMatch(/docs\/me/)
+    expect(MY_FACTS.groups.length).toBeGreaterThanOrEqual(3)
+    for (const g of MY_FACTS.groups) {
+      expect(g.title.length).toBeGreaterThan(0)
+      expect(g.items.length, `group ${g.title}`).toBeGreaterThan(0)
+      for (const it of g.items) {
+        expect(typeof it.label).toBe('string')
+        expect(it.label.length).toBeGreaterThan(0)
+        expect(typeof it.value).toBe('string')
+        expect(it.value.length).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('doNotClaim chặn đúng những con số Working Report không đỡ được', () => {
+    const blob = MY_FACTS.doNotClaim.join(' ')
+    expect(MY_FACTS.doNotClaim.length).toBeGreaterThanOrEqual(5)
+    for (const kw of ['#41431', '#41366', '748,5']) {
+      expect(blob.includes(kw), `thiếu cảnh báo: ${kw}`).toBe(true)
+    }
+  })
+})
+
+describe('data/javaInterview — IMPROVEMENT_PLAN (cần cải thiện)', () => {
+  it('id duy nhất, priority hợp lệ, và mỗi mục đủ 5 phần dùng được', () => {
+    const ids = IMPROVEMENT_PLAN.map((g) => g.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(IMPROVEMENT_PLAN.length).toBeGreaterThanOrEqual(8)
+    for (const g of IMPROVEMENT_PLAN) {
+      expect(['critical', 'high', 'medium'], `priority ${g.id}`).toContain(g.priority)
+      for (const k of ['area', 'gap', 'why', 'answerIfAsked']) {
+        expect(typeof g[k], `${g.id}.${k}`).toBe('string')
+        expect(g[k].length, `${g.id}.${k}`).toBeGreaterThan(0)
+      }
+      expect(Array.isArray(g.actions) && g.actions.length > 0, `${g.id}.actions`).toBe(true)
+    }
+  })
+
+  it('phủ đủ các lỗ hổng docs/me đã chỉ ra (§7 điểm yếu + §8 cần bổ sung + mục chấm 0)', () => {
+    const ids = new Set(IMPROVEMENT_PLAN.map((g) => g.id))
+    for (const id of [
+      'gap-spring-boot', 'gap-review-mentor', 'gap-auto-test', 'gap-perf-test',
+      'gap-third-party-test', 'gap-cloud-cicd', 'gap-language-cert', 'gap-own-share',
+    ]) {
+      expect(ids.has(id), `thiếu lỗ hổng: ${id}`).toBe(true)
+    }
+    // Mục quan trọng nhất phải ở mức critical để không bị đọc qua.
+    const spring = IMPROVEMENT_PLAN.find((g) => g.id === 'gap-spring-boot')
+    expect(spring.priority).toBe('critical')
+  })
+
+  it('INTERVIEW_TOTALS.gaps khớp số lỗ hổng', () => {
+    expect(INTERVIEW_TOTALS.gaps).toBe(IMPROVEMENT_PLAN.length)
   })
 })
 
