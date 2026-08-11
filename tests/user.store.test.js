@@ -1144,6 +1144,57 @@ describe('user store — toggleReviewQuestion (đánh dấu câu hỏi Java cầ
     s.reviewJavaQuestion('jpa-1', 'good')
     expect(s.srs['javaq:jpa-1'].reps).toBe(1)
   })
+
+  it('P1-1: trả lời đúng 2 lần LIÊN TIẾP -> tự động gỡ khỏi "chưa chắc"', () => {
+    const s = useUserStore()
+    s.toggleReviewQuestion('jpa-1')
+    s.reviewJavaQuestion('jpa-1', 'good') // lần 1: reps=1, vẫn còn trong danh sách
+    expect(s.javaPrep.reviewQuestions).toEqual(['jpa-1'])
+    s.reviewJavaQuestion('jpa-1', 'good') // lần 2 liên tiếp: reps=2 -> tự gỡ
+    expect(s.javaPrep.reviewQuestions).toEqual([])
+  })
+
+  it('P1-1: "Quên" đặt lại streak về 0 nên không tự gỡ dù ôn nhiều lần', () => {
+    const s = useUserStore()
+    s.toggleReviewQuestion('jpa-1')
+    s.reviewJavaQuestion('jpa-1', 'good')
+    s.reviewJavaQuestion('jpa-1', 'again') // quên -> reps reset về 0
+    expect(s.javaPrep.reviewQuestions).toEqual(['jpa-1'])
+    s.reviewJavaQuestion('jpa-1', 'good')
+    expect(s.javaPrep.reviewQuestions).toEqual(['jpa-1']) // mới đúng lại 1 lần, chưa đủ 2
+  })
+})
+
+describe('user store — toggleContractChecklistItem (P1-2, checklist trước khi ký hợp đồng)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('tick rồi bỏ tick một mục', () => {
+    const s = useUserStore()
+    expect(s.javaPrep.contractChecklistDone).toEqual([])
+    s.toggleContractChecklistItem(2)
+    expect(s.javaPrep.contractChecklistDone).toEqual([2])
+    s.toggleContractChecklistItem(2)
+    expect(s.javaPrep.contractChecklistDone).toEqual([])
+  })
+
+  it('index không hợp lệ thì bỏ qua', () => {
+    const s = useUserStore()
+    s.toggleContractChecklistItem(-1)
+    s.toggleContractChecklistItem('abc')
+    expect(s.javaPrep.contractChecklistDone).toEqual([])
+  })
+
+  it('ghi xuống localStorage và nạp lại được qua loadJavaPrep', () => {
+    const s = useUserStore()
+    s.toggleContractChecklistItem(0)
+    s.toggleContractChecklistItem(5)
+    const s2 = useUserStore()
+    s2.loadJavaPrep()
+    expect(s2.javaPrep.contractChecklistDone.sort()).toEqual([0, 5])
+  })
 })
 
 describe('user store — markChallengeSolved (Readiness meter)', () => {

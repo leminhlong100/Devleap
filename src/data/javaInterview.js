@@ -852,21 +852,40 @@ export const CHEATSHEET = [
 //   { k: 'code', n } — giải được ≥ n bài coding (chạy pass) — đếm dồn cả khóa.
 //   { k: 'mock', n } — hoàn thành ≥ n buổi Mock Interview — đếm dồn cả khóa.
 // `tasks` vẫn là gợi ý luyện tay (không tự chấm). Xem src/lib/crashPlan.js.
+// SQL & Database (19 câu) được TÁCH làm 2 phần ghép với JPA (Ngày 8) và
+// Transaction (Ngày 9) — học liên thông: JPA sinh SQL gì → SQL đó tối ưu chưa.
+const SQL_DAY8_IDS = ['sql-1', 'sql-2', 'sql-3', 'sql-4', 'sql-5', 'sql-13', 'sql-14', 'sql-15', 'sql-18']
+const SQL_DAY9_IDS = ['sql-6', 'sql-7', 'sql-8', 'sql-9', 'sql-10', 'sql-11', 'sql-12', 'sql-16', 'sql-17', 'sql-19']
+
 export const CRASH_PLAN = [
-  { day: 1, topic: 'OOP + Interface/Abstract + equals/hashCode', tasks: ['Thuộc 4 tính chất OOP trong 30s', 'Gõ 1 immutable class + override equals/hashCode'], goals: [{ k: 'q', topics: ['oop'] }] },
-  { day: 2, topic: 'Generics + Exception + Core', tasks: ['Thuộc PECS, checked vs unchecked', 'Trả lời miệng 10 câu chủ đề core'], goals: [{ k: 'q', topics: ['generics', 'exception', 'core'] }] },
-  { day: 3, topic: 'Collections + Big-O', tasks: ['Vẽ tay cơ chế HashMap', 'Thuộc bảng chọn collection + độ phức tạp'], goals: [{ k: 'q', topics: ['collections'] }] },
-  { day: 4, topic: 'Stream + Optional + Lambda', tasks: ['Viết 5 pipeline (map/filter/collect/groupingBy)', 'Phân biệt orElse vs orElseGet'], goals: [{ k: 'q', topics: ['stream'] }, { k: 'code', n: 1 }] },
-  { day: 5, topic: 'Concurrency cơ bản', tasks: ['Thread/Runnable/Callable, ExecutorService', 'volatile vs synchronized vs Atomic, deadlock'], goals: [{ k: 'q', topics: ['concurrency'] }] },
-  { day: 6, topic: 'Spring Boot + REST + DI', tasks: ['Gõ 1 CRUD controller + @RestControllerAdvice', 'Thuộc 3 annotation của @SpringBootApplication'], goals: [{ k: 'q', topics: ['spring', 'rest'] }] },
-  { day: 7, topic: 'Ôn + tự test tuần 1', tasks: ['Mock Interview chủ đề Java Core', 'Ghi lại câu chưa chắc'], goals: [{ k: 'mock', n: 1 }] },
-  { day: 8, topic: 'JPA/Hibernate + N+1', tasks: ['Nhớ owning vs inverse side', 'Fix N+1: JOIN FETCH / EntityGraph'], goals: [{ k: 'q', topics: ['jpa'] }] },
-  { day: 9, topic: '@Transactional + JPQL + DTO', tasks: ['Hiểu propagation, self-invocation', 'Khi nào native query'], goals: [{ k: 'q', topics: ['transaction'] }] },
-  { day: 10, topic: 'Testing (JUnit + Mockito)', tasks: ['@Mock vs @InjectMocks, stub vs verify', 'Viết 3 unit test'], goals: [{ k: 'q', topics: ['testing'] }] },
-  { day: 11, topic: 'Spring Security + JWT', tasks: ['Flow login → token → filter', 'JWT KHÔNG mã hóa; authn vs authz'], goals: [{ k: 'q', topics: ['security'] }] },
-  { day: 12, topic: 'SOLID + Patterns + JVM + System Design', tasks: ['5 nguyên tắc SOLID trong 30s', 'Heap/stack/GC/memory leak', 'Luyện 1-2 walkthrough System Design (rate limiter hoặc URL shortener)'], goals: [{ k: 'q', topics: ['solid', 'jvm', 'design'] }] },
-  { day: 13, topic: 'SQL sâu + Frontend + Stack thực tế + Hạ tầng', tasks: ['Ôn tối ưu query (EXPLAIN/index), composite/covering index', 'Ôn lướt JS core + React/Angular; nhớ Struts/MyBatis/batch trong CV', 'Ôn nhanh Docker/CI-CD/Redis/observability (chủ đề Hạ tầng thực tế)'], goals: [{ k: 'q', topics: ['sql', 'frontend', 'mystack', 'infra'] }] },
-  { day: 14, topic: 'Kỹ năng PV + Mock Interview toàn phần', tasks: ['Luyện giới thiệu bản thân 60s (VI+EN) + STAR 2–3 dự án', 'Phỏng vấn thử mọi chủ đề, ôn lại chủ đề điểm thấp'], goals: [{ k: 'q', topics: ['scenario', 'behavioral'] }, { k: 'mock', n: 2 }] },
+  { day: 1, topic: 'OOP + Interface/Abstract + equals/hashCode', tasks: ['Thuộc 4 tính chất OOP trong 30s', 'Gõ 1 immutable class + override equals/hashCode'],
+    goals: [{ k: 'q', topics: ['oop'] }, { k: 'code', ids: ['two-sum', 'debug-integer-cache'], label: 'OOP & so sánh object' }] },
+  { day: 2, topic: 'Generics + Exception', tasks: ['Thuộc PECS, checked vs unchecked', 'Viết 1 custom exception + try-with-resources'],
+    goals: [{ k: 'q', topics: ['generics', 'exception'] }, { k: 'code', ids: ['debug-cme', 'fizzbuzz'], label: 'Exception & cơ bản' }] },
+  { day: 3, topic: 'Java Core + Collections + Big-O', tasks: ['Trả lời miệng 10 câu chủ đề Java Core', 'Vẽ tay cơ chế HashMap', 'Thuộc bảng chọn collection + độ phức tạp'],
+    goals: [{ k: 'q', topics: ['core', 'collections'] }, { k: 'code', ids: ['dedup', 'binary-search'], label: 'Collections & Big-O' }] },
+  { day: 4, topic: 'Stream + Optional + Lambda', tasks: ['Viết 5 pipeline (map/filter/collect/groupingBy)', 'Phân biệt orElse vs orElseGet'],
+    goals: [{ k: 'q', topics: ['stream'] }, { k: 'code', ids: ['word-count', 'group-anagrams', 'reverse-string'], label: 'Stream & Lambda' }] },
+  { day: 5, topic: 'Concurrency + JVM cơ bản', tasks: ['Thread/Runnable/Callable, ExecutorService', 'volatile vs synchronized vs Atomic, deadlock', 'Heap/stack/GC/memory leak (JVM)'],
+    goals: [{ k: 'q', topics: ['concurrency', 'jvm'] }, { k: 'code', ids: ['linked-list-cycle', 'merge-sort'], label: 'Concurrency & JVM' }] },
+  { day: 6, topic: 'Spring Boot + REST + DI', tasks: ['Gõ 1 CRUD controller + @RestControllerAdvice', 'Thuộc 3 annotation của @SpringBootApplication'],
+    goals: [{ k: 'q', topics: ['spring', 'rest'] }, { k: 'code', ids: ['lru-cache', 'valid-parentheses'], label: 'Spring Boot & REST' }] },
+  { day: 7, topic: 'Mock #1 + ôn lỗi sai', tasks: ['Mock Interview chủ đề Java Core', 'Ghi lại câu chưa chắc', 'Giải lại 2 bài coding tổng hợp tuần 1'],
+    goals: [{ k: 'mock', n: 1 }, { k: 'code', ids: ['fibonacci', 'palindrome'], label: 'Ôn lại tuần 1' }] },
+  { day: 8, topic: 'JPA/Hibernate + N+1 + SQL join/index', tasks: ['Nhớ owning vs inverse side', 'Fix N+1: JOIN FETCH / EntityGraph', 'Ôn JOIN/index/ACID — JPA sinh SQL gì'],
+    goals: [{ k: 'q', topics: ['jpa'] }, { k: 'q', ids: SQL_DAY8_IDS, jumpTopic: 'sql', label: `Ôn ${SQL_DAY8_IDS.length} câu — SQL (join/index)` }, { k: 'code', ids: ['debug-map-iteration', 'bst-inorder'], label: 'JPA & N+1' }] },
+  { day: 9, topic: '@Transactional + JPQL + DTO + SQL tuning', tasks: ['Hiểu propagation, self-invocation', 'Khi nào native query', 'Ôn quy trình tối ưu query chậm (EXPLAIN/index)'],
+    goals: [{ k: 'q', topics: ['transaction'] }, { k: 'q', ids: SQL_DAY9_IDS, jumpTopic: 'sql', label: `Ôn ${SQL_DAY9_IDS.length} câu — SQL (tuning)` }, { k: 'code', ids: ['bst-validate', 'merge-intervals'], label: 'Transaction & JPQL' }] },
+  { day: 10, topic: 'Testing (JUnit + Mockito)', tasks: ['@Mock vs @InjectMocks, stub vs verify', 'Viết 3 unit test'],
+    goals: [{ k: 'q', topics: ['testing'] }, { k: 'code', ids: ['subsets', 'permutations'], label: 'Viết test cho backtracking' }] },
+  { day: 11, topic: 'Spring Security + JWT + Frontend cơ bản', tasks: ['Flow login → token → filter', 'JWT KHÔNG mã hóa; authn vs authz', 'Ôn lướt JS core + React/Angular cơ bản'],
+    goals: [{ k: 'q', topics: ['security', 'frontend'] }, { k: 'code', ids: ['longest-substr-no-repeat', 'container-most-water'], label: 'Security & Frontend' }] },
+  { day: 12, topic: 'SOLID + Patterns + System Design', tasks: ['5 nguyên tắc SOLID trong 30s', 'Luyện riêng 1-2 walkthrough System Design (rate limiter hoặc URL shortener)'],
+    goals: [{ k: 'q', topics: ['solid'] }, { k: 'q', topics: ['design'] }, { k: 'code', ids: ['climb-stairs', 'coin-change'], label: 'SOLID & System Design' }] },
+  { day: 13, topic: 'Stack thực tế + Hạ tầng + Tủ câu hỏi hồ sơ của tôi', tasks: ['Ôn nhanh Struts/MyBatis/batch/JasperReports/FTP trong CV', 'Ôn nhanh Docker/CI-CD/Redis/observability (Hạ tầng thực tế)', 'Chuẩn bị 15 câu hồ sơ cá nhân — điểm khoan sâu nhất của người phỏng vấn'],
+    goals: [{ k: 'q', topics: ['mystack', 'infra'] }, { k: 'code', ids: ['anagram', 'linked-list-reverse'], label: 'Stack thực tế' }, { k: 'profile', n: 15 }] },
+  { day: 14, topic: 'Kỹ năng PV + Đàm phán lương + Mock Interview toàn phần', tasks: ['Luyện giới thiệu bản thân 60s (VI+EN) + STAR 2–3 dự án', 'Phỏng vấn thử mọi chủ đề, ôn lại chủ đề điểm thấp', 'Ôn khung đàm phán lương + 5 câu hỏi ngược'],
+    goals: [{ k: 'q', topics: ['scenario', 'behavioral'] }, { k: 'mock', n: 2 }] },
 ]
 
 // -------------------- Coding challenge (chạy thật qua run-java) --------------------
@@ -1837,6 +1856,120 @@ public class Main {
 `,
   },
 ]
+
+// -------------------- Đàm phán lương + Câu hỏi ngược (Ngày 14, P1-2) --------------------
+// Nội dung Phần 5 spec docs/devleap-spec-bo-sung.md — hồ sơ 2 năm KN, Oracle,
+// dự án Nhật, mục tiêu nhảy việc lương 22–25tr. Dùng ở tab "Kỹ năng PV".
+export const SALARY_NEGOTIATION = {
+  // 5.1 — Định giá bản thân
+  valuation: {
+    marketRanges: [
+      { label: '1–3 năm KN', range: '14–25 triệu' },
+      { label: 'Trên 3 năm KN', range: '25–35 triệu' },
+    ],
+    targetSalary: 25,
+    floorSalary: 22,
+    rule: 'Không nhảy việc dưới +20–25% so với lương hiện tại — nếu offer mới chỉ nhích nhẹ so với lương cũ, rủi ro đổi việc (mất thời gian thử việc, mất ổn định) không đáng đánh đổi.',
+  },
+  // 5.2 — Kịch bản đối thoại: mỗi tình huống có "nên nói" / "không nên nói"
+  scenarios: [
+    {
+      situation: 'Khi bị hỏi lương hiện tại',
+      should: "Nói thật nhưng gắn kèm kỳ vọng: “Lương hiện tại của em khoảng X, nhưng dựa trên phạm vi công việc và kinh nghiệm em có, em kỳ vọng mức mới khoảng 25 triệu.”",
+      shouldNot: 'Nói dối con số lương hiện tại — dễ bị đối chiếu qua BHXH/tham chiếu, mất tin cậy ngay và không cứu được.',
+    },
+    {
+      situation: 'Khi bị ép "em mới 2 năm mà đòi cao thế"',
+      should: "Không hạ giá ngay, hỏi lại phạm vi: “Anh/chị có thể chia sẻ thêm phạm vi công việc và kỳ vọng cụ thể cho vị trí này không? Em muốn chắc mức đưa ra phù hợp với giá trị em mang lại.”",
+      shouldNot: 'Xuống giá ngay lập tức hoặc xin lỗi vì đã đưa ra mức đó — tự hạ thế đàm phán của chính mình.',
+    },
+    {
+      situation: 'Khi họ đưa offer thấp hơn kỳ vọng',
+      should: "Cảm ơn, xin thời gian, đàm phán dựa trên dữ liệu: “Em rất cảm ơn offer này. Dựa trên mặt bằng thị trường và kinh nghiệm Oracle/dự án Nhật của em, em mong được xem xét lại ở mức X. Mình trao đổi thêm được không?”",
+      shouldNot: 'Chấp nhận ngay trong buổi gọi "cho xong", hoặc từ chối thẳng mà không giải thích lý do.',
+    },
+    {
+      situation: 'Khi có 2 offer cùng lúc',
+      should: "Thông báo lịch sự, dùng như đòn bẩy nhưng không tối hậu thư: “Em đang có một offer khác đang cân nhắc, mức khoảng X. Em rất thích công ty mình, anh/chị có thể xem xét điều chỉnh để em quyết định sớm không?”",
+      shouldNot: 'Nói dối về một offer không tồn tại, hoặc ra tối hậu thư gấp gáp kiểu "24h nữa không trả lời em nghỉ".',
+    },
+  ],
+  // 5.3 — Tổng thu nhập ≠ lương gross: 2 offer giả định để tự tính, so sánh
+  offerComparison: {
+    fields: ['Lương gross', 'Tháng 13', 'Thưởng hiệu suất', 'Ngày phép/năm', 'BHXH đóng trên', 'Chu kỳ review lương', 'Hỗ trợ đi lại'],
+    offers: [
+      { name: 'Offer A', values: ['22 triệu', 'Có, ghi rõ trong HĐ', '~1 tháng lương/năm (ghi rõ điều kiện)', '12 ngày', 'Full lương gross', '12 tháng/lần', 'Không'] },
+      { name: 'Offer B', values: ['24 triệu', '"Theo tình hình kinh doanh" (không cam kết)', 'Không cố định', '12 ngày', 'Lương cơ bản (thấp hơn gross)', '6 tháng/lần', '500k/tháng'] },
+    ],
+    note: 'Offer B có gross cao hơn nhưng tháng 13 không chắc và BHXH đóng trên mức thấp hơn (ảnh hưởng chế độ thai sản/thất nghiệp/lương hưu sau này) — phải hỏi rõ trước khi so sánh, đừng chỉ nhìn số gross.',
+  },
+  // 5.4 — Checklist trước khi ký hợp đồng (10 mục, tick được — lưu localStorage)
+  contractChecklist: [
+    'Mức lương gross/net ghi rõ trong hợp đồng, khớp với thỏa thuận miệng',
+    'Lương tháng 13 được ghi thành điều khoản, không chỉ "theo tình hình kinh doanh"',
+    'BHXH/BHYT đóng trên mức lương nào (full lương hay lương cơ bản)',
+    'Thời gian thử việc và % lương thử việc',
+    'Số ngày phép năm, ngày lễ theo luật hay theo chính sách riêng công ty',
+    'Cách tính OT (hệ số bao nhiêu, có OT không lương không)',
+    'Chu kỳ và tiêu chí review lương (6 tháng/12 tháng, dựa trên gì)',
+    'Điều khoản nghỉ việc: thời gian báo trước, có bồi thường không',
+    'Điều khoản không cạnh tranh/bảo mật có hợp lý, không quá rộng',
+    'Chính sách làm việc từ xa/onsite khách hàng (đặc biệt công ty Nhật hay có onsite)',
+  ],
+}
+
+// -------------------- Phỏng vấn công ty Nhật / Hàn (P2-3) --------------------
+// Nội dung Phần 6 spec docs/devleap-spec-bo-sung.md — phần lớn công ty mục
+// tiêu của hồ sơ này là Nhật/Hàn, có dự án JP thật (đọc spec 日本語) nên đây là
+// lợi thế cần khai thác, không phải phần học từ đầu.
+export const JAPAN_KOREA_INTERVIEW = {
+  // 6.1 — Khác biệt văn hóa phỏng vấn
+  cultureNotes: [
+    'Coi trọng độ ổn định và tinh thần hợp tác hơn là cá nhân xuất sắc — tránh nói kiểu "tôi giỏi nhất team", nên nói "team em đã cùng...".',
+    '報連相 (hou-ren-sou: báo cáo – liên lạc – bàn bạc) — nên nhắc tới khi trả lời câu về teamwork/quy trình, đây là từ khóa văn hóa làm việc Nhật mà nhà tuyển dụng rất thích nghe ứng viên hiểu.',
+    'Câu tự giới thiệu kiểu Nhật: theo trình tự thời gian (quá khứ → hiện tại), khiêm tốn (không cường điệu thành tích), kết bằng lý do ứng tuyển rõ ràng.',
+    'Trả lời có cấu trúc, đi thẳng vào kết luận trước rồi mới giải thích (kết luận → lý do) thường được đánh giá cao hơn kể chuyện dài dòng mới ra kết luận.',
+    'Đúng giờ và chuẩn bị kỹ được xem là biểu hiện của sự tôn trọng và đáng tin cậy — nhắc lại kinh nghiệm phối hợp với khách Nhật (QA, đọc spec 日本語) là điểm cộng thật của hồ sơ này.',
+  ],
+  // 6.2 — Bộ 20 thuật ngữ IT tiếng Nhật hay gặp (copy nguyên từ Phần 6.2 spec)
+  terms: [
+    { jp: '仕様書', romaji: 'shiyousho', vi: 'Tài liệu đặc tả' },
+    { jp: '要件定義', romaji: 'youken teigi', vi: 'Định nghĩa yêu cầu' },
+    { jp: '基本設計', romaji: 'kihon sekkei', vi: 'Thiết kế cơ bản' },
+    { jp: '詳細設計', romaji: 'shousai sekkei', vi: 'Thiết kế chi tiết' },
+    { jp: '単体テスト', romaji: 'tantai tesuto', vi: 'Unit test' },
+    { jp: '結合テスト', romaji: 'ketsugou tesuto', vi: 'Integration test' },
+    { jp: '総合テスト', romaji: 'sougou tesuto', vi: 'System test' },
+    { jp: '障害', romaji: 'shougai', vi: 'Sự cố / lỗi' },
+    { jp: '不具合', romaji: 'fuguai', vi: 'Bug' },
+    { jp: '本番環境', romaji: 'honban kankyou', vi: 'Môi trường production' },
+    { jp: '検証環境', romaji: 'kenshou kankyou', vi: 'Môi trường staging' },
+    { jp: '開発環境', romaji: 'kaihatsu kankyou', vi: 'Môi trường dev' },
+    { jp: '納期', romaji: 'nouki', vi: 'Deadline giao hàng' },
+    { jp: '工数', romaji: 'kousuu', vi: 'Man-hour / effort' },
+    { jp: '課題', romaji: 'kadai', vi: 'Vấn đề tồn đọng' },
+    { jp: '対応', romaji: 'taiou', vi: 'Xử lý / đối ứng' },
+    { jp: '確認', romaji: 'kakunin', vi: 'Xác nhận' },
+    { jp: '修正', romaji: 'shuusei', vi: 'Sửa đổi' },
+    { jp: '影響範囲', romaji: 'eikyou hani', vi: 'Phạm vi ảnh hưởng' },
+    { jp: '打ち合わせ', romaji: 'uchiawase', vi: 'Buổi họp trao đổi' },
+  ],
+  // 6.3 — Giới thiệu bản thân bằng tiếng Anh, script mẫu ~3 phút (4 đoạn theo cấu trúc spec)
+  selfIntroScriptEn: [
+    { part: 'Hiện đang làm gì (~30s)', text: "I'm currently a Java backend / full-stack developer with nearly two years of experience, working on enterprise systems for a Japanese client in the cable-TV and internet-service domain. My main stack is Java, Struts, iBatis and Spring Boot, and I also work with Angular and NuxtJS on the frontend side when needed." },
+    { part: '1 project tiêu biểu + vai trò (~60s)', text: "One project I'm proud of is a REST API layer I built for our contract-management screens, consumed by both Angular and NuxtJS frontends. I was responsible for designing the endpoints and DTOs, validating input, and keeping error responses consistent, then aligning the data contract with the frontend team and verifying everything with Postman before release. It's been running stably in production and the frontend team integrates new screens against it quickly." },
+    { part: 'Thế mạnh kỹ thuật (~45s)', text: "My strongest area is working with legacy systems that don't have full documentation — I'm comfortable reading unfamiliar code, tracing production logs to reproduce a bug, and fixing it safely without breaking a live business flow. I also care a lot about SQL performance — I check execution plans before optimizing, not after — and I'm currently strengthening my Spring Boot and cloud-native skills through personal projects." },
+    { part: 'Vì sao ứng tuyển (~45s)', text: "I'm looking for a role where I can grow deeper into backend systems at larger scale, ideally with Spring Boot and modern cloud infrastructure. I'm especially interested in this position because of the chance to keep working with Japanese clients — I already have experience reading Japanese specs and coordinating with QA on the Japan side, so I can contribute from day one while I grow technically." },
+  ],
+  vocab30: [
+    'requirement', 'specification', 'stakeholder', 'scope', 'deliverable',
+    'endpoint', 'payload', 'schema', 'migration', 'deployment',
+    'rollback', 'downtime', 'throughput', 'latency', 'scalability',
+    'concurrency', 'race condition', 'dependency', 'refactor', 'technical debt',
+    'root cause', 'workaround', 'regression', 'edge case', 'code review',
+    'pull request', 'merge conflict', 'pipeline', 'monitoring', 'incident',
+  ],
+}
 
 // -------------------- Kỹ năng phỏng vấn (cá nhân hóa theo CV) --------------------
 // Nội dung dựng từ hồ sơ ứng viên: Java Backend/Full-stack ~2 năm, khách Nhật (cable TV/Internet),

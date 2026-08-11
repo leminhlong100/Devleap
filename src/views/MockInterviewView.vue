@@ -15,6 +15,7 @@ const level = ref('') // '' = mọi mức
 const count = ref(8)
 const durationMin = ref(0) // 0 = không giới hạn giờ
 const codingCount = ref(0)
+const answerTimerSec = ref(90) // P2-1: timer gợi ý cho mỗi câu, mặc định 90s
 const chosen = ref([]) // topic keys; rỗng = mọi chủ đề
 
 const LEVELS = [
@@ -28,6 +29,12 @@ const DURATIONS = [
   { key: 20, label: '20 phút' },
   { key: 30, label: '30 phút' },
   { key: 45, label: '45 phút' },
+]
+const ANSWER_TIMERS = [
+  { key: 60, label: '60s' },
+  { key: 90, label: '90s' },
+  { key: 120, label: '120s' },
+  { key: 150, label: '150s' },
 ]
 
 function toggleTopic(key) {
@@ -51,6 +58,7 @@ function begin() {
     count: count.value,
     durationMin: durationMin.value,
     codingCount: codingCount.value,
+    answerTimerSec: answerTimerSec.value,
   })
 }
 
@@ -136,6 +144,13 @@ function reviewWeak() {
           </div>
         </div>
 
+        <label class="lbl">Timer mỗi câu <span class="hint">(gợi ý chốt ý — không tự nộp bài)</span></label>
+        <div class="seg small">
+          <button v-for="t in ANSWER_TIMERS" :key="t.key" :class="{ on: answerTimerSec === t.key }" @click="answerTimerSec = t.key">
+            {{ t.label }}
+          </button>
+        </div>
+
         <button class="start" @click="begin">Bắt đầu phỏng vấn →</button>
         <p v-if="!mi.listenable" class="warn">⚠️ Trình duyệt không hỗ trợ mic — bạn vẫn gõ chữ trả lời được.</p>
       </div>
@@ -189,6 +204,10 @@ function reviewWeak() {
 
       <!-- Bài coding trong buổi -->
       <div v-if="mi.awaitingCode.value" class="composer coding-composer">
+        <div class="answer-timer" :class="{ over: mi.answerOvertime.value }">
+          <span>⏱ Gợi ý {{ mi.answerRemainingSec.value }}s</span>
+          <span v-if="mi.answerOvertime.value" class="over-warn">⚠️ Đã hơn 2 phút</span>
+        </div>
         <CodeEditor v-model="mi.currentRound.value.code" />
         <div v-if="mi.currentRound.value.runOutput" class="out" :class="{ bad: !mi.currentRound.value.runOutput.ok }">
           <pre v-if="mi.currentRound.value.runOutput.stdout">{{ mi.currentRound.value.runOutput.stdout }}</pre>
@@ -202,12 +221,22 @@ function reviewWeak() {
 
       <!-- Ô trả lời câu hiện tại -->
       <div v-else-if="mi.awaitingAnswer.value" class="composer">
+        <div class="answer-timer" :class="{ over: mi.answerOvertime.value }">
+          <span>⏱ Gợi ý {{ mi.answerRemainingSec.value }}s</span>
+          <span v-if="mi.answerOvertime.value" class="over-warn">⚠️ Đã hơn 2 phút — trả lời dài dòng là lỗi phổ biến, cân nhắc chốt ý</span>
+        </div>
         <textarea
           v-model="mi.input.value"
           rows="3"
           placeholder="Trả lời như đang phỏng vấn thật… (gõ hoặc bấm 🎤 để nói)"
           @keydown.enter.exact.prevent="mi.submit()"
         ></textarea>
+        <div v-if="mi.canRecord" class="record-row">
+          <button class="record-btn" :class="{ live: mi.recording.value }" @click="mi.toggleRecording()">
+            {{ mi.recording.value ? '⏹️ Dừng ghi âm' : '⏺️ Ghi âm câu trả lời' }}
+          </button>
+          <audio v-if="mi.recordedUrl.value" :src="mi.recordedUrl.value" controls class="record-player"></audio>
+        </div>
         <div class="composer-actions">
           <button v-if="mi.listenable" class="mic" :class="{ live: mi.listening.value }" @click="mi.toggleMic()">
             {{ mi.listening.value ? '⏹️ Dừng' : '🎤 Nói' }}
@@ -438,6 +467,49 @@ function reviewWeak() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.answer-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-2);
+  margin-bottom: 8px;
+}
+.answer-timer.over span:first-child {
+  color: #ff5f57;
+}
+.over-warn {
+  font-weight: 600;
+  color: #ff5f57;
+}
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.record-btn {
+  border: 1px solid var(--line-soft);
+  background: var(--surface-1, var(--surface));
+  color: var(--slate);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.record-btn.live {
+  background: #ff5f57;
+  border-color: #ff5f57;
+  color: #fff;
+}
+.record-player {
+  height: 32px;
+  max-width: 220px;
 }
 .out {
   background: var(--surface-1, rgba(108, 92, 231, 0.05));

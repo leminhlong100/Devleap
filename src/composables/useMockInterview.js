@@ -21,7 +21,7 @@ export function useMockInterview() {
   const user = useUserStore()
 
   const phase = ref('setup') // 'setup' | 'running' | 'report'
-  const config = ref({ lang: 'vi', topics: [], level: '', count: 8, durationMin: 0, codingCount: 0 })
+  const config = ref({ lang: 'vi', topics: [], level: '', count: 8, durationMin: 0, codingCount: 0, answerTimerSec: 90 })
   const qa = ref([]) // [{ type, q, topic, level, answer, evaluation, evaluating, challenge?, code? }]
   const input = ref('')
   const loading = ref(false)
@@ -64,6 +64,75 @@ export function useMockInterview() {
   }
   const remainingLabel = computed(() => formatRemaining(remainingSec.value))
   const isTimed = computed(() => (config.value.durationMin || 0) > 0)
+
+  // —— Timer MỖI CÂU (P2-2): đếm ngược mốc gợi ý (mặc định 90s, tùy chỉnh được)
+  // + cảnh báo khi trả lời quá 2 phút — trả lời dài dòng là lỗi phổ biến nhất.
+  const answerElapsedSec = ref(0)
+  let answerTimer = null
+  function clearAnswerTimer() {
+    if (answerTimer) {
+      clearInterval(answerTimer)
+      answerTimer = null
+    }
+  }
+  function startAnswerTimer() {
+    clearAnswerTimer()
+    answerElapsedSec.value = 0
+    answerTimer = setInterval(() => {
+      answerElapsedSec.value += 1
+    }, 1000)
+  }
+  const answerRemainingSec = computed(() => Math.max(0, (config.value.answerTimerSec || 90) - answerElapsedSec.value))
+  const answerOvertime = computed(() => answerElapsedSec.value >= 120)
+
+  // —— Ghi âm câu trả lời (P2-2): Web Audio API (MediaRecorder), chỉ lưu tạm
+  // trong session (không persist) để nghe lại tự chấm giọng nói/tốc độ nói.
+  const canRecord = typeof window !== 'undefined' && !!window.MediaRecorder && !!navigator?.mediaDevices?.getUserMedia
+  const recording = ref(false)
+  const recordedUrl = ref('')
+  let mediaRecorder = null
+  let mediaChunks = []
+  let mediaStream = null
+  function clearRecording() {
+    if (recordedUrl.value) URL.revokeObjectURL(recordedUrl.value)
+    recordedUrl.value = ''
+  }
+  async function toggleRecording() {
+    if (!canRecord) return
+    if (recording.value) {
+      mediaRecorder?.stop()
+      return
+    }
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaChunks = []
+      clearRecording()
+      mediaRecorder = new MediaRecorder(mediaStream)
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data?.size) mediaChunks.push(e.data)
+      }
+      mediaRecorder.onstop = () => {
+        recordedUrl.value = URL.createObjectURL(new Blob(mediaChunks, { type: 'audio/webm' }))
+        mediaStream?.getTracks().forEach((t) => t.stop())
+        mediaStream = null
+        recording.value = false
+      }
+      mediaRecorder.start()
+      recording.value = true
+    } catch {
+      error.value = 'Không truy cập được micro để ghi âm — hãy cấp quyền micro rồi thử lại.'
+    }
+  }
+  function stopRecording() {
+    if (recording.value) mediaRecorder?.stop()
+    recording.value = false
+  }
+  /** Gọi ngay sau khi một câu (qa/coding) mới được đẩy vào — reset timer + ghi âm cũ. */
+  function onNewRound() {
+    startAnswerTimer()
+    stopRecording()
+    clearRecording()
+  }
 
   const answered = computed(() => qa.value.filter((r) => r.evaluation).length)
   const total = computed(() => config.value.count || 0)
@@ -110,6 +179,7 @@ export function useMockInterview() {
       count,
       codingCount,
       durationMin: Math.max(0, Number(cfg.durationMin) || 0),
+      answerTimerSec: [60, 90, 120, 150].includes(Number(cfg.answerTimerSec)) ? Number(cfg.answerTimerSec) : 90,
     }
     attempt += 1
     bankSet = pickInterviewSet({
@@ -135,6 +205,7 @@ export function useMockInterview() {
   async function pushNext() {
     if (qa.value.length >= config.value.count) {
       done.value = true
+      clearAnswerTimer()
       return
     }
     if (codingQueue.length) {
@@ -151,6 +222,7 @@ export function useMockInterview() {
         evaluation: null,
         evaluating: false,
       })
+      onNewRound()
       return
     }
     await askNext()
@@ -173,6 +245,7 @@ export function useMockInterview() {
           evaluation: null,
           evaluating: false,
         })
+        onNewRound()
         if (autoSpeak.value) maybeSpeak(qa.value[qa.value.length - 1].q)
       } else {
         done.value = true
@@ -215,9 +288,11 @@ export function useMockInterview() {
           evaluation: null,
           evaluating: false,
         })
+        onNewRound()
         if (autoSpeak.value) maybeSpeak(qa.value[qa.value.length - 1].q)
       } else {
         done.value = true
+        clearAnswerTimer()
       }
     } catch (e) {
       round.evaluating = false
@@ -273,8 +348,10 @@ export function useMockInterview() {
           evaluation: null,
           evaluating: false,
         })
+        onNewRound()
       } else {
         done.value = true
+        clearAnswerTimer()
       }
     } catch (e) {
       round.evaluating = false
@@ -299,6 +376,9 @@ export function useMockInterview() {
       phase.value = 'report'
       stopMic()
       clearTimer()
+      clearAnswerTimer()
+      stopRecording()
+      clearRecording()
     } catch (e) {
       error.value = friendlyAiError(e).message
       retry.value = finish
@@ -334,6 +414,9 @@ export function useMockInterview() {
     error.value = ''
     stopMic()
     clearTimer()
+    clearAnswerTimer()
+    stopRecording()
+    clearRecording()
   }
 
   // —— Giọng nói ——
@@ -379,9 +462,14 @@ export function useMockInterview() {
     autoSpeak.value = !autoSpeak.value
   }
 
-  // Rời trang giữa lúc đang nghe -> dừng luôn recognizer, tránh phiên nhận diện
-  // mồ côi tiếp tục giữ micro chạy nền sau khi component đã bị huỷ.
-  onUnmounted(stopMic)
+  // Rời trang giữa lúc đang nghe/ghi âm/đếm giờ -> dừng hết, tránh phiên nhận
+  // diện hoặc micro ghi âm mồ côi tiếp tục chạy nền sau khi component bị huỷ.
+  onUnmounted(() => {
+    stopMic()
+    clearAnswerTimer()
+    stopRecording()
+    clearRecording()
+  })
 
   return {
     phase,
@@ -406,6 +494,13 @@ export function useMockInterview() {
     remainingSec,
     remainingLabel,
     isTimed,
+    answerElapsedSec,
+    answerRemainingSec,
+    answerOvertime,
+    canRecord,
+    recording,
+    recordedUrl,
+    toggleRecording,
     start,
     submit,
     runCode,

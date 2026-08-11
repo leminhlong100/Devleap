@@ -29,18 +29,36 @@ export function dayGoals(day) {
   for (const g of day?.goals || []) {
     if (g.k === 'q') {
       const topics = Array.isArray(g.topics) ? g.topics : []
-      const ids = topics.flatMap((t) => IDS_BY_TOPIC[t] || [])
+      // `ids` cho phép chọn đúng một tập câu con của topic (vd tách SQL ra 2 ngày)
+      // thay vì luôn lấy TRỌN topic; khi có ids thì dùng label tường minh kèm theo.
+      const ids = Array.isArray(g.ids) ? g.ids : topics.flatMap((t) => IDS_BY_TOPIC[t] || [])
       out.push({
         k: 'q',
         topics,
         ids,
         total: ids.length,
-        label: `Ôn ${ids.length} câu — ${topics.map(topicLabel).join(', ')}`,
-        jump: { tab: 'bank', topic: topics[0] },
+        label: g.label || `Ôn ${ids.length} câu — ${topics.map(topicLabel).join(', ')}`,
+        jump: { tab: 'bank', topic: topics[0] || g.jumpTopic },
       })
     } else if (g.k === 'code') {
+      // `ids` gán đúng những bài coding của ngày này; không có ids thì rơi về kiểu
+      // cũ đếm dồn cả khóa (n bài bất kỳ) — vẫn giữ để tương thích Ngày 7 (ôn lại).
+      if (Array.isArray(g.ids) && g.ids.length) {
+        const ids = g.ids
+        out.push({
+          k: 'code',
+          ids,
+          total: ids.length,
+          label: `Giải ${ids.length} bài coding — ${g.label || 'ngày này'}`,
+          jump: { tab: 'coding', challenge: ids[0] },
+        })
+      } else {
+        const n = g.n || 1
+        out.push({ k: 'code', n, total: n, label: `Giải ${n} bài coding (chạy pass)`, jump: { tab: 'coding' } })
+      }
+    } else if (g.k === 'profile') {
       const n = g.n || 1
-      out.push({ k: 'code', n, total: n, label: `Giải ${n} bài coding (chạy pass)`, jump: { tab: 'coding' } })
+      out.push({ k: 'profile', n, total: n, label: `Chuẩn bị ${n} câu hồ sơ cá nhân`, jump: { tab: 'profile' } })
     } else if (g.k === 'mock') {
       const n = g.n || 1
       out.push({ k: 'mock', n, total: n, label: n > 1 ? `Hoàn thành ${n} buổi Mock Interview` : 'Hoàn thành 1 buổi Mock Interview', jump: { tab: 'mock' } })
@@ -61,8 +79,16 @@ export function goalStatus(goal, ctx) {
     return { done: goal.total > 0 && cur >= goal.total, cur, total: goal.total }
   }
   if (goal.k === 'code') {
+    if (Array.isArray(goal.ids)) {
+      const cur = goal.ids.filter((id) => ctx.solvedIds?.has(id)).length
+      return { done: goal.total > 0 && cur >= goal.total, cur, total: goal.total }
+    }
     const cur = Math.min(ctx.solvedCount || 0, goal.n)
     return { done: (ctx.solvedCount || 0) >= goal.n, cur, total: goal.n }
+  }
+  if (goal.k === 'profile') {
+    const cur = Math.min(ctx.preparedProfileCount || 0, goal.n)
+    return { done: (ctx.preparedProfileCount || 0) >= goal.n, cur, total: goal.n }
   }
   if (goal.k === 'mock') {
     const cur = Math.min(ctx.mockCount || 0, goal.n)
@@ -108,7 +134,9 @@ export function computeJavaPrepProgress(javaPrep = {}) {
   const ctx = {
     studied: new Set(javaPrep?.studiedQuestions || []),
     solvedCount: (javaPrep?.solvedChallenges || []).length,
+    solvedIds: new Set(javaPrep?.solvedChallenges || []),
     mockCount: javaPrep?.mocksTaken || 0,
+    preparedProfileCount: (javaPrep?.profilePrepared || []).length,
   }
   const { doneCount, total } = planStatus(ctx)
   return { pct: total ? Math.round((doneCount / total) * 100) : 0, doneCount, total }

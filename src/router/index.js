@@ -52,7 +52,7 @@ const routes = [
     path: '/courses/java/prep',
     name: 'java-prep',
     component: () => import('@/views/JavaPrepView.vue'),
-    meta: { requiresAuth: true, title: 'Java Phỏng Vấn Cấp Tốc', description: '184 câu hỏi phỏng vấn Java theo chủ đề + phỏng vấn thử với AI + 19 bài coding chạy thật.' },
+    meta: { requiresAuth: true, title: 'Java Phỏng Vấn Cấp Tốc', description: '213 câu hỏi phỏng vấn Java theo chủ đề + phỏng vấn thử với AI + 27 bài coding chạy thật.' },
   },
   // Phòng phỏng vấn thử (AI hỏi + chấm từng câu)
   {

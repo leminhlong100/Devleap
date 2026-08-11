@@ -41,8 +41,23 @@ const DEFAULT_CONVO = {
 // `studiedQuestions`: id các câu đã MỞ ĐỌC đáp án trong tab Ngân hàng — tín hiệu
 //   "đã ôn" để Lộ trình 2 tuần tự đánh dấu ngày hoàn thành (xem lib/crashPlan.js).
 // `mocksTaken`: đếm dồn số buổi Mock Interview đã hoàn thành (mục tiêu ngày 7/14).
+// `profileAnswers`: nội dung tự viết cho từng câu trong "Tủ câu hỏi hồ sơ của
+//   tôi" (map id -> text) — chỉ local, không đồng bộ cloud (câu trả lời cá nhân).
+// `profilePrepared`: id các câu đã tick "Đã chuẩn bị xong ✓" (mục tiêu Ngày 13).
 const JAVA_PREP_KEY = 'devleap:javaprep:v1'
-const DEFAULT_JAVA_PREP = { bestScore: 0, lastReport: null, topicScores: {}, reviewQuestions: [], solvedChallenges: [], studiedQuestions: [], mocksTaken: 0 }
+const DEFAULT_JAVA_PREP = {
+  bestScore: 0,
+  lastReport: null,
+  topicScores: {},
+  reviewQuestions: [],
+  solvedChallenges: [],
+  studiedQuestions: [],
+  mocksTaken: 0,
+  profileAnswers: {},
+  profilePrepared: [],
+  // Checklist trước khi ký hợp đồng (P1-2, Ngày 14) — lưu index đã tick.
+  contractChecklistDone: [],
+}
 
 export function state() {
   return {
@@ -123,6 +138,9 @@ export const actions = {
           studiedQuestions: Array.isArray(j.studiedQuestions) ? j.studiedQuestions : [],
           // Người dùng cũ chưa có counter: coi báo cáo gần nhất là ít nhất 1 buổi.
           mocksTaken: Number.isFinite(j.mocksTaken) ? j.mocksTaken : j.lastReport ? 1 : 0,
+          profileAnswers: j.profileAnswers && typeof j.profileAnswers === 'object' ? j.profileAnswers : {},
+          profilePrepared: Array.isArray(j.profilePrepared) ? j.profilePrepared : [],
+          contractChecklistDone: Array.isArray(j.contractChecklistDone) ? j.contractChecklistDone : [],
         }
       }
     } catch {
@@ -186,6 +204,8 @@ export const actions = {
    * Chấm độ nhớ (SM-2) một câu "cần ôn lại" — dùng ở chế độ "Ôn theo lịch".
    * Chỉ cập nhật khi câu đã được đánh dấu (tránh tạo lịch mồ côi cho câu chưa
    * từng bấm ⭐). Tái dùng thẳng `reviewCard` của srsSlice.js.
+   * Trả lời đúng ("hard"/"good"/"easy") 2 lần LIÊN TIẾP (srs.reps >= 2, đặt lại
+   * 0 khi "Quên") → tự động gỡ khỏi danh sách "chưa chắc" (P1-1).
    * @param {string} questionId  id câu trong QUESTION_BANK.
    * @param {'again'|'hard'|'good'|'easy'} grade
    */
@@ -193,6 +213,7 @@ export const actions = {
     const id = String(questionId || '').trim()
     if (!id || !this.javaPrep.reviewQuestions?.includes(id)) return
     this.reviewCard(javaSrsId(id), grade)
+    if ((this.srs[javaSrsId(id)]?.reps || 0) >= 2) this.toggleReviewQuestion(id)
   },
 
   /**
@@ -220,6 +241,46 @@ export const actions = {
     const list = Array.isArray(this.javaPrep.solvedChallenges) ? this.javaPrep.solvedChallenges : []
     if (list.includes(id)) return
     this.javaPrep = { ...this.javaPrep, solvedChallenges: [...list, id] }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
+  },
+
+  /** Lưu nội dung tự viết cho một câu trong "Tủ câu hỏi hồ sơ của tôi" (mỗi lần gõ). */
+  setProfileAnswer(questionId, text) {
+    const id = String(questionId || '').trim()
+    if (!id) return
+    this.javaPrep = { ...this.javaPrep, profileAnswers: { ...(this.javaPrep.profileAnswers || {}), [id]: text } }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
+  },
+
+  /** Bật/tắt "Đã chuẩn bị xong ✓" cho một câu hồ sơ — nạp cho mục tiêu Ngày 13. */
+  toggleProfilePrepared(questionId) {
+    const id = String(questionId || '').trim()
+    if (!id) return
+    const list = Array.isArray(this.javaPrep.profilePrepared) ? this.javaPrep.profilePrepared : []
+    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
+    this.javaPrep = { ...this.javaPrep, profilePrepared: next }
+    try {
+      localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
+    } catch {
+      /* ignore */
+    }
+  },
+
+  /** Tick/bỏ tick một mục trong checklist "trước khi ký hợp đồng" (P1-2). */
+  toggleContractChecklistItem(index) {
+    const i = Number(index)
+    if (!Number.isInteger(i) || i < 0) return
+    const list = Array.isArray(this.javaPrep.contractChecklistDone) ? this.javaPrep.contractChecklistDone : []
+    const next = list.includes(i) ? list.filter((x) => x !== i) : [...list, i]
+    this.javaPrep = { ...this.javaPrep, contractChecklistDone: next }
     try {
       localStorage.setItem(JAVA_PREP_KEY, JSON.stringify(this.javaPrep))
     } catch {
