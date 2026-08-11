@@ -1956,10 +1956,10 @@ export const JAPAN_KOREA_INTERVIEW = {
   ],
   // 6.3 — Giới thiệu bản thân bằng tiếng Anh, script mẫu ~3 phút (4 đoạn theo cấu trúc spec)
   selfIntroScriptEn: [
-    { part: 'Hiện đang làm gì (~30s)', text: "I'm currently a Java backend / full-stack developer with nearly two years of experience, working on enterprise systems for a Japanese client in the cable-TV and internet-service domain. My main stack is Java, Struts, iBatis and Spring Boot, and I also work with Angular and NuxtJS on the frontend side when needed." },
-    { part: '1 project tiêu biểu + vai trò (~60s)', text: "One project I'm proud of is a REST API layer I built for our contract-management screens, consumed by both Angular and NuxtJS frontends. I was responsible for designing the endpoints and DTOs, validating input, and keeping error responses consistent, then aligning the data contract with the frontend team and verifying everything with Postman before release. It's been running stably in production and the frontend team integrates new screens against it quickly." },
-    { part: 'Thế mạnh kỹ thuật (~45s)', text: "My strongest area is working with legacy systems that don't have full documentation — I'm comfortable reading unfamiliar code, tracing production logs to reproduce a bug, and fixing it safely without breaking a live business flow. I also care a lot about SQL performance — I check execution plans before optimizing, not after — and I'm currently strengthening my Spring Boot and cloud-native skills through personal projects." },
-    { part: 'Vì sao ứng tuyển (~45s)', text: "I'm looking for a role where I can grow deeper into backend systems at larger scale, ideally with Spring Boot and modern cloud infrastructure. I'm especially interested in this position because of the chance to keep working with Japanese clients — I already have experience reading Japanese specs and coordinating with QA on the Japan side, so I can contribute from day one while I grow technically." },
+    { part: 'Hiện đang làm gì (~30s)', text: "I'm currently a Java backend developer with nearly two years of experience in an offshore team, working on subscriber-management and operations systems for Japanese cable-TV operators. My main stack is Java and Oracle PL/SQL — REST APIs against formal interface specs, data-integration batch jobs and PDF document generation — and I also work with Node.js and web or iPad screens when a project needs it." },
+    { part: '1 project tiêu biểu + vai trò (~60s)', text: "The project I'm most proud of is an electronic-contract feature for a field-sales application. Sales staff visit customers at home, so the consent form and terms document had to be generated as a PDF on the spot, with the customer's signature placed onto the template. I owned it end to end, from reading the specification to delivery — about 58 hours, the largest single feature I've been assigned. One design decision I'd highlight: instead of hard-coding the print coordinates, I designed a new master table that stores the coordinates per template, so adding or changing a document form is a data change, not a code change. Later, when another customer needed a different template, the extension took only five hours." },
+    { part: 'Thế mạnh kỹ thuật (~45s)', text: "My strongest area is investigating problems in legacy systems that no longer have documentation — reproducing the issue first, reading unfamiliar code, and writing an investigation report for the client to confirm the root cause before I touch anything. The clearest example is a PL/SQL procedure that never finished after an hour in the customer environment: I compared execution plans between two environments, found that an index was not being used, and brought the query cost down from about 4.15 million to 410 thousand — roughly ten times. Across the period I delivered 36 tickets with no missed deadlines and an estimation error of minus one percent." },
+    { part: 'Vì sao ứng tuyển (~45s)', text: "I'm looking for a role where I can go deeper into backend systems at larger scale, especially with Spring Boot and modern infrastructure — my current work uses an in-house framework, so that's the part of my skill set I most want to grow, and I'm building a migration project on my own to close that gap. I'm particularly interested in this position because I can keep using what I already have: Oracle, reading Japanese specifications, and coordinating directly with the Japan side. That means I can contribute from day one while I keep growing technically." },
   ],
   vocab30: [
     'requirement', 'specification', 'stakeholder', 'scope', 'deliverable',
@@ -1971,72 +1971,153 @@ export const JAPAN_KOREA_INTERVIEW = {
   ],
 }
 
-// -------------------- Kỹ năng phỏng vấn (cá nhân hóa theo CV) --------------------
-// Nội dung dựng từ hồ sơ ứng viên: Java Backend/Full-stack ~2 năm, khách Nhật (cable TV/Internet),
-// stack Java/Struts/iBatis/Spring Boot + Angular/NuxtJS/React, thủ khoa CNTT ĐH Nông Lâm.
+// -------------------- Kỹ năng phỏng vấn (cá nhân hóa theo hồ sơ THẬT) --------------------
+// ⚠ Nguồn dữ liệu: docs/me/Kinh-nghiem-2025-2026.md (45 ticket Redmine, kỳ 01/2025–07/2026)
+// và docs/me/NoiDungDanhGia-draft.md (Working Report kỳ 2025/07–2026/06). Mọi con số trong
+// khối này đều tra được ở 2 file đó — KHÔNG bịa thêm số. Chỗ nào dữ liệu không có thì để
+// nguyên dấu [Cần xác nhận: …] để người dùng tự điền, thà thiếu số còn hơn khai số sai rồi
+// bị đối chiếu ngược (xem MY_FACTS.doNotClaim).
 // Dùng ở tab "Kỹ năng PV".
 export const INTERVIEW_SKILLS = {
   // Giới thiệu bản thân ~60 giây, hai ngôn ngữ để luyện cả vòng tiếng Anh.
+  // Chọn 4 chất liệu mạnh nhất: domain hẹp → độ tin cậy giao hàng → 1 con số kỹ thuật
+  // (tuning ~10×) → định hướng. Không đọc danh sách công nghệ, sẽ nhàm và bị hỏi vặn lung tung.
   selfIntro: {
-    vi: 'Em là Lê Minh Long, lập trình viên Java Backend/Full-stack với gần 2 năm kinh nghiệm xây hệ thống doanh nghiệp cho khách hàng Nhật trong lĩnh vực truyền hình cáp và dịch vụ Internet. Em chủ yếu làm backend với Java, Struts, iBatis và Spring Boot: xây REST API cho frontend Angular/NuxtJS, viết batch job và báo cáo bằng JasperReports, xử lý file và upload FTP. Em quen làm việc với codebase lớn cùng quy trình của khách Nhật, chú trọng chất lượng và độ ổn định của hệ thống. Em tốt nghiệp thủ khoa ngành CNTT Đại học Nông Lâm với GPA 3.54, và đang tìm môi trường để phát triển sâu hơn về backend và hệ thống quy mô lớn.',
-    en: "Hi, I'm Long, a Java backend / full-stack developer with nearly two years of experience building enterprise systems for Japanese clients in the cable-TV and internet-service domain. I mainly work on the backend with Java, Struts, iBatis and Spring Boot — building REST APIs consumed by Angular and NuxtJS, scheduled batch jobs, JasperReports PDF reports, and file/FTP processing. I'm comfortable working with large codebases and Japanese-client workflows, and I care about code quality and system reliability. I graduated top of my IT class at Nong Lam University with a 3.54 GPA, and I'm looking for a role where I can grow deeper in backend and large-scale systems.",
+    vi: 'Em là Lê Minh Long, lập trình viên Java Backend gần 2 năm, làm hệ thống quản lý thuê bao và vận hành cho các nhà cung cấp truyền hình cáp Nhật Bản theo mô hình offshore. Kỳ vừa rồi em được giao 36 ticket trên 15 dự án cho 12 khách hàng cuối, không có task nào trễ hạn giao hàng và sai số giữa effort ước lượng với thực tế là −1,1%. Mảng chính của em là Java và Oracle PL/SQL: REST API theo tài liệu IF, batch liên kết dữ liệu, sinh hợp đồng PDF kèm chữ ký; em cũng làm Node.js và màn hình web/iPad khi dự án cần. Việc em nhớ nhất là một procedure PL/SQL chạy quá một tiếng không kết thúc ở môi trường khách hàng — em so execution plan giữa hai môi trường, tìm ra index không được dùng và giảm cost khoảng 10 lần. Em đang tìm môi trường để làm sâu về backend Spring Boot và hệ thống quy mô lớn hơn.',
+    en: "I'm Long, a Java backend developer with nearly two years of experience building subscriber-management systems for Japanese cable-TV operators in an offshore model. In the last review period I delivered 36 tickets across 15 projects for 12 end customers, with zero missed delivery deadlines and an estimation error of −1.1% between planned and actual effort. My core work is Java and Oracle PL/SQL — REST APIs against formal interface specs, data-integration batch jobs, and PDF contract generation with digital signatures — and I also work with Node.js and web/iPad screens when a project needs it. The work I remember most is a PL/SQL procedure that never finished after an hour in the customer environment: I compared execution plans across two environments, found an index that was not being used, and cut the query cost by roughly 10×. I'm now looking for a role where I can go deeper into Spring Boot backends and larger-scale systems.",
   },
 
-  // Kể dự án theo STAR — rút thẳng từ kinh nghiệm thật trong CV.
+  // Kể dự án theo STAR — rút thẳng từ ticket THẬT trong docs/me, có mã ticket + số giờ để
+  // tra lại được. `source` = nơi tra; `drills` = câu vặn gần như chắc chắn sẽ tới sau story
+  // đó (phần đa ứng viên chết ở đây, không phải ở câu kể).
   starStories: [
     {
-      id: 'rest-api', title: 'REST API cho frontend Angular / NuxtJS', tags: ['REST API', 'Java', 'Backend', 'Integration'],
-      situation: 'Hệ thống quản lý truyền hình cáp/Internet cần API cho các màn hình quản lý người dùng và hợp đồng do frontend Angular và NuxtJS gọi.',
-      task: 'Em thiết kế và hiện thực các REST API phục vụ những tính năng đó.',
-      action: 'Em xây API bằng Java (Struts/Spring), định nghĩa endpoint và DTO rõ ràng, validate đầu vào và trả lỗi nhất quán; thống nhất hợp đồng dữ liệu với phía frontend và kiểm thử bằng Postman.',
-      result: 'Frontend Angular/NuxtJS tích hợp mượt, tính năng quản lý người dùng và hợp đồng vận hành ổn định. [Nếu nhớ được: số lượng endpoint đã xây, số màn hình dùng tới, hoặc thời gian tích hợp rút ngắn được bao lâu.]',
+      id: 'pdf-econtract', title: 'Sinh hợp đồng điện tử PDF + chữ ký (58 giờ — task lớn nhất)',
+      tags: ['Java', 'PDF', 'Thiết kế bảng', 'Khách Nhật'],
+      situation: 'Ứng dụng bán hàng lưu động (Baycom SalesMobile) cho nhân viên kinh doanh tiếp nhận đơn đăng ký thuê bao ngay tại nhà khách. Cần in đồng ý thư và bản điều khoản quan trọng ra PDF tại hiện trường.',
+      task: 'Em được giao phát triển mới toàn bộ chức năng, từ đọc thiết kế đến bàn giao — 58 giờ, task lớn nhất em từng đứng tên.',
+      action: 'Em ghép dữ liệu người dùng nhập cùng ảnh chữ ký lên template PDF. Để tọa độ in không nằm cứng trong code, em thiết kế thêm bảng master mst_document_coordinate lưu tọa độ từng ô theo từng template — thêm hoặc đổi mẫu giấy tờ chỉ cần thêm dữ liệu, không sửa và không phải test lại code.',
+      result: 'Chức năng qua nghiệm thu (受入) đúng hạn. Sau đó khi dự án 大垣 cần tách template theo cấu hình từng局 (#41517) thì phần mở rộng chỉ mất 5 giờ vì tọa độ đã tách ra dữ liệu.',
+      source: 'Redmine #41421 / STITEC-9091 · 58h · docs/me §4.1',
+      drills: [
+        'Vì sao không hard-code tọa độ? — trả lời bằng chi phí thay đổi: mỗi局 một mẫu giấy, hard-code là mỗi lần đổi mẫu phải sửa + test lại code.',
+        '"Chữ ký điện tử" ở đây là gì? — nói rõ đây là ảnh chữ ký tay khách ký trên máy, KHÔNG phải chữ ký số PKI. Nói quá lên là bị bắt ngay.',
+        'Nếu template đổi khổ giấy / thêm trang thì sao? — chuẩn bị trước câu này.',
+      ],
     },
     {
-      id: 'ecom-pay', title: 'Thanh toán PayPal + đăng nhập OAuth (e-commerce)', tags: ['Spring Boot', 'ReactJS', 'OAuth', 'Payment'],
-      situation: 'Dự án nền tảng thương mại điện tử cần thanh toán online an toàn và đăng nhập tiện lợi.',
-      task: 'Em phụ trách phần thanh toán, xác thực và quản lý vai trò người dùng.',
-      action: 'Em xây backend Spring Boot + frontend ReactJS, tích hợp PayPal API cho thanh toán, triển khai OAuth đăng nhập Google/Facebook và phân quyền theo role cho khu vực quản trị.',
-      result: 'Người dùng thanh toán và đăng nhập mượt mà; hệ thống quản lý sản phẩm và vai trò vận hành ổn định. [Nếu nhớ được: số giao dịch/tháng xử lý qua PayPal, tỷ lệ đăng nhập OAuth so với form thường, hoặc số sự cố thanh toán giảm được.]',
+      id: 'sql-tuning', title: 'Tuning PL/SQL: cost 4.151.927 → 409.692 (~10 lần)',
+      tags: ['Oracle', 'PL/SQL', 'Execution Plan', 'Performance'],
+      situation: 'Procedure SXA0006 chạy quá 1 tiếng không kết thúc tại môi trường khách hàng, trong khi môi trường phát triển vẫn bình thường.',
+      task: 'Em được giao tìm nguyên nhân và xử lý — theo quy trình phải báo cáo nguyên nhân cho phía Nhật xác nhận trước khi được sửa.',
+      action: 'Em lấy execution plan ở cả hai môi trường và so sánh: plan bên khách không dùng index như bên dev, cost lệch 4.151.927 so với 409.692. Em tiến hành tuning để plan ăn index rồi đo lại chính bằng execution plan, không đo bằng cảm giác "thấy nhanh hơn".',
+      result: 'Cost giảm khoảng 10 lần, procedure kết thúc bình thường. 24 giờ công, ticket qua trạng thái 解決.',
+      source: 'Redmine #41518 / CATFNL-7552 · 24h · docs/me §4.4',
+      drills: [
+        'Vì sao cùng một câu query mà 2 môi trường ra plan khác nhau? — statistics cũ, lượng dữ liệu khác nhau, bind variable peeking. PHẢI trả lời được câu này, đây là chỗ họ khoan sâu nhất.',
+        'Sửa cụ thể là gì — thêm index, gợi hint, hay viết lại điều kiện WHERE? Nói tên được giải pháp mình chọn và vì sao chọn nó.',
+        'Mặt trái của việc thêm index là gì? — chậm INSERT/UPDATE, tốn dung lượng.',
+      ],
     },
     {
-      id: 'batch-report', title: 'Batch job + báo cáo PDF tự động (JasperReports)', tags: ['Batch', 'JasperReports', 'Automation'],
-      situation: 'Khách hàng cần báo cáo định kỳ và xuất PDF, trước đó làm thủ công tốn thời gian.',
-      task: 'Em xây dựng luồng tạo báo cáo tự động.',
-      action: 'Em lập lịch batch job, dùng JasperReports sinh và export PDF, xử lý dữ liệu theo lô để chịu tải và ghi log tiến độ.',
-      result: 'Báo cáo được tạo và xuất PDF tự động đúng hạn, giảm đáng kể công việc thủ công và sai sót. [Nếu nhớ được: số báo cáo/tháng được tự động hóa, thời gian làm thủ công trước đây so với sau khi tự động (vd từ X giờ xuống còn Y phút).]',
+      id: 'race-condition', title: 'Race condition khi sinh 10 file bất đồng bộ (lỗi của chính em)',
+      tags: ['Bất đồng bộ', 'Root Cause', 'Bài học', 'Trung thực'],
+      situation: 'Chức năng sinh ảnh JPG từ bản sao đơn đăng ký (do chính em phát triển ở #41412) mất 10–20 giây cho khoảng 10 file. Nếu người dùng chuyển màn hình đúng lúc đó thì file bị thiếu — khách phát hiện khi dùng thật.',
+      task: 'Em được giao điều tra nguyên nhân, đề xuất phương án và hiện thực — 34,5 giờ, trên một feature gốc chỉ 41,5 giờ.',
+      action: 'Em tái hiện bằng cách chuyển màn hình đúng khoảng thời gian xử lý, xác định xử lý bị cắt giữa dòng. Em đề xuất khóa thao tác trong lúc xử lý (chặn điều hướng + hiện trạng thái đang xử lý) thay vì chỉ nới timeout, và cố định hai test viewpoint mới cho lần sau.',
+      result: 'Hết lỗi, tới cuối kỳ không tái phát. Em kể story này vì bài học rõ: mình test đúng luồng thao tác chuẩn mà bỏ qua việc người dùng thật sẽ bỏ đi giữa lúc chờ.',
+      source: 'Redmine #41714 / STITEC-9170 · 34,5h · docs/me §4.1 — sổ VN xếp 元バグ, phía JP ghi プログラムミス',
+      drills: [
+        'Sao không dùng transaction hoặc queue? — nêu đánh đổi trong bối cảnh legacy: sửa nhỏ, rủi ro thấp, kịp hạn.',
+        'Làm lại từ đầu em thiết kế thế nào? — đẩy sang job nền + trạng thái tiến độ, người dùng không phải ngồi chờ. Trả lời được câu này là ghi điểm lớn.',
+        'Nếu bị hỏi "đây có phải lỗi của em không?" — thừa nhận thẳng phần unit test thiếu, đừng đẩy sang "spec không ghi".',
+      ],
     },
     {
-      id: 'file-ftp', title: 'Pipeline xử lý file & upload FTP', tags: ['File Processing', 'FTP', 'Backend'],
-      situation: 'Hệ thống cần chuyển đổi ảnh và đẩy file lên FTP server một cách tự động, ổn định.',
-      task: 'Em xây pipeline xử lý và truyền file.',
-      action: 'Em convert ảnh sang JPG, ghi ra file tạm rồi mới chuyển/đổi tên để tránh đọc file dở, tự động upload FTP kèm retry khi lỗi mạng và đóng stream cẩn thận.',
-      result: 'Luồng xử lý file chạy tự động, ổn định, ít lỗi và không cần thao tác tay. [Nếu nhớ được: số file/ngày xử lý, tỷ lệ lỗi upload trước và sau khi thêm retry.]',
+      id: 'no-design-doc', title: 'Phát triển khi CHƯA có thiết kế chi tiết, rồi viết ngược tài liệu',
+      tags: ['Đọc nghiệp vụ', 'Tài liệu', 'Tự chủ'],
+      situation: 'Dự án TOKAI đối ứng dịch vụ mới của Cable Plus Phone. Task được giao khi chưa có 詳細設計書 — chỉ có 要件定義書 (định nghĩa yêu cầu).',
+      task: 'Em tự đọc định nghĩa yêu cầu để hiện thực, phạm vi gồm màn hình 営業iPad, hai luồng sinh PDF hợp đồng, entity/view và PL/SQL — 42 giờ.',
+      action: 'Em bóc yêu cầu thành danh sách điểm sửa, đặt Q&A cho phía Nhật ở chỗ nghi vấn thay vì tự phán đoán, hiện thực rồi viết ngược tài liệu thiết kế chi tiết (逆おこし) để bàn giao lại cho người sau.',
+      result: 'Ticket qua nghiệm thu. Em còn viết ngược tài liệu thiết kế thêm một lần nữa ở #41748 (thay đổi quy cách xử lý IP thiết bị WMTA).',
+      source: 'Redmine #41394 / IPLATTCN-7427-7428 · 42h; #41748 / KAIROS-692 · 18h · docs/me §4.3, §4.4',
+      drills: [
+        'Làm sao chắc mình hiểu đúng yêu cầu khi không có thiết kế? — quy trình Q&A, xác nhận lại bằng văn bản trước khi code.',
+        'Có lần nào hiểu sai phải làm lại không? — chuẩn bị một ví dụ thật, đừng nói "không bao giờ".',
+      ],
     },
     {
-      id: 'legacy-maintain', title: 'Bảo trì & fix lỗi production hệ thống enterprise', tags: ['Legacy', 'Debugging', 'Teamwork'],
-      situation: 'Hệ thống enterprise cho khách Nhật đang chạy thật, vừa phải thêm tính năng vừa giữ ổn định.',
-      task: 'Em duy trì, nâng cấp tính năng và xử lý sự cố production.',
-      action: 'Em đọc và hiểu code legacy (Struts/iBatis), tái hiện lỗi qua log, sửa cẩn thận kèm test, và phối hợp chặt với team cùng phía khách hàng Nhật để xác nhận yêu cầu.',
-      result: 'Hệ thống ổn định hơn, giảm lỗi tái diễn; em quen làm việc với codebase lớn và quy trình của khách Nhật. [Nếu nhớ được: số bug production/tháng giảm, thời gian trung bình để fix và deploy một hotfix.]',
+      id: 'test-tool', title: 'Tự xây 2 tool test tự động (101 giờ + 171,5 giờ)',
+      tags: ['Automation', 'Test', 'Khối lượng lớn', 'Dùng chung'],
+      situation: 'Hai hệ thống Baycom SalesMobile và EFA đều do nhiều người phát triển, kiểm thử hồi quy làm tay rất tốn thời gian.',
+      task: 'Em được giao xây tool test tự động cho cả hai, dưới mã dự án riêng (PJ 03011562).',
+      action: 'Tool cho Baycom SalesMobile 101 giờ (07–08/2025), tool cho EFA 171,5 giờ (08–09/2025). [Cần xác nhận trước khi phỏng vấn: tool viết bằng gì (Selenium/Java?), chạy tự động bao nhiêu màn hình/case, ai trong team đang dùng, tiết kiệm được bao nhiêu thời gian mỗi vòng test.]',
+      result: 'Tổng 272,5 giờ ≈ 34 người-ngày, hai khối phát triển liên tục lớn nhất của em (12,6 và 21,4 người-ngày) — lớn hơn mọi ticket nghiệp vụ em từng làm. Đây là deliverable dùng chung cho team, không phải tool cá nhân.',
+      source: 'Working Report PJ 03011562 · 272,5h · docs/me/NoiDungDanhGia-draft.md Phần 0',
+      drills: [
+        '⚠ Đây là khối lớn nhất trong hồ sơ nhưng cũng mơ hồ nhất — nếu chưa điền được phần [Cần xác nhận] thì ĐỪNG kể story này, sẽ bị hỏi chi tiết ngay.',
+        'Tool test có phải "program development" không? — sẵn sàng bảo vệ: có mã dự án, có người dùng, có bảo trì.',
+        'Sao không dùng framework có sẵn? — trả lời theo ràng buộc hệ thống legacy và môi trường khách hàng.',
+      ],
+    },
+    {
+      id: 'legacy-rca', title: 'Điều tra lỗi tiềm ẩn trong hệ legacy không còn tài liệu',
+      tags: ['Legacy', 'Root Cause', 'Báo cáo điều tra', 'Oracle'],
+      situation: 'Mảng bảo trì i-PLAT/EFA: hệ thống nghiệp vụ lõi đang chạy dữ liệu thuê bao thật, phần lớn không còn tài liệu thiết kế, nhiều đoạn code từ trước khi em vào.',
+      task: 'Em được giao 12 ticket điều tra và xử lý sự cố (~137 giờ), trong đó 6 ticket thuộc loại lỗi tiềm ẩn có sẵn trong hệ thống.',
+      action: 'Quy trình em làm: tái hiện hiện tượng trước (nhiều ca phải dựng đúng dữ liệu mới ra lỗi), đọc source cũ lần theo luồng nghiệp vụ, so sánh hành vi giữa hai sản phẩm i-PLAT và EFA, rồi lập báo cáo điều tra cho phía Nhật xác nhận nguyên nhân TRƯỚC khi được phép sửa.',
+      result: 'Ví dụ cụ thể để kể: #41004 — đổi gói cước docomo Type-C làm thông tin tiếp nhận gắn sai đơn giá, em tái hiện 2 pattern rồi truy ra logic cập nhật sai (29 giờ). Hoặc #41670 — dữ liệu tiếp nhận bị ghi đè thành chuỗi "false" khi người khác cập nhật, em truy vết từ log thao tác về xử lý phát hành phiếu.',
+      source: 'Redmine §4.4 (12 ticket, ~137h) · #41004 CATFNL-7096 · #41670 VOICE-27709 · docs/me',
+      drills: [
+        'Kể MỘT case cụ thể đi. — phải có sẵn 1 case kể trôi trong 2 phút, đừng kể chung chung "em fix nhiều bug".',
+        'Không có tài liệu thì bắt đầu từ đâu? — đọc schema DB trước, schema không nói dối; rồi lần từ màn hình về bảng.',
+        'Làm sao chắc bản sửa không vỡ luồng khác? — điều tra phạm vi ảnh hưởng (影響範囲), ví dụ #40878 em quét toàn bộ màn hình/batch dùng một trường trước khi kết luận.',
+      ],
+    },
+    {
+      id: 'ops-beyond-code', title: 'Xử lý sự cố ngoài phạm vi code: PM2/Linux, localStorage đa tab, môi trường AWS',
+      tags: ['Node.js', 'Linux', 'Frontend', 'Hạ tầng'],
+      situation: 'Ba sự cố không nằm trong code nghiệp vụ nhưng vẫn phải giải, đều thuộc dự án ứng dụng bán hàng lưu động.',
+      task: 'Em được giao xử lý cả ba: API Node.js không khởi động được bằng PM2 trên Linux (lỗi "linux is NOT supported", ưu tiên cao); localStorage bị ghi đè khi người dùng mở nhiều tab; và một lỗi hiển thị chỉ xảy ra trên điện thoại.',
+      action: 'Với PM2 em lần theo môi trường chạy chứ không sửa code nghiệp vụ (20 giờ). Với localStorage em thiết kế cơ chế cưỡng chế đăng xuất khi phát hiện phiên bị ghi đè, kèm ngoại lệ cho luồng gọi từ app iOS để không làm hỏng tính năng đang chạy (18,5 giờ). Với lỗi hiển thị trên mobile em tự dựng môi trường trên AWS để tái hiện, phát triển và test (7 giờ).',
+      result: 'Cả ba xử lý xong đúng hạn. Em dùng nhóm này để trả lời câu "em có làm gì ngoài viết code không" — đó là dấu hiệu người thật sự vận hành hệ thống chạy production.',
+      source: 'Redmine #41593 STITEC-9155 · STITEC-9151 · #41244 · docs/me §4.1, §4.2',
+      drills: [
+        'Nguyên nhân gốc của lỗi PM2 là gì? — [Cần xác nhận: nhớ lại chính xác nguyên nhân, đây là câu vặn đầu tiên sẽ tới.]',
+        'Cưỡng chế đăng xuất có làm khó người dùng không? — nêu đánh đổi giữa an toàn dữ liệu và trải nghiệm.',
+      ],
+    },
+    {
+      id: 'version-impact', title: 'Điều tra ảnh hưởng nâng version + ước lượng công sức',
+      tags: ['Phân tích ảnh hưởng', 'Git/SVN', 'Ước lượng'],
+      situation: 'Khách hàng 杵築 đang chạy một nhánh tách từ 2019, cần quyết định có nâng version i-PLAT hay không.',
+      task: 'Em được giao điều tra tiền đề cho quyết định đó: so sánh nhánh của khách với nhánh gốc release, liệt kê toàn bộ JIRA chỉ tồn tại ở nhánh khách và đối chiếu đã merge vào develop chưa (15 giờ); sau đó điều tra ảnh hưởng và ước lượng công sức cho việc merge 19 JIRA (6 giờ).',
+      action: 'Em đối chiếu theo từng JIRA và theo comment commit thay vì diff thô, vì diff giữa hai nhánh 5–6 năm là không đọc được; lập danh sách xử lý – ID – vị trí sử dụng để phía Nhật ra quyết định.',
+      result: 'Báo cáo dùng làm căn cứ quyết định nâng version. Em dùng story này khi bị hỏi về ước lượng công sức — cả kỳ sai số effort của em là −1,1% trên 21 ticket có đủ số liệu dự kiến/thực tế.',
+      source: 'Redmine #41736 · #41624 · docs/me §4.7',
+      drills: [
+        'Em ước lượng dựa trên gì? — nói phương pháp (bóc theo điểm sửa, so với ticket tương tự đã làm), không nói "em cảm giác".',
+        'Có ticket nào vượt dự kiến không? — có, 3/21 vượt hơn 10%. Nói thật kèm nguyên nhân, đừng khoe "chưa bao giờ vượt".',
+      ],
     },
   ],
 
-  // Câu hỏi HR/hành vi hay gặp + mẹo trả lời + gợi ý cá nhân hóa.
+  // Câu hỏi HR/hành vi hay gặp + mẹo trả lời + câu trả lời dựng từ hồ sơ THẬT.
   hrQuestions: [
-    { q: 'Điểm mạnh của bạn là gì?', tip: 'Chọn điểm liên quan mô tả công việc, kèm 1 ví dụ có số.',
-      sample: 'Xây REST API và batch/báo cáo cho hệ thống enterprise, tự học nhanh, cẩn thận khi làm hệ thống legacy và giao tiếp rõ ràng với khách Nhật.' },
-    { q: 'Điểm yếu của bạn là gì?', tip: 'Nói điểm THẬT đang cải thiện, không "giả yếu" kiểu "em quá cầu toàn".',
-      sample: 'Đôi khi em sa đà vào chi tiết kỹ thuật; em đang tập ước lượng và ưu tiên theo giá trị. Tiếng Anh giao tiếp (B1) em đang luyện thêm mỗi ngày.' },
-    { q: 'Vì sao bạn muốn đổi việc / ứng tuyển vị trí này?', tip: 'Hướng tích cực, không nói xấu công ty cũ.',
-      sample: 'Em muốn thử thách với hệ thống backend quy mô lớn hơn và công nghệ mới; định hướng của công ty phù hợp với mục tiêu phát triển sâu về backend của em.' },
-    { q: 'Bạn thấy mình ở đâu trong 3–5 năm tới?', tip: 'Gắn với lộ trình kỹ thuật thực tế.',
-      sample: 'Trở thành Senior Backend vững về thiết kế hệ thống và tối ưu hiệu năng, có thể dẫn dắt phần kỹ thuật và mentor thành viên mới.' },
-    { q: 'Mức lương mong muốn của bạn?', tip: 'Tìm hiểu thị trường trước; đưa một KHOẢNG dựa trên giá trị, đừng chốt cứng một số quá sớm.',
-      sample: 'Dựa trên gần 2 năm kinh nghiệm và mặt bằng thị trường cho Java backend, em mong muốn khoảng [X–Y]. Em cởi mở trao đổi tùy phạm vi công việc và tổng phúc lợi.' },
-    { q: 'Bạn xử lý áp lực và deadline gấp thế nào?', tip: 'Cho thấy cách bạn ưu tiên và giao tiếp.',
-      sample: 'Em chia nhỏ task, ưu tiên phần rủi ro/giá trị cao trước, và báo sớm cho quản lý khi thấy nguy cơ trễ để cùng điều chỉnh phạm vi thay vì im lặng.' },
-    { q: 'Kể về một lần bạn thất bại hoặc mắc lỗi.', tip: 'Chọn lỗi thật, nhấn bài học và cách phòng ngừa.',
-      sample: 'Kể một sự cố cụ thể (vd đẩy nhầm cấu hình), cách em khắc phục nhanh, rồi bổ sung test/checklist/monitoring để không tái diễn.' },
+    { q: 'Điểm mạnh của bạn là gì?', tip: 'Chọn điểm liên quan mô tả công việc, kèm 1 ví dụ có số. Đừng liệt kê 5 điểm mạnh — nói 2 điểm có bằng chứng.',
+      sample: 'Thứ nhất là độ tin cậy về hạn giao hàng: kỳ vừa rồi 36 ticket, không có task nào trễ hạn, sai số effort ước lượng so với thực tế là −1,1%. Thứ hai là điều tra nguyên nhân gốc trên hệ thống không còn tài liệu — em có 6 ca lỗi tiềm ẩn phải tự tái hiện, đọc source cũ rồi lập báo cáo nguyên nhân cho khách Nhật xác nhận trước khi sửa; ca em nhớ nhất là tuning một procedure PL/SQL, giảm cost khoảng 10 lần.' },
+    { q: 'Điểm yếu của bạn là gì?', tip: 'Nói điểm THẬT đang cải thiện, không "giả yếu" kiểu "em quá cầu toàn". Kèm hành động cụ thể đang làm.',
+      sample: 'Điểm yếu rõ nhất của em là chưa dùng Spring Boot trong công việc thật — công ty hiện tại dùng Java với framework nội bộ, nên Spring Boot của em đến từ đồ án và project cá nhân. Em đang bù bằng cách làm một project migration để có thứ chứng minh được, và em có thể giải thích được từng quyết định trong đó. Thứ hai là em chưa từng review code cho người khác, mảng này em xin được tham gia ở kỳ tới.' },
+    { q: 'Vì sao bạn muốn đổi việc / ứng tuyển vị trí này?', tip: 'Hướng về phía trước, không nói xấu công ty cũ. Đừng nói "vì lương" như lý do duy nhất.',
+      sample: 'Hai năm qua em làm hệ thống nghiệp vụ lõi cho khách Nhật, được rèn tính cẩn thận và quy trình, nhưng công nghệ thì gắn với framework nội bộ và hệ thống legacy. Em muốn vào môi trường dùng Spring Boot và hạ tầng hiện đại để phần kỹ thuật của em không bị đóng khung, đồng thời vẫn dùng được thế mạnh sẵn có là Oracle, đọc spec tiếng Nhật và làm việc với khách Nhật.' },
+    { q: 'Bạn thấy mình ở đâu trong 3–5 năm tới?', tip: 'Gắn với lộ trình kỹ thuật thực tế, có mốc kiểm được.',
+      sample: 'Ba năm tới em muốn thành backend vững về thiết kế và tối ưu hiệu năng — mảng tuning em đã có nền, cần thêm phần thiết kế hệ thống ở quy mô lớn. Năm năm thì em muốn ở vị trí review được code và mentor được người mới; đây là chỗ em đang thiếu nhất nên em coi nó là mục tiêu chứ không phải điều hiển nhiên sẽ đến.' },
+    { q: 'Mức lương mong muốn của bạn?', tip: 'Nói số trước, kèm lý do, đừng kèm lời xin. "Theo quy định công ty" gần như chắc chắn nhận offer ở đáy khung.',
+      sample: 'Mức em mong muốn là 25 triệu, sàn em không xuống dưới 22 triệu. Cơ sở: 2 năm Java và Oracle trên hệ thống production của khách Nhật, có kinh nghiệm tuning SQL và điều tra sự cố legacy, cộng phần Spring Boot em đang bổ sung và có sản phẩm chứng minh. Em cũng muốn hỏi thêm về tổng thu nhập — lương tháng 13 có ghi trong hợp đồng không, chu kỳ review lương thế nào.' },
+    { q: 'Bạn xử lý áp lực và deadline gấp thế nào?', tip: 'Cho thấy cách bạn ưu tiên và giao tiếp, kèm bằng chứng.',
+      sample: 'Em làm nhiều dự án luân phiên — kỳ vừa rồi 15 dự án cho 12 khách hàng cuối — nên cách em giữ hạn là bóc task thành các điểm sửa cụ thể rồi ước lượng theo đó, và báo trước cho cấp trên ngay khi thấy nguy cơ ảnh hưởng hạn thay vì báo sau. Kết quả là không có task nào trễ hạn giao hàng, kể cả các ticket ưu tiên cao phải xong trong một ngày.' },
+    { q: 'Kể về một lần bạn thất bại hoặc mắc lỗi.', tip: 'Chọn lỗi thật, nhấn nguyên nhân kỹ thuật + biện pháp chặn tái phát. Đừng chọn lỗi quá nhẹ.',
+      sample: 'Em có một feature sinh nhiều file ảnh bất đồng bộ, mất 10–20 giây. Em test đúng luồng thao tác chuẩn nên không phát hiện: người dùng thật chuyển màn hình giữa lúc chờ thì file bị thiếu, khách phát hiện khi dùng thật và em mất 34,5 giờ để điều tra và sửa lại. Nguyên nhân gốc là em chỉ nghĩ tới luồng thao tác đúng, không nghĩ tới việc người dùng sẽ bỏ đi giữa lúc chờ. Em sửa bằng cách khóa thao tác trong lúc xử lý, và cố định thêm hai test viewpoint cho các feature xử lý bất đồng bộ; tới cuối kỳ không tái phát.' },
   ],
 
   // Câu hỏi nên hỏi ngược nhà tuyển dụng (thể hiện sự nghiêm túc).
@@ -2051,9 +2132,9 @@ export const INTERVIEW_SKILLS = {
   // Mẹo đàm phán lương.
   negotiation: [
     'Tìm hiểu mặt bằng lương cho Java backend ~2 năm KN trước buổi phỏng vấn.',
-    'Nếu được, để nhà tuyển dụng nêu con số trước; nếu phải nói, đưa một khoảng dựa trên dữ liệu.',
-    'Neo bằng giá trị: tốt nghiệp thủ khoa, kinh nghiệm làm hệ thống cho khách Nhật, làm được cả backend lẫn frontend.',
-    'Xét TỔNG thu nhập (thưởng, phụ cấp, OT, cơ hội học hỏi) chứ không chỉ lương cứng.',
+    'Nói số trước và nói kèm lý do (25 triệu, sàn 22 triệu) — "theo quy định công ty" là nhận offer ở đáy khung.',
+    'Neo bằng giá trị đo được: 0 task trễ hạn, sai số effort −1,1%, tuning SQL giảm cost ~10 lần, 2 năm Oracle trên hệ thống production của khách Nhật.',
+    'Xét TỔNG thu nhập (tháng 13 có ghi trong hợp đồng không, BHXH đóng trên mức nào, chu kỳ review lương, cách tính OT) chứ không chỉ lương cứng.',
     'Thương lượng lịch sự, không ra tối hậu thư; có thể xin thời gian cân nhắc trước khi chốt.',
   ],
 
@@ -2065,7 +2146,8 @@ export const INTERVIEW_SKILLS = {
       'Nói "TÔI đã làm gì" khi kể việc của mình, minh họa bằng con số.',
       'Không biết thì thành thật và nói cách bạn sẽ tìm ra.',
       'Nghĩ thành tiếng khi làm bài kỹ thuật để người phỏng vấn thấy tư duy.',
-      'Thay các phần [ ] trong STAR bằng số liệu THẬT của bạn trước khi vào phỏng vấn thật — interviewer hay hỏi "chính xác bao nhiêu?".',
+      'Điền hết các chỗ [Cần xác nhận: …] trong STAR bằng số liệu THẬT trước khi vào phỏng vấn — interviewer hay hỏi "chính xác bao nhiêu?"; chưa nhớ được thì bỏ story đó, đừng đoán.',
+      'Đọc mục "Đừng khai" ở khối số liệu thật trước mỗi buổi — mấy con số đó nghe hay nhưng bị đối chiếu là mất tin cậy.',
     ],
     donts: [
       'Nói xấu công ty/đồng nghiệp cũ.',
@@ -2073,9 +2155,228 @@ export const INTERVIEW_SKILLS = {
       'Giả vờ biết thứ mình không biết.',
       'Lan man, trả lời lạc đề quá dài.',
       'Quên hỏi lại nhà tuyển dụng ở cuối buổi.',
+      'Kể một feature mà không nói được nội dung khi bị hỏi lại — ghi rồi mà tắc thì mất điểm nặng hơn là không ghi.',
     ],
   },
 }
+
+// -------------------- Số liệu thật của tôi (bảng tra nhanh) --------------------
+// Đây là chất liệu để chèn vào câu trả lời. Nguyên tắc lấy từ docs/me: số nói về ĐỘ KHÓ
+// hoặc CHẤT LƯỢNG thì dùng, số nói về khối lượng thuần thì bỏ. `doNotClaim` quan trọng
+// ngang phần số liệu — đó là những con số nghe hay nhưng sổ sách không đỡ được.
+export const MY_FACTS = {
+  source: 'docs/me/Kinh-nghiem-2025-2026.md (Redmine 01/2025–07/2026) + docs/me/NoiDungDanhGia-draft.md (Working Report 2025/07–2026/06)',
+  groups: [
+    {
+      title: '🎯 Độ tin cậy — dùng mở đầu mọi câu về bản thân',
+      items: [
+        { label: 'Ticket trễ hạn giao hàng', value: '0' },
+        { label: 'Sai số effort ước lượng so với thực tế', value: '−1,1% (421,5h dự kiến → 417h thực tế, trên 21 ticket)' },
+        { label: 'Ticket vượt dự kiến hơn 10%', value: '3/21 — nói thật khi bị hỏi, đừng khoe "chưa bao giờ vượt"' },
+      ],
+    },
+    {
+      title: '📦 Quy mô công việc',
+      items: [
+        { label: 'Ticket đứng tên phụ trách', value: '36 ticket · 610,2 giờ ≈ 76 người-ngày (phạm vi CV 01/2025–07/2026)' },
+        { label: 'Số dự án / khách hàng cuối', value: '15 dự án · 12局 khách hàng cuối' },
+        { label: 'Ticket lớn nhất đứng tên', value: '58 giờ — phát triển mới chức năng in PDF (#41421)' },
+        { label: 'Khối phát triển liên tục lớn nhất', value: 'Tool test EFA 171,5 giờ ≈ 21,4 người-ngày; tool test Baycom 101 giờ ≈ 12,6 người-ngày' },
+        { label: 'Ticket tham gia chia việc (có log giờ thật)', value: '5 ticket · 86 giờ — #41287 36h, #41306 17h, #41638 12h, #41670 11h, #41275 10h' },
+      ],
+    },
+    {
+      title: '⚙️ Con số kỹ thuật kể được',
+      items: [
+        { label: 'Tuning PL/SQL (#41518)', value: 'cost 4.151.927 → 409.692 (~10 lần), procedure từ chạy quá 1 tiếng không kết thúc thành kết thúc bình thường' },
+        { label: 'Lỗi tiềm ẩn có sẵn tự điều tra nguyên nhân gốc', value: '6 ticket (mảng bảo trì i-PLAT/EFA ~137 giờ / 12 ticket)' },
+        { label: 'REST API mới + batch mới', value: '3 REST API theo WEB-API IF仕様書 · 3 batch xử lý dữ liệu' },
+        { label: 'Tài liệu test theo QMS', value: '~14 bộ 単体テスト成績書 / 受入テスト成績書' },
+        { label: 'Viết ngược tài liệu thiết kế (逆おこし)', value: '2 lần — #41394 (42h), #41748 (18h)' },
+      ],
+    },
+    {
+      title: '🧰 Công nghệ có bằng chứng thật',
+      items: [
+        { label: 'Backend', value: 'Java (framework nội bộ, sinh source từ 定義書), Node.js + PM2 trên Linux' },
+        { label: 'Database', value: 'Oracle: PL/SQL procedure, execution plan, tuning, expdp/schema/tablespace' },
+        { label: 'Frontend', value: 'Màn hình web, localStorage & quản lý đa tab, ứng dụng iPad cho sales' },
+        { label: 'Tự học trong kỳ (có mã dự án công ty 00000399)', value: '871 giờ — Vue 3, Nuxt.js, Vitest (viết unit test thật cho CXAM128, CXAM339), Claude Code (tạo màn hình CXAM123, CYA0107)' },
+        { label: 'Domain', value: 'CATV/MSO Nhật: thuê bao, thiết bị STB/ACAS/D-ONU/WMTA, công trình lắp đặt, MyPage, thanh toán e-SCOTT, liên kết KDDI/docomo/FreeBit/JC-HITS' },
+      ],
+    },
+  ],
+  // ⚠ Những thứ nghe hay nhưng KHÔNG được khai — lý do ghi kèm để nhớ được vì sao.
+  doNotClaim: [
+    '❌ "Em phụ trách #41431 (98,5 giờ)" và "#41366 (11 giờ)" — Working Report không có giờ nào của bạn ở 2 ticket này. Đối chiếu là lộ ngay.',
+    '❌ "Em có 2 ticket lỗi lập trình" — sổ phía VN chỉ ghi 1 (#41619, 4 giờ). Đừng tự nhận nặng hơn sổ sách.',
+    '❌ "9 ticket tham gia chia việc" — trong kỳ chỉ log giờ thật ở 5 ticket (86 giờ).',
+    '❌ Ghi 748,5 giờ (tổng của các ticket chia việc) như phần việc của mình — đó là tổng cả ticket nhiều người làm.',
+    '❌ Kể tên feature mà không nhớ nội dung (#41306, #41638 chỉ 17h và 12h) — bị hỏi lại mà tắc thì mất điểm nặng hơn là không kể.',
+    '⚠ "36 ticket / 610,2 giờ" là phạm vi CV 01/2025–07/2026, rộng hơn kỳ đánh giá 2025/07–2026/06 (30 ticket / 11 dự án). Phỏng vấn thì dùng được, nhưng phải biết mình đang nói phạm vi nào.',
+    '⚠ "Chữ ký điện tử" ở #41421 là ảnh chữ ký tay, không phải chữ ký số PKI — nói đúng bản chất.',
+  ],
+}
+
+// -------------------- Cần cải thiện (lỗ hổng thật + việc phải làm) --------------------
+// Tổng hợp từ docs/me: §7 "Điểm yếu cần biết để chuẩn bị phỏng vấn", §8 "Cần bổ sung",
+// và các mục bị chấm 0 trong form đánh giá (NoiDungDanhGia-draft.md phần A/B).
+// Mỗi mục có: lỗ hổng → vì sao mất điểm khi phỏng vấn → việc làm được ngay →
+// câu trả lời trung thực dùng được NGAY trong lúc chưa lấp xong.
+// Dùng ở tab "Cần cải thiện".
+export const IMPROVEMENT_PLAN = [
+  {
+    id: 'gap-spring-boot',
+    area: 'Spring Boot thực chiến',
+    priority: 'critical',
+    gap: 'Hai năm làm Java nhưng là framework nội bộ + sinh source từ 定義書, không phải Spring Boot. Spring Boot chỉ có từ đồ án và tự học.',
+    why: 'Đây là lỗ hổng lớn nhất so với vị trí đang nhắm. Người phỏng vấn hỏi 3 câu là biết bạn dùng thật hay chỉ đọc: @Transactional self-invocation, bean lifecycle, và vì sao rollback không xảy ra với checked exception.',
+    actions: [
+      'Làm 1 project migration nhỏ (1 màn hình CRUD + 1 báo cáo) từ style hiện tại sang Spring Boot + JPA, đẩy GitHub — có thứ để chỉ vào khi bị hỏi.',
+      'Chuẩn bị giải thích được TỪNG quyết định trong project đó: vì sao chỗ này @Transactional, chỗ kia không.',
+      'Trong app: ôn hết chủ đề Spring Boot & DI, Transaction, JPA trong Ngân hàng câu hỏi, rồi mock phỏng vấn riêng 3 chủ đề đó.',
+    ],
+    answerIfAsked: 'Công ty hiện tại dùng framework nội bộ nên Spring Boot của em đến từ đồ án và project cá nhân, không phải production. Bù lại nền tảng chuyển được: cùng mô hình MVC, cùng cơ chế inject, và em đã làm ORM + transaction thật trên Oracle. Em có project migration để anh xem, và em giải thích được từng quyết định trong đó.',
+  },
+  {
+    id: 'gap-review-mentor',
+    area: 'Review code & mentor người khác',
+    priority: 'critical',
+    gap: 'Không có bằng chứng review code hay hướng dẫn member nào trong cả Redmine lẫn Working Report.',
+    why: 'Đây là mục bị hỏi ở mọi buổi phỏng vấn từ mid-level trở lên, và cũng là mục bạn tự chấm 3 trong form đánh giá mà không có ví dụ đỡ.',
+    actions: [
+      'Xin review code cho member ở task nhỏ ngay kỳ này, ghi lại: review bao nhiêu PR, bắt được lỗi loại gì.',
+      'Nếu chưa có cơ hội chính thức: viết checklist review cho chính dự án mình (thứ tự kiểm tra, các lỗi hay gặp) — đó là deliverable kể được.',
+      'Chuẩn bị 1 ví dụ đã từng góp ý kỹ thuật cho đồng nghiệp, dù không qua công cụ review.',
+    ],
+    answerIfAsked: 'Ở dự án hiện tại review code do lead phía trên làm, em chưa được giao chính thức nên em không nhận là có kinh nghiệm review. Em có bị review và biết bị bắt lỗi loại gì. Đây là mục em đã xin được tham gia ở kỳ tới, và em đang tự tập bằng cách soát lại chính code của mình theo checklist.',
+  },
+  {
+    id: 'gap-auto-test',
+    area: 'Test tự động (JUnit / Mockito)',
+    priority: 'critical',
+    gap: 'Hồ sơ chỉ có 成績書 Excel làm tay (~14 bộ). Test code tự động mới có Vitest cho 2 màn hình (CXAM128, CXAM339) — phía Java chưa có JUnit/Mockito.',
+    why: 'Công ty product loại hồ sơ ngay ở điểm này. Và bạn có 272,5 giờ xây tool test — bị hỏi "tool test mà không viết unit test?" là rất khó đỡ.',
+    actions: [
+      'Viết JUnit + Mockito cho project migration: 1 service có mock repository, 1 test cho luồng rollback.',
+      'Nhớ chính xác mình đã viết Vitest cho cái gì, test cái gì — đây là bằng chứng thật đang có, đừng để tắc.',
+      'Chuẩn bị phân biệt được: unit test vs integration test, test double vs mock vs stub.',
+    ],
+    answerIfAsked: 'Ở dự án Nhật của em quy trình yêu cầu 単体テスト成績書 làm tay nên phần test tự động em chưa làm ở quy mô dự án. Em có viết unit test bằng Vitest cho 2 màn hình thật, và bên Java em đang viết JUnit + Mockito trong project cá nhân. Em nhìn nhận đây là mảng em còn thiếu so với công ty product.',
+  },
+  {
+    id: 'gap-tool-test-detail',
+    area: 'Nói rõ được 272,5 giờ tool test',
+    priority: 'critical',
+    gap: 'Đây là khối công việc lớn nhất trong kỳ (101h + 171,5h ≈ 34 người-ngày) nhưng trong hồ sơ gần như không có chi tiết: viết bằng gì, chạy bao nhiêu case, ai dùng, tiết kiệm bao nhiêu.',
+    why: 'Nó là thứ xóa được nhận định "chưa từng làm task lớn" — nhưng chỉ khi kể được. Kể mà không có chi tiết thì thành điểm trừ vì nghe như phóng đại.',
+    actions: [
+      'Ngồi viết ra: công nghệ dùng, số màn hình/case tự động hóa, thời gian một vòng test trước và sau khi có tool, ai trong team đang dùng.',
+      'Chuẩn bị bảo vệ luận điểm "tool test là program development": có mã dự án riêng (PJ 03011562), có người dùng, có bảo trì.',
+      'Điền xong thì bỏ dấu [Cần xác nhận] trong STAR story "test-tool" ở tab Kỹ năng PV.',
+    ],
+    answerIfAsked: '(Chưa điền được chi tiết thì tạm thời ĐỪNG kể story này — chọn story tuning SQL hoặc PDF hợp đồng thay thế.)',
+  },
+  {
+    id: 'gap-perf-test',
+    area: 'Performance / load test',
+    priority: 'high',
+    gap: 'Có tuning SQL và đo execution plan, nhưng chưa từng làm performance test hay load test đúng nghĩa (JMeter/k6, test case cho performance).',
+    why: 'Hai thứ này hay bị hỏi chung: kể xong chuyện tuning là bị hỏi tiếp "vậy em đo throughput/latency thế nào?".',
+    actions: [
+      'Chạy thử k6 hoặc JMeter trên project cá nhân: đo p95 latency trước/sau một thay đổi.',
+      'Phân biệt rõ khi nói: tuning một query (đã làm) khác với load test cả hệ thống (chưa làm).',
+    ],
+    answerIfAsked: 'Em đo và so sánh execution plan trước/sau khi sửa, đó là mức em đã làm thật. Còn load test cả hệ thống bằng JMeter/k6 thì em chưa làm trong dự án, hiện em đang thử trên project cá nhân để hiểu cách đọc p95 và throughput.',
+  },
+  {
+    id: 'gap-third-party-test',
+    area: 'Test phần do người khác phát triển',
+    priority: 'high',
+    gap: 'Trong form đánh giá, mục "Test người thứ ba" đang bị chấm 0 dù là hạng mục bắt buộc ở rank hiện tại. Bằng chứng thật đang có: 17 giờ ở #41306 log 100% category Unit Test, và tool test chạy trên 2 hệ thống do nhiều người phát triển.',
+    why: 'Phỏng vấn hỏi "em có test chéo phần người khác làm chưa?" là câu lọc khả năng làm việc trong team lớn. Đây là mục có bằng chứng nhưng bạn chưa gom lại.',
+    actions: [
+      'Xác nhận tool test có chạy trên phần do member khác viết không — nếu có thì đây chính là third-party test.',
+      'Từ 30/06/2026 đã bắt đầu #41881 (kiểm chứng ảnh hưởng nâng version i-PLAT, dự kiến 248 giờ) — ghi lại tiến độ từ giờ, kỳ tới đây là bằng chứng mạnh nhất.',
+    ],
+    answerIfAsked: 'Ở quy mô chính thức thì trong kỳ em chưa được giao test chéo. Em có 17 giờ test màn hình do member khác phát triển, và tool test em xây chạy trên hệ thống nhiều người cùng làm. Từ tháng 6 em bắt đầu một task kiểm chứng nâng version — chính là dạng công việc test phần người khác phát triển.',
+  },
+  {
+    id: 'gap-cloud-cicd',
+    area: 'Docker / CI-CD / Cloud',
+    priority: 'high',
+    gap: 'Có dựng môi trường AWS 1 lần (#41244) và chạy Node API bằng PM2 trên Linux (#41593), nhưng không có Docker, không có pipeline CI/CD trong dự án. Quản lý mã nguồn là Git/GitLab + SVN.',
+    why: 'Nhiều nhà tuyển dụng loại hồ sơ ngay ở dòng Docker/CI. "Em biết Git" thì ai cũng nói được — họ hỏi tiếp quy trình branch, cách xử lý conflict, có từng merge liên nhánh release chưa.',
+    actions: [
+      'Dockerfile multi-stage + docker-compose cho project cá nhân, thêm 1 workflow GitHub Actions chạy test khi push.',
+      'Chuẩn bị kể phần Git thật mạnh của bạn: làm việc đa nhánh, merge liên nhánh release cho từng局 khách hàng, xác định phạm vi merge theo comment commit (#41590, #41736).',
+    ],
+    answerIfAsked: 'Dự án của em deploy theo quy trình của khách Nhật nên em không trực tiếp làm pipeline CI/CD. Phần em làm thật là quản lý mã nguồn đa nhánh cho nhiều khách hàng cùng lúc, merge liên nhánh release và xác định phạm vi merge — chỗ này em có kinh nghiệm cụ thể. Docker và GitHub Actions em đang tự dựng trong project cá nhân.',
+  },
+  {
+    id: 'gap-microservice',
+    area: 'Microservice / Kafka / message queue',
+    priority: 'high',
+    gap: 'Toàn bộ kinh nghiệm là hệ thống nghiệp vụ lõi kiểu monolith + batch + liên kết API bên thứ ba. Chưa có microservice, chưa có Kafka/queue thật.',
+    why: 'Công ty ngân hàng và product hay hỏi tới, và câu hỏi thường là dạng "nếu phải thiết kế" — trả lời được thì bù được phần chưa làm.',
+    actions: [
+      'Ôn kỹ chủ đề Kafka và Microservice trong Ngân hàng câu hỏi, đặc biệt: idempotency, retry, dead letter, saga.',
+      'Chuẩn bị neo về kinh nghiệm gần nhất mình có: liên kết đồng bộ/bất đồng bộ với JC-HITS, FreeBit, e-SCOTT — đó là integration thật, chỉ khác cơ chế.',
+    ],
+    answerIfAsked: 'Em chưa làm microservice trong dự án thật. Cái gần nhất em có là liên kết nhiều hệ thống bên thứ ba — sinh yêu cầu điều khiển gửi sang hệ thống phát sóng, đọc file kết quả thu tiền, gọi API nhà cung cấp email — nên em quen phần khó của tích hợp: xử lý lỗi, dữ liệu không nhất quán và làm sao chạy lại được. Còn Kafka và pattern microservice thì hiện em ở mức đã học chưa áp dụng.',
+  },
+  {
+    id: 'gap-language-cert',
+    area: 'Tiếng Nhật / tiếng Anh / chứng chỉ',
+    priority: 'high',
+    gap: 'Đọc được spec 日本語 và làm việc với khách Nhật 2 năm nhưng chưa có chứng chỉ N mấy. Tiếng Anh nói còn chậm. Chưa có 基本情報技術者 (FE) hay chứng chỉ IT nào.',
+    why: 'Công ty Nhật hỏi thẳng trình độ N. Không có chứng chỉ thì phải quy đổi được năng lực thành việc cụ thể đã làm, nếu không sẽ bị mặc định là "không biết tiếng Nhật".',
+    actions: [
+      'Định lượng năng lực đang có thay cho chứng chỉ: đọc 要件定義書/詳細設計書, viết ngược tài liệu thiết kế, đặt Q&A với phía Nhật, lập 成績書 theo mẫu công ty.',
+      'Quyết định có thi N3/N2 hoặc FE trong 6 tháng tới không — nếu có thì nói được mốc thi cụ thể là điểm cộng.',
+      'Luyện nói tiếng Anh với script 3 phút trong tab Kỹ năng PV mỗi ngày (có nút đọc thử để so).',
+    ],
+    answerIfAsked: 'Em chưa có chứng chỉ JLPT. Thực tế công việc thì em đọc tài liệu thiết kế và định nghĩa yêu cầu bằng tiếng Nhật hằng ngày, có task em phải tự đọc 要件定義書 để phát triển khi chưa có thiết kế chi tiết, và em tự viết ngược tài liệu thiết kế. Phần nói và viết business Nhật thì em còn yếu, em đang học đều.',
+  },
+  {
+    id: 'gap-scale-numbers',
+    area: 'Quy mô hệ thống & vai trò trong team',
+    priority: 'medium',
+    gap: 'Chưa nói được: hệ thống bao nhiêu người dùng cuối, dữ liệu bao lớn, team bao nhiêu người, vai trò của mình trong team. Framework Java cụ thể và framework frontend cũng chưa xác nhận.',
+    why: 'Câu "hệ thống em làm phục vụ bao nhiêu người?" là câu chốt độ lớn của kinh nghiệm. Không trả lời được thì kinh nghiệm 2 năm bị đọc thành 2 năm làm việc nhỏ.',
+    actions: [
+      'Tra và ghi lại: số thuê bao của các局 khách hàng (hoặc bậc độ lớn), số bảng/module mình từng đụng, số bản ghi của bảng lớn nhất mình từng xử lý.',
+      'Xác nhận tên framework Java nội bộ và framework frontend đang dùng — để trả lời được câu "cụ thể là framework gì".',
+      'Ghi rõ team bao nhiêu người, mình đứng ở đâu (nhận task trực tiếp từ ai, bàn giao cho ai).',
+    ],
+    answerIfAsked: '(Chưa tra ra thì trả lời theo bậc độ lớn thay vì số chính xác: "hệ thống quản lý thuê bao của nhiều nhà mạng CATV, mỗi局 hàng chục nghìn thuê bao" — và nói rõ đây là con số ước lượng.)',
+  },
+  {
+    id: 'gap-own-share',
+    area: 'Phần việc của mình trong ticket chia việc',
+    priority: 'medium',
+    gap: 'Ở các ticket nhiều người làm, cột "phần của tôi" chưa điền hết. Working Report cho thấy trong kỳ chỉ có 5 ticket có giờ thật (86 giờ), nhưng bảng trong hồ sơ vẫn ghi tổng giờ của cả ticket.',
+    why: 'Ghi số tổng như thể mình làm hết là rủi ro lớn nhất trong cả hồ sơ: bị hỏi chi tiết mà không trả lời được thì mất tin cậy cho toàn bộ phần còn lại.',
+    actions: [
+      'Điền số giờ thật của mình vào từng ticket chia việc, tra từ Working Report trước khi quên.',
+      'Khi kể thì dùng "tham gia phát triển cùng team" thay cho "phụ trách".',
+      'Đọc lại mục "Đừng khai" ở khối số liệu thật trước mỗi buổi phỏng vấn.',
+    ],
+    answerIfAsked: 'Ticket này là feature lớn chia cho nhiều người, phần em nhận là [phần cụ thể], khoảng [X] giờ. Nếu anh muốn em đi sâu thì em nói được phần em làm, phần còn lại do member khác nên em không nhận.',
+  },
+  {
+    id: 'gap-big-task-narrative',
+    area: 'Cách kể "task lớn nhất"',
+    priority: 'medium',
+    gap: 'Ticket đứng tên lớn nhất là 58 giờ (~7 người-ngày), không có ticket nào vượt 8 ngày công. Nhưng hai khối tool test là 12,6 và 21,4 người-ngày liên tục — hồ sơ cũ ghi "chưa có task nào vượt 8 ngày công" là sai.',
+    why: 'Nếu ứng tuyển vị trí cao hơn, câu "task lớn nhất em từng làm là gì" mà trả lời 7 ngày thì bị đọc là chỉ làm task nhỏ.',
+    actions: [
+      'Kể độ lớn theo ĐỘ PHỨC TẠP chứ không theo số ngày: #41421 = chức năng mới + bảng master mới + ghép chữ ký + template động, chạy trên dữ liệu khách hàng thật.',
+      'Khi cần con số ngày thì dùng khối tool test (12,6 và 21,4 người-ngày) — nhớ kèm được chi tiết ở mục "Nói rõ được 272,5 giờ tool test".',
+    ],
+    answerIfAsked: 'Task đứng tên lớn nhất của em là 58 giờ, nhưng độ khó không nằm ở số ngày: nó gồm chức năng mới, một bảng master mới do em thiết kế, ghép chữ ký lên template PDF động, chạy trên dữ liệu khách hàng thật nên không được phép sai. Khối phát triển liên tục dài nhất của em là tool test, khoảng 21 người-ngày.',
+  },
+]
 
 // -------------------- Helpers (test được) --------------------
 /** Trả về các câu hỏi thuộc một chủ đề (giữ nguyên thứ tự khai báo). */
@@ -2147,4 +2448,5 @@ export const INTERVIEW_TOTALS = {
   topics: INTERVIEW_TOPICS.length,
   challenges: CODING_CHALLENGES.length,
   stories: INTERVIEW_SKILLS.starStories.length,
+  gaps: IMPROVEMENT_PLAN.length,
 }
